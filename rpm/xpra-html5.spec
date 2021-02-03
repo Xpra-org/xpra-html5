@@ -41,14 +41,13 @@ or by any other web server.
 %prep
 %setup
 
-%build
-echo "build skipped"
-
 %install
 mkdir -p %{buildroot}/usr/share/xpra/www
 ./setup.py install %{buildroot}/usr/share/xpra/www/
-# Ensure all .js files are not executeable
-find %{buildroot}%{_datadir}/xpra/www/js -name '*.js' -exec chmod 0644 {} \;
+# Ensure there are no executeable files:
+find %{buildroot}%{_datadir}/xpra/www/ -type f -exec chmod 0644 {} \;
+mkdir -p %{buildroot}/usr/share/doc/xpra-html5/
+cp LICENSE %{buildroot}/usr/share/doc/xpra-html5/
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -56,7 +55,7 @@ rm -rf $RPM_BUILD_ROOT
 %files
 %defattr(-,root,root)
 %{_datadir}/xpra/www
-
+%doc html5/LICENSE
 
 %changelog
 * Wed Feb 03 2021 Antoine Martin <antoine@xpra.org> 4.1-1
