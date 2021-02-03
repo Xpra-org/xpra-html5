@@ -242,7 +242,7 @@ def main():
         ) 
         sys.exit(0)
     elif "install" in sys.argv:
-        minifier = "uglifyjs"
+        minifier = "yuicompressor" if sys.platform.startswith("win") else "uglifyjs"
         install_dir = os.path.join(sys.prefix, "share/xpra/www")
         if len(sys.argv)>=3:
             install_dir = sys.argv[2]
