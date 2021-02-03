@@ -1,0 +1,10 @@
+# eclipse IDE:
+# /
+/.project
+/.pydevproject
+
+# generated during build:
+/build
+/install
+/dist
+/MANIFEST

@@ -229,19 +229,36 @@ def install_html5(install_dir="www", minifier="uglifyjs", gzip=True, brotli=True
 
 
 def main():
-    minifier = "uglifyjs"
-    install_dir = os.path.join(sys.prefix, "share/xpra/www")
-    if len(sys.argv)>=2:
-        install_dir = sys.argv[1]
-    if len(sys.argv)>=3:
-        minifier = sys.argv[2]
-    if len(sys.argv)>=4:
-        print("invalid number of arguments: %i" % len(sys.argv))
-        print("usage:")
-        print("%s [installation-directory]" % sys.argv[0])
-        sys.exit(1)
+    if "sdist" in sys.argv:
+        from distutils.core import setup
+        setup(name = "xpra-html5",
+              version = "4.1",
+              license = "GPLv2+",
+              author = "Antoine Martin",
+              author_email = "antoine@xpra.org",
+              url = "https://xpra.org/",
+              download_url = "https://xpra.org/src/",
+              description = "HTML5 client for xpra",
+        ) 
+        sys.exit(0)
+    elif "install" in sys.argv:
+        minifier = "uglifyjs"
+        install_dir = os.path.join(sys.prefix, "share/xpra/www")
+        if len(sys.argv)>=3:
+            install_dir = sys.argv[2]
+        if len(sys.argv)>=4:
+            minifier = sys.argv[3]
+        if len(sys.argv)>=5:
+            print("invalid number of arguments: %i" % len(sys.argv))
+            print("usage:")
+            print("%s [installation-directory [minifier]]" % sys.argv[0])
+            sys.exit(1)
 
-    install_html5(install_dir, minifier)
+        install_html5(install_dir, minifier)
+        sys.exit(0)
+    else:
+        print("invalid arguments, use 'sdist' or 'install'")
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()

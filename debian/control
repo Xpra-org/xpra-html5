@@ -1,0 +1,23 @@
+Package: xpra-html5
+Section: network
+Architecture: any
+Conflicts: xpra (<< 2.5)
+Priority: optional
+Maintainer: Antoine Martin <antoine@xpra.org>
+Build-Depends: python3
+              ,uglifyjs
+              ,brotli
+              ,libjs-jquery
+              ,libjs-jquery-ui
+              ,gnome-backgrounds
+Depends: libjs-jquery
+         ,libjs-jquery-ui
+Recommends: gnome-backgrounds | mate-backgrounds
+Standards-Version: 3.9.3
+Homepage: https://xpra.org/
+Vcs-Git: https://github.com/Xpra-org/xpra-html5
+Vcs-Browser: https://github.com/Xpra-org/xpra-html5
+
+Description: html5 xpra client
+ This package can be used by the xpra server to provide an integrated
+ HTML5 client, directly accessible via the server's builtin http server.
