@@ -3390,8 +3390,8 @@ XpraClient.prototype._process_clipboard_token = function(packet, ctx) {
 			ctx.debug("clipboard", "created ClipboardItem list", items);
 			navigator.clipboard.write(items).then(function() {
 				ctx.debug("clipboard", "copied png image to clipboard");
-			})
-			.catch(function(err) {
+			},
+			function(err) {
 				ctx.debug("clipboard", "failed to set png image", err);
 			});
 		}

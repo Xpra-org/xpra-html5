@@ -150,10 +150,14 @@ def install_html5(install_dir="www", minifier="uglifyjs", gzip=True, brotli=True
                                   ]
                 else:
                     assert minifier=="yuicompressor"
-                    import yuicompressor        #@UnresolvedImport
-                    jar = yuicompressor.get_jar_filename()
-                    java_cmd = os.environ.get("JAVA", "java")
-                    minify_cmd = [java_cmd, "-jar", jar,
+                    try:
+                        import yuicompressor
+                        jar = yuicompressor.get_jar_filename()
+                        java_cmd = os.environ.get("JAVA", "java")
+                        minify_cmd = [java_cmd, "-jar", jar]
+                    except:
+                        minify_cmd = ["yuicompressor"]
+                    minify_cmd += [
                                   fsrc,
                                   "--nomunge",
                                   "--line-break", "400",
@@ -162,8 +166,9 @@ def install_html5(install_dir="www", minifier="uglifyjs", gzip=True, brotli=True
                                   ]
                 r = get_status_output(minify_cmd)[0]
                 if r!=0:
-                    raise Exception("Error: failed to minify '%s', command %s returned error %i" % (
+                    print("Error: failed to minify '%s', command %s returned error %i" % (
                         bname, minify_cmd, r))
+                    shutil.copyfile(fsrc, dst)
                 os.chmod(dst, 0o644)
                 print("minified %s" % (fname, ))
             else:
