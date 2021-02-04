@@ -1,6 +1,6 @@
 /*
  * This file is part of Xpra.
- * Copyright (C) 2016-2020 Antoine Martin <antoine@xpra.org>
+ * Copyright (C) 2016-2021 Antoine Martin <antoine@xpra.org>
  * Copyright (c) 2016 Spikes, Inc.
  * Licensed under MPL 2.1, see:
  * http://www.mozilla.org/MPL/2.1/
@@ -11,8 +11,9 @@
 
 const Utilities = {
 	VERSION	: "4.1",
-	REVISION : "0",
-	LOCAL_MODIFICATIONS : "0",
+	REVISION : 0,
+	LOCAL_MODIFICATIONS : 0,
+	BRANCH : "master",
 
 	exc : function() {
 		if (console) {

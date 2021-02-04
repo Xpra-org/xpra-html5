@@ -4,6 +4,7 @@
 /.pydevproject
 
 # generated during build:
+/vcs-info
 /build
 /install
 /dist

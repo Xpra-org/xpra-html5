@@ -8,6 +8,7 @@ import re
 import sys
 import shutil
 import os.path
+import subprocess
 
 
 def glob_recurse(srcdir):
@@ -51,24 +52,74 @@ def install_symlink(symlink_options, dst):
     #print("no symlinks found for %s from %s" % (dst, symlink_options))
     return False
 
+
+def get_vcs_info():
+    def get_output_line(cmd):
+        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        out, _ = proc.communicate()
+        if proc.returncode!=0:
+            print("Error: %s returned %s" % (cmd, proc.returncode))
+            return None
+        v = out.decode("utf-8").splitlines()[0]
+        return v
+    info = {}
+    branch = get_output_line("git branch --show-current")
+    if branch:
+        info["BRANCH"] = branch
+    parts = get_output_line("git describe --always --tags").split("-")
+    #ie: parts = ["v4.0.6", "85", "gf253d3f9d"]
+    rev = 0
+    if len(parts)==3:
+        rev = parts[1]
+    if branch=="master":
+        rev = get_output_line("git rev-list --count HEAD --first-parent")
+    if rev:
+        try:
+            rev = int(rev)
+        except:
+            print("invalid revision number %r" % (rev,))
+        else:
+            info["REVISION"] = rev
+
+    proc = subprocess.Popen("git status", stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    out, _ = proc.communicate()
+    changes = 0
+    if proc.returncode==0:
+        changes = 0
+        lines = out.decode('utf-8').splitlines()
+        for line in lines:
+            sline = line.strip()
+            if sline.startswith("modified: ") or sline.startswith("new file:") or sline.startswith("deleted:"):
+                changes += 1
+    if changes:
+        info["LOCAL_MODIFICATIONS"] = changes
+    return info
+
+def record_vcs_info():
+    info = get_vcs_info()
+    if info:
+        with open("./vcs-info", 'w') as f:
+            for k,v in info.items():
+                f.write("%s=%s\n" % (k,v))
+
+def load_vcs_info():
+    info = {}
+    if os.path.exists("./vcs-info"):
+        with open("./vcs-info", 'r') as f:
+            for line in f:
+                if line.startswith("#"):
+                    continue
+                parts = line.strip("\n\r").split("=")
+                if len(parts)==2:
+                    info[parts[0]] = parts[1]
+    return info
+
 def install_html5(install_dir="www", minifier="uglifyjs", gzip=True, brotli=True, verbose=False):
-    if minifier:
+    info = load_vcs_info()
+    if minifier not in ("", None, "copy"):
         print("minifying html5 client to '%s' using %s" % (install_dir, minifier))
     else:
         print("copying html5 client to '%s'" % (install_dir, ))
-    try:
-        from xpra.src_info import REVISION, LOCAL_MODIFICATIONS
-    except ImportError:
-        try:
-            from add_build_info import get_svn_props
-            svn_props = get_svn_props(False)
-            REVISION = int(svn_props.get("REVISION", 0))
-            LOCAL_MODIFICATIONS = int(svn_props.get("LOCAL_MODIFICATIONS", 0))
-        except (ImportError, ValueError):
-            print("WARNING: source information is missing")
-            print(" this build should not be used")
-            REVISION  = 0
-            LOCAL_MODIFICATIONS = 0
     #those are used to replace the file we ship in source form
     #with one that is maintained by the distribution:
     symlinks = {
@@ -115,14 +166,20 @@ def install_html5(install_dir="www", minifier="uglifyjs", gzip=True, brotli=True
                 with open(src, mode='br') as f:
                     odata = f.read().decode("latin1")
                 data = odata
-                if bname=="Utilities.js":
-                    print("adding revision info to %s" % (bname,))
+                if bname=="Utilities.js" and info:
+                    print("adding vcs info to %s" % (bname,))
+                    REVISION = info.get("REVISION")
                     if REVISION:
-                        data = data.replace('REVISION : "0",',
-                                            'REVISION : "%i",' % REVISION)
+                        data = data.replace('REVISION : 0,',
+                                            'REVISION : %s,' % REVISION)
+                    LOCAL_MODIFICATIONS = info.get("LOCAL_MODIFICATIONS")
                     if LOCAL_MODIFICATIONS:
-                        data = data.replace('LOCAL_MODIFICATIONS : "0",',
-                                            'LOCAL_MODIFICATIONS : "%i",' % LOCAL_MODIFICATIONS)
+                        data = data.replace('LOCAL_MODIFICATIONS : 0,',
+                                            'LOCAL_MODIFICATIONS : %s,' % LOCAL_MODIFICATIONS)
+                    BRANCH = info.get("BRANCH")
+                    if BRANCH:
+                        data = data.replace('BRANCH : "master",',
+                                            'BRANCH : "%s",' % BRANCH)
                 for regexp, replacewith in {
                     r"^\s*for\s*\(\s*let\s+"     : "for(var ",
                     r"^\s*let\s+"                : "var ",
@@ -235,6 +292,7 @@ def install_html5(install_dir="www", minifier="uglifyjs", gzip=True, brotli=True
 
 def main():
     if "sdist" in sys.argv:
+        record_vcs_info()
         from distutils.core import setup
         setup(name = "xpra-html5",
               version = "4.1",
@@ -247,6 +305,7 @@ def main():
         ) 
         sys.exit(0)
     elif "install" in sys.argv:
+        record_vcs_info()
         minifier = "yuicompressor" if sys.platform.startswith("win") else "uglifyjs"
         install_dir = os.path.join(sys.prefix, "share/xpra/www")
         if len(sys.argv)>=3:

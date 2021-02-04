@@ -1086,6 +1086,7 @@ XpraClient.prototype._make_hello_base = function() {
 		"version"					: Utilities.VERSION,
 		"build.revision"			: Utilities.REVISION,
 		"build.local_modifications"	: Utilities.LOCAL_MODIFICATIONS,
+		"build.branch"	            : Utilities.BRANCH,
 		"platform"					: Utilities.getPlatformName(),
 		"platform.name"				: Utilities.getPlatformName(),
 		"platform.processor"		: Utilities.getPlatformProcessor(),
