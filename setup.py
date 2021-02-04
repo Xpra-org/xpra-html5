@@ -141,7 +141,7 @@ def install_html5(install_dir="www", minifier="uglifyjs", gzip=True, brotli=True
                         f.write(data.encode("latin1"))
                     os.chmod(fsrc, 0o644)
 
-            if minifier and ftype=="js":
+            if minifier not in ("", None, "copy") and ftype=="js":
                 if minifier=="uglifyjs":
                     minify_cmd = ["uglifyjs",
                                   fsrc,
