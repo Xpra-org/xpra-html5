@@ -2,8 +2,8 @@
  * This file is part of Xpra.
  * Copyright (C) 2016-2021 Antoine Martin <antoine@xpra.org>
  * Copyright (c) 2016 Spikes, Inc.
- * Licensed under MPL 2.1, see:
- * http://www.mozilla.org/MPL/2.1/
+ * Licensed under MPL 2.0, see:
+ * http://www.mozilla.org/MPL/2.0/
  *
  */
 
