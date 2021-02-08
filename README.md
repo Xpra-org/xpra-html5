@@ -39,3 +39,6 @@ All of the options can also be specified as URL parameters. ie:
 http://localhost:10000/?username=foo&keyboard_layout=fr
 ```
 For a more complete list of options, see [configuration options](./docs/Configuration.md)
+
+# Compatibility
+This client is compatible with any [currently supported version](https://github.com/Xpra-org/xpra/wiki/Versions) of xpra.
