@@ -3579,14 +3579,15 @@ XpraClient.prototype.print_document = function(filename, data, mimetype) {
 		return;
 	}
 	this.log("got "+data.length+" bytes of PDF to print");
-	const b64data = btoa(uintToString(data));
-	const win = window.open(
-			'data:application/pdf;base64,'+b64data,
-			'_blank'
-	);
+	var file = new Blob([data], { type: mimetype });
+	var fileURL = URL.createObjectURL(file);
+	const win = window.open(fileURL);
 	if (!win || win.closed || typeof win.closed=='undefined') {
 		this.warn("popup blocked, saving to file instead");
 		Utilities.saveFile(filename, data, {type : mimetype});
+	}
+	else {
+		win.print();
 	}
 };
 
