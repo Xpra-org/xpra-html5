@@ -138,7 +138,6 @@ XpraClient.prototype.init_state = function(container) {
 	this.wheel_delta_y = 0;
 	this.mouse_grabbed = false;
 	this.scroll_reverse_x = false;
-	this.scroll_reverse_y = false;
 	// clipboard
 	this.clipboard_datatype = null;
 	this.clipboard_buffer = "";
@@ -1503,6 +1502,25 @@ XpraClient.prototype.do_window_mouse_click = function(e, window, pressed) {
 	}, send_delay);
 };
 
+// Source: https://deepmikoto.com/coding/1--javascript-detect-mouse-wheel-direction
+XpraClient.prototype.detect_vertical_scroll_direction = function(e, window) {
+	var delta = null
+	var direction = false;
+	if ( !e ) { // if the event is not provided, we get it from the window object
+		e = window.event;
+	}
+	if ( e.wheelDelta ) { // will work in most cases
+		delta = e.wheelDelta / 60;
+	} else if ( e.detail ) { // fallback for Firefox
+		delta = -e.detail / 2;
+	}
+	if ( delta !== null ) {
+		direction = delta > 0 ? 'up' : 'down';
+	}
+
+	return direction;
+};
+
 XpraClient.prototype._window_mouse_scroll = function(ctx, e, window) {
 	ctx.do_window_mouse_scroll(e, window);
 };
@@ -1528,10 +1546,9 @@ XpraClient.prototype.do_window_mouse_scroll = function(e, window) {
 	if (this.scroll_reverse_x) {
 		px = -px;
 	}
-	if (this.scroll_reverse_y) {
+	if (this.detect_vertical_scroll_direction(e, window) === "up" && py > 0) {
 		py = -py;
 	}
-	
 	const apx = Math.abs(px);
 	const apy = Math.abs(py);
 	if (this.server_precise_wheel) {
