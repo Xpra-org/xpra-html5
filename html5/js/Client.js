@@ -690,14 +690,12 @@ XpraClient.prototype._check_browser_language = function(key_layout) {
 
 XpraClient.prototype._keyb_process = function(pressed, event) {
 	// MSIE hack
-	if (window.event)
-		event = window.event;
-	this.do_keyb_process(pressed, event);
+	return this.do_keyb_process(pressed, event || window.event);
 }
 
 XpraClient.prototype.do_keyb_process = function(pressed, event) {
 	if (this.server_readonly) {
-		return;
+		return true;
 	}
 	if (!this.capture_keyboard) {
 		return true;
