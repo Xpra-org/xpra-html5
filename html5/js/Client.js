@@ -1495,27 +1495,14 @@ XpraClient.prototype._poll_clipboard = function(e) {
 	//see if the clipboard contents have changed:
 	if (this.clipboard_pending) {
 		//we're still waiting to set the clipboard..
-		return;
+		return false;
 	}
 	if (navigator.clipboard && navigator.clipboard.readText) {
 		this.debug("clipboard", "polling using", navigator.clipboard.readText);
-		const client = this;
-		//warning: this can take a while,
-		//so we may send the click before the clipboard contents...
-		navigator.clipboard.readText().then(function(text) {
-			client.debug("clipboard", "paste event, text=", text);
-			const clipboard_buffer = unescape(encodeURIComponent(text));
-			if (clipboard_buffer!=client.clipboard_buffer) {
-				client.debug("clipboard", "clipboard contents have changed");
-				client.clipboard_buffer = clipboard_buffer;
-				client.send_clipboard_token(clipboard_buffer);
-			}
-		}, function(err) {
-			client.debug("clipboard", "paste event failed:", err);
-		});
+		this.read_clipboard_text();
 		return false;
 	}
-	//fallback code:
+	//fallback code for legacy mode:
 	let datatype = "text/plain";
 	let clipboardData = (e.originalEvent || e).clipboardData;
 	//IE: must use window.clipboardData because the event clipboardData is null!
@@ -1544,6 +1531,28 @@ XpraClient.prototype._poll_clipboard = function(e) {
 	this.clipboard_delayed_event_time = Utilities.monotonicTime()+CLIPBOARD_EVENT_DELAY;
 	return true;
 };
+
+XpraClient.prototype.read_clipboard_text = function() {
+	const client = this;
+	client.debug("clipboard", "read_clipboard()");
+	//warning: this can take a while,
+	//so we may send the click before the clipboard contents...
+	this.clipboard_pending = true;
+	navigator.clipboard.readText().then(function(text) {
+		client.debug("clipboard", "paste event, text=", text);
+		const clipboard_buffer = unescape(encodeURIComponent(text));
+		if (clipboard_buffer!=client.clipboard_buffer) {
+			client.debug("clipboard", "clipboard contents have changed");
+			client.clipboard_buffer = clipboard_buffer;
+			client.send_clipboard_token(clipboard_buffer);
+			client.clipboard_delayed_event_time = Utilities.monotonicTime()+CLIPBOARD_EVENT_DELAY;
+		}
+		client.clipboard_pending = false;
+	}, function(err) {
+		client.debug("clipboard", "paste event failed:", err);
+		client.clipboard_pending = false;
+	});
+}
 
 
 /**
