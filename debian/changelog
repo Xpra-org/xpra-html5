@@ -1,2 +1,9 @@
 xpra (4.1-1) UNRELEASED; urgency=low
   * split from xpra's repository
+  * open print dialog
+  * added documentation (installation, connection options, authentication, etc)
+  * build option for platforms without any minifiers
+  * add on screen keyboard
+  * better connection diagnostic messages
+  * download connection files and generate connection URIs
+  * support for rgb24 pixel encoding

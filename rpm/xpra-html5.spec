@@ -58,5 +58,12 @@ rm -rf $RPM_BUILD_ROOT
 %doc html5/LICENSE
 
 %changelog
-* Wed Feb 03 2021 Antoine Martin <antoine@xpra.org> 4.1-1
+* Sun Mar 28 2021 Antoine Martin <antoine@xpra.org> 4.1-1
 - split from main source tree
+- open print dialog
+- added documentation (installation, connection options, authentication, etc)
+- build option for platforms without any minifiers
+- add on screen keyboard
+- better connection diagnostic messages
+- download connection files and generate connection URIs
+- support for rgb24 pixel encoding

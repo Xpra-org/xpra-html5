@@ -2,7 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
-## [4.1]
+## [4.1] 2021-03-28
+* open print dialog
+* added documentation (installation, connection options, authentication, etc)
+* build option for platforms without any minifiers
+* add on screen keyboard
+* better connection diagnostic messages
+* download connection files and generate connection URIs
+* support for rgb24 pixel encoding
 
 ### Changed 
 
