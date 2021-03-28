@@ -323,7 +323,10 @@ def main():
         sys.exit(0)
     elif "install" in sys.argv:
         if not load_vcs_info():
-            record_vcs_info()
+            try:
+                record_vcs_info()
+            except Exception:
+                print("Warning: src_info is missing")
         minifier = "yuicompressor" if sys.platform.startswith("win") else "uglifyjs"
         install_dir = os.path.join(sys.prefix, "share/xpra/www")
         if len(sys.argv)>=3:
