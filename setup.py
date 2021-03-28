@@ -54,6 +54,27 @@ def install_symlink(symlink_options, dst):
 
 
 def get_vcs_info():
+    info = {}
+    branch = None
+    for cmd in (
+        r"git branch --show-current",
+        #when in detached state, the one above does not work, but this one does:
+        r"git branch --remote --verbose --no-abbrev --contains | sed -rne 's/^[^\/]*\/([^\ ]+).*$/\1/p'",
+        #if all else fails:
+        r"git branch | grep '* '",
+    ):
+        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        out, _ = proc.communicate()
+        if proc.returncode==0:
+            branch_out = out.decode("utf-8").splitlines()
+            if branch_out:
+                branch = branch_out[0]
+                break
+    if not branch:
+        print("Warning: could not get branch information")
+    else:
+        info["BRANCH"] = branch
+
     def get_output_line(cmd):
         proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
         out, _ = proc.communicate()
@@ -62,10 +83,6 @@ def get_vcs_info():
             return None
         v = out.decode("utf-8").splitlines()[0]
         return v
-    info = {}
-    branch = get_output_line("git branch --show-current")
-    if branch:
-        info["BRANCH"] = branch
     parts = get_output_line("git describe --always --tags").split("-")
     #ie: parts = ["v4.0.6", "85", "gf253d3f9d"]
     rev = 0
@@ -305,7 +322,8 @@ def main():
         ) 
         sys.exit(0)
     elif "install" in sys.argv:
-        record_vcs_info()
+        if not load_vcs_info():
+            record_vcs_info()
         minifier = "yuicompressor" if sys.platform.startswith("win") else "uglifyjs"
         install_dir = os.path.join(sys.prefix, "share/xpra/www")
         if len(sys.argv)>=3:
