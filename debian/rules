@@ -1,4 +1,0 @@
-#!/usr/bin/make -f
-
-%:
-    python3 ./setup.py install

@@ -8,7 +8,7 @@ import re
 import sys
 import shutil
 import os.path
-import subprocess
+from subprocess import Popen, PIPE
 
 
 def glob_recurse(srcdir):
@@ -22,10 +22,10 @@ def glob_recurse(srcdir):
 
 def get_status_output(*args, **kwargs):
     import subprocess
-    kwargs["stdout"] = subprocess.PIPE
-    kwargs["stderr"] = subprocess.PIPE
+    kwargs["stdout"] = PIPE
+    kwargs["stderr"] = PIPE
     try:
-        p = subprocess.Popen(*args, **kwargs)
+        p = Popen(*args, **kwargs)
     except Exception as e:
         print("error running %s,%s: %s" % (args, kwargs, e))
         return -1, "", ""
@@ -63,7 +63,7 @@ def get_vcs_info():
         #if all else fails:
         r"git branch | grep '* '",
     ):
-        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        proc = Popen(cmd, stdout=PIPE, stderr=PIPE, shell=True)
         out, _ = proc.communicate()
         if proc.returncode==0:
             branch_out = out.decode("utf-8").splitlines()
@@ -76,7 +76,7 @@ def get_vcs_info():
         info["BRANCH"] = branch
 
     def get_output_line(cmd):
-        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        proc = Popen(cmd, stdout=PIPE, stderr=PIPE, shell=True)
         out, _ = proc.communicate()
         if proc.returncode!=0:
             print("Error: %s returned %s" % (cmd, proc.returncode))
@@ -98,7 +98,7 @@ def get_vcs_info():
         else:
             info["REVISION"] = rev
 
-    proc = subprocess.Popen("git status", stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    proc = Popen("git status", stdout=PIPE, stderr=PIPE, shell=True)
     out, _ = proc.communicate()
     changes = 0
     if proc.returncode==0:
@@ -293,18 +293,20 @@ def install_html5(install_dir="www", minifier="uglifyjs", gzip=True, brotli=True
                             print("Warning: brotli did not create '%s'" % br_dst)
 
     if os.name=="posix":
-        try:
-            from xpra.platform.paths import get_desktop_background_paths
-        except ImportError as e:
-            print("cannot locate desktop background: %s" % (e,))
-        else:
-            paths = get_desktop_background_paths()
-            print("desktop background paths: %s" % (paths,))
-            if paths:
-                extra_symlinks = {"background.png" : paths}
-                for f, symlink_options in extra_symlinks.items():
-                    dst = os.path.join(install_dir, f)
-                    install_symlink(symlink_options, dst)
+        paths = [
+        "/usr/share/backgrounds/images/default.png",
+        "/usr/share/backgrounds/images/*default*.png",
+        "/usr/share/backgrounds/*default*png",
+        "/usr/share/backgrounds/gnome/adwaita*.jpg",    #Debian Stretch
+        "/usr/share/backgrounds/images/*jpg",           #CentOS 7
+        ]
+        print("desktop background paths: %s" % (paths,))
+        if paths:
+            extra_symlinks = {"background.png" : paths}
+            for f, symlink_options in extra_symlinks.items():
+                dst = os.path.join(install_dir, f)
+                if install_symlink(symlink_options, dst):
+                    break
 
 
 def main():
@@ -341,6 +343,29 @@ def main():
 
         install_html5(install_dir, minifier)
         sys.exit(0)
+    elif "deb" in sys.argv:
+        if os.path.exists("xpra-html5.deb"):
+            os.unlink("xpra-html5.deb")
+        if os.path.exists("./xpra-html5"):
+            shutil.rmtree("./xpra-html5")
+        os.mkdir("./xpra-html5")
+        shutil.copytree("./debian", "./xpra-html5/DEBIAN")
+        install_html5("./xpra-html5/usr/share/xpra/www/", "uglifyjs")
+        assert Popen(["dpkg-deb", "--build", "xpra-html5"]).wait()==0
+        assert os.path.exists("./xpra-html5.deb")
+        shutil.rmtree("./xpra-html5")
+        VERSION = ""
+        with open("./debian/changelog", "r") as f:
+            line = f.readline()
+            #ie:
+            #xpra-html5 (4.1-1) UNRELEASED; urgency=low
+            try:
+                import re
+                VERSION = re.match(".*\(([0-9\-\.]*)\).*", line).group(1)
+                #ie: VERSION=4.1-1
+            except Exception:
+                pass
+        os.rename("xpra-html5.deb", "./dist/xpra-html5-%s.deb" % VERSION)
     else:
         print("invalid arguments, use 'sdist' or 'install'")
         sys.exit(1)
