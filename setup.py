@@ -314,7 +314,7 @@ def main():
         record_vcs_info()
         from distutils.core import setup
         setup(name = "xpra-html5",
-              version = "4.1",
+              version = "4.1.1",
               license = "MPL-2",
               author = "Antoine Martin",
               author_email = "antoine@xpra.org",

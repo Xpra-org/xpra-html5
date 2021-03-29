@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.1.1] 2021-03-29
+* minor packaging fixes
+
 ## [4.1] 2021-03-28
 * open print dialog
 * added documentation (installation, connection options, authentication, etc)
