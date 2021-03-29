@@ -1,3 +1,4 @@
 include LICENSE README.md vcs-info
 recursive-include html5 *
 recursive-include docs *
+recursive-include packaging *
