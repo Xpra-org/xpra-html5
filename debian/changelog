@@ -1,4 +1,4 @@
-xpra (4.1-1) UNRELEASED; urgency=low
+xpra-html5 (4.1-1) UNRELEASED; urgency=low
   * split from xpra's repository
   * open print dialog
   * added documentation (installation, connection options, authentication, etc)
@@ -7,3 +7,5 @@ xpra (4.1-1) UNRELEASED; urgency=low
   * better connection diagnostic messages
   * download connection files and generate connection URIs
   * support for rgb24 pixel encoding
+
+ -- Antoine Martin <antoine@xpra.org>  Mon, 29 Mar 2021 10:37:58 +0700
