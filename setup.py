@@ -349,13 +349,13 @@ def main():
         if os.path.exists("./xpra-html5"):
             shutil.rmtree("./xpra-html5")
         os.mkdir("./xpra-html5")
-        shutil.copytree("./debian", "./xpra-html5/DEBIAN")
+        shutil.copytree("./packaging/debian", "./xpra-html5/DEBIAN")
         install_html5("./xpra-html5/usr/share/xpra/www/", "uglifyjs")
         assert Popen(["dpkg-deb", "--build", "xpra-html5"]).wait()==0
         assert os.path.exists("./xpra-html5.deb")
         shutil.rmtree("./xpra-html5")
         VERSION = ""
-        with open("./debian/changelog", "r") as f:
+        with open("./packaging/debian/changelog", "r") as f:
             line = f.readline()
             #ie:
             #xpra-html5 (4.1-1) UNRELEASED; urgency=low
@@ -365,6 +365,8 @@ def main():
                 #ie: VERSION=4.1-1
             except Exception:
                 pass
+        if not os.path.exists("./dist"):
+            os.mkdir("./dist")
         os.rename("xpra-html5.deb", "./dist/xpra-html5-%s.deb" % VERSION)
     else:
         print("invalid arguments, use 'sdist' or 'install'")
