@@ -290,7 +290,7 @@ def install_html5(install_dir="www", minifier="uglifyjs", gzip=True, brotli=True
                     br_dst = "%s.br" % dst
                     if os.path.exists(br_dst):
                         os.unlink(br_dst)
-                    if brotli_version>="1":
+                    if brotli_version and brotli_version>="1":
                         cmd = [brotli_cmd, "-k", dst]
                     else:
                         cmd = [brotli_cmd, "--input", dst, "--output", br_dst]
