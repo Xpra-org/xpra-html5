@@ -1,3 +1,8 @@
+xpra-html5 (4.1.1-2) UNRELEASED; urgency=low
+  * use the correct 'architecture' value 'all'
+
+ -- Antoine Martin <antoine@xpra.org>  Wed, 31 Mar 2021 00:20:40 +0700
+
 xpra-html5 (4.1.1-1) UNRELEASED; urgency=low
   * packaging fixes
 
