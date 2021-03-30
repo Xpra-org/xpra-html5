@@ -137,6 +137,30 @@ def install_html5(install_dir="www", minifier="uglifyjs", gzip=True, brotli=True
         print("minifying html5 client to '%s' using %s" % (install_dir, minifier))
     else:
         print("copying html5 client to '%s'" % (install_dir, ))
+
+    brotli_cmd = None
+    brotli_version = None
+    if brotli:
+        #find brotli on $PATH
+        paths = os.environ.get("PATH", "").split(os.pathsep)
+        if os.name=="posix":
+            #not always present,
+            #but brotli is often installed there (install from source):
+            paths.append("/usr/local/bin")
+        for x in paths:
+            br = os.path.join(x, "brotli")
+            if sys.platform.startswith("win"):
+                br += ".exe"
+            if os.path.exists(br):
+                proc = Popen([br, "--version"], stdout=PIPE, stderr=PIPE)
+                stdout, stderr = proc.communicate()
+                if proc.wait()==0:
+                    brotli_version = stdout.strip(b"\n\r").decode()
+                brotli_cmd = br
+                break
+    print("brotli_cmd=%s" % (brotli_cmd))
+    if brotli_version:
+        print(" version %s" % (brotli_version))
     #those are used to replace the file we ship in source form
     #with one that is maintained by the distribution:
     symlinks = {
@@ -262,35 +286,26 @@ def install_html5(install_dir="www", minifier="uglifyjs", gzip=True, brotli=True
                     get_status_output(cmd)
                     if os.path.exists(gzip_dst):
                         os.chmod(gzip_dst, 0o644)
-                if brotli:
+                if brotli and brotli_cmd:
                     br_dst = "%s.br" % dst
                     if os.path.exists(br_dst):
                         os.unlink(br_dst)
-                    #find brotli on $PATH
-                    paths = os.environ.get("PATH", "").split(os.pathsep)
-                    if os.name=="posix":
-                        #not always present,
-                        #but brotli is often installed there (install from source):
-                        paths.append("/usr/local/bin")
-                    for x in paths:
-                        br = os.path.join(x, "brotli")
-                        if sys.platform.startswith("win"):
-                            br += ".exe"
-                        if not os.path.exists(br):
-                            continue
-                        cmd = [br, "-k", dst]
-                        code, out, err = get_status_output(cmd)
-                        if code!=0:
-                            print("brotli error code=%i on %s" % (code, cmd))
-                            if out:
-                                print("stdout=%s" % out)
-                            if err:
-                                print("stderr=%s" % err)
-                        elif os.path.exists(br_dst):
-                            os.chmod(br_dst, 0o644)
-                            break
-                        else:
-                            print("Warning: brotli did not create '%s'" % br_dst)
+                    if brotli_version>="1":
+                        cmd = [brotli_cmd, "-k", dst]
+                    else:
+                        cmd = [brotli_cmd, "--input", dst, "--output", br_dst]
+                    code, out, err = get_status_output(cmd)
+                    if code!=0:
+                        print("brotli error code=%i on %s" % (code, cmd))
+                        if out:
+                            print("stdout=%s" % out)
+                        if err:
+                            print("stderr=%s" % err)
+                    elif os.path.exists(br_dst):
+                        os.chmod(br_dst, 0o644)
+                        break
+                    else:
+                        print("Warning: brotli did not create '%s'" % br_dst)
 
     if os.name=="posix":
         paths = [
