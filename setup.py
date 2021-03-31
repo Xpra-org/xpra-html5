@@ -325,14 +325,15 @@ def install_html5(install_dir="www", minifier="uglifyjs", gzip=True, brotli=True
 
 
 def main(args):
+    VERSION = "4.1.1"
+    AUTHOR = "Antoine Martin"
     if "sdist" in args:
         record_vcs_info()
-        VERSION="4.1.1"
         from distutils.core import setup
         setup(name = "xpra-html5",
               version = VERSION,
               license = "MPL-2",
-              author = "Antoine Martin",
+              author = AUTHOR,
               author_email = "antoine@xpra.org",
               url = "https://xpra.org/",
               download_url = "https://xpra.org/src/",
@@ -341,7 +342,7 @@ def main(args):
         return 0
     if len(args)<2 or len(args)>=5:
         print("invalid number of arguments, usage:")
-        print("%s sdist|install [INSTALL_DIR] [MINIFIER]|deb")
+        print("%s sdist|install [INSTALL_DIR] [MINIFIER]|deb|set-version VERSION")
         return 1
     cmd = args[1]
     if cmd=="install":
@@ -383,6 +384,30 @@ def main(args):
         if not os.path.exists("./dist"):
             os.mkdir("./dist")
         os.rename("xpra-html5.deb", "./dist/xpra-html5-%s.deb" % VERSION)
+    elif "set-version" in args:
+        assert len(args)==3, "invalid number of arguments for 'set-version' subcommand"
+        NEW_VERSION = args[2]
+        from packaging import version
+        assert version.parse(NEW_VERSION) > version.parse(VERSION), "new version must be higher"
+        for filename, replace in {
+            "./packaging/debian/control" : {
+                "Version: %s" % VERSION : "Version: %s" % NEW_VERSION,
+                },
+            "./packaging/rpm/xpra-html5.spec" : {
+                "%%define version %s" % VERSION : "%%define version %s" % NEW_VERSION,
+                },
+            "./html5/js/Utilities.js" : {
+                "VERSION : \"%s\"" % VERSION : "VERSION : \"%s\"" % NEW_VERSION,
+                },
+            "./setup.py" : {
+                "VERSION = \"%s\"" % VERSION : "VERSION = \"%s\"" % NEW_VERSION,
+                },
+            }.items():
+                fdata = open(filename, "r").read()
+                for old, new in replace.items():
+                    fdata = fdata.replace(old, new)
+                open(filename, "w").write(fdata)
+            #add changelog entries if not present yet?
     else:
         print("invalid arguments, use 'sdist' or 'install'")
         sys.exit(1)
