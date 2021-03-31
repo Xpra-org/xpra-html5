@@ -324,12 +324,13 @@ def install_html5(install_dir="www", minifier="uglifyjs", gzip=True, brotli=True
                     break
 
 
-def main():
-    if "sdist" in sys.argv:
+def main(args):
+    if "sdist" in args:
         record_vcs_info()
+        VERSION="4.1.1"
         from distutils.core import setup
         setup(name = "xpra-html5",
-              version = "4.1.1",
+              version = VERSION,
               license = "MPL-2",
               author = "Antoine Martin",
               author_email = "antoine@xpra.org",
@@ -337,8 +338,13 @@ def main():
               download_url = "https://xpra.org/src/",
               description = "HTML5 client for xpra",
         ) 
-        sys.exit(0)
-    elif "install" in sys.argv:
+        return 0
+    if len(args)<2 or len(args)>=5:
+        print("invalid number of arguments, usage:")
+        print("%s sdist|install [INSTALL_DIR] [MINIFIER]|deb")
+        return 1
+    cmd = args[1]
+    if cmd=="install":
         if not load_vcs_info():
             try:
                 record_vcs_info()
@@ -346,19 +352,13 @@ def main():
                 print("Warning: src_info is missing")
         minifier = "yuicompressor" if sys.platform.startswith("win") else "uglifyjs"
         install_dir = os.path.join(sys.prefix, "share/xpra/www")
-        if len(sys.argv)>=3:
-            install_dir = sys.argv[2]
-        if len(sys.argv)>=4:
-            minifier = sys.argv[3]
-        if len(sys.argv)>=5:
-            print("invalid number of arguments: %i" % len(sys.argv))
-            print("usage:")
-            print("%s [installation-directory [minifier]]" % sys.argv[0])
-            sys.exit(1)
-
+        if len(args)>=3:
+            install_dir = args[2]
+        if len(args)>=4:
+            minifier = args[3]
         install_html5(install_dir, minifier)
-        sys.exit(0)
-    elif "deb" in sys.argv:
+        return 0
+    if cmd=="deb":
         if os.path.exists("xpra-html5.deb"):
             os.unlink("xpra-html5.deb")
         if os.path.exists("./xpra-html5"):
@@ -388,4 +388,4 @@ def main():
         sys.exit(1)
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main(sys.argv))
