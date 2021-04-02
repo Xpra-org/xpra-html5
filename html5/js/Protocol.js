@@ -402,8 +402,9 @@ XpraProtocol.prototype.do_process_receive_queue = function() {
 		}
 		catch (e) {
 			//FIXME: maybe we should error out and disconnect here?
-			this.error("error decoding packet " + e);
-			//this.error("packet_data="+packet_data);
+			this.error("error decoding packet", e);
+			this.error("packet="+packet);
+			this.raw_packets = [];
 			return this.rQ.length>0;
 		}
 		try {
