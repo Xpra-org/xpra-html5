@@ -303,7 +303,6 @@ def install_html5(install_dir="www", minifier="uglifyjs", gzip=True, brotli=True
                             print("stderr=%s" % err)
                     elif os.path.exists(br_dst):
                         os.chmod(br_dst, 0o644)
-                        break
                     else:
                         print("Warning: brotli did not create '%s'" % br_dst)
 
