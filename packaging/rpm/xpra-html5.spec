@@ -30,6 +30,7 @@ Recommends:			centos-backgrounds
 BuildRequires:		desktop-backgrounds-compat
 Recommends:		    desktop-backgrounds-compat
 BuildRequires:		js-jquery
+BuildRequires:		brotli
 Requires:			js-jquery
 %endif
 
