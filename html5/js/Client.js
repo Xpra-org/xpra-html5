@@ -1079,6 +1079,11 @@ XpraClient.prototype._make_hello_base = function() {
 	else {
 		this.clog("cryptography library 'forge' not found");
 	}
+	if (Utilities.isSafari()) {
+		//See bug #39,
+		//safari chokes on the rencode lib
+		PyRencoder = null;
+	}
 	this._update_capabilities({
 		// version and platform
 		"version"					: Utilities.VERSION,
