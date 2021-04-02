@@ -10,6 +10,9 @@ import shutil
 import os.path
 from subprocess import Popen, PIPE
 
+VERSION = "4.1.1"
+AUTHOR = "Antoine Martin"
+
 
 def glob_recurse(srcdir):
     m = {}
@@ -132,7 +135,6 @@ def load_vcs_info():
     return info
 
 def install_html5(install_dir="www", minifier="uglifyjs", gzip=True, brotli=True, verbose=False):
-    info = load_vcs_info()
     if minifier not in ("", None, "copy"):
         print("minifying html5 client to '%s' using %s" % (install_dir, minifier))
     else:
@@ -160,7 +162,7 @@ def install_html5(install_dir="www", minifier="uglifyjs", gzip=True, brotli=True
                 break
     print("brotli_cmd=%s" % (brotli_cmd))
     if brotli_version:
-        print(" version %s" % (brotli_version))
+        print("  %s" % (brotli_version))
     #those are used to replace the file we ship in source form
     #with one that is maintained by the distribution:
     symlinks = {
@@ -207,20 +209,6 @@ def install_html5(install_dir="www", minifier="uglifyjs", gzip=True, brotli=True
                 with open(src, mode='br') as f:
                     odata = f.read().decode("latin1")
                 data = odata
-                if bname=="Utilities.js" and info:
-                    print("adding vcs info to %s" % (bname,))
-                    REVISION = info.get("REVISION")
-                    if REVISION:
-                        data = data.replace('REVISION : 0,',
-                                            'REVISION : %s,' % REVISION)
-                    LOCAL_MODIFICATIONS = info.get("LOCAL_MODIFICATIONS")
-                    if LOCAL_MODIFICATIONS:
-                        data = data.replace('LOCAL_MODIFICATIONS : 0,',
-                                            'LOCAL_MODIFICATIONS : %s,' % LOCAL_MODIFICATIONS)
-                    BRANCH = info.get("BRANCH")
-                    if BRANCH:
-                        data = data.replace('BRANCH : "master",',
-                                            'BRANCH : "%s",' % BRANCH)
                 for regexp, replacewith in {
                     r"^\s*for\s*\(\s*let\s+"     : "for(var ",
                     r"^\s*let\s+"                : "var ",
@@ -314,7 +302,6 @@ def install_html5(install_dir="www", minifier="uglifyjs", gzip=True, brotli=True
         "/usr/share/backgrounds/gnome/adwaita*.jpg",    #Debian Stretch
         "/usr/share/backgrounds/images/*jpg",           #CentOS 7
         ]
-        print("desktop background paths: %s" % (paths,))
         if paths:
             extra_symlinks = {"background.png" : paths}
             for f, symlink_options in extra_symlinks.items():
@@ -322,28 +309,83 @@ def install_html5(install_dir="www", minifier="uglifyjs", gzip=True, brotli=True
                 if install_symlink(symlink_options, dst):
                     break
 
+def set_version(NEW_VERSION):
+    import re
+    vcs_info = load_vcs_info() or get_vcs_info()
+    REVISION = vcs_info.get("REVISION", 0)
+    LOCAL_MODIFICATIONS = vcs_info.get("LOCAL_MODIFICATIONS", 0)
+    BRANCH = vcs_info.get("BRANCH", "master")
+    for filename, replace in {
+        "./packaging/debian/control" : {
+            r"Version: %s" % VERSION : r"Version: %s" % NEW_VERSION,
+            },
+        "./packaging/rpm/xpra-html5.spec" : {
+            r"%%define version %s" % VERSION : r"%%define version %s" % NEW_VERSION,
+            },
+        "./html5/js/Utilities.js" : {
+            r'VERSION : "%s"' % VERSION : r'VERSION : "%s"' % NEW_VERSION,
+            r"REVISION : [0-9]" : r"REVISION : %s" % REVISION,
+            r'LOCAL_MODIFICATIONS : [0-9]*' : r'LOCAL_MODIFICATIONS : %i' % LOCAL_MODIFICATIONS,
+            r'BRANCH : "[a-zA-Z]*"' : r'BRANCH : "%s"' % BRANCH,
+            },
+        "./setup.py" : {
+            r'VERSION = "%s"' % VERSION : r'VERSION = "%s"' % NEW_VERSION,
+            },
+        }.items():
+            fdata = open(filename, "r").read()
+            for old, new in replace.items():
+                fdata = re.sub(old, new, fdata)
+            open(filename, "w").write(fdata)
+
+def make_deb():
+    if os.path.exists("xpra-html5.deb"):
+        os.unlink("xpra-html5.deb")
+    if os.path.exists("./xpra-html5"):
+        shutil.rmtree("./xpra-html5")
+    os.mkdir("./xpra-html5")
+    shutil.copytree("./packaging/debian", "./xpra-html5/DEBIAN")
+    install_html5("./xpra-html5/usr/share/xpra/www/", "uglifyjs")
+    assert Popen(["dpkg-deb", "--build", "xpra-html5"]).wait()==0
+    assert os.path.exists("./xpra-html5.deb")
+    shutil.rmtree("./xpra-html5")
+    VERSION = ""
+    with open("./packaging/debian/changelog", "r") as f:
+        line = f.readline()
+        #ie:
+        #xpra-html5 (4.1-1) UNRELEASED; urgency=low
+        try:
+            import re
+            VERSION = re.match(".*\(([0-9\-\.]*)\).*", line).group(1)
+            #ie: VERSION=4.1-1
+        except Exception:
+            pass
+    if not os.path.exists("./dist"):
+        os.mkdir("./dist")
+    os.rename("xpra-html5.deb", "./dist/xpra-html5-%s.deb" % VERSION)
+
+def sdist():
+    record_vcs_info()
+    from distutils.core import setup
+    setup(name = "xpra-html5",
+          version = VERSION,
+          license = "MPL-2",
+          author = AUTHOR,
+          author_email = "antoine@xpra.org",
+          url = "https://xpra.org/",
+          download_url = "https://xpra.org/src/",
+          description = "HTML5 client for xpra",
+    )
+
 
 def main(args):
-    VERSION = "4.1.1"
-    AUTHOR = "Antoine Martin"
-    if "sdist" in args:
-        record_vcs_info()
-        from distutils.core import setup
-        setup(name = "xpra-html5",
-              version = VERSION,
-              license = "MPL-2",
-              author = AUTHOR,
-              author_email = "antoine@xpra.org",
-              url = "https://xpra.org/",
-              download_url = "https://xpra.org/src/",
-              description = "HTML5 client for xpra",
-        ) 
-        return 0
     if len(args)<2 or len(args)>=5:
         print("invalid number of arguments, usage:")
         print("%s sdist|install [INSTALL_DIR] [MINIFIER]|deb|set-version VERSION")
         return 1
     cmd = args[1]
+    if cmd=="sdist":
+        sdist()
+        return 0
     if cmd=="install":
         if not load_vcs_info():
             try:
@@ -359,57 +401,16 @@ def main(args):
         install_html5(install_dir, minifier)
         return 0
     if cmd=="deb":
-        if os.path.exists("xpra-html5.deb"):
-            os.unlink("xpra-html5.deb")
-        if os.path.exists("./xpra-html5"):
-            shutil.rmtree("./xpra-html5")
-        os.mkdir("./xpra-html5")
-        shutil.copytree("./packaging/debian", "./xpra-html5/DEBIAN")
-        install_html5("./xpra-html5/usr/share/xpra/www/", "uglifyjs")
-        assert Popen(["dpkg-deb", "--build", "xpra-html5"]).wait()==0
-        assert os.path.exists("./xpra-html5.deb")
-        shutil.rmtree("./xpra-html5")
-        VERSION = ""
-        with open("./packaging/debian/changelog", "r") as f:
-            line = f.readline()
-            #ie:
-            #xpra-html5 (4.1-1) UNRELEASED; urgency=low
-            try:
-                import re
-                VERSION = re.match(".*\(([0-9\-\.]*)\).*", line).group(1)
-                #ie: VERSION=4.1-1
-            except Exception:
-                pass
-        if not os.path.exists("./dist"):
-            os.mkdir("./dist")
-        os.rename("xpra-html5.deb", "./dist/xpra-html5-%s.deb" % VERSION)
-    elif "set-version" in args:
+        make_deb()
+        return 0
+    if cmd=="set-version":
         assert len(args)==3, "invalid number of arguments for 'set-version' subcommand"
         NEW_VERSION = args[2]
-        from packaging import version
-        assert version.parse(NEW_VERSION) > version.parse(VERSION), "new version must be higher"
-        for filename, replace in {
-            "./packaging/debian/control" : {
-                "Version: %s" % VERSION : "Version: %s" % NEW_VERSION,
-                },
-            "./packaging/rpm/xpra-html5.spec" : {
-                "%%define version %s" % VERSION : "%%define version %s" % NEW_VERSION,
-                },
-            "./html5/js/Utilities.js" : {
-                "VERSION : \"%s\"" % VERSION : "VERSION : \"%s\"" % NEW_VERSION,
-                },
-            "./setup.py" : {
-                "VERSION = \"%s\"" % VERSION : "VERSION = \"%s\"" % NEW_VERSION,
-                },
-            }.items():
-                fdata = open(filename, "r").read()
-                for old, new in replace.items():
-                    fdata = fdata.replace(old, new)
-                open(filename, "w").write(fdata)
-            #add changelog entries if not present yet?
-    else:
-        print("invalid arguments, use 'sdist' or 'install'")
-        sys.exit(1)
+        set_version(NEW_VERSION)
+        #add changelog entries if not present yet?
+        return 0
+    print("invalid arguments, use 'sdist' or 'install'")
+    sys.exit(1)
 
 if __name__ == "__main__":
     sys.exit(main(sys.argv))
