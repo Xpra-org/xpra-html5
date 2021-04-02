@@ -1,3 +1,8 @@
+xpra-html5 (4.1.2-1) UNRELEASED; urgency=low
+  * build and packaging fixes
+
+ -- Antoine Martin <antoine@xpra.org>  Fri, 02 Apr 2021 11:08:52 +0700
+
 xpra-html5 (4.1.1-3) UNRELEASED; urgency=low
   * must bump the version in the control file (yet another place..)
 

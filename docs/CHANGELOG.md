@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.1.2] 2021-04-01
+* more build and packaging fixes
+
 ## [4.1.1] 2021-03-29
 * minor packaging fixes
 

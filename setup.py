@@ -10,7 +10,7 @@ import shutil
 import os.path
 from subprocess import Popen, PIPE
 
-VERSION = "4.1.1"
+VERSION = "4.1.2"
 AUTHOR = "Antoine Martin"
 
 
