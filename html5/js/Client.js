@@ -1458,6 +1458,11 @@ XpraClient.prototype.do_window_mouse_click = function(e, window, pressed) {
 	if (this.server_readonly || this.mouse_grabbed || !this.connected) {
 		return;
 	}
+	// Skip processing if clicked on float menu
+	if ($(e.target).attr("id") === "float_menu" || $(e.target).parents("#float_menu").length > 0) {
+		this.debug("clicked on float_menu, skipping event handler", e);
+		return;
+	}
 	let send_delay = 0;
 	if (this._poll_clipboard(e)) {
 		send_delay = CLIPBOARD_EVENT_DELAY;
