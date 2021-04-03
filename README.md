@@ -17,6 +17,7 @@ python3 ./setup.py install /usr/share/www/xpra
 To install with Nginx or Apache, you may need to change the installation path to something like `/var/www/html/`.
 
 The [xpra repositories and packages](https://github.com/Xpra-org/xpra/wiki/Download) already include the html5 client.
+To generate your own RPMs or DEBs, just run: `./setup.py rpm` or `./setup.py deb`.
 
 You can also find the latest development version here: https://xpra.org/html5/connect.html
 
