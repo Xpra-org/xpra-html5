@@ -310,7 +310,6 @@ def install_html5(install_dir="www", minifier="uglifyjs", gzip=True, brotli=True
                     break
 
 def set_version(NEW_VERSION):
-    import re
     vcs_info = load_vcs_info() or get_vcs_info()
     REVISION = vcs_info.get("REVISION", 0)
     LOCAL_MODIFICATIONS = vcs_info.get("LOCAL_MODIFICATIONS", 0)
@@ -332,10 +331,10 @@ def set_version(NEW_VERSION):
             r'VERSION = "%s"' % VERSION : r'VERSION = "%s"' % NEW_VERSION,
             },
         }.items():
-            fdata = open(filename, "r").read()
-            for old, new in replace.items():
-                fdata = re.sub(old, new, fdata)
-            open(filename, "w").write(fdata)
+        fdata = open(filename, "r").read()
+        for old, new in replace.items():
+            fdata = re.sub(old, new, fdata)
+        open(filename, "w").write(fdata)
 
 def make_deb():
     if os.path.exists("xpra-html5.deb"):
@@ -362,6 +361,37 @@ def make_deb():
     if not os.path.exists("./dist"):
         os.mkdir("./dist")
     os.rename("xpra-html5.deb", "./dist/xpra-html5-%s.deb" % VERSION)
+
+def make_rpm():
+    tarxz = "xpra-html5-%s.tar.xz" % VERSION
+    if os.path.exists("dist/" + tarxz):
+        os.unlink("dist/" + tarxz)
+    try:
+        saved = sys.argv
+        sys.argv = ["./setup.py", "sdist", "--formats=xztar"]
+        sdist()
+    finally:
+        sys.argv = saved
+    RPMBUILD = os.path.expanduser("~/rpmbuild/")
+    SOURCES = RPMBUILD+"/SOURCES"
+    if not os.path.exists(SOURCES):
+        os.makedirs(SOURCES, 0o755)
+    os.rename("dist/" + tarxz, SOURCES + tarxz)
+    proc = Popen(["rpmspec", "-q", "--rpms", "./packaging/rpm/xpra-html5.spec"], stdout=PIPE, stderr=PIPE)
+    out, err = proc.communicate()
+    print(err.decode())
+    rpms = []
+    for line in out.decode().splitlines():
+        rpms.append(line)
+    print("building: %s" % (rpms,))
+    assert Popen(["rpmbuild", "-ba", "./packaging/rpm/xpra-html5.spec"]).wait()==0
+    NOARCH = RPMBUILD+"/RPMS/noarch/"
+    for rpm in rpms:
+        try:
+            os.unlink("./dist/%s.rpm")
+        except OSError:
+            pass
+        os.rename(NOARCH+rpm+".rpm", "./dist/%s.rpm" % rpm)
 
 def sdist():
     record_vcs_info()
@@ -402,6 +432,9 @@ def main(args):
         return 0
     if cmd=="deb":
         make_deb()
+        return 0
+    if cmd=="rpm":
+        make_rpm()
         return 0
     if cmd=="set-version":
         assert len(args)==3, "invalid number of arguments for 'set-version' subcommand"
