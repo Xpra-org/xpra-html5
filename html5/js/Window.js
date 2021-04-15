@@ -222,9 +222,9 @@ function XpraWindow(client, canvas_state, wid, x, y, w, h, metadata, override_re
 		//jQuery(this.div).mouseup(function (e) {
 		//	e.stopPropagation();
 		//});
-		// assign some interesting callbacks
-		jQuery(this.d_header).click(function() {
-			if (!me.minimized) {
+		// assign callback to focus window if header is clicked.
+		jQuery(this.d_header).click(function(e) {
+			if (!me.minimized && $(e.target).parents('.windowbuttons').length === 0) {
 				me.client._window_set_focus(me);
 			}
 		});
