@@ -1049,7 +1049,7 @@ XpraWindow.prototype.handle_mouse_click = function(button, pressed, mx, my, modi
 
 
 XpraWindow.prototype.update_icon = function(width, height, encoding, img_data) {
-	let src = "/favicon.png";
+	let src = "favicon.png";
 	if (encoding=="png") {
 		//move title to the right:
 		$("#title"+ String(this.wid)).css('left', 32);

@@ -54,7 +54,7 @@ function addWindowListItem(wid, title){
 	divLeft.className="menu-divleft";
 	const img = new Image();
 	img.id = "windowlistitemicon"+wid;
-	img.src="/favicon.png";
+	img.src="favicon.png";
 	img.className="menu-content-left";
 	divLeft.appendChild(img);
 

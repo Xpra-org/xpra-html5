@@ -1060,7 +1060,7 @@ function fill_form(default_settings) {
 		keyboard_layout = Utilities.getKeyboardLayout();
 	}
 	document.getElementById('keyboard_layout').value = keyboard_layout;
-	json_action("/favicon.png?echo-headers", function(xhr, response) {
+	json_action("favicon.png?echo-headers", function(xhr, response) {
 		const headers = Utilities.ParseResponseHeaders(xhr.getAllResponseHeaders());
 		Utilities.debug("headers:", headers);
 		let lang = headers["Echo-Accept-Language"];
