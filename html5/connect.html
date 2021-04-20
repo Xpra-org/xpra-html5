@@ -69,16 +69,21 @@
 			<div class="panel-group">
 			  <ul class="list-style-none action">
 				<li><input type="radio" name="action" class="radiobox" value="connect" id="action_connect" checked="checked"> Connect
-					 <input title="display" type="text" class="form-control command" id="display" placeholder="Display (optional)" size="20" maxlength="256">
+					<input title="display" type="text" class="form-control command" id="display" placeholder="Display (optional)" size="20" maxlength="256">
+					<select id="select_display"></select>
 				</li>
 				<li><input type="radio" name="action" class="radiobox" value="start" id="action_start" checked="checked"> Start Command:
-					 <input title="command" type="text" class="form-control command" id="start_command" placeholder="Command" size="20" maxlength="256">
+					<input title="command" type="text" class="form-control command" id="start_command" placeholder="Command" size="20" maxlength="256">
+					<select id="command_category"></select>
+					<select id="command_entry"></select>
 				</li>
 				<li><input type="radio" name="action" class="radiobox" value="start-desktop" id="action_start_desktop" checked="checked"> Start Desktop:
-					 <input title="desktop command" type="text" class="form-control command" id="start_desktop_command" placeholder="Desktop Command" size="20" maxlength="256">
+					<input title="desktop command" type="text" class="form-control command" id="start_desktop_command" placeholder="Desktop Command" size="20" maxlength="256">
+					<select id="desktop_entry"></select>
 				</li>
 				<li><input type="radio" name="action" class="radiobox" value="shadow" id="action_shadow" checked="checked"> Shadow
-					 <input title="display" type="text" class="form-control command" id="shadow_display" placeholder="Display (optional)" size="20" maxlength="256">
+					<input title="display" type="text" class="form-control command" id="shadow_display" placeholder="Display (optional)" size="20" maxlength="256">
+					<select id="select_shadow_display"></select>
 				</li>
 			  </ul>
 			</div>
@@ -359,7 +364,7 @@ function doConnectURI() {
 }
 
 function downloadConnectionFile() {
-	const filename = document.getElementById("server").value+".xpra";
+	const filename = (document.getElementById("server").value || "session")+".xpra";
 	let data = "autoconnect=true\n";
 	//set a mode:
 	const ssl = document.getElementById("ssl").checked;
@@ -400,28 +405,47 @@ function downloadConnectionFile() {
 	Utilities.saveFile(filename, data, {type : "text/plain"});
 }
 
+function get_visible_value(entry, select) {
+	let entry_widget = document.getElementById(entry);
+	if (entry_widget.style.visibility == "visible") {
+		return entry_widget.value;
+	}
+	let select_widget = document.getElementById(select);
+	if (select_widget.style.visibility == "visible") {
+		return select_widget.value;
+	}
+	return "";
+}
+
 function get_URL_action() {
 	let url = "";
 	let start = "";
 	let display = "";
+	let action = "";
 	if (document.getElementById("action_connect").checked) {
-		url += add_prop("action", "connect");
-		display = document.getElementById("display").value;
+		action = "connect";
+		display = get_visible_value("display", "select_display")
 	}
 	else if (document.getElementById("action_start").checked) {
-		url += add_prop("action", "start");
-		start = document.getElementById("start_command").value;
+		action = "start";
+		start = get_visible_value("start_command", "command_entry");
 	}
 	else if (document.getElementById("action_start_desktop").checked) {
-		url += add_prop("action", "start-desktop");
-		start = document.getElementById("start_desktop_command").value;
+		action = "start-desktop";
+		start = get_visible_value("start_desktop_command", "desktop_entry");
 	}
 	else if (document.getElementById("action_shadow").checked) {
-		url += add_prop("action", "shadow");
-		display = document.getElementById("shadow_display").value;
+		action = "shadow";
+		display = get_visible_value("shadow_display", "select_shadow_display");
 	}
-	if(start) {
+	if (action) {
+		url += add_prop("action", "connect");
+	}
+	if (start) {
 		url += add_prop("start", start);
+	}
+	if (display) {
+		url += add_prop("display", display);
 	}
 	return url;
 }
@@ -555,6 +579,175 @@ function fill_form(default_settings) {
 	else {
 		document.getElementById("action_connect").checked = true;
 	}
+	const start = getparam("start") || "";
+	function init_command_menu() {
+		$('select#command_category').hide();
+		$('select#command_entry').hide();
+	    var xhr = new XMLHttpRequest();
+	    var menu_url = document.location.href.split("/connect.html")[0] + "/Menu";
+	    xhr.open('GET', menu_url, true);
+	    xhr.responseType = 'json';
+	    xhr.onload = function() {
+			var status = xhr.status;
+			if (status === 200) {
+				let categories = Object.keys(xhr.response);
+				//find the category matching "start":
+				let default_start = start || "xterm";
+				let current_category = "";
+				for (let c in categories) {
+					let category = categories[c];
+					let entries = xhr.response[category].Entries;
+					for (let e in entries) {
+						let entry = entries[e];
+						let command_exec = entry.TryExec || entry.Exec;
+						if (default_start==command_exec) {
+							current_category = category;
+						}
+					}
+				}
+				const command_category = document.getElementById("command_category");
+				const command_entry = document.getElementById("command_entry");
+				function populate_commands() {
+					let selected_category = command_category.value;
+					let entries = xhr.response[selected_category].Entries;
+					command_entry.innerText = null;
+					for (let e in entries) {
+						let entry = entries[e];
+						let command_exec = entry.TryExec || entry.Exec;
+						if (default_start==command_exec) {
+							$('select#command_entry').append('<option selected="selected" value="'+command_exec+'">'+entry.Name+'</option>');
+						}
+						else {
+							$('select#command_entry').append('<option value="'+command_exec+'">'+entry.Name+'</option>');
+						}
+					}
+					$('select#command_entry').show();
+					$('#start_command').hide();
+				}
+				command_category.onchange = populate_commands;
+				command_category.innerText = null;
+				for (let c in categories) {
+					let category = categories[c];
+					if (category==current_category) {
+						$('select#command_category').append('<option selected="selected">'+category+'</option>');
+					}
+					else {
+						$('select#command_category').append('<option>'+category+'</option>');
+					}
+				}
+				$('select#command_category').show();
+				populate_commands();
+			} else {
+				Utilities.error(""+status+xhr.response);
+			}
+	    };
+	    xhr.send();
+	};
+	init_command_menu();
+
+	function init_desktop_menu() {
+		$('select#start_desktop_command').hide();
+	    var xhr = new XMLHttpRequest();
+	    var desktop_menu_url = document.location.href.split("/connect.html")[0] + "/DesktopMenu";
+	    xhr.open('GET', desktop_menu_url, true);
+	    xhr.responseType = 'json';
+	    xhr.onload = function() {
+			var status = xhr.status;
+			if (status === 200) {
+				var desktop_sessions = Object.keys(xhr.response);
+				const desktop_entry = document.getElementById("desktop_entry");
+				desktop_entry.innerText = null;
+				let default_start_desktop = start || "startfluxbox";
+				for (let d in desktop_sessions) {
+					let desktop_session = desktop_sessions[d];
+					let attributes = xhr.response[desktop_session];
+					let command_exec = attributes.TryExec || attributes.Exec;
+					if (default_start_desktop==command_exec) {
+						$('select#desktop_entry').append('<option selected="selected" value="'+command_exec+'">'+desktop_session+'</option>');
+					}
+					else {
+						$('select#desktop_entry').append('<option value="'+command_exec+'">'+desktop_session+'</option>');
+					}
+				}
+				$('select#desktop_entry').show();
+				$('#start_desktop_command').hide();
+			} else {
+				Utilities.error(""+status+xhr.response);
+			}
+	    };
+	    xhr.send();
+	};
+	init_desktop_menu();
+
+	const display = getparam("display") || "";
+	function init_shadow_display() {
+		$('select#select_shadow_display').hide();
+	    var xhr = new XMLHttpRequest();
+	    var displays_url = document.location.href.split("/connect.html")[0] + "/Displays";
+	    xhr.open('GET', displays_url, true);
+	    xhr.responseType = 'json';
+	    xhr.onload = function() {
+			var status = xhr.status;
+			if (status === 200) {
+				var displays = Object.keys(xhr.response);
+				const select_shadow_display = document.getElementById("select_shadow_display");
+				select_shadow_display.innerText = null;
+				for (let d in displays) {
+					let display_option = displays[d];
+					if (display==display_option) {
+						$('select#select_shadow_display').append('<option selected="selected">'+display_option+'</option>');
+					}
+					else {
+						$('select#select_shadow_display').append('<option>'+display_option+'</option>');
+					}
+				}
+				$('select#select_shadow_display').show();
+				$('#shadow_display').hide();
+			} else {
+				Utilities.error(""+status+xhr.response);
+			}
+	    };
+	    xhr.send();
+	}
+	init_shadow_display();
+
+	function init_connect_display() {
+		$('select#select_display').hide();
+	    var xhr = new XMLHttpRequest();
+	    var sessions_url = document.location.href.split("/connect.html")[0] + "/Sessions";
+	    xhr.open('GET', sessions_url, true);
+	    xhr.responseType = 'json';
+	    xhr.onload = function() {
+			var status = xhr.status;
+			if (status === 200) {
+				var sessions = Object.keys(xhr.response);
+				//window.alert(""+JSON.stringify(sessions));
+				const select_display = document.getElementById("select_display");
+				select_display.innerText = null;
+				for (let s in sessions) {
+					let session = sessions[s];
+					let attributes = xhr.response[session];
+					let session_string = session;
+					if (attributes.username) {
+						session_string += " ("+attributes.username+")";
+					}
+					if (display==session) {
+						$('select#select_display').append('<option selected="selected" value='+session+'>'+session_string+'</option>');
+					}
+					else {
+						$('select#select_display').append('<option value='+session+'>'+session_string+'</option>');
+					}
+				}
+				$('select#select_display').show();
+				$('#display').hide();
+			} else {
+				Utilities.error(""+status+xhr.response);
+			}
+	    };
+	    xhr.send();
+	}
+	init_connect_display();
+
 	function set_exit_actions(disabled) {
 		const opacity = disabled ? 0.6 : 1;
 		$('input#exit_with_children').prop("disabled", disabled);
