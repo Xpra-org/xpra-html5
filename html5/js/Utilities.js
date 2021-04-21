@@ -611,7 +611,27 @@ const Utilities = {
 			i["rtt"] = c.rtt;
 		}
 		return i;
-	}
+	},
+
+	json_action  : function(uri, fn) {
+		Utilities.log("json_action(", uri, ", ", fn, ")");
+	    var xhr = new XMLHttpRequest();
+	    var url = document.location.href.split("/connect.html")[0] + uri;
+	    xhr.open('GET', url, true);
+	    xhr.responseType = 'json';
+	    xhr.onload = function() {
+			Utilities.log("loaded", url, "status", xhr.status);
+			var status = xhr.status;
+			if (status === 200) {
+				fn(xhr.response);
+			}
+			else {
+				Utilities.error(uri, "failed:", status+xhr.response);
+			}
+		}
+		xhr.send();
+		return xhr;
+	},
 };
 
 

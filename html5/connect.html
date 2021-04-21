@@ -581,30 +581,10 @@ function fill_form(default_settings) {
 	}
 	const start = getparam("start") || "";
 
-	function json_action(uri, fn) {
-		Utilities.log("json_action(", uri, ", ", fn, ")");
-	    var xhr = new XMLHttpRequest();
-	    var url = document.location.href.split("/connect.html")[0] + uri;
-	    xhr.open('GET', url, true);
-	    xhr.responseType = 'json';
-	    xhr.onload = function() {
-			Utilities.log("loaded", url, "status", xhr.status);
-			var status = xhr.status;
-			if (status === 200) {
-				fn(xhr.response);
-			}
-			else {
-				Utilities.error(uri, "failed:", status+xhr.response);
-			}
-		}
-		xhr.send();
-		return xhr;
-	}
-
 	function init_command_menu() {
 		$('select#command_category').hide();
 		$('select#command_entry').hide();
-		json_action("/Menu", function(response) {
+		Utilities.json_action("/Menu", function(response) {
 			let categories = Object.keys(response);
 			//find the category matching "start":
 			let default_start = start || "xterm";
@@ -658,7 +638,7 @@ function fill_form(default_settings) {
 
 	function init_desktop_menu() {
 		$('select#desktop_entry').hide();
-		json_action("/DesktopMenu", function(response) {
+		Utilities.json_action("/DesktopMenu", function(response) {
 			var desktop_sessions = Object.keys(response);
 			const desktop_entry = document.getElementById("desktop_entry");
 			desktop_entry.innerText = null;
@@ -683,7 +663,7 @@ function fill_form(default_settings) {
 	const display = getparam("display") || "";
 	function init_shadow_display() {
 		$('select#select_shadow_display').hide();
-		json_action("/Displays", function(response) {
+		Utilities.json_action("/Displays", function(response) {
 			var displays = Object.keys(response);
 			const select_shadow_display = document.getElementById("select_shadow_display");
 			select_shadow_display.innerText = null;
@@ -704,7 +684,7 @@ function fill_form(default_settings) {
 
 	function init_connect_display() {
 		$('select#select_display').hide();
-		json_action("/Sessions", function(response) {
+		Utilities.json_action("/Sessions", function(response) {
 			var sessions = Object.keys(response);
 			//window.alert(""+JSON.stringify(sessions));
 			const select_display = document.getElementById("select_display");
