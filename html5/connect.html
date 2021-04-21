@@ -70,20 +70,20 @@
 			  <ul class="list-style-none action">
 				<li><input type="radio" name="action" class="radiobox" value="connect" id="action_connect" checked="checked"> Connect
 					<input title="display" type="text" class="form-control command" id="display" placeholder="Display (optional)" size="20" maxlength="256">
-					<select id="select_display"></select>
+					<select id="select_display" style="display:none;"></select>
 				</li>
 				<li><input type="radio" name="action" class="radiobox" value="start" id="action_start" checked="checked"> Start Command:
 					<input title="command" type="text" class="form-control command" id="start_command" placeholder="Command" size="20" maxlength="256">
-					<select id="command_category"></select>
-					<select id="command_entry"></select>
+					<select id="command_category" style="display:none;"></select>
+					<select id="command_entry" style="display:none;"></select>
 				</li>
 				<li><input type="radio" name="action" class="radiobox" value="start-desktop" id="action_start_desktop" checked="checked"> Start Desktop:
 					<input title="desktop command" type="text" class="form-control command" id="start_desktop_command" placeholder="Desktop Command" size="20" maxlength="256">
-					<select id="desktop_entry"></select>
+					<select id="desktop_entry" style="display:none;"></select>
 				</li>
 				<li><input type="radio" name="action" class="radiobox" value="shadow" id="action_shadow" checked="checked"> Shadow
 					<input title="display" type="text" class="form-control command" id="shadow_display" placeholder="Display (optional)" size="20" maxlength="256">
-					<select id="select_shadow_display"></select>
+					<select id="select_shadow_display" style="display:none;"></select>
 				</li>
 			  </ul>
 			</div>
@@ -582,8 +582,6 @@ function fill_form(default_settings) {
 	const start = getparam("start") || "";
 
 	function init_command_menu() {
-		$('select#command_category').hide();
-		$('select#command_entry').hide();
 		Utilities.json_action("/Menu", function(response) {
 			let categories = Object.keys(response);
 			//find the category matching "start":
@@ -637,7 +635,6 @@ function fill_form(default_settings) {
 	init_command_menu();
 
 	function init_desktop_menu() {
-		$('select#desktop_entry').hide();
 		Utilities.json_action("/DesktopMenu", function(response) {
 			var desktop_sessions = Object.keys(response);
 			const desktop_entry = document.getElementById("desktop_entry");
@@ -662,7 +659,6 @@ function fill_form(default_settings) {
 
 	const display = getparam("display") || "";
 	function init_shadow_display() {
-		$('select#select_shadow_display').hide();
 		Utilities.json_action("/Displays", function(response) {
 			var displays = Object.keys(response);
 			const select_shadow_display = document.getElementById("select_shadow_display");
@@ -683,7 +679,6 @@ function fill_form(default_settings) {
 	init_shadow_display();
 
 	function init_connect_display() {
-		$('select#select_display').hide();
 		Utilities.json_action("/Sessions", function(response) {
 			var sessions = Object.keys(response);
 			//window.alert(""+JSON.stringify(sessions));
