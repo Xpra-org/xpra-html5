@@ -580,173 +580,156 @@ function fill_form(default_settings) {
 		document.getElementById("action_connect").checked = true;
 	}
 	const start = getparam("start") || "";
+
+	function json_action(uri, fn) {
+		Utilities.log("json_action(", uri, ", ", fn, ")");
+	    var xhr = new XMLHttpRequest();
+	    var url = document.location.href.split("/connect.html")[0] + uri;
+	    xhr.open('GET', url, true);
+	    xhr.responseType = 'json';
+	    xhr.onload = function() {
+			Utilities.log("loaded", url, "status", xhr.status);
+			var status = xhr.status;
+			if (status === 200) {
+				fn(xhr.response);
+			}
+			else {
+				Utilities.error(uri, "failed:", status+xhr.response);
+			}
+		}
+		xhr.send();
+		return xhr;
+	}
+
 	function init_command_menu() {
 		$('select#command_category').hide();
 		$('select#command_entry').hide();
-	    var xhr = new XMLHttpRequest();
-	    var menu_url = document.location.href.split("/connect.html")[0] + "/Menu";
-	    xhr.open('GET', menu_url, true);
-	    xhr.responseType = 'json';
-	    xhr.onload = function() {
-			var status = xhr.status;
-			if (status === 200) {
-				let categories = Object.keys(xhr.response);
-				//find the category matching "start":
-				let default_start = start || "xterm";
-				let current_category = "";
-				for (let c in categories) {
-					let category = categories[c];
-					let entries = xhr.response[category].Entries;
-					for (let e in entries) {
-						let entry = entries[e];
-						let command_exec = entry.TryExec || entry.Exec;
-						if (default_start==command_exec) {
-							current_category = category;
-						}
+		json_action("/Menu", function(response) {
+			let categories = Object.keys(response);
+			//find the category matching "start":
+			let default_start = start || "xterm";
+			let current_category = "";
+			for (let c in categories) {
+				let category = categories[c];
+				let entries = response[category].Entries;
+				for (let e in entries) {
+					let entry = entries[e];
+					let command_exec = entry.TryExec || entry.Exec;
+					if (default_start==command_exec) {
+						current_category = category;
 					}
 				}
-				const command_category = document.getElementById("command_category");
-				const command_entry = document.getElementById("command_entry");
-				function populate_commands() {
-					let selected_category = command_category.value;
-					let entries = xhr.response[selected_category].Entries;
-					command_entry.innerText = null;
-					for (let e in entries) {
-						let entry = entries[e];
-						let command_exec = entry.TryExec || entry.Exec;
-						if (default_start==command_exec) {
-							$('select#command_entry').append('<option selected="selected" value="'+command_exec+'">'+entry.Name+'</option>');
-						}
-						else {
-							$('select#command_entry').append('<option value="'+command_exec+'">'+entry.Name+'</option>');
-						}
-					}
-					$('select#command_entry').show();
-					$('#start_command').hide();
-				}
-				command_category.onchange = populate_commands;
-				command_category.innerText = null;
-				for (let c in categories) {
-					let category = categories[c];
-					if (category==current_category) {
-						$('select#command_category').append('<option selected="selected">'+category+'</option>');
+			}
+			const command_category = document.getElementById("command_category");
+			const command_entry = document.getElementById("command_entry");
+			function populate_commands() {
+				let selected_category = command_category.value;
+				let entries = response[selected_category].Entries;
+				command_entry.innerText = null;
+				for (let e in entries) {
+					let entry = entries[e];
+					let command_exec = entry.TryExec || entry.Exec;
+					if (default_start==command_exec) {
+						$('select#command_entry').append('<option selected="selected" value="'+command_exec+'">'+entry.Name+'</option>');
 					}
 					else {
-						$('select#command_category').append('<option>'+category+'</option>');
+						$('select#command_entry').append('<option value="'+command_exec+'">'+entry.Name+'</option>');
 					}
 				}
-				$('select#command_category').show();
-				populate_commands();
-			} else {
-				Utilities.error(""+status+xhr.response);
+				$('select#command_entry').show();
+				$('#start_command').hide();
 			}
-	    };
-	    xhr.send();
+			command_category.onchange = populate_commands;
+			command_category.innerText = null;
+			for (let c in categories) {
+				let category = categories[c];
+				if (category==current_category) {
+					$('select#command_category').append('<option selected="selected">'+category+'</option>');
+				}
+				else {
+					$('select#command_category').append('<option>'+category+'</option>');
+				}
+			}
+			$('select#command_category').show();
+			populate_commands();
+	    });
 	};
 	init_command_menu();
 
 	function init_desktop_menu() {
-		$('select#start_desktop_command').hide();
-	    var xhr = new XMLHttpRequest();
-	    var desktop_menu_url = document.location.href.split("/connect.html")[0] + "/DesktopMenu";
-	    xhr.open('GET', desktop_menu_url, true);
-	    xhr.responseType = 'json';
-	    xhr.onload = function() {
-			var status = xhr.status;
-			if (status === 200) {
-				var desktop_sessions = Object.keys(xhr.response);
-				const desktop_entry = document.getElementById("desktop_entry");
-				desktop_entry.innerText = null;
-				let default_start_desktop = start || "startfluxbox";
-				for (let d in desktop_sessions) {
-					let desktop_session = desktop_sessions[d];
-					let attributes = xhr.response[desktop_session];
-					let command_exec = attributes.TryExec || attributes.Exec;
-					if (default_start_desktop==command_exec) {
-						$('select#desktop_entry').append('<option selected="selected" value="'+command_exec+'">'+desktop_session+'</option>');
-					}
-					else {
-						$('select#desktop_entry').append('<option value="'+command_exec+'">'+desktop_session+'</option>');
-					}
+		$('select#desktop_entry').hide();
+		json_action("/DesktopMenu", function(response) {
+			var desktop_sessions = Object.keys(response);
+			const desktop_entry = document.getElementById("desktop_entry");
+			desktop_entry.innerText = null;
+			let default_start_desktop = start || "startfluxbox";
+			for (let d in desktop_sessions) {
+				let desktop_session = desktop_sessions[d];
+				let attributes = response[desktop_session];
+				let command_exec = attributes.TryExec || attributes.Exec;
+				if (default_start_desktop==command_exec) {
+					$('select#desktop_entry').append('<option selected="selected" value="'+command_exec+'">'+desktop_session+'</option>');
 				}
-				$('select#desktop_entry').show();
-				$('#start_desktop_command').hide();
-			} else {
-				Utilities.error(""+status+xhr.response);
+				else {
+					$('select#desktop_entry').append('<option value="'+command_exec+'">'+desktop_session+'</option>');
+				}
 			}
-	    };
-	    xhr.send();
+			$('select#desktop_entry').show();
+			$('#start_desktop_command').hide();
+	    });
 	};
 	init_desktop_menu();
 
 	const display = getparam("display") || "";
 	function init_shadow_display() {
 		$('select#select_shadow_display').hide();
-	    var xhr = new XMLHttpRequest();
-	    var displays_url = document.location.href.split("/connect.html")[0] + "/Displays";
-	    xhr.open('GET', displays_url, true);
-	    xhr.responseType = 'json';
-	    xhr.onload = function() {
-			var status = xhr.status;
-			if (status === 200) {
-				var displays = Object.keys(xhr.response);
-				const select_shadow_display = document.getElementById("select_shadow_display");
-				select_shadow_display.innerText = null;
-				for (let d in displays) {
-					let display_option = displays[d];
-					if (display==display_option) {
-						$('select#select_shadow_display').append('<option selected="selected">'+display_option+'</option>');
-					}
-					else {
-						$('select#select_shadow_display').append('<option>'+display_option+'</option>');
-					}
+		json_action("/Displays", function(response) {
+			var displays = Object.keys(response);
+			const select_shadow_display = document.getElementById("select_shadow_display");
+			select_shadow_display.innerText = null;
+			for (let d in displays) {
+				let display_option = displays[d];
+				if (display==display_option) {
+					$('select#select_shadow_display').append('<option selected="selected">'+display_option+'</option>');
 				}
-				$('select#select_shadow_display').show();
-				$('#shadow_display').hide();
-			} else {
-				Utilities.error(""+status+xhr.response);
+				else {
+					$('select#select_shadow_display').append('<option>'+display_option+'</option>');
+				}
 			}
-	    };
-	    xhr.send();
+			$('select#select_shadow_display').show();
+			$('#shadow_display').hide();
+	    });
 	}
 	init_shadow_display();
 
 	function init_connect_display() {
 		$('select#select_display').hide();
-	    var xhr = new XMLHttpRequest();
-	    var sessions_url = document.location.href.split("/connect.html")[0] + "/Sessions";
-	    xhr.open('GET', sessions_url, true);
-	    xhr.responseType = 'json';
-	    xhr.onload = function() {
-			var status = xhr.status;
-			if (status === 200) {
-				var sessions = Object.keys(xhr.response);
-				//window.alert(""+JSON.stringify(sessions));
-				const select_display = document.getElementById("select_display");
-				select_display.innerText = null;
-				for (let s in sessions) {
-					let session = sessions[s];
-					let attributes = xhr.response[session];
-					let session_string = session;
-					if (attributes.username) {
-						session_string += " ("+attributes.username+")";
-					}
-					if (display==session) {
-						$('select#select_display').append('<option selected="selected" value='+session+'>'+session_string+'</option>');
-					}
-					else {
-						$('select#select_display').append('<option value='+session+'>'+session_string+'</option>');
-					}
+		json_action("/Sessions", function(response) {
+			var sessions = Object.keys(response);
+			//window.alert(""+JSON.stringify(sessions));
+			const select_display = document.getElementById("select_display");
+			select_display.innerText = null;
+			for (let s in sessions) {
+				let session = sessions[s];
+				let attributes = response[session];
+				let session_string = session;
+				if (attributes.username) {
+					session_string += " ("+attributes.username+")";
 				}
-				$('select#select_display').show();
-				$('#display').hide();
-			} else {
-				Utilities.error(""+status+xhr.response);
+				if (display==session) {
+					$('select#select_display').append('<option selected="selected" value='+session+'>'+session_string+'</option>');
+				}
+				else {
+					$('select#select_display').append('<option value='+session+'>'+session_string+'</option>');
+				}
 			}
-	    };
-	    xhr.send();
+			$('select#select_display').show();
+			$('#display').hide();
+	    });
 	}
 	init_connect_display();
+
+	//Figure out what this server can do for us:
 
 	function set_exit_actions(disabled) {
 		const opacity = disabled ? 0.6 : 1;
