@@ -1208,6 +1208,7 @@ XpraClient.prototype._make_hello = function() {
 		"encoding.flush"			: true,
 		"encoding.transparency"		: true,
 		"encoding.scrolling"		: true,
+		"encoding.decoder-speed"	: {"video" : 0},
 		"encodings.packet"		    : true,
 		//"encoding.scrolling.min-percent" : 30,
 		//"encoding.min-speed"		: 80,
