@@ -250,7 +250,7 @@
 				catch(e) {
 					return default_value;
 				}
-				if (v===null) {
+				if (v===null || isNaN(v)) {
 					return default_value;
 				}
 				return v;
