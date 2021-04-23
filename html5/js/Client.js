@@ -69,6 +69,7 @@ XpraClient.prototype.init_settings = function(container) {
 	this.key_packets = [];
 	this.clipboard_delayed_event_time = 0;
 
+	this.vrefresh = -1;
 	this.bandwidth_limit = 0;
 	this.reconnect = true;
 	this.reconnect_count = 5;
@@ -1121,6 +1122,7 @@ XpraClient.prototype._make_hello_base = function() {
 		"yaml"						: false,
 		"open-url"					: this.open_url,
 		"ping-echo-sourceid"		: true,
+		"vrefresh"                  : this.vrefresh,
 	});
 	if (this.bandwidth_limit>0) {
 		this._update_capabilities({

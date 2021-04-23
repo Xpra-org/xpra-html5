@@ -267,6 +267,27 @@
 				Utilities.clog.apply(Utilities, arguments);
 			};
 
+			//start calculating the fps asap:
+			let animation_times = [];
+			let fps = -1;
+			let vrefresh = -1;
+			function animation_cb(now) {
+			    let l = animation_times.push(now);
+			    if (l > 100) {
+					animation_times.shift();
+				}
+				let t0 = animation_times[0];
+				if (now>t0) {
+			        fps = Math.floor(1000 * (l-1) / (now - t0));
+				}
+				cdebug("draw", "animation_cb", now, "fps", fps, "vrefresh", vrefresh);
+				if (vrefresh<0) {
+				    window.requestAnimationFrame(animation_cb);
+				}
+			};
+			window.requestAnimationFrame(animation_cb);
+
+
 			function confirm_shutdown_server() {
 				if (confirm("Shutdown this server?")) {
 					client.send(["shutdown-server"]);
@@ -488,6 +509,10 @@
 				const floating_menu = getboolparam("floating_menu", true);
 				const toolbar_position = getparam("toolbar_position");
 				const autohide = getboolparam("autohide", false);
+				vrefresh = getintparam("vrefresh", -1);
+				if (vrefresh<0 && fps>=30) {
+					vrefresh = fps;
+				}
 				
 				try {
 					sessionStorage.removeItem("password");
@@ -560,6 +585,7 @@
 				client.on_connection_progress = connection_progress;
 				client.scroll_reverse_x = scroll_reverse_x;
 				client.scroll_reverse_y = scroll_reverse_y;
+				client.vrefresh = vrefresh;
 				//example overrides:
 				//client.HELLO_TIMEOUT = 3600000;
 				//client.PING_TIMEOUT = 60000;
