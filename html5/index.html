@@ -1235,6 +1235,7 @@
 				xhr.open("GET", "./default-settings.txt");
 				xhr.onload = function() {
 					const tmp_default_settings = Utilities.parseINIString(xhr.responseText);
+					clog("network", "got default settings:", tmp_default_settings);
 					//update the default settings object
 					//so getparam will look there
 					for (const key in tmp_default_settings) {
@@ -1243,9 +1244,11 @@
 					init_page();
 				};
 				xhr.onerror  = function() {
+					clog("network", "default settings request failed with code", xhr.status);
 					init_page();
 				};
 				xhr.onabort = function() {
+					clog("network", "default settings request aborted");
 					init_page();
 				};
 				xhr.send();
