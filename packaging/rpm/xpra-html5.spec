@@ -3,7 +3,7 @@
 # Xpra is released under the terms of the GNU GPL v2, or, at your option, any
 # later version. See the file COPYING for details.
 
-%define version 4.1.2
+%define version 4.2
 
 Name:				xpra-html5
 Version:			%{version}
