@@ -623,7 +623,7 @@ const Utilities = {
 			Utilities.log("loaded", url, "status", xhr.status);
 			var status = xhr.status;
 			if (status === 200) {
-				fn(xhr.response);
+				fn(xhr, xhr.response);
 			}
 			else {
 				Utilities.error(uri, "failed:", status+xhr.response);

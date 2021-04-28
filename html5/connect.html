@@ -582,7 +582,7 @@ function fill_form(default_settings) {
 	const start = getparam("start") || "";
 
 	function init_command_menu() {
-		Utilities.json_action("/Menu", function(response) {
+		Utilities.json_action("/Menu", function(xhr, response) {
 			let categories = Object.keys(response);
 			//find the category matching "start":
 			let default_start = start || "xterm";
@@ -635,7 +635,7 @@ function fill_form(default_settings) {
 	init_command_menu();
 
 	function init_desktop_menu() {
-		Utilities.json_action("/DesktopMenu", function(response) {
+		Utilities.json_action("/DesktopMenu", function(xhr, response) {
 			var desktop_sessions = Object.keys(response);
 			const desktop_entry = document.getElementById("desktop_entry");
 			desktop_entry.innerText = null;
@@ -659,7 +659,7 @@ function fill_form(default_settings) {
 
 	const display = getparam("display") || "";
 	function init_shadow_display() {
-		Utilities.json_action("/Displays", function(response) {
+		Utilities.json_action("/Displays", function(xhr, response) {
 			var displays = Object.keys(response);
 			const select_shadow_display = document.getElementById("select_shadow_display");
 			select_shadow_display.innerText = null;
@@ -679,7 +679,7 @@ function fill_form(default_settings) {
 	init_shadow_display();
 
 	function init_connect_display() {
-		Utilities.json_action("/Sessions", function(response) {
+		Utilities.json_action("/Sessions", function(xhr, response) {
 			var sessions = Object.keys(response);
 			//window.alert(""+JSON.stringify(sessions));
 			const select_display = document.getElementById("select_display");
@@ -740,43 +740,27 @@ function fill_form(default_settings) {
 		keyboard_layout = Utilities.getKeyboardLayout();
 	}
 	document.getElementById('keyboard_layout').value = keyboard_layout;
-	try {
-		const req = new XMLHttpRequest();
-		req.open('GET', "/favicon.png?echo-headers", true);
-		req.onload = function (e) {
-			if (req.readyState === 4) {
-				if (req.status === 200) {
-					const headers = Utilities.ParseResponseHeaders(req.getAllResponseHeaders());
-					Utilities.debug("headers:", headers);
-					let lang = headers["Echo-Accept-Language"];
-					//ie: lang = "en-gb,en-us;q=0.8,en;q=0.6"
-					if (lang) {
-						//just the first option:
-						Utilities.debug("accept-language:", lang);
-						lang = lang.split(",")[0];		//ie: lang="en-gb"
-						Utilities.debug("first language:", lang);
-						let locale = lang.split("-")[1];
-						if (locale) {
-							locale = locale.toLowerCase();
-							Utilities.debug("request locale:", locale);
-							if (locale!=keyboard_layout) {
-								keyboard_layout = locale;
-								document.getElementById('keyboard_layout').value = keyboard_layout;
-							}
-						}
-					}
-					//
-				} else {
-					Utilities.error(req.statusText);
+	Utilities.json_action("/favicon.png?echo-headers", function(xhr, response) {
+		const headers = Utilities.ParseResponseHeaders(xhr.getAllResponseHeaders());
+		Utilities.debug("headers:", headers);
+		let lang = headers["Echo-Accept-Language"];
+		//ie: lang = "en-gb,en-us;q=0.8,en;q=0.6"
+		if (lang) {
+			//just the first option:
+			Utilities.debug("accept-language:", lang);
+			lang = lang.split(",")[0];		//ie: lang="en-gb"
+			Utilities.debug("first language:", lang);
+			let locale = lang.split("-")[1];
+			if (locale) {
+				locale = locale.toLowerCase();
+				Utilities.debug("request locale:", locale);
+				if (locale!=keyboard_layout) {
+					keyboard_layout = locale;
+					document.getElementById('keyboard_layout').value = keyboard_layout;
 				}
 			}
-		};
-		req.send(null);
-	}
-	catch (e) {
-		Utilities.warn("Warning: failed to get HTTP header probe:", e);
-	}
-
+		}
+	});
 	const audio_codec = getparam("audio_codec") || "";
 	const audio_codec_select = document.getElementById("audio_codec");
 	const ignore_audio_blacklist = getboolparam("ignore_audio_blacklist", false);
