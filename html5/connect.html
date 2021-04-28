@@ -3,7 +3,7 @@
 
 <head>
 	<!--
-	Copyright (c) 2013-2018 Antoine Martin <antoine@xpra.org>
+	Copyright (c) 2013-2021 Antoine Martin <antoine@xpra.org>
 	Copyright (c) 2014 Joshua Higgins <josh@kxes.net>
 	Licensed under MPL 2.0
 	-->
@@ -68,20 +68,24 @@
 
 			<div class="panel-group">
 			  <ul class="list-style-none action">
-				<li><input type="radio" name="action" class="radiobox" value="connect" id="action_connect" checked="checked"> Connect
+				<li id="action_connect_group">
+					<input type="radio" name="action" class="radiobox" value="connect" id="action_connect" checked="checked"> Connect
 					<input title="display" type="text" class="form-control command" id="display" placeholder="Display (optional)" size="20" maxlength="256">
 					<select id="select_display" style="display:none;"></select>
 				</li>
-				<li><input type="radio" name="action" class="radiobox" value="start" id="action_start" checked="checked"> Start Command:
+				<li id="action_start_group">
+					<input type="radio" name="action" class="radiobox" value="start" id="action_start" checked="checked"> Start Command:
 					<input title="command" type="text" class="form-control command" id="start_command" placeholder="Command" size="20" maxlength="256">
 					<select id="command_category" style="display:none;"></select>
 					<select id="command_entry" style="display:none;"></select>
 				</li>
-				<li><input type="radio" name="action" class="radiobox" value="start-desktop" id="action_start_desktop" checked="checked"> Start Desktop:
+				<li id="action_start_desktop_group">
+					<input type="radio" name="action" class="radiobox" value="start-desktop" id="action_start_desktop" checked="checked"> Start Desktop:
 					<input title="desktop command" type="text" class="form-control command" id="start_desktop_command" placeholder="Desktop Command" size="20" maxlength="256">
 					<select id="desktop_entry" style="display:none;"></select>
 				</li>
-				<li><input type="radio" name="action" class="radiobox" value="shadow" id="action_shadow" checked="checked"> Shadow
+				<li id="action_shadow_group">
+					<input type="radio" name="action" class="radiobox" value="shadow" id="action_shadow" checked="checked"> Shadow
 					<input title="display" type="text" class="form-control command" id="shadow_display" placeholder="Display (optional)" size="20" maxlength="256">
 					<select id="select_shadow_display" style="display:none;"></select>
 				</li>
@@ -358,7 +362,11 @@ function doConnectURI() {
 		url += username+"@";
 	}
 	url += document.getElementById("server").value;
-	url += ":"+document.getElementById("port").value+"/";
+	const port = document.getElementById("port").value;
+	if (port) {
+		url += ":"+port;
+	}
+	url += "/";
 	url += get_URL_action() + get_URL_props();
 	window.location = url;
 }
@@ -581,8 +589,40 @@ function fill_form(default_settings) {
 	}
 	const start = getparam("start") || "";
 
+
+	function json_action(uri, success_fn, error_fn) {
+		let url = "http";
+		if (document.getElementById("ssl").checked) {
+			url += "s";
+		}
+		url += "://";
+		const username = document.getElementById("username").value;
+		if (username) {
+			url += username+"@";
+		}
+		const server = document.getElementById("server").value
+		if (!server) {
+			//nothing we can do
+			error_fn("no server address")
+			return;
+		}
+		url += server;
+		const port = document.getElementById("port").value;
+		const iport = parseInt(port) || 0;
+		if (port && !iport) {
+			error_fn("invalid port number '"+port+"'");
+			return;
+		}
+		if (iport) {
+			url += ":"+port;
+		}
+		url += uri;
+		Utilities.json_action(url, success_fn, error_fn);
+	}
+
 	function init_command_menu() {
-		Utilities.json_action("/Menu", function(xhr, response) {
+		json_action("/Menu",
+		function(xhr, response) {
 			let categories = Object.keys(response);
 			//find the category matching "start":
 			let default_start = start || "xterm";
@@ -630,12 +670,17 @@ function fill_form(default_settings) {
 			}
 			$('select#command_category').show();
 			populate_commands();
-	    });
+	    },
+		function(error) {
+			$('select#command_category').hide();
+			$('select#command_entry').hide();
+			$('#start_command').show();
+		}
+		);
 	};
-	init_command_menu();
 
 	function init_desktop_menu() {
-		Utilities.json_action("/DesktopMenu", function(xhr, response) {
+		json_action("/DesktopMenu", function(xhr, response) {
 			var desktop_sessions = Object.keys(response);
 			const desktop_entry = document.getElementById("desktop_entry");
 			desktop_entry.innerText = null;
@@ -653,13 +698,16 @@ function fill_form(default_settings) {
 			}
 			$('select#desktop_entry').show();
 			$('#start_desktop_command').hide();
-	    });
+	    },
+		function(error) {
+			$('select#desktop_entry').hide();
+			$('#start_desktop_command').show();
+		});
 	};
-	init_desktop_menu();
 
 	const display = getparam("display") || "";
 	function init_shadow_display() {
-		Utilities.json_action("/Displays", function(xhr, response) {
+		json_action("/Displays", function(xhr, response) {
 			var displays = Object.keys(response);
 			const select_shadow_display = document.getElementById("select_shadow_display");
 			select_shadow_display.innerText = null;
@@ -674,20 +722,25 @@ function fill_form(default_settings) {
 			}
 			$('select#select_shadow_display').show();
 			$('#shadow_display').hide();
-	    });
+	    },
+		function(error) {
+			$('select#select_shadow_display').hide();
+			$('#shadow_display').show();
+		});
 	}
-	init_shadow_display();
 
 	function init_connect_display() {
-		Utilities.json_action("/Sessions", function(xhr, response) {
+		json_action("/Sessions", function(xhr, response) {
 			var sessions = Object.keys(response);
-			//window.alert(""+JSON.stringify(sessions));
 			const select_display = document.getElementById("select_display");
 			select_display.innerText = null;
 			for (let s in sessions) {
 				let session = sessions[s];
 				let attributes = response[session];
 				let session_string = session;
+				if (attributes.name) {
+					session_string += " '"+attributes.name+"'";
+				}
 				if (attributes.username) {
 					session_string += " ("+attributes.username+")";
 				}
@@ -700,11 +753,91 @@ function fill_form(default_settings) {
 			}
 			$('select#select_display').show();
 			$('#display').hide();
-	    });
+	    },
+		function(error) {
+			$('select#select_display').hide();
+			$('#display').show();
+		});
 	}
-	init_connect_display();
 
-	//Figure out what this server can do for us:
+
+	function show_mode(is_proxy) {
+		//always allowed:
+		init_connect_display();
+		if (is_proxy) {
+			//show all options:
+			$('#action_connect_group').show();
+			$('#action_start_group').show();
+			$('#action_start_desktop_group').show();
+			$('#action_shadow_group').show();
+			//(re)populate the drop down menus:
+			init_command_menu();
+			init_desktop_menu();
+			init_shadow_display();
+		}
+		else {
+			//only attach is possible, select it and hide everything:
+			$("#action_connect").prop("checked", true);
+			$('#action_connect_group').hide();
+			$('#action_start_group').hide();
+			$('#action_start_desktop_group').hide();
+			$('#action_shadow_group').hide();
+		}
+	}
+	function init_mode() {
+		json_action("/Info", function(xhr, response) {
+			let mode = response.mode;
+			if (!mode) {
+				//unknown, assume this is a proxy:
+				show_mode(true);
+			}
+			if (mode.indexOf("seamless")>=0 || mode.indexOf("desktop") || mode.indexOf("shadow")) {
+				show_mode(false);
+			}
+			else {
+				show_mode(true);
+			}
+	    },
+		function(error) {
+			show_mode(true);
+		});
+	}
+	init_mode();
+
+	let target_changed_timer = 0;
+	let ajax_delay = 2000;
+	let watched_elements = ["server", "port", "ssl"];
+	for (var i=0, l=watched_elements.length; i<l; i++) {
+		let watched_element = watched_elements[i];
+		let el = $('#'+watched_element);
+		function cancel_changed_timer() {
+		    if (target_changed_timer) {
+			    clearTimeout(target_changed_timer);
+				target_changed_timer = 0;
+			}
+		}
+		function host_address_changed() {
+			cancel_changed_timer()
+			Utilities.debug("host address changed");
+			init_mode();
+		}
+		el.on("change", function() {
+			Utilities.log(watched_element, "changed");
+			host_address_changed();
+		});
+		el.on("paste", function() {
+			Utilities.log(watched_element, "pasted");
+			host_address_changed();
+		});
+		el.on("keyup", function() {
+			Utilities.log(watched_element, "key event");
+			cancel_changed_timer();
+			target_changed_timer = setTimeout(host_address_changed, ajax_delay);
+		});
+		el.on("keydown", function() {
+			cancel_changed_timer();
+		});
+	}
 
 	function set_exit_actions(disabled) {
 		const opacity = disabled ? 0.6 : 1;
@@ -740,7 +873,7 @@ function fill_form(default_settings) {
 		keyboard_layout = Utilities.getKeyboardLayout();
 	}
 	document.getElementById('keyboard_layout').value = keyboard_layout;
-	Utilities.json_action("/favicon.png?echo-headers", function(xhr, response) {
+	json_action("/favicon.png?echo-headers", function(xhr, response) {
 		const headers = Utilities.ParseResponseHeaders(xhr.getAllResponseHeaders());
 		Utilities.debug("headers:", headers);
 		let lang = headers["Echo-Accept-Language"];

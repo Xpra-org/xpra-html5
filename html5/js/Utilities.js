@@ -613,22 +613,44 @@ const Utilities = {
 		return i;
 	},
 
-	json_action  : function(uri, fn) {
-		Utilities.log("json_action(", uri, ", ", fn, ")");
+	json_action  : function(uri, success_fn, error_fn, username, password) {
+		Utilities.log("json_action(", uri, ", ", success_fn, ", ", error_fn, ")");
 	    var xhr = new XMLHttpRequest();
-	    var url = document.location.href.split("/connect.html")[0] + uri;
+	    var url = uri;
+		if (uri.startsWith("/")) {
+			//relative URI
+			url = document.location.href.split("/connect.html")[0] + uri;
+		}
 	    xhr.open('GET', url, true);
+		if (username && password) {
+			xhr.setRequestHeader("Authorization", "Basic " + btoa(username+":"+password));
+		}
 	    xhr.responseType = 'json';
-	    xhr.onload = function() {
+		xhr.addEventListener("load", function() {
 			Utilities.log("loaded", url, "status", xhr.status);
 			var status = xhr.status;
 			if (status === 200) {
-				fn(xhr, xhr.response);
+				success_fn(xhr, xhr.response);
 			}
 			else {
-				Utilities.error(uri, "failed:", status+xhr.response);
+				Utilities.log(uri, "failed:", status+xhr.response);
+				if (error_fn) {
+					error_fn("failed: "+status+xhr.response);
+				}
 			}
-		}
+		});
+		xhr.addEventListener("error", function(e) {
+			Utilities.log(uri, "error:", e);
+			if (error_fn) {
+				error_fn(e);
+			}
+		});
+		xhr.addEventListener("abort", function(e) {
+			Utilities.log(uri, "abort:", e);
+			if (error_fn) {
+				error_fn(e);
+			}
+		});
 		xhr.send();
 		return xhr;
 	},
