@@ -324,7 +324,7 @@ def set_version(NEW_VERSION):
         "./html5/js/Utilities.js" : {
             r'VERSION : "%s"' % VERSION : r'VERSION : "%s"' % NEW_VERSION,
             r"REVISION : [0-9]*" : r"REVISION : %s" % REVISION,
-            r'LOCAL_MODIFICATIONS : [0-9]*' : r'LOCAL_MODIFICATIONS : %i' % LOCAL_MODIFICATIONS,
+            r'LOCAL_MODIFICATIONS : [0-9]*' : r'LOCAL_MODIFICATIONS : %s' % LOCAL_MODIFICATIONS,
             r'BRANCH : "[a-zA-Z]*"' : r'BRANCH : "%s"' % BRANCH,
             },
         "./setup.py" : {
