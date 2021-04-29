@@ -69,13 +69,13 @@
 			<div class="panel-group">
 			  <ul class="list-style-none action">
 				<li id="action_connect_group">
-					<input type="radio" name="action" class="radiobox" value="connect" id="action_connect" checked="checked"> Connect
+					<label><input type="radio" name="action" class="radiobox" value="connect" id="action_connect" checked="checked"> Connect:</label>
 					<input title="display" type="text" class="form-control command" id="display" placeholder="Display (optional)" size="20" maxlength="256">
 					<select id="select_display" style="display:none;"></select>
 				</li>
 				<li id="action_start_group">
 					<div style="display:inline-block;vertical-align:top;">
-						<input type="radio" name="action" class="radiobox" value="start" id="action_start" checked="checked"> Start Command:
+						<label><input type="radio" name="action" class="radiobox" value="start" id="action_start" checked="checked"> Start Command:</label>
 						<input title="command" type="text" class="form-control command" id="start_command" placeholder="Command" size="20" maxlength="256">
 					</div>
 					<div style="display:inline-block;">
@@ -87,13 +87,13 @@
 					</div>
 				</li>
 				<li id="action_start_desktop_group">
-					<input type="radio" name="action" class="radiobox" value="start-desktop" id="action_start_desktop" checked="checked"> Start Desktop:
+					<label><input type="radio" name="action" class="radiobox" value="start-desktop" id="action_start_desktop" checked="checked"> Start Desktop:</label>
 					<input title="desktop command" type="text" class="form-control command" id="start_desktop_command" placeholder="Desktop Command" size="20" maxlength="256">
 					<select id="desktop_entry" style="display:none;"></select>
 					<img class="command-icon" id="desktop_entry_icon" alt="desktop command icon" src="./icons/noicon.png" />
 				</li>
 				<li id="action_shadow_group">
-					<input type="radio" name="action" class="radiobox" value="shadow" id="action_shadow" checked="checked"> Shadow
+					<label><input type="radio" name="action" class="radiobox" value="shadow" id="action_shadow" checked="checked"> Shadow:</label>
 					<input title="display" type="text" class="form-control command" id="shadow_display" placeholder="Display (optional)" size="20" maxlength="256">
 					<select id="select_shadow_display" style="display:none;"></select>
 				</li>
