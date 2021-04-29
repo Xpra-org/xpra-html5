@@ -590,7 +590,7 @@ function fill_form(default_settings) {
 	const start = getparam("start") || "";
 
 
-	function json_action(uri, success_fn, error_fn) {
+	function get_host_address() {
 		let url = "http";
 		if (document.getElementById("ssl").checked) {
 			url += "s";
@@ -616,7 +616,11 @@ function fill_form(default_settings) {
 		if (iport) {
 			url += ":"+port;
 		}
-		url += uri;
+		return url;
+	}
+
+	function json_action(uri, success_fn, error_fn) {
+		const url = get_host_address()+uri;
 		Utilities.json_action(url, success_fn, error_fn);
 	}
 
@@ -762,8 +766,7 @@ function fill_form(default_settings) {
 
 
 	function show_mode(is_proxy) {
-		//always allowed:
-		init_connect_display();
+		Utilities.debug("show_mode(", is_proxy, ")");
 		if (is_proxy) {
 			//show all options:
 			$('#action_connect_group').show();
@@ -771,6 +774,7 @@ function fill_form(default_settings) {
 			$('#action_start_desktop_group').show();
 			$('#action_shadow_group').show();
 			//(re)populate the drop down menus:
+			init_connect_display();
 			init_command_menu();
 			init_desktop_menu();
 			init_shadow_display();
@@ -786,12 +790,9 @@ function fill_form(default_settings) {
 	}
 	function init_mode() {
 		json_action("/Info", function(xhr, response) {
-			let mode = response.mode;
-			if (!mode) {
-				//unknown, assume this is a proxy:
-				show_mode(true);
-			}
-			if (mode.indexOf("seamless")>=0 || mode.indexOf("desktop") || mode.indexOf("shadow")) {
+			Utilities.log("/Info=", response);
+			let mode = response.mode || "";
+			if (mode.indexOf("seamless")>=0 || mode.indexOf("desktop")>=0 || mode.indexOf("shadow")>=0) {
 				show_mode(false);
 			}
 			else {
@@ -807,6 +808,7 @@ function fill_form(default_settings) {
 	let target_changed_timer = 0;
 	let ajax_delay = 2000;
 	let watched_elements = ["server", "port", "ssl"];
+	let host_address = "";
 	for (var i=0, l=watched_elements.length; i<l; i++) {
 		let watched_element = watched_elements[i];
 		let el = $('#'+watched_element);
@@ -817,9 +819,13 @@ function fill_form(default_settings) {
 			}
 		}
 		function host_address_changed() {
-			cancel_changed_timer()
-			Utilities.debug("host address changed");
-			init_mode();
+			cancel_changed_timer();
+			const url = get_host_address()+uri;
+			if (url!=host_address) {
+				host_address = url;
+				Utilities.debug("host address changed to", url);
+				init_mode();
+			}
 		}
 		el.on("change", function() {
 			Utilities.log(watched_element, "changed");
