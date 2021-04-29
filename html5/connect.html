@@ -74,15 +74,23 @@
 					<select id="select_display" style="display:none;"></select>
 				</li>
 				<li id="action_start_group">
-					<input type="radio" name="action" class="radiobox" value="start" id="action_start" checked="checked"> Start Command:
-					<input title="command" type="text" class="form-control command" id="start_command" placeholder="Command" size="20" maxlength="256">
-					<select id="command_category" style="display:none;"></select>
-					<select id="command_entry" style="display:none;"></select>
+					<div style="display:inline-block;vertical-align:top;">
+						<input type="radio" name="action" class="radiobox" value="start" id="action_start" checked="checked"> Start Command:
+						<input title="command" type="text" class="form-control command" id="start_command" placeholder="Command" size="20" maxlength="256">
+					</div>
+					<div style="display:inline-block;">
+						<select id="command_category" style="display:none;"></select>
+						<img class="command-icon" id="command_category_icon" alt="desktop command icon" src="./icons/noicon.png" />
+						<br />
+						<select id="command_entry" style="display:none;"></select>
+						<img class="command-icon" id="command_entry_icon" alt="desktop command icon" src="./icons/noicon.png" />
+					</div>
 				</li>
 				<li id="action_start_desktop_group">
 					<input type="radio" name="action" class="radiobox" value="start-desktop" id="action_start_desktop" checked="checked"> Start Desktop:
 					<input title="desktop command" type="text" class="form-control command" id="start_desktop_command" placeholder="Desktop Command" size="20" maxlength="256">
 					<select id="desktop_entry" style="display:none;"></select>
+					<img class="command-icon" id="desktop_entry_icon" alt="desktop command icon" src="./icons/noicon.png" />
 				</li>
 				<li id="action_shadow_group">
 					<input type="radio" name="action" class="radiobox" value="shadow" id="action_shadow" checked="checked"> Shadow
@@ -616,6 +624,13 @@ function fill_form(default_settings) {
 		if (iport) {
 			url += ":"+port;
 		}
+		const path = document.getElementById("path").value;
+		if (path) {
+			if (!path.startsWith("/")) {
+				url += "/";
+			}
+			url += path;
+		}
 		return url;
 	}
 
@@ -624,7 +639,29 @@ function fill_form(default_settings) {
 		Utilities.json_action(url, success_fn, error_fn);
 	}
 
+	const command_category_icon = document.getElementById("command_category_icon");
+	const command_category = document.getElementById("command_category");
+	const command_entry_icon = document.getElementById("command_entry_icon");
+	const command_entry = document.getElementById("command_entry");
+	function command_entry_changed() {
+		var cc = command_category.options[command_category.selectedIndex].innerHTML;
+		var c = command_entry.options[command_entry.selectedIndex].innerHTML;
+		Utilities.log("command_category=", cc, ", command_entry=", c);
+		command_entry_icon.src = get_host_address()+"/MenuIcon/"+cc+"/"+c;
+		$('#command_entry_icon').show();
+	}
+	command_entry.addEventListener("change", command_entry_changed);
+	function command_category_changed() {
+		var cc = command_category.options[command_category.selectedIndex].innerHTML;
+		Utilities.log("command_category=", cc);
+		command_category_icon.src = get_host_address()+"/MenuIcon/"+cc;
+		$('#command_category_icon').show();
+	}
+	command_category.addEventListener("change", command_category_changed);
+
 	function init_command_menu() {
+		$('#command_category_icon').hide();
+		$('#command_entry_icon').hide();
 		json_action("/Menu",
 		function(xhr, response) {
 			let categories = Object.keys(response);
@@ -642,8 +679,6 @@ function fill_form(default_settings) {
 					}
 				}
 			}
-			const command_category = document.getElementById("command_category");
-			const command_entry = document.getElementById("command_entry");
 			function populate_commands() {
 				let selected_category = command_category.value;
 				let entries = response[selected_category].Entries;
@@ -660,8 +695,9 @@ function fill_form(default_settings) {
 				}
 				$('select#command_entry').show();
 				$('#start_command').hide();
+				command_entry_changed();
 			}
-			command_category.onchange = populate_commands;
+			command_category.addEventListener("change", populate_commands);
 			command_category.innerText = null;
 			for (let c in categories) {
 				let category = categories[c];
@@ -672,8 +708,10 @@ function fill_form(default_settings) {
 					$('select#command_category').append('<option>'+category+'</option>');
 				}
 			}
+			command_category_changed();
 			$('select#command_category').show();
 			populate_commands();
+			command_entry_changed();
 	    },
 		function(error) {
 			$('select#command_category').hide();
@@ -683,24 +721,37 @@ function fill_form(default_settings) {
 		);
 	};
 
+	const desktop_entry_icon = document.getElementById("desktop_entry_icon");
+	const desktop_entry = document.getElementById("desktop_entry");
+	function desktop_entry_changed() {
+		var de = desktop_entry.options[desktop_entry.selectedIndex].innerHTML;
+		Utilities.log("desktop_session=", de);
+		desktop_entry_icon.src = get_host_address()+"/DesktopMenuIcon/"+de;
+	}
+	desktop_entry.addEventListener("change", desktop_entry_changed);
+
 	function init_desktop_menu() {
+		$('#desktop_entry_icon').hide();
 		json_action("/DesktopMenu", function(xhr, response) {
 			var desktop_sessions = Object.keys(response);
-			const desktop_entry = document.getElementById("desktop_entry");
 			desktop_entry.innerText = null;
 			let default_start_desktop = start || "startfluxbox";
 			for (let d in desktop_sessions) {
 				let desktop_session = desktop_sessions[d];
 				let attributes = response[desktop_session];
 				let command_exec = attributes.TryExec || attributes.Exec;
-				if (default_start_desktop==command_exec) {
-					$('select#desktop_entry').append('<option selected="selected" value="'+command_exec+'">'+desktop_session+'</option>');
+				let selected='';
+				if (default_start_desktop && default_start_desktop==command_exec) {
+					selected=' selected="selected" ';
+					default_start_desktop = null;
 				}
-				else {
-					$('select#desktop_entry').append('<option value="'+command_exec+'">'+desktop_session+'</option>');
-				}
+				$('select#desktop_entry').append('<option '+selected+' value="'+command_exec+'">'+
+					desktop_session+
+					'</option>');
 			}
+			desktop_entry_changed();
 			$('select#desktop_entry').show();
+			$('#desktop_entry_icon').show();
 			$('#start_desktop_command').hide();
 	    },
 		function(error) {
@@ -786,6 +837,9 @@ function fill_form(default_settings) {
 			$('#action_start_group').hide();
 			$('#action_start_desktop_group').hide();
 			$('#action_shadow_group').hide();
+			$('#command_category_icon').hide();
+			$('#command_entry_icon').hide();
+			$('#desktop_entry_icon').hide();
 		}
 	}
 	function init_mode() {
@@ -807,7 +861,7 @@ function fill_form(default_settings) {
 
 	let target_changed_timer = 0;
 	let ajax_delay = 2000;
-	let watched_elements = ["server", "port", "ssl"];
+	let watched_elements = ["server", "port", "ssl", "encryption"];
 	let host_address = "";
 	for (var i=0, l=watched_elements.length; i<l; i++) {
 		let watched_element = watched_elements[i];
@@ -820,7 +874,7 @@ function fill_form(default_settings) {
 		}
 		function host_address_changed() {
 			cancel_changed_timer();
-			const url = get_host_address()+uri;
+			const url = get_host_address();
 			if (url!=host_address) {
 				host_address = url;
 				Utilities.debug("host address changed to", url);

@@ -76,3 +76,9 @@ div.container {
 	font-size: 12px;
 	padding: 2px;
 }
+
+.form-signin img.command-icon {
+	object-fit: scale-down;
+	max-width: 24px;
+	max-height: 24px;
+}
