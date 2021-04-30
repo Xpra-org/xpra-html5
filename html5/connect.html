@@ -745,7 +745,7 @@ function fill_form(default_settings) {
 					selected=' selected="selected" ';
 					default_start_desktop = null;
 				}
-				$('select#desktop_entry').append('<option '+selected+' value="'+command_exec+'">'+
+				$('select#desktop_entry').append('<option'+selected+' value="'+command_exec+'">'+
 					desktop_session+
 					'</option>');
 			}
@@ -768,12 +768,16 @@ function fill_form(default_settings) {
 			select_shadow_display.innerText = null;
 			for (let d in displays) {
 				let display_option = displays[d];
+				let label = display_option;
+				let selected = "";
+				let attr = response[display_option];
+				if (attr && attr.wmname) {
+					label = attr.wmname+" on "+display_option;
+				}
 				if (display==display_option) {
-					$('select#select_shadow_display').append('<option selected="selected">'+display_option+'</option>');
+					selected = ' selected="selected" ';
 				}
-				else {
-					$('select#select_shadow_display').append('<option>'+display_option+'</option>');
-				}
+				$('select#select_shadow_display').append('<option'+selected+'>'+label+'</option>');
 			}
 			$('select#select_shadow_display').show();
 			$('#shadow_display').hide();
