@@ -796,19 +796,24 @@ function fill_form(default_settings) {
 			for (let s in sessions) {
 				let session = sessions[s];
 				let attributes = response[session];
-				let session_string = session;
-				if (attributes.name) {
-					session_string += " '"+attributes.name+"'";
+				let session_type = attributes["session-type"];
+				if (session_type=="proxy") {
+					//cannot attach to a proxy
+					continue;
 				}
+				let session_string = "";
+				if (attributes["session-name"]) {
+					session_string = attributes["session-name"]+" ";
+				}
+				session_string += session;
 				if (attributes.username) {
 					session_string += " ("+attributes.username+")";
 				}
+				let selected='';
 				if (display==session) {
-					$('select#select_display').append('<option selected="selected" value='+session+'>'+session_string+'</option>');
+					selected=' selected="selected" ';
 				}
-				else {
-					$('select#select_display').append('<option value='+session+'>'+session_string+'</option>');
-				}
+				$('select#select_display').append('<option'+selected+' value='+session+'>'+session_string+'</option>');
 			}
 			$('select#select_display').show();
 			$('#display').hide();
