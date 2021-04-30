@@ -1,3 +1,8 @@
+xpra-html5 (4.2-1) UNRELEASED; urgency=low
+  * TODO
+
+ -- Antoine Martin <antoine@xpra.org>  Fri, 30 Apr 2021 12:07:59 +0700
+
 xpra-html5 (4.1.2-1) UNRELEASED; urgency=low
   * build and packaging fixes
 
