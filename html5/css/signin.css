@@ -82,3 +82,8 @@ div.container {
 	max-width: 24px;
 	max-height: 24px;
 }
+.form-signin span.warning {
+	color: red;
+	font-size: smaller;
+	padding-left: 10px;
+}
