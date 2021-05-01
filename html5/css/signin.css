@@ -79,8 +79,8 @@ div.container {
 
 .form-signin img.command-icon {
 	object-fit: scale-down;
-	max-width: 24px;
-	max-height: 24px;
+	max-width: 32px;
+	max-height: 32px;
 }
 .form-signin span.warning {
 	color: red;
