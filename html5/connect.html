@@ -735,7 +735,24 @@ function fill_form(default_settings) {
 		json_action("/DesktopMenu", function(xhr, response) {
 			var desktop_sessions = Object.keys(response);
 			desktop_entry.innerText = null;
-			let default_start_desktop = start || "startfluxbox";
+			let default_start_desktop = start;
+			if (!default_start_desktop) {
+				const PDE = ["xfce", "xfce session", "openbox", "gnome"];
+				for (let p in PDE) {
+					let de = PDE[p];
+					for (let d in desktop_sessions) {
+						let desktop_session = desktop_sessions[d];
+						if (desktop_session.toLowerCase()==de) {
+							let attributes = response[desktop_session];
+							default_start_desktop = attributes.TryExec || attributes.Exec;
+							break;
+						}
+					}
+					if (default_start_desktop) {
+						break;
+					}
+				}
+			}
 			for (let d in desktop_sessions) {
 				let desktop_session = desktop_sessions[d];
 				let attributes = response[desktop_session];
