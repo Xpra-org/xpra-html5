@@ -362,6 +362,10 @@ table#sessiondata td {
 	padding-right: 10px;
 }
 
+.simple-keyboard {
+	z-index: 100000;
+}
+
 @media screen {
 	.notifications .alert.visible {
 		margin-top: 0;
