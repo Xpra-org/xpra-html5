@@ -694,14 +694,22 @@ XpraWindow.prototype.set_minimized = function(minimized) {
  */
 XpraWindow.prototype.toggle_minimized = function() {
 	//console.error("toggle_minimized minimized=", this.minimized);
-	if (!this.minimized) {
+	//get the geometry before modifying the window:
+	const geom = this.get_internal_geometry();
+	this.set_minimized(!this.minimized);
+	if (this.minimized) {
 		this.client.send(["unmap-window", this.wid, true]);
+		this.stacking_layer = 0;
+		if (this.client.focus==this.wid) {
+			this.client.auto_focus();
+		}
 	}
 	else {
-		const geom = this.get_internal_geometry();
 		this.client.send(["map-window", this.wid, geom.x, geom.y, geom.w, geom.h, this.client_properties]);
+		//force focus switch:
+		this.client.focus = -1;
+		this.client._window_set_focus(this);
 	}
-	this.set_minimized(!this.minimized);
 };
 
 /**

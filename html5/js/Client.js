@@ -188,7 +188,7 @@ XpraClient.prototype.init_state = function(container) {
 	// basic window management
 	this.topwindow = null;
 	this.topindex = 0;
-	this.focus = -1;
+	this.focus = 0;
 
 	const me = this;
 	const screen_element = jQuery("#screen");
@@ -1597,7 +1597,7 @@ XpraClient.prototype._window_set_focus = function(win) {
 	let iwin = null;
 	for (const i in client.id_to_window) {
 		iwin = client.id_to_window[i];
-		iwin.focused = (i==wid);
+		iwin.focused = (iwin.wid==wid);
 		if (iwin.focused) {
 			iwin.stacking_layer = top_stacking_layer;
 			client.send_configure_window(iwin, {"focused" : true}, true);
@@ -2493,6 +2493,10 @@ XpraClient.prototype.auto_focus = function() {
 	}
 	if (highest_window) {
 		this._window_set_focus(highest_window);
+	}
+	else {
+		this.focus = 0;
+		this.send(["focus", 0, []]);
 	}
 }
 
