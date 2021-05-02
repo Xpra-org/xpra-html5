@@ -204,7 +204,9 @@ function XpraWindow(client, canvas_state, wid, x, y, w, h, metadata, override_re
 		//});
 		// assign some interesting callbacks
 		jQuery(this.d_header).click(function() {
-			me.client._window_set_focus(me);
+			if (!me.minimized) {
+				me.client._window_set_focus(me);
+			}
 		});
 	}
 
@@ -691,7 +693,7 @@ XpraWindow.prototype.set_minimized = function(minimized) {
  * Toggle minimized state
  */
 XpraWindow.prototype.toggle_minimized = function() {
-	console.error("toggle_minimized minimized=", this.minimized);
+	//console.error("toggle_minimized minimized=", this.minimized);
 	if (!this.minimized) {
 		this.client.send(["unmap-window", this.wid, true]);
 	}
