@@ -2477,20 +2477,25 @@ XpraClient.prototype._process_lost_window = function(packet, ctx) {
 	}
 	else if (win && win.focused) {
 		//it had focus, find the next highest:
-		let highest_window = null;
-		let highest_stacking = -1;
-		for (const i in client.id_to_window) {
-			let iwin = client.id_to_window[i];
-			if (iwin.stacking_layer>highest_stacking && !iwin.tray) {
-				highest_window = iwin;
-				highest_stacking = iwin.stacking_layer;
-			}
-		}
-		if (highest_window) {
-			ctx._window_set_focus(highest_window);
-		}
+		ctx.auto_focus();
 	}
 };
+
+XpraClient.prototype.auto_focus = function() {
+	let highest_window = null;
+	let highest_stacking = -1;
+	for (const i in this.id_to_window) {
+		let iwin = this.id_to_window[i];
+		if (!iwin.minimized && iwin.stacking_layer>highest_stacking && !iwin.tray) {
+			highest_window = iwin;
+			highest_stacking = iwin.stacking_layer;
+		}
+	}
+	if (highest_window) {
+		this._window_set_focus(highest_window);
+	}
+}
+
 
 XpraClient.prototype._process_raise_window = function(packet, ctx) {
 	const wid = packet[1];
