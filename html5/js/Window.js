@@ -309,7 +309,7 @@ XpraWindow.prototype.ensure_visible = function() {
 	const oldy = this.y;
 	// for now make sure we don't out of top left
 	// this will be much smarter!
-	const min_visible = 10;
+	const min_visible = 80;
 	const desktop_size = this.client._get_desktop_size();
 	const ww = desktop_size[0];
 	const wh = desktop_size[1];
