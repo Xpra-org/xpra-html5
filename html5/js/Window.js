@@ -1157,6 +1157,7 @@ XpraWindow.prototype._init_video = function(width, height, coding, profile, leve
 	//MediaSourceUtil.addMediaSourceEventDebugListeners(this.media_source, "video");
 	//<video> element:
 	this.video = document.createElement("video");
+	this.video.muted = true;
 	this.video.setAttribute('autoplay', true);
 	this.video.setAttribute('muted', true);
 	this.video.setAttribute('width', width);
