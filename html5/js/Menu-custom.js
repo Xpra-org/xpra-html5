@@ -45,6 +45,10 @@ function addWindowListItem(wid, title){
 		client._window_set_focus(client.id_to_window[wid]);
 	};
 
+	function hideWindowList() {
+		document.getElementById('open_windows_list').className="";
+	}
+
 	const divLeft = document.createElement("div");
 	divLeft.id="windowlistdivleft"+wid;
 	divLeft.className="menu-divleft";
@@ -68,18 +72,18 @@ function addWindowListItem(wid, title){
 	img2.src="icons/close.png";
 	img2.title="Close";
 	img2.className="menu-content-right";
-	img2.onclick=function(){ client._window_closed(client.id_to_window[wid]); };
+	img2.onclick=function(e){ client._window_closed(client.id_to_window[wid]); e.stopPropagation(); hideWindowList(); };
 	const img3 = new Image();
 	img3.id = "windowlistitemmax"+wid;
 	img3.src="icons/maximize.png";
 	img3.title="Maximize";
-	img3.onclick=function(){ client.id_to_window[wid].toggle_maximized(); };
+	img3.onclick=function(e){ client.id_to_window[wid].toggle_maximized(); e.stopPropagation(); hideWindowList(); };
 	img3.className="menu-content-right";
 	const img4 = new Image();
 	img4.id = "windowlistitemmin"+wid;
 	img4.src="icons/minimize.png";
 	img4.title="Minimize";
-	img4.onclick=function(){ client.id_to_window[wid].toggle_minimized(); };
+	img4.onclick=function(e){ client.id_to_window[wid].toggle_minimized(); e.stopPropagation(); hideWindowList(); };
 	img4.className="menu-content-right";
 
 	divRight.appendChild(img2);
