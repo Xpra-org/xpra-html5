@@ -1085,11 +1085,6 @@ XpraClient.prototype._make_hello_base = function() {
 		//safari chokes on the rencode lib
 		PyRencoder = null;
 	}
-	if (this.encryption) {
-		//See bug #43
-		//rencode causes problems with AES
-		PyRencoder = null;
-	}
 	this._update_capabilities({
 		// version and platform
 		"version"					: Utilities.VERSION,
