@@ -4,10 +4,11 @@
 # later version. See the file COPYING for details.
 
 %define version 4.2
+%define release 1%{?dist}
 
 Name:				xpra-html5
 Version:			%{version}
-Release:			1
+Release:			%{release}
 Summary:			HTML5 client for Xpra
 Group:				Networking
 License:			GPL-2.0+ AND BSD-3-Clause AND LGPL-3.0+ AND MIT
