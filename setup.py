@@ -12,6 +12,7 @@ from subprocess import Popen, PIPE
 
 VERSION = "4.2"
 AUTHOR = "Antoine Martin"
+AUTHOR_EMAIL = "antoine@xpra.org"
 
 
 def glob_recurse(srcdir):
@@ -121,6 +122,27 @@ def record_vcs_info():
         with open("./vcs-info", 'w') as f:
             for k,v in info.items():
                 f.write("%s=%s\n" % (k,v))
+        #record revision in packaging:
+        rev = info.get("REVISION")
+        if rev is not None:
+            fdata = open("./packaging/debian/changelog", "r").read()
+            lines = fdata.splitlines()
+            #preserve the changelog version, but update the revision:
+            changelog_version = re.match(".*\(([0-9\.]+)\-[r0-9\-]*\).*", lines[0]).group(1)
+            assert changelog_version, "version not found in changelog first line '%s'" % (lines[0],)
+            lines[0] = "xpra-html5 (%s-r%s-1) UNRELEASED; urgency=low" % (changelog_version, rev)
+            lines.append("")
+            open("./packaging/debian/changelog", "w").write("\n".join(lines))
+            #ie: %define release 1.r1000.fc34
+            fdata = open("./packaging/rpm/xpra-html5.spec", "r").read()
+            lines = fdata.splitlines()
+            for i, line in enumerate(lines):
+                print("%i : '%s'" % (i, line))
+                if line.startswith("%define release "):
+                    lines[i] = "%%define release 1.r%s%%{?dist}" % rev
+                    break
+            lines.append("")
+            open("./packaging/rpm/xpra-html5.spec", "w").write("\n".join(lines))
 
 def load_vcs_info():
     info = {}
@@ -320,6 +342,7 @@ def set_version(NEW_VERSION):
             },
         "./packaging/rpm/xpra-html5.spec" : {
             r"%%define version %s" % VERSION : r"%%define version %s" % NEW_VERSION,
+            r"%%define release .*" : r"%%define release 1.r%s%{?dist}" % REVISION,
             },
         "./html5/js/Utilities.js" : {
             r'VERSION : "%s"' % VERSION : r'VERSION : "%s"' % NEW_VERSION,
@@ -331,10 +354,41 @@ def set_version(NEW_VERSION):
             r'VERSION = "%s"' % VERSION : r'VERSION = "%s"' % NEW_VERSION,
             },
         }.items():
-        fdata = open(filename, "r").read()
-        for old, new in replace.items():
-            fdata = re.sub(old, new, fdata)
-        open(filename, "w").write(fdata)
+        file_sub(filename, replace)
+    #add changelogs:
+    from datetime import datetime
+    now = datetime.now()
+    deb_date = now.strftime("%a, %d %b %Y %H:%M:%S +0700")
+    utc_delta = -time.timezone*100//3600
+    deb_date += " %+04d" % utc_delta
+    fdata = open("./packaging/debian/changelog", "r").read()
+    lines = fdata.splitlines()
+    lines.insert(0, "xpra-html5 (%s-%s) UNRELEASED; urgency=low" % (NEW_VERSION, REVISION))
+    lines.insert(1, "  * TODO")
+    lines.insert(2, "")
+    # -- Antoine Martin <antoine@xpra.org>  Fri, 30 Apr 2021 12:07:59 +0700
+    lines.insert(3, " -- %s %s  %s" % (AUTHOR, AUTHOR_EMAIL, deb_date))
+    lines.insert(4, "")
+    open("./packaging/debian/changelog", "w").write("\n".join(lines))
+    fdata = open("./packaging/rpm/xpra-html5.spec", "r").read()
+    lines = fdata.splitlines()
+    changelog_lineno = lines.index("%changelog")
+    assert changelog_lineno, "'%changelog' not found!"
+    rpm_date = now.strftime("%a %d %d %Y")
+    #* Tue May 04 2021 Antoine Martin <antoine@xpra.org> 4.2-1
+    lines.insert(changelog_lineno+1, "* %s %s %s %s-%s" % (rpm_date, AUTHOR, AUTHOR_EMAIL, NEW_VERSION, REVISION))
+    lines.insert(changelog_lineno+2, "- TODO")
+    lines.insert(changelog_lineno+3, "")
+    open("./packaging/rpm/xpra-html5.spec", "w").write("\n".join(lines))
+
+
+
+def file_sub(filename, replace):
+    fdata = open(filename, "r").read()
+    for old, new in replace.items():
+        fdata = re.sub(old, new, fdata)
+    open(filename, "w").write(fdata)
+
 
 def make_deb():
     if os.path.exists("xpra-html5.deb"):
@@ -354,7 +408,7 @@ def make_deb():
         #xpra-html5 (4.1-1) UNRELEASED; urgency=low
         try:
             import re
-            VERSION = re.match(".*\(([0-9\-\.]*)\).*", line).group(1)
+            VERSION = re.match(".*\(([0-9\.]+\-[r0-9\-]*)\).*", line).group(1)
             #ie: VERSION=4.1-1
         except Exception:
             pass
@@ -400,7 +454,7 @@ def sdist():
           version = VERSION,
           license = "MPL-2",
           author = AUTHOR,
-          author_email = "antoine@xpra.org",
+          author_email = AUTHOR_EMAIL,
           url = "https://xpra.org/",
           download_url = "https://xpra.org/src/",
           description = "HTML5 client for xpra",
@@ -410,7 +464,11 @@ def sdist():
 def main(args):
     if len(args)<2 or len(args)>=5:
         print("invalid number of arguments, usage:")
-        print("%s sdist|install [INSTALL_DIR] [MINIFIER]|deb|set-version VERSION")
+        print("%s sdist" % (args[0],))
+        print("%s install [INSTALL_DIR] [MINIFIER]" % (args[0],))
+        print("%s deb" % (args[0],))
+        print("%s rpm" % (args[0],))
+        print("%s set-version VERSION" % (args[0],))
         return 1
     cmd = args[1]
     if cmd=="sdist":
