@@ -59,6 +59,9 @@ rm -rf $RPM_BUILD_ROOT
 %doc html5/LICENSE
 
 %changelog
+* Tue May 04 2021 Antoine Martin <antoine@xpra.org> 4.2-1
+* add missing changelog entry for version bump
+
 * Fri Apr 02 2021 Antoine Martin <antoine@xpra.org> 4.1.2-1
 * build and packaging fixes
 
