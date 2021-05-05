@@ -3,7 +3,7 @@ but all the options can also be specified as URL parameters. ie:
 ```
 http://localhost:14500/?username=foo&keyboard_layout=fr
 ```
-
+Default values can be specified in the [default-settings.txt](../html5/default-settings.txt)
 
 # Connection Options
 |Parameter Name|Purpose|Default Value|
