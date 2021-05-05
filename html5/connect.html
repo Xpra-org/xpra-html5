@@ -1047,9 +1047,8 @@ function fill_form(default_settings) {
 		default_on.push("swap_keys");
 		default_on.push("scroll_reverse_y");
 	}
-	if (window.onmousemove===undefined) {
-		//no mouse, so probably no keyboard either,
-		//show the on-screen keyboard:
+	if (Utilities.isMobile()) {
+		//show the on-screen keyboard by default on mobile:
 		default_on.push("keyboard");
 	}
 	for (let i = 0; i < bool_props.length; i++) {

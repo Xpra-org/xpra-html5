@@ -298,6 +298,10 @@ const Utilities = {
 		return false;
 	},
 
+	isMobile : function () {
+	    return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+	},
+
 	getSimpleUserAgentString : function() {
 		if (Utilities.isFirefox()) {
 			return "Firefox";

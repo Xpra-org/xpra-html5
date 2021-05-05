@@ -497,7 +497,7 @@
 				const remote_logging = getboolparam("remote_logging", true);
 				const insecure = getboolparam("insecure", false);
 				const ignore_audio_blacklist = getboolparam("ignore_audio_blacklist", false);
-				const keyboard = getboolparam("keyboard", Boolean(window.onmousemove===undefined));
+				const keyboard = getboolparam("keyboard", Utilities.isMobile());
 				const clipboard = getboolparam("clipboard", true);
 				const printing = getboolparam("printing", true);
 				const file_transfer = getboolparam("file_transfer", true);
