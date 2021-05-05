@@ -5,7 +5,9 @@ http://localhost:14500/?username=foo&keyboard_layout=fr
 ```
 Default values can be specified in the [default-settings.txt](../html5/default-settings.txt)
 
-# Connection Options
+<details>
+  <summary>Connection Options</summary>
+
 |Parameter Name|Purpose|Default Value|
 |--------------|-------|-------------|
 |`server`      |Hostname or IP address of the xpra server to connect to|`*1`|
@@ -25,8 +27,11 @@ Default values can be specified in the [default-settings.txt](../html5/default-s
 
 `*1` the default values for the server host, port and SSL status will mirror that of the connection
 which was used to load the HTMl5 client (as found in the browser's URL bar), and those values don't usually need to be modified.
+</details>
 
-## Authentication
+<details>
+  <summary>Authentication</summary>
+
 Some browsers have security features which may remove the `password`
 from the URL parameters.\
 This can be worked around by:
@@ -40,8 +45,11 @@ authentication is done using [HMAC](https://en.wikipedia.org/wiki/HMAC) with a s
 hash function (`SHA256` or better) which means that the actual password is never sent
 to the xpra server.\
 By default the HTML5 client will refuse to send passwords over remote unencrypted connections.
+</details>
 
-# Features
+<details>
+  <summary>Features</summary>
+
 |Parameter Name|Purpose|Default Value|
 |--------------|-------|-------------|
 |`keyboard`    |Enable keyboard input|Enabled unless the client does not have a mouse pointer device|
@@ -57,8 +65,11 @@ By default the HTML5 client will refuse to send passwords over remote unencrypte
 |`autohide`    |Hide most of the toolbar until the pointer hovers over it|No|
 |`sound`       |Forward audio from the server ("speaker output")|Yes|
 |`video`       |Allow the use of software video decoding|Yes on 64-bit clients|
+</details>
 
-# Advanced Options
+<details>
+  <summary>Advanced Options</summary>
+
 |Parameter Name|Purpose|Default Value|
 |--------------|-------|-------------|
 |`audio_codec` |Which audio format to use|_detected_|
@@ -70,3 +81,4 @@ By default the HTML5 client will refuse to send passwords over remote unencrypte
 |`start`       |Request the server to run this command after connecting|
 |`exit_with_children` |If starting a new session, terminate it when the last start command exits|No|
 |`exit_with_client`|If starting a new session, terminate it when the connection is closed|No|
+</details>
