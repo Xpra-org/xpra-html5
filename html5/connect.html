@@ -1047,7 +1047,7 @@ function fill_form(default_settings) {
 		default_on.push("swap_keys");
 		default_on.push("scroll_reverse_y");
 	}
-	if (!window.onmousemove) {
+	if (window.onmousemove===undefined) {
 		//no mouse, so probably no keyboard either,
 		//show the on-screen keyboard:
 		default_on.push("keyboard");
