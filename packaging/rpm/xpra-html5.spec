@@ -4,7 +4,7 @@
 # later version. See the file COPYING for details.
 
 %define version 4.2
-%define release 1.r871%{?dist}
+%define release 1.r874%{?dist}
 
 Name:				xpra-html5
 Version:			%{version}

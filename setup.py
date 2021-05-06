@@ -125,9 +125,18 @@ def record_vcs_info():
         #record revision in packaging:
         rev = info.get("REVISION")
         if rev is not None:
+            #add full version string to control:
+            fdata = open("./packaging/debian/control", "r").read()
+            lines = fdata.splitlines()
+            for i, line in enumerate(lines):
+                if line.startswith("Version: "):
+                    lines[i] = line.split("-", 1)[0]+"-r%i-1" % rev
+                    break
+            lines.append("")
+            open("./packaging/debian/control", "w").write("\n".join(lines))
+            #preserve the changelog version, but update the revision:
             fdata = open("./packaging/debian/changelog", "r").read()
             lines = fdata.splitlines()
-            #preserve the changelog version, but update the revision:
             changelog_version = re.match(".*\(([0-9\.]+)\-[r0-9\-]*\).*", lines[0]).group(1)
             assert changelog_version, "version not found in changelog first line '%s'" % (lines[0],)
             lines[0] = "xpra-html5 (%s-r%s-1) UNRELEASED; urgency=low" % (changelog_version, rev)
@@ -137,7 +146,6 @@ def record_vcs_info():
             fdata = open("./packaging/rpm/xpra-html5.spec", "r").read()
             lines = fdata.splitlines()
             for i, line in enumerate(lines):
-                print("%i : '%s'" % (i, line))
                 if line.startswith("%define release "):
                     lines[i] = "%%define release 1.r%s%%{?dist}" % rev
                     break
@@ -338,7 +346,7 @@ def set_version(NEW_VERSION):
     BRANCH = vcs_info.get("BRANCH", "master")
     for filename, replace in {
         "./packaging/debian/control" : {
-            r"Version: %s" % VERSION : r"Version: %s" % NEW_VERSION,
+            r"Version: %s.*" % VERSION : r"Version: %s" % NEW_VERSION,
             },
         "./packaging/rpm/xpra-html5.spec" : {
             r"%%define version %s" % VERSION : r"%%define version %s" % NEW_VERSION,
@@ -404,8 +412,7 @@ def make_deb():
     VERSION = ""
     with open("./packaging/debian/changelog", "r") as f:
         line = f.readline()
-        #ie:
-        #xpra-html5 (4.1-1) UNRELEASED; urgency=low
+        #ie: 'xpra-html5 (4.2-r872-1) UNRELEASED; urgency=low'
         try:
             import re
             VERSION = re.match(".*\(([0-9\.]+\-[r0-9\-]*)\).*", line).group(1)
