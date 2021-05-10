@@ -484,7 +484,7 @@ const Utilities = {
 	    const regex = {
 	        section: /^\s*\[\s*([^\]]*)\s*\]\s*$/,
 	        param: /^\s*([^=]+?)\s*=\s*(.*?)\s*$/,
-	        comment: /^\s*;.*$/
+	        comment: /^\s*[;#].*$/
 	    };
 	    const value = {};
 	    const lines = data.split(/[\r\n]+/);
