@@ -4,7 +4,7 @@
 # later version. See the file COPYING for details.
 
 %define version 4.2
-%define release 1.r874%{?dist}
+%define release 1.r878%{?dist}
 
 Name:				xpra-html5
 Version:			%{version}
@@ -60,7 +60,7 @@ rm -rf $RPM_BUILD_ROOT
 %doc html5/LICENSE
 
 %changelog
-* Tue May 04 2021 Antoine Martin <antoine@xpra.org> 4.2-1
+* Mon May 17 2021 Antoine Martin <antoine@xpra.org> 4.2-878-1
 - add missing changelog entry for version bump
 
 * Fri Apr 02 2021 Antoine Martin <antoine@xpra.org> 4.1.2-1
