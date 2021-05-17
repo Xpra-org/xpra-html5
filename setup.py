@@ -346,7 +346,7 @@ def set_version(NEW_VERSION):
     BRANCH = vcs_info.get("BRANCH", "master")
     for filename, replace in {
         "./packaging/debian/control" : {
-            r"Version: %s.*" % VERSION : r"Version: %s" % NEW_VERSION,
+            r"Version: %s.*" % VERSION : r"Version: %s-r%s-1" % (NEW_VERSION, REVISION),
             },
         "./packaging/rpm/xpra-html5.spec" : {
             r"%%define version %s" % VERSION : r"%%define version %s" % NEW_VERSION,
@@ -371,22 +371,24 @@ def set_version(NEW_VERSION):
     deb_date += " %+04d" % utc_delta
     fdata = open("./packaging/debian/changelog", "r").read()
     lines = fdata.splitlines()
-    lines.insert(0, "xpra-html5 (%s-%s) UNRELEASED; urgency=low" % (NEW_VERSION, REVISION))
+    lines.insert(0, "xpra-html5 (%s-r%s-1) UNRELEASED; urgency=low" % (NEW_VERSION, REVISION))
     lines.insert(1, "  * TODO")
     lines.insert(2, "")
     # -- Antoine Martin <antoine@xpra.org>  Fri, 30 Apr 2021 12:07:59 +0700
     lines.insert(3, " -- %s %s  %s" % (AUTHOR, AUTHOR_EMAIL, deb_date))
     lines.insert(4, "")
+    lines.append("")
     open("./packaging/debian/changelog", "w").write("\n".join(lines))
     fdata = open("./packaging/rpm/xpra-html5.spec", "r").read()
     lines = fdata.splitlines()
     changelog_lineno = lines.index("%changelog")
     assert changelog_lineno, "'%changelog' not found!"
-    rpm_date = now.strftime("%a %d %d %Y")
+    rpm_date = now.strftime("%a %b %d %Y")
     #* Tue May 04 2021 Antoine Martin <antoine@xpra.org> 4.2-1
-    lines.insert(changelog_lineno+1, "* %s %s %s %s-%s" % (rpm_date, AUTHOR, AUTHOR_EMAIL, NEW_VERSION, REVISION))
+    lines.insert(changelog_lineno+1, "* %s %s <%s> %s-%s-1" % (rpm_date, AUTHOR, AUTHOR_EMAIL, NEW_VERSION, REVISION))
     lines.insert(changelog_lineno+2, "- TODO")
     lines.insert(changelog_lineno+3, "")
+    lines.append("")
     open("./packaging/rpm/xpra-html5.spec", "w").write("\n".join(lines))
 
 
