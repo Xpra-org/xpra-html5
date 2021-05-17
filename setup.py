@@ -6,6 +6,7 @@
 
 import re
 import sys
+import time
 import shutil
 import os.path
 from subprocess import Popen, PIPE
@@ -25,7 +26,6 @@ def glob_recurse(srcdir):
     return m
 
 def get_status_output(*args, **kwargs):
-    import subprocess
     kwargs["stdout"] = PIPE
     kwargs["stderr"] = PIPE
     try:
@@ -97,7 +97,7 @@ def get_vcs_info():
     if rev:
         try:
             rev = int(rev)
-        except:
+        except ValueError:
             print("invalid revision number %r" % (rev,))
         else:
             info["REVISION"] = rev
@@ -137,7 +137,7 @@ def record_vcs_info():
             #preserve the changelog version, but update the revision:
             fdata = open("./packaging/debian/changelog", "r").read()
             lines = fdata.splitlines()
-            changelog_version = re.match(".*\(([0-9\.]+)\-[r0-9\-]*\).*", lines[0]).group(1)
+            changelog_version = re.match(r".*\(([0-9\.]+)\-[r0-9\-]*\).*", lines[0]).group(1)
             assert changelog_version, "version not found in changelog first line '%s'" % (lines[0],)
             lines[0] = "xpra-html5 (%s-r%s-1) UNRELEASED; urgency=low" % (changelog_version, rev)
             lines.append("")
@@ -164,7 +164,7 @@ def load_vcs_info():
                     info[parts[0]] = parts[1]
     return info
 
-def install_html5(install_dir="www", minifier="uglifyjs", gzip=True, brotli=True, verbose=False):
+def install_html5(install_dir="www", minifier="uglifyjs", gzip=True, brotli=True):
     if minifier not in ("", None, "copy"):
         print("minifying html5 client to '%s' using %s" % (install_dir, minifier))
     else:
@@ -185,7 +185,7 @@ def install_html5(install_dir="www", minifier="uglifyjs", gzip=True, brotli=True
                 br += ".exe"
             if os.path.exists(br):
                 proc = Popen([br, "--version"], stdout=PIPE, stderr=PIPE)
-                stdout, stderr = proc.communicate()
+                stdout = proc.communicate()[0]
                 if proc.wait()==0:
                     brotli_version = stdout.strip(b"\n\r").decode()
                 brotli_cmd = br
@@ -267,11 +267,11 @@ def install_html5(install_dir="www", minifier="uglifyjs", gzip=True, brotli=True
                 else:
                     assert minifier=="yuicompressor"
                     try:
-                        import yuicompressor
+                        import yuicompressor  # @UnresolvedImport
                         jar = yuicompressor.get_jar_filename()
                         java_cmd = os.environ.get("JAVA", "java")
                         minify_cmd = [java_cmd, "-jar", jar]
-                    except:
+                    except Exception:
                         minify_cmd = ["yuicompressor"]
                     minify_cmd += [
                                   fsrc,
@@ -350,7 +350,7 @@ def set_version(NEW_VERSION):
             },
         "./packaging/rpm/xpra-html5.spec" : {
             r"%%define version %s" % VERSION : r"%%define version %s" % NEW_VERSION,
-            r"%%define release .*" : r"%%define release 1.r%s%{?dist}" % REVISION,
+            r"%%define release .*" : r"%%define release 1.r%s%%{?dist}" % REVISION,
             },
         "./html5/js/Utilities.js" : {
             r'VERSION : "%s"' % VERSION : r'VERSION : "%s"' % NEW_VERSION,
@@ -409,19 +409,18 @@ def make_deb():
     assert Popen(["dpkg-deb", "--build", "xpra-html5"]).wait()==0
     assert os.path.exists("./xpra-html5.deb")
     shutil.rmtree("./xpra-html5")
-    VERSION = ""
+    version = ""
     with open("./packaging/debian/changelog", "r") as f:
         line = f.readline()
         #ie: 'xpra-html5 (4.2-r872-1) UNRELEASED; urgency=low'
         try:
-            import re
-            VERSION = re.match(".*\(([0-9\.]+\-[r0-9\-]*)\).*", line).group(1)
+            version = re.match(r".*\(([0-9\.]+\-[r0-9\-]*)\).*", line).group(1)
             #ie: VERSION=4.1-1
         except Exception:
             pass
     if not os.path.exists("./dist"):
         os.mkdir("./dist")
-    os.rename("xpra-html5.deb", "./dist/xpra-html5-%s.deb" % VERSION)
+    os.rename("xpra-html5.deb", "./dist/xpra-html5-%s.deb" % version)
 
 def make_rpm():
     tarxz = "xpra-html5-%s.tar.xz" % VERSION
