@@ -4,7 +4,7 @@
 # later version. See the file COPYING for details.
 
 %define version 4.2
-%define release 1.r878%{?dist}
+%define release 1.r882%{?dist}
 
 Name:				xpra-html5
 Version:			%{version}
@@ -60,8 +60,17 @@ rm -rf $RPM_BUILD_ROOT
 %doc html5/LICENSE
 
 %changelog
-* Mon May 17 2021 Antoine Martin <antoine@xpra.org> 4.2-878-1
-- add missing changelog entry for version bump
+* Tue May 18 2021 Antoine Martin <antoine@xpra.org> 4.2-878-1
+- select session attributes from list of options exposed by the server
+- detect vertical refresh rate
+- hide on-screen keyboard by default on non-mobile devices
+- tell server to prefer encodings with native decoders
+- updated documentation
+- build and packaging fixes, add easy 'deb' and 'rpm' build targets
+- support older versions of brotli
+- fix missing clipboard events
+- fix window focus tracking issues
+- fix AES encryption (broken by rencoder)
 
 * Fri Apr 02 2021 Antoine Martin <antoine@xpra.org> 4.1.2-1
 - build and packaging fixes
