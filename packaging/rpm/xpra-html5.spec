@@ -4,7 +4,9 @@
 # later version. See the file COPYING for details.
 
 %define version 4.2
-%define release 1.r882%{?dist}
+%define release 1.r886%{?dist}
+%define minifier uglifyjs
+%define python python3
 
 Name:				xpra-html5
 Version:			%{version}
@@ -19,14 +21,21 @@ Source:				xpra-html5-%{version}.tar.xz
 BuildArch:			noarch
 BuildRoot:			%{_tmppath}/%{name}-%{version}-root
 Conflicts:			xpra < 2.1
+%if 0%{?el8}%{?fedora}
 BuildRequires:		uglify-js
+%else
+%define minifier ""
+%define python python2
+%endif
 #don't depend on this package,
 #so we can also install on a pure RHEL distro:
-%if 0%{?el8}
+%if 0%{?el8}%{?el7}
 BuildRequires:		centos-logos
+%if 0%{?el8}
 BuildRequires:		centos-backgrounds
 Recommends:			centos-logos
 Recommends:			centos-backgrounds
+%endif
 %else
 BuildRequires:		desktop-backgrounds-compat
 Recommends:		    desktop-backgrounds-compat
@@ -45,11 +54,13 @@ or by any other web server.
 
 %install
 mkdir -p %{buildroot}/usr/share/xpra/www
-./setup.py install %{buildroot}/usr/share/xpra/www/
+%{python} ./setup.py install %{buildroot}/usr/share/xpra/www/ %{minifier}
 # Ensure there are no executeable files:
 find %{buildroot}%{_datadir}/xpra/www/ -type f -exec chmod 0644 {} \;
 mkdir -p %{buildroot}/usr/share/doc/xpra-html5/
+%if 0%{?el8}%{?fedora}
 cp LICENSE %{buildroot}/usr/share/doc/xpra-html5/
+%endif
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -57,7 +68,9 @@ rm -rf $RPM_BUILD_ROOT
 %files
 %defattr(-,root,root)
 %{_datadir}/xpra/www
-%doc html5/LICENSE
+%if 0%{?el8}%{?fedora}
+%doc xpra-html5/LICENSE
+%endif
 
 %changelog
 * Tue May 18 2021 Antoine Martin <antoine@xpra.org> 4.2-878-1
