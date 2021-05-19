@@ -236,8 +236,8 @@ def install_html5(install_dir="www", minifier="uglifyjs", gzip=True, brotli=True
             fsrc = src
             if ftype=="js" or fname.endswith("index.html"):
                 #save to a temporary file after replacing strings:
-                with open(src, mode='br') as f:
-                    odata = f.read().decode("latin1")
+                with open(src, mode='r') as f:
+                    odata = f.read()
                 data = odata
                 for regexp, replacewith in {
                     r"^\s*for\s*\(\s*let\s+"     : "for(var ",
@@ -253,8 +253,8 @@ def install_html5(install_dir="www", minifier="uglifyjs", gzip=True, brotli=True
 
                 if data!=odata:
                     fsrc = src+".tmp"
-                    with open(fsrc, "wb") as f:
-                        f.write(data.encode("latin1"))
+                    with open(fsrc, "w") as f:
+                        f.write(data)
                     os.chmod(fsrc, 0o644)
 
             if minifier not in ("", None, "copy") and ftype=="js":
