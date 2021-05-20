@@ -1,4 +1,4 @@
-xpra-html5 (4.2-r886-1) UNRELEASED; urgency=low
+xpra-html5 (4.2-r889-1) UNRELEASED; urgency=low
   * select session attributes from list of options exposed by the server
   * detect vertical refresh rate
   * hide on-screen keyboard by default on non-mobile devices
