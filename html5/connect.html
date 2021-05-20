@@ -852,6 +852,20 @@ function fill_form(default_settings) {
 			}
 			$('select#select_display').show();
 			$('#display').hide();
+
+			function display_populate_username() {
+				//populate the username if we have it
+				let session = select_display.value;
+				if (session) {
+					let attributes = response[session];
+					if (attributes && attributes.username) {
+						document.getElementById("username").value = attributes.username;
+					}
+				}
+			}
+
+			select_display.onchange = display_populate_username();
+			display_populate_username();
 	    },
 		function(error) {
 			$('select#select_display').hide();
