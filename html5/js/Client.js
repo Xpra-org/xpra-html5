@@ -1924,7 +1924,7 @@ XpraClient.prototype._process_hello = function(packet, ctx) {
 
 XpraClient.prototype._process_encodings = function(packet, ctx) {
 	const caps = packet[1];
-	ctx.log("update encodings:", caps);
+	ctx.log("update encodings:", Object.keys(caps));
 };
 
 
