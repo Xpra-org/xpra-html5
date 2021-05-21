@@ -10,10 +10,10 @@
 'use strict';
 
 const Utilities = {
-	VERSION : "4.2",
-	REVISION : 882,
+	VERSION : "4.3",
+	REVISION : 0,
 	LOCAL_MODIFICATIONS : 0,
-	BRANCH : "master",
+	BRANCH : "v4.2.x",
 
 	exc : function() {
 		if (console) {
