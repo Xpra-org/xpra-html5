@@ -4,6 +4,7 @@
 # Xpra is released under the terms of the GNU GPL v2, or, at your option, any
 # later version. See the file LICENSE for details.
 
+import io
 import re
 import sys
 import time
@@ -236,7 +237,7 @@ def install_html5(install_dir="www", minifier="uglifyjs", gzip=True, brotli=True
             fsrc = src
             if ftype=="js" or fname.endswith("index.html"):
                 #save to a temporary file after replacing strings:
-                with open(src, mode='r') as f:
+                with io.open(src, mode='r', encoding='utf8') as f:
                     odata = f.read()
                 data = odata
                 for regexp, replacewith in {
@@ -253,7 +254,7 @@ def install_html5(install_dir="www", minifier="uglifyjs", gzip=True, brotli=True
 
                 if data!=odata:
                     fsrc = src+".tmp"
-                    with open(fsrc, "w") as f:
+                    with io.open(fsrc, "w", encoding='utf8') as f:
                         f.write(data)
                     os.chmod(fsrc, 0o644)
 
