@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.3]
+* TODO
+
 ## [4.2] 2021-05-18
 * select session attributes from list of options exposed by the server
 * detect vertical refresh rate
