@@ -423,11 +423,11 @@ function downloadConnectionFile() {
 
 function get_visible_value(entry, select) {
 	let entry_widget = document.getElementById(entry);
-	if (entry_widget.style.visibility == "visible") {
+	if (entry_widget.style.visibility !== "hidden" || entry_widget.style.visibility !== "collapse") {
 		return entry_widget.value;
 	}
 	let select_widget = document.getElementById(select);
-	if (select_widget.style.visibility == "visible") {
+	if (select_widget.style.visibility !== "hidden" || select_widget.style.visibility !== "collapse") {
 		return select_widget.value;
 	}
 	return "";
@@ -455,7 +455,7 @@ function get_URL_action() {
 		display = get_visible_value("shadow_display", "select_shadow_display");
 	}
 	if (action) {
-		url += add_prop("action", "connect");
+		url += add_prop("action", action);
 	}
 	if (start) {
 		url += add_prop("start", start);
