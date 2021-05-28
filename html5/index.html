@@ -962,7 +962,7 @@
 					};
 					client.do_keyb_process(pressed, e);
 				}
-				const keyboard = getboolparam("keyboard", Boolean(!window.onmousemove));
+				const keyboard = getboolparam("keyboard", Utilities.isMobile());
 				if (!keyboard) {
 					$('.simple-keyboard').hide();
 					$('#keyboard_button').css('color', '#777');
