@@ -207,6 +207,15 @@ def install_html5(install_dir="www", minifier="uglifyjs", gzip=True, brotli=True
             "/usr/share/javascript/jquery-ui/latest/jquery-ui.js",
             "/usr/share/javascript/jquery-ui/3/jquery-ui.js",
             ],
+        "materialicons-regular.ttf"     : [
+            "/usr/share/fonts/truetype/material-design-icons-iconfont/MaterialIcons-Regular.ttf",
+            ],
+        "materialicons-regular.woff"     : [
+            "/usr/share/fonts/woff/material-design-icons-iconfont/MaterialIcons-Regular.woff",
+            ],
+        "materialicons-regular.woff2"     : [
+            "/usr/share/fonts/woff/material-design-icons-iconfont/MaterialIcons-Regular.woff2",
+            ],
         }
     for k,files in glob_recurse("html5").items():
         if k!="":
