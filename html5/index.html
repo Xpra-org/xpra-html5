@@ -11,9 +11,12 @@
 		<title>xpra websockets client</title>
 		<meta charset="utf-8">
 		<meta name="description" content="xpra websockets client">
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="mobile-web-app-capable" content="yes">
 		<link rel="shortcut icon" type="image/png" href="./favicon.png" id="favicon">
 
 		<link rel="stylesheet" href="css/client.css">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<link rel="stylesheet" href="css/spinner.css">
 
 		<script type="text/javascript" src="js/lib/es6-shim.js"></script>
@@ -246,6 +249,22 @@
 				}
 				try {
 					v = parseInt(v)
+				}
+				catch(e) {
+					return default_value;
+				}
+				if (v===null || isNaN(v)) {
+					return default_value;
+				}
+				return v;
+			}
+			const getfloatparam = function(prop, default_value) {
+				let v = Utilities.getparam(prop);
+				if (v==null && prop in default_settings) {
+					v = default_settings[prop];
+				}
+				try {
+					v = parseFloat(v)
 				}
 				catch(e) {
 					return default_value;
@@ -509,6 +528,7 @@
 				const floating_menu = getboolparam("floating_menu", true);
 				const toolbar_position = getparam("toolbar_position");
 				const autohide = getboolparam("autohide", false);
+				const override_width = getfloatparam("override_width", window.innerWidth);
 				vrefresh = getintparam("vrefresh", -1);
 				if (vrefresh<0 && fps>=30) {
 					vrefresh = fps;
@@ -519,6 +539,13 @@
 				}
 				catch (e) {
 					//ignore
+				}
+
+				if (window.innerWidth!==override_width) {
+					document.querySelector("meta[name=viewport]").setAttribute('content',
+						'width=device-width, initial-scale='+
+						(window.innerWidth/override_width)+
+						', maximum-scale=1.0, user-scalable=0');
 				}
 
 				let progress_timer;

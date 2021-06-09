@@ -17,6 +17,8 @@
 	<!-- Custom styles for this template -->
 	<link href="css/signin.css" rel="stylesheet">
 	<title>Xpra HTML5 Client</title>
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="mobile-web-app-capable" content="yes">
 	<link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
 	<link rel="icon" type="image/png" href="favicon.png">
 
@@ -289,6 +291,10 @@
 					<input title="path" type="text" class="form-control" id="path" placeholder="" size="16" maxlength="256">
 				  </li>
 				  <li class="list-group-item">
+					<span>Client Screen Width:</span>
+					<input title="override_width" type="text" class="form-control" id="override_width" size="16" maxlength="256">
+				  </li>
+				  <li class="list-group-item">
 				  	<span>Debugging</span>:<br/>
 				  	<input type="checkbox" id="debug_main"> <span>Main</span>,
 				  	<input type="checkbox" id="debug_keyboard"> <span>keyboard</span>,
@@ -315,7 +321,7 @@
 
 const VALUE_PROPERTIES = ["server", "port", "path", "username", "password", "key",
 					"bandwidth_limit", "encoding", "keyboard_layout", "audio_codec", "toolbar_position",
-					"display", "shadow_display",
+					"display", "shadow_display", "override_width",
 					];
 const BOOLEAN_PROPERTIES = ["keyboard", "clipboard", "printing", "file_transfer",
 		"sound", "ignore_audio_blacklist",
@@ -530,6 +536,8 @@ function fill_form(default_settings) {
 	document.getElementById("port").value = getparam("port") || link.port || protocol_port;
 	document.getElementById("path").value = path || pathname;
 	document.getElementById("username").value = getparam("username") || "";
+	document.getElementById("override_width").placeholder = getparam("override_width") || window.innerWidth;
+
 
 	const ssl = getboolparam("ssl", https);
 	const insecure = getboolparam("insecure", false);
