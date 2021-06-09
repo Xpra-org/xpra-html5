@@ -24,6 +24,7 @@ Default values can be specified in the [default-settings.txt](../html5/default-s
 |`steal`       |Take over the session and disconnect any existing client(s)|Yes|
 |`reconnect`   |Automatically reconnect when the connection drops|Yes|
 |`bandwidth_limit` |Bandwidth budget in bits per second|`0` (no limit)|
+|`override_width`|The desired width of client desktop, pixels|width of browser window|
 
 `*1` the default values for the server host, port and SSL status will mirror that of the connection
 which was used to load the HTMl5 client (as found in the browser's URL bar), and those values don't usually need to be modified.
