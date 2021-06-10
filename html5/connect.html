@@ -291,8 +291,8 @@
 					<input title="path" type="text" class="form-control" id="path" placeholder="" size="16" maxlength="256">
 				  </li>
 				  <li class="list-group-item">
-					<span>Client Screen Width:</span>
-					<input title="override_width" type="text" class="form-control" id="override_width" size="16" maxlength="256">
+					<span>Client Screen Width (mobile devices only):</span>
+					<input title="override_width" type="text" disabled="true" class="form-control" id="override_width" size="16" maxlength="256">
 				  </li>
 				  <li class="list-group-item">
 				  	<span>Debugging</span>:<br/>
@@ -536,8 +536,13 @@ function fill_form(default_settings) {
 	document.getElementById("port").value = getparam("port") || link.port || protocol_port;
 	document.getElementById("path").value = path || pathname;
 	document.getElementById("username").value = getparam("username") || "";
-	document.getElementById("override_width").placeholder = getparam("override_width") || window.innerWidth;
 
+	const override_width = getparam("override_width");
+	if (override_width) {
+		document.getElementById("override_width").value = override_width;
+	} else {
+		document.getElementById("override_width").placeholder = window.innerWidth;
+	}
 
 	const ssl = getboolparam("ssl", https);
 	const insecure = getboolparam("insecure", false);
@@ -1072,6 +1077,8 @@ function fill_form(default_settings) {
 	if (Utilities.isMobile()) {
 		//show the on-screen keyboard by default on mobile:
 		default_on.push("keyboard");
+		//allow client screen width override
+		$("#override_width").removeAttr("disabled");
 	}
 	for (let i = 0; i < bool_props.length; i++) {
 		const prop = bool_props[i];
