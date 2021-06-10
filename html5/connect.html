@@ -536,8 +536,13 @@ function fill_form(default_settings) {
 	document.getElementById("port").value = getparam("port") || link.port || protocol_port;
 	document.getElementById("path").value = path || pathname;
 	document.getElementById("username").value = getparam("username") || "";
-	document.getElementById("override_width").placeholder = getparam("override_width") || window.innerWidth;
 
+	const override_width = getparam("override_width");
+	if (override_width) {
+		document.getElementById("override_width").value = override_width;
+	} else {
+		document.getElementById("override_width").placeholder = window.innerWidth;
+	}
 
 	const ssl = getboolparam("ssl", https);
 	const insecure = getboolparam("insecure", false);
