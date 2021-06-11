@@ -20,7 +20,7 @@
  * The contents of the window is an image, which gets updated
  * when we receive pixels from the server.
  */
-function XpraWindow(client, canvas_state, wid, x, y, w, h, metadata, override_redirect, tray, client_properties, geometry_cb, mouse_move_cb, mouse_down_cb, mouse_up_cb, mouse_scroll_cb, set_focus_cb, window_closed_cb, htmldiv) {
+function XpraWindow(client, canvas_state, wid, x, y, w, h, metadata, override_redirect, tray, client_properties, geometry_cb, mouse_move_cb, mouse_down_cb, mouse_up_cb, mouse_scroll_cb, set_focus_cb, window_closed_cb, scale) {
 	// use me in jquery callbacks as we lose 'this'
 	const me = this;
 	// there might be more than one client
@@ -80,6 +80,9 @@ function XpraWindow(client, canvas_state, wid, x, y, w, h, metadata, override_re
 	this.w = w;
 	this.h = h;
 
+	// scaling for client display width override
+	this.scale = scale;
+
 	// get offsets
 	this.leftoffset = parseInt(jQuery(this.div).css('border-left-width'), 10);
 	this.rightoffset = parseInt(jQuery(this.div).css('border-right-width'), 10);
@@ -138,6 +141,9 @@ function XpraWindow(client, canvas_state, wid, x, y, w, h, metadata, override_re
 				'<span id="close' + String(wid) + '"><img src="icons/close.png" /></span> '+
 				'</span></div>');
 		// make draggable
+		if (this.scale!==1) {
+			jQuery(this.div).draggable({ transform: true });
+		}
 		jQuery(this.div).draggable({ cancel: "canvas" });
 		jQuery(this.div).on("dragstart",function(ev,ui){
 			client.do_window_mouse_click(ev, me, false);
@@ -148,6 +154,12 @@ function XpraWindow(client, canvas_state, wid, x, y, w, h, metadata, override_re
 			client.mouse_grabbed = false;
 			me.handle_moved(ui);
 		});
+		// Use transform if scaled
+		// This disables helper highlight, so we
+		// move the resizable borders in transform plugin
+		if (this.scale!==1) {
+			jQuery(this.div).resizable({ transform: true });
+		}
 		// attach resize handles
 		jQuery(this.div).resizable({ helper: "ui-resizable-helper", "handles": "n, e, s, w, ne, se, sw, nw" });
 		//jQuery(this.div).on("resize",jQuery.debounce(50, function(ev,ui) {

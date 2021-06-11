@@ -25,6 +25,7 @@
 		<script type="text/javascript" src="js/lib/jquery.js"></script>
 		<script type="text/javascript" src="js/lib/jquery-ui.js"></script>
 		<script type="text/javascript" src="js/lib/jquery.ba-throttle-debounce.js"></script>
+		<script type="text/javascript" src="js/lib/jquery-transform-draggable.js"></script>
 
 		<script type="text/javascript" src="js/lib/bencode.js"></script>
 		<script type="text/javascript" src="js/lib/zlib.js"></script>
@@ -542,12 +543,9 @@
 					//ignore
 				}
 
-				if (Utilities.isMobile() && window.innerWidth!==override_width) {
-					document.querySelector("meta[name=viewport]").setAttribute('content',
-						'width=device-width, initial-scale='+
-						(window.innerWidth/override_width)+
-						', maximum-scale=1.0, user-scalable=0');
-					$('#fullscreen_button').hide();
+				var scale = 1;
+				if (window.innerWidth!==override_width) {
+					scale = override_width/window.innerWidth;
 				}
 
 				let progress_timer;
@@ -615,6 +613,7 @@
 				client.scroll_reverse_x = scroll_reverse_x;
 				client.scroll_reverse_y = scroll_reverse_y;
 				client.vrefresh = vrefresh;
+				client.scale = scale;
 				//example overrides:
 				//client.HELLO_TIMEOUT = 3600000;
 				//client.PING_TIMEOUT = 60000;

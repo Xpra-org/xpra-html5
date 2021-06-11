@@ -69,6 +69,7 @@ XpraClient.prototype.init_settings = function(container) {
 	this.key_packets = [];
 	this.clipboard_delayed_event_time = 0;
 
+	this.scale = 1;
 	this.vrefresh = -1;
 	this.bandwidth_limit = 0;
 	this.reconnect = true;
@@ -304,6 +305,12 @@ XpraClient.prototype.init = function(ignore_blacklist) {
 	this.init_audio(ignore_blacklist);
 	this.init_packet_handlers();
 	this.init_keyboard();
+	if (this.scale!==1) {
+		this.container.style.width = 100*this.scale+"%";
+		this.container.style.height = 100*this.scale+"%";
+		this.container.style.transform = "scale("+1/this.scale+")";
+		this.container.style.transformOrigin = "top left";
+	}
 };
 
 
@@ -1302,6 +1309,11 @@ XpraClient.prototype.getMouse = function(e, window) {
 	let mx = e.clientX + jQuery(document).scrollLeft();
 	let my = e.clientY + jQuery(document).scrollTop();
 
+	if (this.scale!==1) {
+		mx = Math.round(mx * this.scale);
+		my = Math.round(my * this.scale);
+	}
+
 	// check last mouse position incase the event
 	// hasn't provided it - bug #854
 	if(isNaN(mx) || isNaN(my)) {
@@ -2243,7 +2255,8 @@ XpraClient.prototype._process_new_tray = function(packet, ctx) {
 			ctx._window_mouse_up,
 			ctx._window_mouse_scroll,
 			ctx._tray_set_focus,
-			ctx._tray_closed
+			ctx._tray_closed,
+			ctx.scale
 	);
 	ctx.send_tray_configure(wid);
 };
@@ -2309,7 +2322,8 @@ XpraClient.prototype._new_window = function(wid, x, y, w, h, metadata, override_
 		this._window_mouse_up,
 		this._window_mouse_scroll,
 		this._window_set_focus,
-		this._window_closed
+		this._window_closed,
+		this.scale
 		);
 	if(win && !override_redirect && win.metadata["window-type"]=="NORMAL"){
 		const decodedTitle = decodeURIComponent(escape(win.title));
