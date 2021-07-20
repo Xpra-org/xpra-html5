@@ -13,7 +13,7 @@ const Utilities = {
 	VERSION : "4.3",
 	REVISION : 1,
 	LOCAL_MODIFICATIONS : 0,
-	BRANCH : "v4.2.x",
+	BRANCH : "master",
 
 	exc : function() {
 		if (console) {
