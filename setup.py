@@ -369,6 +369,9 @@ def set_version(NEW_VERSION):
             r'LOCAL_MODIFICATIONS : [0-9]*' : r'LOCAL_MODIFICATIONS : %s' % LOCAL_MODIFICATIONS,
             r'BRANCH : "[a-zA-Z]*"' : r'BRANCH : "%s"' % BRANCH,
             },
+        "./html5/index.html" : {
+            r"<h3>Version .*</h3>" : "<h3>Version %s</h3>" % NEW_VERSION,
+            },
         "./setup.py" : {
             r'VERSION = "%s"' % VERSION : r'VERSION = "%s"' % NEW_VERSION,
             },
