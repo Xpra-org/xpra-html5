@@ -312,9 +312,13 @@ XpraWindow.prototype.set_spinner = function(state) {
 };
 
 XpraWindow.prototype.ensure_visible = function() {
-	if (this.client.server_is_desktop || this.client.server_is_shadow || this.override_redirect) {
+	if (this.client.server_is_desktop || this.client.server_is_shadow) {
 		//those windows should usually be centered on screen,
 		//moving them would mess that up
+		return true;
+	}
+	if (this.override_redirect) {
+		//OR windows cannot be moved server-side
 		return true;
 	}
 	const oldx = this.x;
