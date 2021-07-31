@@ -717,6 +717,7 @@
 				const debug_main = getboolparam("debug_main", false);
 				if(!debug_main) {
 					client.callback_close = function(reason) {
+						clog("closing: ", reason);
 						if(submit) {
 							let message = "Connection closed (socket closed)";
 							if(reason) {
