@@ -448,6 +448,14 @@ const Utilities = {
 		return c.join("");
 	},
 
+	s : function(v){
+		const type = typeof v;
+	    if (type === 'object' && v.constructor===Uint8Array) {
+			return Utilities.Uint8ToString(v);
+		}
+		return v.toString();
+	},
+
 	ArrayBufferToBase64 : function(uintArray) {
 		// apply in chunks of 10400 to avoid call stack overflow
 		// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/apply
