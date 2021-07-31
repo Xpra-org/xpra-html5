@@ -147,6 +147,10 @@ function XpraWindow(client, canvas_state, wid, x, y, w, h, metadata, override_re
 		jQuery(this.div).draggable({ cancel: "canvas" });
 		jQuery(this.div).on("dragstart",function(ev,ui){
 			client.do_window_mouse_click(ev, me, false);
+			//fake a click on the root window,
+			//this helps some buggy Java applications close their popup menus
+			client.do_window_mouse_click(ev, null, true);
+			client.do_window_mouse_click(ev, null, false);
 			client.mouse_grabbed = true;
 			me.set_focus_cb(me);
 		});
