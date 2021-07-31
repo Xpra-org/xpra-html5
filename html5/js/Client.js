@@ -1090,7 +1090,7 @@ XpraClient.prototype._make_hello_base = function() {
 	if (Utilities.isSafari()) {
 		//See bug #39,
 		//safari chokes on the rencode lib
-		PyRencoder = null;
+		rencode = null;
 	}
 	this._update_capabilities({
 		// version and platform
@@ -1124,7 +1124,7 @@ XpraClient.prototype._make_hello_base = function() {
 		"compression_level"	 		: 1,
 		"mouse.show"				: true,
 		// packet encoders
-		"rencode" 					: (PyRencoder!==null && PyRencoder!==undefined),
+		"rencode" 					: (rencode!==null && rencode!==undefined),
 		"bencode"					: true,
 		"yaml"						: false,
 		"open-url"					: this.open_url,

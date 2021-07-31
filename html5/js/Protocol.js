@@ -391,7 +391,7 @@ XpraProtocol.prototype.do_process_receive_queue = function() {
 		let packet = null;
 		try {
 			if (proto_flags==1) {
-				packet = PyRencoder.decode(Buffer.from(packet_data), 'binary');
+				packet = rdecode(packet_data);
 			} else {
 				packet = bdecode(packet_data);
 			}
@@ -451,8 +451,8 @@ XpraProtocol.prototype.process_send_queue = function() {
 		try {
 			//use rencode if available,
 			//but not with encryption (see issue #43)
-			if (PyRencoder && !this.cipher_out) {
-				bdata = PyRencoder.encode(packet);
+			if (rencode && !this.cipher_out) {
+				bdata = rencode(packet);
 				proto_flags = 1;
 			}
 			else {
@@ -563,7 +563,7 @@ if (!(typeof window == "object" && typeof document == "object" && window.documen
 		'lib/es6-shim.js',
 		'lib/brotli_decode.js',
 		'lib/forge.js',
-		'lib/pyrencoder.js');
+		'lib/rencode.js');
 	// make protocol instance
 	const protocol = new XpraProtocol();
 	protocol.is_worker = true;
