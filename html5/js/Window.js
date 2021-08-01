@@ -133,7 +133,7 @@ function XpraWindow(client, canvas_state, wid, x, y, w, h, metadata, override_re
 		// add a title bar to this window if we need to
 		// create header
 		jQuery(this.div).prepend('<div id="head' + String(wid) + '" class="windowhead"> '+
-				'<span class="windowicon"><img id="windowicon' + String(wid) + '" /></span> '+
+				'<span class="windowicon"><img class="windowicon" id="windowicon' + String(wid) + '" /></span> '+
 				'<span class="windowtitle" id="title' + String(wid) + '">' + this.title + '</span> '+
 				'<span class="windowbuttons"> '+
 				'<span id="minimize' + String(wid) + '"><img src="icons/minimize.png" /></span> '+
