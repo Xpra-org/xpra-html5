@@ -3056,7 +3056,7 @@ XpraClient.prototype._sound_start_mediasource = function() {
 		}
 		me.audio_source_buffer = asb;
 		asb.mode = "sequence";
-		if (me.debug) {
+		if (me.debug_categories.includes("audio")) {
 			MediaSourceUtil.addSourceBufferEventDebugListeners(asb, "audio");
 		}
 		asb.addEventListener('error', 				function(e) { audio_error("audio buffer"); });
