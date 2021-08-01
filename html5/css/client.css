@@ -99,11 +99,6 @@ canvas {
 	box-shadow : 0px 10px 25px rgba(0, 0, 0, 0.5);
 }
 
-.windowhead {
-	height: 30px;
-	color: #000000;
-	background-color: #ffffff;
-}
 .windowicon {
 	display: inline-block;
 	position: absolute;
@@ -149,8 +144,14 @@ canvas {
 div.windowinfocus {
 	z-index: 5000;
 }
-div.windowinfocus div.windowhead {
+.windowhead {
+	height: 30px;
+	color: #000000;
 	background-color: #A0A0A0;
+	border-bottom: 1px solid #C0C0C0;
+}
+div.windowinfocus div.windowhead {
+	background-color: #ffffff;
 }
 
 .modal {
