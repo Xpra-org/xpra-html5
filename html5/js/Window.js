@@ -1078,11 +1078,11 @@ XpraWindow.prototype.set_cursor = function(encoding, w, h, xhot, yhot, img_data)
 		const window_element = jQuery("#"+String(this.wid));
 		const cursor_url = "data:image/" + encoding + ";base64," + window.btoa(img_data);
 		//j.src = "data:image/"+coding+";base64," + Utilities.ArrayBufferToBase64(img_data);
-		function set_cursor_url(url) {
+		function set_cursor_url(url, x, y) {
 			const url_str = "url('"+url+"')";
 			window_element.css("cursor", url_str+", default");
 			//CSS3 with hotspot:
-			window_element.css("cursor", url_str+" "+xhot+" "+yhot+", auto");
+			window_element.css("cursor", url_str+" "+x+" "+y+", auto");
 		}
 		if (window.devicePixelRatio && window.devicePixelRatio!=1) {
 			//scale it:
@@ -1095,12 +1095,12 @@ XpraWindow.prototype.set_cursor = function(encoding, w, h, xhot, yhot, img_data)
 				canvas.height = Math.round(h*window.devicePixelRatio);
 				ctx.drawImage(this, 0, 0, canvas.width, canvas.height);
 				var scaled_cursor_url = canvas.toDataURL();
-				set_cursor_url(scaled_cursor_url);
+				set_cursor_url(scaled_cursor_url, Math.round(xhot*window.devicePixelRatio), Math.round(yhot*window.devicePixelRatio));
 			};
 			tmp_img.src = cursor_url;
 		}
 		else {
-			set_cursor_url(cursor_url);
+			set_cursor_url(cursor_url, xhot, yhot);
 		}
 	}
 };
