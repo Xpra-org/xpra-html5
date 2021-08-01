@@ -1071,6 +1071,9 @@ XpraWindow.prototype.reset_cursor = function() {
 
 XpraWindow.prototype.set_cursor = function(encoding, w, h, xhot, yhot, img_data) {
 	if (encoding=="png") {
+	    if ((typeof img_data) === 'object' && img_data.constructor===Uint8Array) {
+			img_data = Utilities.Uint8ToString(img_data);
+		}
 		const cursor_url = "url('data:image/" + encoding + ";base64," + window.btoa(img_data) + "')";
 		const window_element = jQuery("#"+String(this.wid));
 		window_element.css("cursor", cursor_url+", default");
