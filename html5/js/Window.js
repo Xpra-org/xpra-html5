@@ -1091,6 +1091,7 @@ XpraWindow.prototype.set_cursor = function(encoding, w, h, xhot, yhot, img_data)
 				console.log("loaded!");
 				const canvas = document.createElement('canvas');
 				const ctx = canvas.getContext('2d');
+				ctx.imageSmoothingEnabled = false;
 				canvas.width = Math.round(w*window.devicePixelRatio);
 				canvas.height = Math.round(h*window.devicePixelRatio);
 				ctx.drawImage(this, 0, 0, canvas.width, canvas.height);
