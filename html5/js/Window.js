@@ -1089,7 +1089,7 @@ XpraWindow.prototype.set_cursor = function(encoding, w, h, xhot, yhot, img_data)
 		if (Math.round(zoom*4)==(2*Math.round(zoom*2))){
 			zoom = Math.round(zoom*2)/2;
 		}
-		if (zoom!=1) {
+		if (zoom!=1 && !Utilities.isMacOS()) {
 			//scale it:
 			const tmp_img = new Image();
 			tmp_img.onload = function() {
