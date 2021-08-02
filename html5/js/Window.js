@@ -1084,7 +1084,8 @@ XpraWindow.prototype.set_cursor = function(encoding, w, h, xhot, yhot, img_data)
 			//CSS3 with hotspot:
 			window_element.css("cursor", url_str+" "+x+" "+y+", auto");
 		}
-		if (window.devicePixelRatio && window.devicePixelRatio!=1) {
+		let zoom = detectZoom.zoom();
+		if (zoom!=1) {
 			//scale it:
 			const tmp_img = new Image();
 			tmp_img.onload = function() {
