@@ -1085,6 +1085,10 @@ XpraWindow.prototype.set_cursor = function(encoding, w, h, xhot, yhot, img_data)
 			window_element.css("cursor", url_str+" "+x+" "+y+", auto");
 		}
 		let zoom = detectZoom.zoom();
+		//prefer fractional zoom values if possible:
+		if (Math.round(zoom*4)==(2*Math.round(zoom*2))){
+			zoom = Math.round(zoom*2)/2;
+		}
 		if (zoom!=1) {
 			//scale it:
 			const tmp_img = new Image();
