@@ -6,6 +6,7 @@ var RENCODE = {
 	DEFAULT_FLOAT_BITS : 32,
 	MAX_INT_LENGTH : 64,
 
+	CHR_BIN		: 47,
 	CHR_LIST	: 59,
 	CHR_DICT	: 60,
 	CHR_INT 	: 61,
@@ -39,7 +40,7 @@ var RENCODE = {
 
 function rencode_string(str) {
 	const len = str.length;
-    if (len < RENCODE.STR_FIXED_COUNT) {
+	if (len < RENCODE.STR_FIXED_COUNT) {
 		const u8a = new Uint8Array(len+1);
 		u8a[0] = RENCODE.STR_FIXED_START+len;
 		for (let i=0; i<len; ++i) {
@@ -63,7 +64,7 @@ function rencode_string(str) {
 
 function rencode_int(i) {
 	let u8a = null;
-    if (0 <= i && i < RENCODE.INT_POS_FIXED_COUNT) {
+	if (0 <= i && i < RENCODE.INT_POS_FIXED_COUNT) {
 		u8a = new Uint8Array([RENCODE.INT_POS_FIXED_START + i])
 	}
 	else if (-RENCODE.INT_NEG_FIXED_COUNT <= i && i < 0) {
@@ -92,7 +93,7 @@ function rencode_int(i) {
 		}
 	}
 	else {
-        const str = i.toString();
+		const str = i.toString();
 		if (str.length >= RENCODE.MAX_INT_LENGTH) {
 			throw "number too big: "+i;
 		}
@@ -124,35 +125,29 @@ function rencode_merge_arrays(rlist) {
 
 function rencode_uint8(a) {
 	const len = a.length;
-    if (len < RENCODE.STR_FIXED_COUNT) {
-		const u8a = new Uint8Array(len+1);
-		u8a[0] = RENCODE.STR_FIXED_START+len;
-		u8a.set(a, 1);
-		return u8a;
-	}
 	const len_str = len.toString();
 	const len_len = len_str.length;
-	const u8a = new Uint8Array(len_len+1+len);
+	const u8a = new Uint8Array(len_len+2+len);
+	u8a[0] = RENCODE.CHR_BIN;
 	for (let i=0; i<len_len; ++i) {
-		u8a[i] = len_str.charCodeAt(i);
+		u8a[1+i] = len_str.charCodeAt(i);
 	}
 	const SEPARATOR = ":";
-	u8a[len_len] = SEPARATOR.charCodeAt(0);
-	u8a.set(a, len_len+1);
+	u8a[1+len_len] = SEPARATOR.charCodeAt(0);
+	u8a.set(a, len_len+2);
 	return u8a;
-	
 }
 
 function rencode_list(l) {
 	const list_len = l.length;
 	const rlist = [];
-    if (list_len < RENCODE.LIST_FIXED_COUNT) {
+	if (list_len < RENCODE.LIST_FIXED_COUNT) {
 		rlist.push(new Uint8Array([RENCODE.LIST_FIXED_START + list_len]));
 		for (let i=0; i<list_len; ++i) {
 			rlist.push(rencode(l[i]));
 		}
 	}
-    else {
+	else {
 		rlist.push(new Uint8Array([RENCODE.CHR_LIST]));
 		for (let i=0; i<list_len; ++i) {
 			rlist.push(rencode(l[i]));
@@ -167,15 +162,15 @@ function rencode_dict(dict) {
 	const rlist = [];
 	if (dict_len < RENCODE.DICT_FIXED_COUNT) {
 		rlist.push(new Uint8Array([RENCODE.DICT_FIXED_START + dict_len]));
-	    for(key in dict) {
+		for(key in dict) {
 			value = dict[key];
 			rlist.push(rencode(key));
 			rlist.push(rencode(value));
 		}
 	}
-    else {
+	else {
 		rlist.push(new Uint8Array([RENCODE.CHR_DICT]));
-	    for(key in dict) {
+		for(key in dict) {
 			value = dict[key];
 			rlist.push(rencode(key));
 			rlist.push(rencode(value));
@@ -185,31 +180,65 @@ function rencode_dict(dict) {
 	return rencode_merge_arrays(rlist);
 }
 
-function rencode(obj) {
-    if (obj === null || obj === undefined) {
-        throw "invalid: cannot encode null";
-    }
-    const type = typeof obj;
-    if(type === 'object') {
-        if(typeof obj.length === 'undefined') {
-            return rencode_dict(obj);
-        }
-		if(obj.constructor===Uint8Array) {
-			return rencode_uint8(obj);
-		}
-        return rencode_list(obj);
-    }
-    switch(type) {
-        case "string":     return rencode_string(obj);
-        case "number":     return rencode_int(obj);
-        case "list":       return rencode_list(obj);
-        case "dictionary": return rencode_dict(obj);
-        case "boolean":    return rencode_int(obj?1:0);
-        default:           throw "invalid object type in source: "+type;
+function rencode_bool(v) {
+	if (v) {
+		return new Uint8Array([RENCODE.CHR_TRUE]);
+	}
+	else {
+		return new Uint8Array([RENCODE.CHR_FALSE]);
 	}
 }
 
+function encode_none() {
+	return new Uint8Array([RENCODE.CHR_NONE]);
+}
 
+//turn this flag off to use "rencodeplus" when encoding
+//this will send Uint8Array as 'binary'
+//(decoding is always supported since not having it is free)
+rencode_legacy_mode = true;
+function legacy_rencode(obj) {
+	const type = typeof obj;
+	if(type === 'object' && obj.constructor===Uint8Array) {
+	}
+	return rencode(obj);
+}
+function rencode(obj) {
+	if (obj === null || obj === undefined) {
+		return rencode_none();
+	}
+	const type = typeof obj;
+	if(type === 'object') {
+		if(typeof obj.length === 'undefined') {
+			return rencode_dict(obj);
+		}
+		if(obj.constructor===Uint8Array) {
+			if (rencode_legacy_mode) {
+				//legacy rencode cannot handle bytearrays
+				const CHUNK_SZ = 0x8000;
+				const c = [];
+				for (let i=0; i < u8a.length; i+=CHUNK_SZ) {
+					c.push(String.fromCharCode.apply(null, u8a.subarray(i, i+CHUNK_SZ)));
+				}
+				return rencode_string(c.join(""));
+			}
+			return rencode_uint8(obj);
+		}
+		return rencode_list(obj);
+	}
+	switch(type) {
+		case "string":		return rencode_string(obj);
+		case "number":		return rencode_int(obj);
+		case "list":		return rencode_list(obj);
+		case "dictionary":	return rencode_dict(obj);
+		case "boolean":		return rencode_bool(obj?1:0);
+		default:	throw "invalid object type in source: "+type;
+	}
+}
+function rencodeplus(obj) {
+	rencode_legacy_mode = false;
+	return rencode(obj);
+}
 
 function rdecode_string(dec) {
 	let len = 0;
@@ -230,6 +259,23 @@ function rdecode_string(dec) {
 	dec.pos += str_len;
 	return str;
 }
+function rdecode_bytes(dec) {
+	let len = 0;
+	dec.pos++;
+	const COLON_CHARCODE = ":".charCodeAt(0);
+	while (dec.buf[dec.pos+len]!=COLON_CHARCODE) {
+		len++;
+	}
+	const bytes_len_str = String.fromCharCode.apply(null, dec.buf.subarray(dec.pos, dec.pos+len));
+	dec.pos += len+1;
+	const bytes_len = parseInt(bytes_len_str);
+	if (isNaN(bytes_len)) {
+		throw "invalid bytes length: '"+bytes_len_str+"'";
+	}
+	const bytes = dec.buf.subarray(dec.pos, dec.pos+bytes_len);
+	dec.pos += bytes_len;
+	return bytes;
+}
 function rdecode_list(dec) {
 	dec.pos++;
 	const list = [];
@@ -237,7 +283,7 @@ function rdecode_list(dec) {
 		list.push(_rdecode(dec));
 	}
 	dec.pos++;
-    return list;
+	return list;
 }
 function rdecode_dict(dec) {
 	dec.pos++;
@@ -302,12 +348,18 @@ function rdecode_false(dec) {
 	dec.pos++;
 	return false;
 }
+function rdecode_none(dec) {
+	dec.pos++;
+	return null;
+}
 
 const decode_func = new Map();
 for(let i=0; i<10; i++) {
 	const charcode = i.toString().charCodeAt(0);
 	decode_func[charcode] = rdecode_string;
 }
+
+decode_func[RENCODE.CHR_BIN] = rdecode_bytes
 decode_func[RENCODE.CHR_LIST] = rdecode_list
 decode_func[RENCODE.CHR_DICT] = rdecode_dict
 decode_func[RENCODE.CHR_INT] = rdecode_int
@@ -317,38 +369,39 @@ decode_func[RENCODE.CHR_INT4] = rdecode_intl
 decode_func[RENCODE.CHR_INT8] = rdecode_intq
 decode_func[RENCODE.CHR_TRUE] = rdecode_true
 decode_func[RENCODE.CHR_FALSE] = rdecode_false
+decode_func[RENCODE.CHR_NONE] = rdecode_none
 
 
 function make_fixed_length_string_decoder(len) {
-    function fixed_length_string_decoder(dec) {
+	function fixed_length_string_decoder(dec) {
 		dec.pos++;
 		const str = String.fromCharCode.apply(null, dec.buf.subarray(dec.pos, dec.pos+len));
 		dec.pos += len;
 		return str;
 	}
-    return fixed_length_string_decoder;
+	return fixed_length_string_decoder;
 }
 for(let i=0; i<RENCODE.STR_FIXED_COUNT; i++) {
-    decode_func[RENCODE.STR_FIXED_START + i] = make_fixed_length_string_decoder(i);
+	decode_func[RENCODE.STR_FIXED_START + i] = make_fixed_length_string_decoder(i);
 }
 
 function make_fixed_length_list_decoder(len) {
-    function fixed_length_list_decoder(dec) {
+	function fixed_length_list_decoder(dec) {
 		dec.pos++;
 		let list = [];
 		for (let i=0; i<len; i++) {
 			list.push(_rdecode(dec));
 		}
-        return list
+		return list
 	}
 	return fixed_length_list_decoder;
 }
 for(let i=0; i<RENCODE.LIST_FIXED_COUNT; i++) {
-    decode_func[RENCODE.LIST_FIXED_START + i] = make_fixed_length_list_decoder(i);
+	decode_func[RENCODE.LIST_FIXED_START + i] = make_fixed_length_list_decoder(i);
 }
 
 function make_fixed_length_dict_decoder(len) {
-    function fixed_length_dict_decoder(dec) {
+	function fixed_length_dict_decoder(dec) {
 		dec.pos++;
 		const dict = {};
 		for(let i=0; i<len; i++) {
@@ -356,12 +409,12 @@ function make_fixed_length_dict_decoder(len) {
 			const value = _rdecode(dec);
 			dict[key] = value;
 		}
-        return dict;
+		return dict;
 	}
 	return fixed_length_dict_decoder;
 }
 for(let i=0; i<RENCODE.DICT_FIXED_COUNT; i++) {
-    decode_func[RENCODE.DICT_FIXED_START + i] = make_fixed_length_dict_decoder(i);
+	decode_func[RENCODE.DICT_FIXED_START + i] = make_fixed_length_dict_decoder(i);
 }
 
 function make_int_fixed_decoder(i) {
@@ -372,17 +425,17 @@ function make_int_fixed_decoder(i) {
 	return int_fixed_decoder;
 }
 for(let i=0; i<RENCODE.INT_POS_FIXED_COUNT; i++) {
-    decode_func[RENCODE.INT_POS_FIXED_START + i] = make_int_fixed_decoder(i)
+	decode_func[RENCODE.INT_POS_FIXED_START + i] = make_int_fixed_decoder(i)
 }
 for(let i=0; i<RENCODE.INT_NEG_FIXED_COUNT; i++) {
-    decode_func[RENCODE.INT_NEG_FIXED_START + i] = make_int_fixed_decoder(-1 - i)
+	decode_func[RENCODE.INT_NEG_FIXED_START + i] = make_int_fixed_decoder(-1 - i)
 }
 
 
 class DecodeBuffer {
   constructor(u8a) {
-    this.buf = u8a;
-    this.pos = 0;
+	this.buf = u8a;
+	this.pos = 0;
   }
 }
 
@@ -392,7 +445,7 @@ function _rdecode(dec) {
 	}
 	const typecode = dec.buf[dec.pos];
 	const decode = decode_func[typecode];
-    if (decode === null || decode === undefined) {
+	if (decode === null || decode === undefined) {
 		//console.log("buffer pos:", dec.pos);
 		//console.log("buffer:", dec.buf.subarray(dec.pos, dec.pos+20))
 		//const str = String.fromCharCode.apply(null, dec.buf.subarray(dec.pos, dec.pos+20));
@@ -410,7 +463,7 @@ function rdecode(buf) {
 		}
 		return rdecode(u8a);
 	}
-    if (type === 'object' && buf.constructor===Uint8Array) {
+	if (type === 'object' && buf.constructor===Uint8Array) {
 		return _rdecode(new DecodeBuffer(buf));
 	}
 	throw "cannot decode "+type;

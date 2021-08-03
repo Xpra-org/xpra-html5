@@ -82,6 +82,10 @@ XpraProtocolWorkerHost.prototype.set_cipher_out = function(caps, key) {
 	this.worker.postMessage({'c': 'x', 'p': caps, 'k': key});
 };
 
+XpraProtocolWorkerHost.prototype.enable_packet_encoder = function(packet_encoder) {
+	this.worker.postMessage({'c': 'p', 'pe' : packet_encoder});
+}
+
 
 
 /*
@@ -103,6 +107,7 @@ function XpraProtocol() {
 
 	//Queue processing via intervals
 	this.process_interval = 0;  //milliseconds
+	this.packet_encoder = "bencode";
 }
 
 XpraProtocol.prototype.close_event_str = function(event) {
@@ -272,7 +277,7 @@ XpraProtocol.prototype.do_process_receive_queue = function() {
 		proto_flags = proto_flags & ~0x8;
 	}
 
-	if (proto_flags > 1) {
+	if (proto_flags > 1 && proto_flags!=0x10) {
 		this.protocol_error("we can't handle this protocol flag yet: "+proto_flags);
 		return;
 	}
@@ -390,7 +395,7 @@ XpraProtocol.prototype.do_process_receive_queue = function() {
 		//decode raw packet string into objects:
 		let packet = null;
 		try {
-			if (proto_flags==1) {
+			if (proto_flags==0x1 || proto_flags==0x10) {
 				packet = rdecode(packet_data);
 			} else {
 				packet = bdecode(packet_data);
@@ -438,25 +443,33 @@ XpraProtocol.prototype.do_process_receive_queue = function() {
 	return this.rQ.length>0;
 };
 
+XpraProtocol.prototype.enable_packet_encoder = function(packet_encoder) {
+	this.packet_encoder = packet_encoder;
+}
+
 XpraProtocol.prototype.process_send_queue = function() {
 	while(this.sQ.length !== 0 && this.websocket) {
 		const packet = this.sQ.shift();
 		if(!packet){
 			return;
 		}
-
-		//debug("send worker:"+packet);
 		let proto_flags = 0;
 		let bdata = null;
 		try {
-			//use rencode if available,
-			//but not with encryption (see issue #43)
-			if (rencode && !this.cipher_out) {
-				bdata = rencode(packet);
-				proto_flags = 1;
+			if (this.packet_encoder=="bencode") {
+				bdata = bencode(packet)
+				proto_flags = 0x0;
+			}
+			else if (this.packet_encoder=="rencode") {
+				bdata = rencode(packet)
+				proto_flags = 0x1;
+			}
+			else if (this.packet_encoder=="rencodeplus") {
+				bdata = rencodeplus(packet)
+				proto_flags = 0x10;
 			}
 			else {
-				bdata = bencode(packet);
+				throw "invalid packet encoder: "+this.packet_encoder;
 			}
 		} catch(e) {
 			this.error("Error: failed to encode packet:", packet);
@@ -467,40 +480,56 @@ XpraProtocol.prototype.process_send_queue = function() {
 		if(this.cipher_out) {
 			proto_flags |= 0x2;
 			const padding_size = this.cipher_out_block_size - (payload_size % this.cipher_out_block_size);
-			for (let i = 0; i<padding_size; i++) {
-				bdata += String.fromCharCode(padding_size);
+			const padding_char = String.fromCharCode(padding_size);
+			let input_data = null;
+			if ((typeof bdata) === 'object' && bdata.constructor===Uint8Array) {
+				if (padding_size==0) {
+					input_data = bdata;
+				}
+				else {
+					input_data = new Uint8Array(payload_size + padding_size);
+					input_data.set(bdata);
+				}
 			}
-			this.cipher_out.update(forge.util.createBuffer(bdata));
+			else {
+				input_data = new Uint8Array(payload_size + padding_size);
+				//copy string one character at a time..
+				for (let i=0; i<payload_size; i++) {
+					input_data[i] = ord(bdata[i]);
+				}
+			}
+			for (let i = 0; i<padding_size; i++) {
+				input_data[payload_size+i] = padding_char;
+			}
+			this.cipher_out.update(forge.util.createBuffer(input_data));
 			bdata = this.cipher_out.output.getBytes();
 		}
 		const actual_size = bdata.length;
-		//convert string to a byte array:
-		const cdata = [];
-		if (proto_flags == 1) {
-			for (let i=0; i<actual_size; i++)
-				cdata.push(bdata[i]);
-		} else {
-			for (let i=0; i<actual_size; i++)
-				cdata.push(ord(bdata[i]));
-		}
+
+		let packet_data = new Uint8Array(actual_size + 8);
 		const level = 0;
-		/*
-		const use_zlib = false;		//does not work...
-		if (use_zlib) {
-			cdata = new Zlib.Deflate(cdata).compress();
-			level = 1;
-		}*/
-		//struct.pack('!BBBBL', ord("P"), proto_flags, level, index, payload_size)
-		let header = ["P".charCodeAt(0), proto_flags, level, 0];
-		for (let i=3; i>=0; i--)
-			header.push((payload_size >> (8*i)) & 0xFF);
-		//concat data to header, saves an intermediate array which may or may not have
-		//been optimised out by the JS compiler anyway, but it's worth a shot
-		header = header.concat(cdata);
-		//debug("send("+packet+") "+cdata.length+" bytes in packet for: "+bdata.substring(0, 32)+"..");
+		//header:
+		packet_data[0] = "P".charCodeAt(0);
+		packet_data[1] = proto_flags;
+		packet_data[2] = level;
+		packet_data[3] = 0;
+		//size header:
+		for (let i=0; i<4; i++) {
+			packet_data[7-i] = (payload_size >> (8*i)) & 0xFF;
+		}
+		if ((typeof bdata) === 'object' && bdata.constructor===Uint8Array) {
+			console.log("fast path!");
+			packet_data.set(bdata, 8);
+		}
+		else {
+			//copy string one character at a time..
+			for (let i=0; i<actual_size; i++) {
+				packet_data[8+i] = ord(bdata[i]);
+			}
+		}
 		// put into buffer before send
 		if (this.websocket) {
-			this.websocket.send((new Uint8Array(header)).buffer);
+			this.websocket.send((new Uint8Array(packet_data)).buffer);
 		}
 	}
 };
@@ -581,6 +610,9 @@ if (!(typeof window == "object" && typeof document == "object" && window.documen
 			break;
 		case 's':
 			protocol.send(data.p);
+			break;
+		case 'p':
+			protocol.enable_packet_encoder(data.pe);
 			break;
 		case 'x':
 			protocol.set_cipher_out(data.p, data.k);

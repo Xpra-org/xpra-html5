@@ -1120,6 +1120,7 @@ XpraClient.prototype._make_hello_base = function() {
 		"mouse.show"				: true,
 		// packet encoders
 		"rencode" 					: (rencode!==null && rencode!==undefined),
+		"rencodeplus"				: (rencode!==null && rencode!==undefined),
 		"bencode"					: true,
 		"yaml"						: false,
 		"open-url"					: this.open_url,
@@ -1759,7 +1760,6 @@ XpraClient.prototype._process_hello = function(packet, ctx) {
 		Utilities.error = function() { ctx.error.apply(ctx, arguments); };
 		Utilities.exc = function() { ctx.exc.apply(ctx, arguments); };
 	}
-
 	// check for server encryption caps update
 	if(ctx.encryption) {
 		ctx.cipher_out_caps = {
@@ -1770,6 +1770,20 @@ XpraClient.prototype._process_hello = function(packet, ctx) {
 		};
 		ctx.protocol.set_cipher_out(ctx.cipher_out_caps, ctx.encryption_key);
 	}
+	//rencode is not compatible with encryption:
+	 //(see issue #43)
+	//ctx.protocol.enable_packet_encoder("bencode");
+	// select a packet encoder:
+	const PACKET_ENCODERS = ["rencodeplus", "rencode", "bencode"];
+	for (const i in PACKET_ENCODERS) {
+		const packet_encoder = PACKET_ENCODERS[i];
+		if (hello[packet_encoder]) {
+			ctx.protocol.enable_packet_encoder(packet_encoder);
+			Utilities.clog("packet encoder:", packet_encoder);
+			break;
+		}
+	}
+
 	// find the modifier to use for Num_Lock
 	const modifier_keycodes = hello['modifier_keycodes'];
 	if (modifier_keycodes) {
