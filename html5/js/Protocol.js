@@ -571,7 +571,6 @@ XpraProtocol.prototype.set_cipher_out = function(caps, key) {
 	// stretch the password
 	function cipher_cap(k) {
 		var value = caps['cipher'+k];
-		console.log("value="+value+" ("+typeof value+")");
 		if ((typeof value) === 'object' && value.constructor===Uint8Array) {
 			value = String.fromCharCode.apply(null, value);
 		}
