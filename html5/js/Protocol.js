@@ -515,7 +515,6 @@ XpraProtocol.prototype.process_send_queue = function() {
 			packet_data[7-i] = (payload_size >> (8*i)) & 0xFF;
 		}
 		if ((typeof bdata) === 'object' && bdata.constructor===Uint8Array) {
-			console.log("fast path!");
 			packet_data.set(bdata, 8);
 		}
 		else {
