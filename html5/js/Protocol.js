@@ -480,28 +480,25 @@ XpraProtocol.prototype.process_send_queue = function() {
 		if(this.cipher_out) {
 			proto_flags |= 0x2;
 			const padding_size = this.cipher_out_block_size - (payload_size % this.cipher_out_block_size);
-			const padding_char = String.fromCharCode(padding_size);
 			let input_data = null;
-			if ((typeof bdata) === 'object' && bdata.constructor===Uint8Array) {
-				if (padding_size==0) {
-					input_data = bdata;
-				}
-				else {
-					input_data = new Uint8Array(payload_size + padding_size);
-					input_data.set(bdata);
-				}
+			if ((typeof bdata) === 'string') {
+				input_data = bdata;
 			}
 			else {
-				input_data = new Uint8Array(payload_size + padding_size);
-				//copy string one character at a time..
-				for (let i=0; i<payload_size; i++) {
-					input_data[i] = ord(bdata[i]);
+				const CHUNK_SZ = 0x8000;
+				const c = [];
+				for (let i=0; i < bdata.length; i+=CHUNK_SZ) {
+					c.push(String.fromCharCode.apply(null, bdata.subarray(i, i+CHUNK_SZ)));
+				}
+				input_data = c.join("");
+			}
+			if (padding_size) {
+				const padding_char = String.fromCharCode(padding_size);
+				for (let i = 0; i<padding_size; i++) {
+					input_data += padding_char;
 				}
 			}
-			for (let i = 0; i<padding_size; i++) {
-				input_data[payload_size+i] = padding_char;
-			}
-			this.cipher_out.update(forge.util.createBuffer(input_data));
+			this.cipher_out.update(forge.util.createBuffer(input_data), 'utf8');
 			bdata = this.cipher_out.output.getBytes();
 		}
 		const actual_size = bdata.length;
@@ -572,10 +569,19 @@ XpraProtocol.prototype.set_cipher_in = function(caps, key) {
 XpraProtocol.prototype.set_cipher_out = function(caps, key) {
 	this.cipher_out_block_size = 32;
 	// stretch the password
-	const secret = forge.pkcs5.pbkdf2(key, caps['cipher.key_salt'], caps['cipher.key_stretch_iterations'], this.cipher_out_block_size);
+	function cipher_cap(k) {
+		var value = caps['cipher'+k];
+		console.log("value="+value+" ("+typeof value+")");
+		if ((typeof value) === 'object' && value.constructor===Uint8Array) {
+			value = String.fromCharCode.apply(null, value);
+		}
+		return value;
+	}
+	const secret = forge.pkcs5.pbkdf2(key, cipher_cap('.key_salt'), cipher_cap('.key_stretch_iterations'), this.cipher_out_block_size);
 	// start the cipher
+	const iv = cipher_cap('.iv');
 	this.cipher_out = forge.cipher.createCipher('AES-CBC', secret);
-	this.cipher_out.start({iv: caps['cipher.iv']});
+	this.cipher_out.start({iv: iv});
 };
 
 

@@ -1762,18 +1762,14 @@ XpraClient.prototype._process_hello = function(packet, ctx) {
 	}
 	// check for server encryption caps update
 	if(ctx.encryption) {
-		ctx.cipher_out_caps = {
-			"cipher"					: hello['cipher'],
-			"cipher.iv"					: hello['cipher.iv'],
-			"cipher.key_salt"			: hello['cipher.key_salt'],
-			"cipher.key_stretch_iterations"	: hello['cipher.key_stretch_iterations'],
-		};
+		ctx.cipher_out_caps = {};
+		const CIPHER_CAPS = ["", ".iv", ".key_salt", ".key_stretch_iterations"];
+		for (let i=0; i<CIPHER_CAPS.length; ++i) {
+			const cipher_key = "cipher"+CIPHER_CAPS[i];
+			ctx.cipher_out_caps[cipher_key] = hello[cipher_key];
+		}
 		ctx.protocol.set_cipher_out(ctx.cipher_out_caps, ctx.encryption_key);
 	}
-	//rencode is not compatible with encryption:
-	 //(see issue #43)
-	//ctx.protocol.enable_packet_encoder("bencode");
-	// select a packet encoder:
 	const PACKET_ENCODERS = ["rencodeplus", "rencode", "bencode"];
 	for (const i in PACKET_ENCODERS) {
 		const packet_encoder = PACKET_ENCODERS[i];
@@ -2078,10 +2074,11 @@ XpraClient.prototype._process_challenge = function(packet, ctx) {
 			return;
 		}
 	}
-	const digest = packet[3];
-	const server_salt = packet[1];
+	let s = Utilities.s;
+	const digest = s(packet[3]);
+	const server_salt = s(packet[1]);
 	let client_salt = null;
-	const salt_digest = packet[4] || "xor";
+	const salt_digest = s(packet[4]) || "xor";
 	let l = server_salt.length;
 	if (salt_digest=="xor") {
 		//don't use xor over unencrypted connections unless explicitly allowed:
@@ -3155,17 +3152,17 @@ XpraClient.prototype._remove_audio_element = function() {
 };
 
 XpraClient.prototype._process_sound_data = function(packet, ctx) {
-	if (packet[1]!=ctx.audio_codec) {
-		ctx.error("invalid audio codec '"+packet[1]+"' (expected "+ctx.audio_codec+"), stopping audio stream");
-		ctx.close_audio();
-		return;
-	}
-
 	try {
-		const codec = packet[1];
+		const codec = Utilities.s(packet[1]);
 		const buf = packet[2];
 		const options = packet[3];
 		const metadata = packet[4];
+
+		if (codec!=ctx.audio_codec) {
+			ctx.error("invalid audio codec '"+codec+"' (expected "+ctx.audio_codec+"), stopping audio stream");
+			ctx.close_audio();
+			return;
+		}
 
 		if (options["start-of-stream"] == 1) {
 			ctx._audio_start_stream();
