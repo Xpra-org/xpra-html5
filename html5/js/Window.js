@@ -1093,7 +1093,6 @@ XpraWindow.prototype.set_cursor = function(encoding, w, h, xhot, yhot, img_data)
 			//scale it:
 			const tmp_img = new Image();
 			tmp_img.onload = function() {
-				console.log("loaded!");
 				const canvas = document.createElement('canvas');
 				const ctx = canvas.getContext('2d');
 				ctx.imageSmoothingEnabled = false;
