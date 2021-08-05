@@ -6,7 +6,6 @@ var RENCODE = {
 	DEFAULT_FLOAT_BITS : 32,
 	MAX_INT_LENGTH : 64,
 
-	CHR_BIN		: 47,
 	CHR_LIST	: 59,
 	CHR_DICT	: 60,
 	CHR_INT 	: 61,
@@ -35,6 +34,9 @@ var RENCODE = {
 
 	LIST_FIXED_START : 128+64,	//STR_FIXED_START + STR_FIXED_COUNT,
 	LIST_FIXED_COUNT : 64,
+
+	COLON_CHARCODE : ":".charCodeAt(0),			//for char strings
+	SLASH_CHARCODE : "/".charCodeAt(0),			//for byte strings
 };
 
 
@@ -127,12 +129,11 @@ function rencode_uint8(a) {
 	const len = a.length;
 	const len_str = len.toString();
 	const len_len = len_str.length;
-	const u8a = new Uint8Array(len_len+2+len);
-	u8a[0] = RENCODE.CHR_BIN;
+	const u8a = new Uint8Array(len_len+1+len);
 	for (let i=0; i<len_len; ++i) {
 		u8a[1+i] = len_str.charCodeAt(i);
 	}
-	const SEPARATOR = ":";
+	const SEPARATOR = "/";
 	u8a[1+len_len] = SEPARATOR.charCodeAt(0);
 	u8a.set(a, len_len+2);
 	return u8a;
@@ -242,15 +243,20 @@ function rencodeplus(obj) {
 
 function rdecode_string(dec) {
 	let len = 0;
-	const COLON_CHARCODE = ":".charCodeAt(0);
-	while (dec.buf[dec.pos+len]!=COLON_CHARCODE) {
+	while (dec.buf[dec.pos+len]!=RENCODE.COLON_CHARCODE && dec.buf[dec.pos+len]!=RENCODE.SLASH_CHARCODE) {
 		len++;
 	}
 	const str_len_str = String.fromCharCode.apply(null, dec.buf.subarray(dec.pos, dec.pos+len));
-	dec.pos += len+1;
 	const str_len = parseInt(str_len_str);
 	if (isNaN(str_len)) {
 		throw "invalid string length: '"+str_len_str+"'";
+	}
+	const binary = dec.buf[dec.pos+len]==RENCODE.SLASH_CHARCODE;
+	dec.pos += len+1;
+	if (binary) {
+		const bytes = dec.buf.subarray(dec.pos, dec.pos+str_len);
+		dec.pos += str_len;
+		return bytes;
 	}
 	if (str_len==0) {
 		return "";
@@ -258,23 +264,6 @@ function rdecode_string(dec) {
 	const str = String.fromCharCode.apply(null, dec.buf.subarray(dec.pos, dec.pos+str_len));
 	dec.pos += str_len;
 	return str;
-}
-function rdecode_bytes(dec) {
-	let len = 0;
-	dec.pos++;
-	const COLON_CHARCODE = ":".charCodeAt(0);
-	while (dec.buf[dec.pos+len]!=COLON_CHARCODE) {
-		len++;
-	}
-	const bytes_len_str = String.fromCharCode.apply(null, dec.buf.subarray(dec.pos, dec.pos+len));
-	dec.pos += len+1;
-	const bytes_len = parseInt(bytes_len_str);
-	if (isNaN(bytes_len)) {
-		throw "invalid bytes length: '"+bytes_len_str+"'";
-	}
-	const bytes = dec.buf.subarray(dec.pos, dec.pos+bytes_len);
-	dec.pos += bytes_len;
-	return bytes;
 }
 function rdecode_list(dec) {
 	dec.pos++;
@@ -359,7 +348,6 @@ for(let i=0; i<10; i++) {
 	decode_func[charcode] = rdecode_string;
 }
 
-decode_func[RENCODE.CHR_BIN] = rdecode_bytes
 decode_func[RENCODE.CHR_LIST] = rdecode_list
 decode_func[RENCODE.CHR_DICT] = rdecode_dict
 decode_func[RENCODE.CHR_INT] = rdecode_int
