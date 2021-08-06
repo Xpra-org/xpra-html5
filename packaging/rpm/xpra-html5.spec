@@ -73,8 +73,45 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
-* Tue Jul 27 2021 Antoine Martin <antoine@xpra.org> 4.3-910-1
+* Fri Aug 06 2021 Antoine Martin <antoine@xpra.org> 4.3-943-1
 - TODO
+
+* Fri Aug 06 2021 Antoine Martin <antoine@xpra.org> 4.3-910-1
+- build and packaging:
+   installation with python2 build environment
+   create symlinks for some fonts
+   more reliable git branch detection
+- rencode packet encoder:
+   new, clean javascript implementation
+   remove workarounds for Safari, encryption, compression, etc
+   handle byte arrays natively without copying
+- geometry fixes:
+   option to adjust viewport to screen width via scaling
+   window visibility adjustements no longer snap to the sides
+   server errors for override-redirect windows offsets
+   try harder to get override-redirect windows to close
+- keyboard:
+   don't show the on-screen keyboard on non-mobile devices
+   fix keyboard language to keymap matcher
+   Ukranian keyboard layout should use 'ua'
+- re-connect:
+   don't start a new session when re-connecting
+   fix disconnections after re-connecting
+   don't try to reconnect when shutting down the server
+- connect dialog:
+   start and start-desktop now work with or without command
+   missing session, category and command icons with latest google chrome
+   pass w3c validation without any warnings
+- cosmetic:
+   scale window icons to fit in the title bar
+   use sans-serif font for window title
+   change titlebar focused / unfocused colours
+   make window corners round
+   try to scale application cursors to match window zoom
+- misc fixes:
+   audio debugging was wrongly enabled (extra CPU usage and lag)
+   log disconnection messages
+   prevent console errors with Internet Explorer
 
 * Tue May 18 2021 Antoine Martin <antoine@xpra.org> 4.2-878-1
 - select session attributes from list of options exposed by the server
