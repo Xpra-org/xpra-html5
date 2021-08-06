@@ -22,17 +22,17 @@
 	<link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
 	<link rel="icon" type="image/png" href="favicon.png">
 
-	<script type="text/javascript" src="js/lib/es6-shim.js"></script>
-	<script type="text/javascript" src="js/lib/AudioContextMonkeyPatch.js"></script>
+	<script src="js/lib/es6-shim.js"></script>
+	<script src="js/lib/AudioContextMonkeyPatch.js"></script>
 
-	<script type="text/javascript" src="js/lib/jquery.js"></script>
-	<script type="text/javascript" src="js/Utilities.js"></script>
-	<script type="text/javascript" src="js/MediaSourceUtil.js"></script>
-	<script type="text/javascript" src="js/lib/aurora/aurora.js"></script>
+	<script src="js/lib/jquery.js"></script>
+	<script src="js/Utilities.js"></script>
+	<script src="js/MediaSourceUtil.js"></script>
+	<script src="js/lib/aurora/aurora.js"></script>
 	<!--
-	<script type="text/javascript" src="js/lib/aurora/mp3.js"></script>
-	<script type="text/javascript" src="js/lib/aurora/flac.js"></script>
-	<script type="text/javascript" src="js/lib/aurora/aac.js"></script>
+	<script src="js/lib/aurora/mp3.js"></script>
+	<script src="js/lib/aurora/flac.js"></script>
+	<script src="js/lib/aurora/aac.js"></script>
 	-->
 </head>
 
@@ -58,14 +58,14 @@
 			<label class="sr-only" for="username">Username</label>
 			<input title="Username" type="text" class="form-control" id="username" autocomplete="username" placeholder="Username" size="16" maxlength="256">
 			<label class="sr-only" for="password">Password</label>
-			<input title="Password" type="password" class="form-control" id="password"  autocomplete="password" placeholder="Password" size="16" maxlength="256">
+			<input title="Password" type="password" class="form-control" id="password"  autocomplete="current-password" placeholder="Password" size="16" maxlength="256">
 			<br>
 			<div class="security-box">
 			  	<span id="ssl-span"><input type="checkbox" id="ssl"> Secure Sockets</span>
 			  	<span id="insecure-span"><input type="checkbox" id="insecure"> Insecure plain-text passwords</span>
 			  	<br />
 			  	<span id="encryption-span"><input type="checkbox" id="encryption"> AES</span>
-			  	<span id="encryption-key-span"><input type="password" class="form-control" id="key" autocomplete="encryption-key" placeholder="AES-KEY" size="32" maxlength="256"></span>
+				<span id="encryption-key-span"><input type="password" class="form-control" id="key" autocomplete="on" placeholder="AES-KEY" size="32" maxlength="256"></span>
 			</div>
 
 			<div class="panel-group">
@@ -82,7 +82,7 @@
 					</div>
 					<div style="display:inline-block;">
 						<select id="command_category" style="display:none;"></select>
-						<img class="command-icon" id="command_category_icon" alt="desktop command icon" src="./icons/noicon.png" />
+						<img class="command-icon" id="command_category_icon" alt="desktop command category icon" src="./icons/noicon.png" />
 						<br />
 						<select id="command_entry" style="display:none;"></select>
 						<img class="command-icon" id="command_entry_icon" alt="desktop command icon" src="./icons/noicon.png" />
@@ -145,7 +145,7 @@
 					  <option value="fr">France</option>
 					  <option value="de">Germany</option>
 					  <option value="es">Spain</option>
-					  <option value="" disabled></option>
+					  <option value="" disabled>----------------</option>
 					  <option value="ad">Andorra</option>
 					  <option value="af">Afghanistan</option>
 					  <option value="al">Albania</option>
@@ -317,7 +317,7 @@
 	</div> <!-- /container -->
     <div class="bg-image"></div>
 
-<script type="text/javascript">
+<script>
 
 const VALUE_PROPERTIES = ["server", "port", "path", "username", "password", "key",
 					"bandwidth_limit", "encoding", "keyboard_layout", "audio_codec", "toolbar_position",
