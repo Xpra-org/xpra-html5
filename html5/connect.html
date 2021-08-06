@@ -611,15 +611,17 @@ function fill_form(default_settings) {
 	const start = getparam("start") || "";
 
 
-	function get_host_address() {
+	function get_host_address(skip_credentials) {
 		let url = "http";
 		if (document.getElementById("ssl").checked) {
 			url += "s";
 		}
 		url += "://";
-		const username = document.getElementById("username").value;
-		if (username) {
-			url += username+"@";
+		if (!skip_credentials) {
+			const username = document.getElementById("username").value;
+			if (username) {
+				url += username+"@";
+			}
 		}
 		const server = document.getElementById("server").value
 		if (!server) {
@@ -656,18 +658,31 @@ function fill_form(default_settings) {
 	const command_category = document.getElementById("command_category");
 	const command_entry_icon = document.getElementById("command_entry_icon");
 	const command_entry = document.getElementById("command_entry");
+	function load_icon(icon, src) {
+		const url = get_host_address(true)+src;
+		icon.onload = function() {
+			Utilities.log("loaded icon", url);
+		};
+		icon.onerror  = function(e) {
+			Utilities.error("error loading icon", url, ":", e);
+		};
+		icon.onabort = function(e) {
+			Utilities.error("aborted loading icon", url, ":", e);
+		};
+		icon.src = url;
+	}
 	function command_entry_changed() {
 		var cc = command_category.options[command_category.selectedIndex].innerHTML;
 		var c = command_entry.options[command_entry.selectedIndex].innerHTML;
 		Utilities.log("command_category=", cc, ", command_entry=", c);
-		command_entry_icon.src = get_host_address()+"/MenuIcon/"+cc+"/"+c;
+		load_icon(command_entry_icon, "/MenuIcon/"+cc+"/"+c);
 		$('#command_entry_icon').show();
 	}
 	command_entry.addEventListener("change", command_entry_changed);
 	function command_category_changed() {
 		var cc = command_category.options[command_category.selectedIndex].innerHTML;
 		Utilities.log("command_category=", cc);
-		command_category_icon.src = get_host_address()+"/MenuIcon/"+cc;
+		load_icon(command_category_icon, "/MenuIcon/"+cc);
 		$('#command_category_icon').show();
 	}
 	command_category.addEventListener("change", command_category_changed);
@@ -739,7 +754,7 @@ function fill_form(default_settings) {
 	function desktop_entry_changed() {
 		var de = desktop_entry.options[desktop_entry.selectedIndex].innerHTML;
 		Utilities.log("desktop_session=", de);
-		desktop_entry_icon.src = get_host_address()+"/DesktopMenuIcon/"+de;
+		load_icon(desktop_entry_icon, "/DesktopMenuIcon/"+de);
 	}
 	desktop_entry.addEventListener("change", desktop_entry_changed);
 
