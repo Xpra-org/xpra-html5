@@ -2346,14 +2346,15 @@ XpraClient.prototype._new_window_common = function(packet, override_redirect) {
 	const wid = packet[1];
 	let x = packet[2];
 	let y = packet[3];
-	const w = packet[4];
+	let w = packet[4];
 	let h = packet[5];
 	const metadata = packet[6];
 	if (wid in this.id_to_window)
 		throw new Error("we already have a window " + wid);
 	if (w<=0 || h<=0) {
 		this.error("window dimensions are wrong:", w, h);
-		let w = 1, h = 1;
+		w = 1;
+		h = 1;
 	}
 	let client_properties = {};
 	if (packet.length>=8)
