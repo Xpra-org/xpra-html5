@@ -261,7 +261,18 @@ function rdecode_string(dec) {
 	if (str_len==0) {
 		return "";
 	}
-	const str = String.fromCharCode.apply(null, dec.buf.subarray(dec.pos, dec.pos+str_len));
+	const CHUNK_SZ = 0x8000;
+	const sub = dec.buf.subarray(dec.pos, dec.pos+str_len);
+	if (str_len<=CHUNK_SZ) {
+		str = String.fromCharCode.apply(null, sub);
+	}
+	else {
+		const c = [];
+		for (let i=0; i < sub.length; i+=CHUNK_SZ) {
+			c.push(String.fromCharCode.apply(null, sub.subarray(i, i+CHUNK_SZ)));
+		}
+		str = c.join("");
+	}
 	dec.pos += str_len;
 	return str;
 }
