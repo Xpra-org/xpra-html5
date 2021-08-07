@@ -414,7 +414,7 @@ XpraProtocol.prototype.do_process_receive_queue = function() {
 		}
 		try {
 			// pass to our packet handler
-			if((packet[0] === 'draw') && (packet[6] !== 'scroll')){
+			if(packet[0] === 'draw'){
 				const img_data = packet[7];
 				if (typeof img_data === 'string') {
 					const uint = new Uint8Array(img_data.length);
@@ -538,8 +538,12 @@ XpraProtocol.prototype.process_message_queue = function() {
 			return;
 		}
 
-		const raw_draw_buffer = (packet[0] === 'draw') && (packet[6] !== 'scroll') && (packet[7].buffer);
-		postMessage({'c': 'p', 'p': packet}, raw_draw_buffer ? [packet[7].buffer] : []);
+		let raw_draw_buffer = [];
+		if ((packet[0] === 'draw') && (packet[7].hasOwnProperty("buffer"))) {
+			raw_draw_buffer = packet[7].buffer;
+			packet[7] = null;
+		}
+		postMessage({'c': 'p', 'p': packet}, raw_draw_buffer);
 	}
 };
 
@@ -602,8 +606,12 @@ if (!(typeof window == "object" && typeof document == "object" && window.documen
 	protocol.is_worker = true;
 	// we create a custom packet handler which posts packet as a message
 	protocol.set_packet_handler(function (packet, ctx) {
-		const raw_draw_buffer = (packet[0] === 'draw') && (packet[6] !== 'scroll');
-		postMessage({'c': 'p', 'p': packet}, raw_draw_buffer ? [packet[7].buffer] : []);
+		let raw_draw_buffer = [];
+		if ((packet[0] === 'draw') && (packet[7].hasOwnProperty("buffer"))) {
+			raw_draw_buffer = packet[7].buffer;
+			packet[7] = null;
+		}
+		postMessage({'c': 'p', 'p': packet}, raw_draw_buffer);
 	}, null);
 	// attach listeners from main thread
 	self.addEventListener('message', function(e) {
