@@ -196,10 +196,9 @@ div.windowinfocus div.windowhead {
 	width: 600px;
 	height: auto;
 	z-index: 10001;
-	background-color: white;
 	transition: height 0.5s, opacity 0.5s, top 0.5s, box-shadow 0.5s, bottom 0.5s;
-	box-shadow: 0 1rem 2rem rgba(21, 36, 48, 0.75);
 	overflow: hidden;
+	padding: 40px;
 }
 .notification_icon {
 	max-width: 128px;
@@ -210,13 +209,14 @@ div.windowinfocus div.windowhead {
 }
 .notification_buttons {
 	clear: both;
-	float: right;
+	margin: 10px 0px 0px auto;
 	font-weight: 500;
 	font-size: 1.2rem;
+	height: 2em;
 }
 .notification_button {
 	cursor: pointer;
-	float: left;
+	float: right;
 	margin: 5px;
 	padding: 5px;
 	border: 1px solid black;
@@ -237,13 +237,16 @@ div.windowinfocus div.windowhead {
 }
 @media screen {
 	.notifications .alert {
-		border-radius: 10;
+		box-shadow: 0 1rem 2rem rgba(21, 36, 48, 0.75);
+		background-color: white;
+		overflow: visible;
+		border-radius: 8px;
 		text-align: center;
 		padding: .5rem;
 		opacity: 40;
-		margin-top: -2rem;
+		margin-top: -10rem;
 		position: relative;
-		transform: translateY(2rem);
+		transform: translateY(10rem);
 		transition: left 0.5s, margin 0.5s, opacity 0.5s, transform 0.5s;
 	}
 }
@@ -262,14 +265,16 @@ div.windowinfocus div.windowhead {
 	font-size: .9rem;
 	text-overflow: ellipsis;
 	line-height: 1rem;
-	max-height: 2rem;
-	overflow: hidden;
+	max-height: 5rem;
 }
 .notifications .alert span.title{
 	margin: 1rem;
 	font-weight: 600;
 	font-size: 1.3rem;
 	line-height: 1.3rem;
+}
+.notifications .alert span.message{
+	text-align: left;
 }
 .notifications .alert span a {
 	text-decoration: none;
@@ -278,9 +283,9 @@ div.windowinfocus div.windowhead {
 	width: 2rem;
 	position: absolute;
 	right: 1rem;
-	top: 50%;
+	top: 1em;
 	transform: scale(1, 1) translateY(-50%);
-	font-size: 1.5rem;
+	font-size: 2rem;
 	transition: margin 0.5s, opacity 0.5s, transform 0.5s;
 	text-align: center;
 	cursor: pointer;
@@ -377,6 +382,7 @@ table#sessiondata td {
 		transform: translateY(0);
 	}
 	.notifications .alert.hidden {
+		overflow: hidden;
 		margin-top: -2.125rem;
 		z-index: -1;
 	}
