@@ -50,10 +50,10 @@ $(function() {
 			a.on('transitionend webkitTransitionEnd', $.debounce(250, function() {
 					a.trigger('dismissed');
 					a.remove();
-					if (onClose) {
-						onClose(nid, 3, "user clicked dismiss");
-					}
 			}));
+			if (onClose) {
+				onClose(nid, 3, "user clicked dismiss");
+			}
 		});
 
 		setTimeout(function(){
