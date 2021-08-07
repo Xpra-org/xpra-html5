@@ -39,6 +39,9 @@ var RENCODE = {
 	SLASH_CHARCODE : "/".charCodeAt(0),			//for byte strings
 };
 
+Number.isSafeInteger = Number.isSafeInteger || function (value) {
+   return Number.isInteger(value) && Math.abs(value) <= Number.MAX_SAFE_INTEGER;
+};
 
 function rencode_string(str) {
 	const len = str.length;
@@ -70,16 +73,16 @@ function rencode_int(i) {
 		u8a = new Uint8Array([RENCODE.INT_POS_FIXED_START + i])
 	}
 	else if (-RENCODE.INT_NEG_FIXED_COUNT <= i && i < 0) {
-		u8a = new Uint8Array([RENCODE.INT_NEG_FIXED_START - 1 -i])
+		u8a = new Int8Array([RENCODE.INT_NEG_FIXED_START - 1 -i])
 	}
 	else if (-128 <= i && i < 128) {
-		u8a = new Uint8Array([RENCODE.CHR_INT1, i]);
+		u8a = new Int8Array([RENCODE.CHR_INT1, i]);
 	}
 	else if (-32768 <= i && i < 32768) {
-		u8a = new Uint8Array([RENCODE.CHR_INT2, Math.floor(i/256) % 256, i%256]);
+		u8a = new Int8Array([RENCODE.CHR_INT2, Math.floor(i/256) % 256, i%256]);
 	}
 	else if (-2147483648 <= i && i< 2147483648) {
-		u8a = new Uint8Array(5);
+		u8a = new Int8Array(5);
 		u8a[0] = RENCODE.CHR_INT4;
 		u8a[1] = Math.floor(i/256/256/256);
 		u8a[2] = Math.floor(i/256/256) % 256;
@@ -87,7 +90,7 @@ function rencode_int(i) {
 		u8a[4] = i%256;
 	}
 	else if (-9223372036854775808 <= i && i < 9223372036854775808) {
-		u8a = new Uint8Array(9);
+		u8a = new Int8Array(9);
 		u8a[0] = RENCODE.CHR_INT8;
 		for (let j=0; j<8; ++j) {
 			u8a[8-j] = i%256;
@@ -288,12 +291,10 @@ function rdecode_list(dec) {
 function rdecode_dict(dec) {
 	dec.pos++;
 	const dict = {};
-	let count = 0;
 	while (dec.buf[dec.pos]!=RENCODE.CHR_TERM) {
 		const key = _rdecode(dec);
 		const value = _rdecode(dec);
 		dict[key] = value;
-		count++;
 	}
 	dec.pos++;
 	return dict;
@@ -313,32 +314,43 @@ function rdecode_int(dec) {
 	return i;
 }
 function rdecode_intb(dec) {
-	let b = dec.buf[dec.pos+1];
+	//this magically makes the value signed:
+	let b = dec.buf[dec.pos+1]<<24>>24;
 	dec.pos += 2;
 	return b;
 }
 function rdecode_inth(dec) {
-	let s = dec.buf[dec.pos+1]*256+dec.buf[dec.pos+2]
+	const slice = dec.buf.slice(dec.pos+1, dec.pos+3)
+	const dv = new DataView(slice.buffer);
+	const s = dv.getInt16(0);
 	dec.pos += 3;
 	return s;
 }
 function rdecode_intl(dec) {
-	let l = 0;
-	for (let i=0; i<4; i++) {
-		l *= 256;
-		l += dec.buf[dec.pos+1+i];
-	}
+	const slice = dec.buf.slice(dec.pos+1, dec.pos+5)
+	const dv = new DataView(slice.buffer);
+	const s = dv.getInt32(0);
 	dec.pos += 5;
-	return l;
+	return s;
 }
 function rdecode_intq(dec) {
-	let q = 0;
-	for (let i=0; i<8; i++) {
-		q *= 256;
-		q += dec.buf[dec.pos+1+i];
+	const slice = dec.buf.slice(dec.pos+1, dec.pos+9)
+	const dv = new DataView(slice.buffer);
+	let s = 0;
+	if ("getBigInt64" in DataView.prototype) {
+		s = dv.getBigInt64(0);
+	}
+	else {
+		//oh, IE...
+		const left =  this.getUint32(byteOffset);
+		const right = this.getUint32(byteOffset+4);
+		s = 2**32*left + right;
 	}
 	dec.pos += 9;
-	return q;
+	if (!Number.isSafeInteger(s)) {
+		//console.warn("value is not a safe integer: ", s);
+	}
+	return parseInt(s);
 }
 function rdecode_true(dec) {
 	dec.pos++;
