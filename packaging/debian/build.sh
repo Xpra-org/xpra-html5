@@ -6,7 +6,7 @@ if [ -z "${XPRA_HTML5_TAR_XZ}" ]; then
 	exit 0
 fi
 
-dirname=`echo ${XPRA_TAR_XZ} | sed 's+./pkgs/++g' | sed 's/.tar.xz//'`
+dirname=`echo ${XPRA_HTML5_TAR_XZ} | sed 's+../pkgs/++g' | sed 's/.tar.xz//'`
 rm -fr "./${dirname}"
 tar -Jxf ${XPRA_HTML5_TAR_XZ}
 pushd "./${dirname}"
