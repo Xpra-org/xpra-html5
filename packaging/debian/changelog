@@ -1,6 +1,4 @@
-xpra-html5 (4.3-r954-1) UNRELEASED; urgency=low
-
-xpra-html5 (4.3-r910-1) UNRELEASED; urgency=low
+xpra-html5 (4.3-r956-1) UNRELEASED; urgency=low
   * build and packaging:
     - installation with python2 build environment
     - create symlinks for some fonts
@@ -37,7 +35,7 @@ xpra-html5 (4.3-r910-1) UNRELEASED; urgency=low
     - log disconnection messages
     - prevent console errors with Internet Explorer
 
- -- Antoine Martin antoine@xpra.org  Sun, 08 Aug 2021 22:39:29 +0700 +700
+ -- Antoine Martin antoine@xpra.org  Sun, 08 Aug 2021 22:54:53 +0700 +700
 
 xpra-html5 (4.2-r889-1) UNRELEASED; urgency=low
   * select session attributes from list of options exposed by the server
