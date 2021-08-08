@@ -43,13 +43,68 @@ Number.isSafeInteger = Number.isSafeInteger || function (value) {
    return Number.isInteger(value) && Math.abs(value) <= Number.MAX_SAFE_INTEGER;
 };
 
+function utf8ByteArrayToString(bytes) {
+	var out = [], pos = 0, c = 0;
+	while (pos < bytes.length) {
+		var c1 = bytes[pos++];
+		if (c1 < 128) {
+			out[c++] = String.fromCharCode(c1);
+		} else if (c1 > 191 && c1 < 224) {
+			var c2 = bytes[pos++];
+			out[c++] = String.fromCharCode((c1 & 31) << 6 | c2 & 63);
+		} else if (c1 > 239 && c1 < 365) {
+			// Surrogate Pair
+			var c2 = bytes[pos++];
+			var c3 = bytes[pos++];
+			var c4 = bytes[pos++];
+			var u = ((c1 & 7) << 18 | (c2 & 63) << 12 | (c3 & 63) << 6 | c4 & 63) -
+				0x10000;
+			out[c++] = String.fromCharCode(0xD800 + (u >> 10));
+			out[c++] = String.fromCharCode(0xDC00 + (u & 1023));
+		} else {
+			var c2 = bytes[pos++];
+			var c3 = bytes[pos++];
+			out[c++] = String.fromCharCode((c1 & 15) << 12 | (c2 & 63) << 6 | c3 & 63);
+		}
+	}
+	return out.join('');
+}
+
+function stringToUtf8ByteArray(str) {
+	var out = [], p = 0;
+	for (var i = 0; i < str.length; i++) {
+		var c = str.charCodeAt(i);
+		if (c < 128) {
+			out[p++] = c;
+		} else if (c < 2048) {
+			out[p++] = (c >> 6) | 192;
+			out[p++] = (c & 63) | 128;
+		} else if (
+			((c & 0xFC00) == 0xD800) && (i + 1) < str.length &&
+			((str.charCodeAt(i + 1) & 0xFC00) == 0xDC00)) {
+			// Surrogate Pair
+			c = 0x10000 + ((c & 0x03FF) << 10) + (str.charCodeAt(++i) & 0x03FF);
+			out[p++] = (c >> 18) | 240;
+			out[p++] = ((c >> 12) & 63) | 128;
+			out[p++] = ((c >> 6) & 63) | 128;
+			out[p++] = (c & 63) | 128;
+		} else {
+			out[p++] = (c >> 12) | 224;
+			out[p++] = ((c >> 6) & 63) | 128;
+			out[p++] = (c & 63) | 128;
+		}
+	}
+	return out;
+}
+
 function rencode_string(str) {
-	const len = str.length;
+	const bytes = stringToUtf8ByteArray(str);
+	const len = bytes.length;
 	if (len < RENCODE.STR_FIXED_COUNT) {
 		const u8a = new Uint8Array(len+1);
 		u8a[0] = RENCODE.STR_FIXED_START+len;
 		for (let i=0; i<len; ++i) {
-			u8a[i+1] = str.charCodeAt(i);
+			u8a[i+1] = bytes[i];
 		}
 		return u8a;
 	}
@@ -62,7 +117,7 @@ function rencode_string(str) {
 	const SEPARATOR = ":";
 	u8a[len_len] = SEPARATOR.charCodeAt(0);
 	for (let i=0; i<len_str; ++i) {
-		u8a[len_len+1+i] = str.charCodeAt(i);
+		u8a[len_len+1+i] = bytes[i];
 	}
 	return u8a;
 }
@@ -73,29 +128,31 @@ function rencode_int(i) {
 		u8a = new Uint8Array([RENCODE.INT_POS_FIXED_START + i])
 	}
 	else if (-RENCODE.INT_NEG_FIXED_COUNT <= i && i < 0) {
-		u8a = new Int8Array([RENCODE.INT_NEG_FIXED_START - 1 -i])
+		u8a = new Uint8Array(new Int8Array([RENCODE.INT_NEG_FIXED_START - 1 -i]).buffer);
 	}
 	else if (-128 <= i && i < 128) {
-		u8a = new Int8Array([RENCODE.CHR_INT1, i]);
+		u8a = new Uint8Array(new Int8Array([RENCODE.CHR_INT1, i]).buffer);
 	}
 	else if (-32768 <= i && i < 32768) {
-		u8a = new Int8Array([RENCODE.CHR_INT2, Math.floor(i/256) % 256, i%256]);
+		u8a = new Uint8Array(new Int8Array([RENCODE.CHR_INT2, Math.floor(i/256) % 256, i%256]).buffer);
 	}
 	else if (-2147483648 <= i && i< 2147483648) {
-		u8a = new Int8Array(5);
-		u8a[0] = RENCODE.CHR_INT4;
-		u8a[1] = Math.floor(i/256/256/256);
-		u8a[2] = Math.floor(i/256/256) % 256;
-		u8a[3] = Math.floor(i/256) % 256;
-		u8a[4] = i%256;
+		const i8a = new Int8Array(5);
+		i8a[0] = RENCODE.CHR_INT4;
+		i8a[1] = Math.floor(i/256/256/256);
+		i8a[2] = Math.floor(i/256/256) % 256;
+		i8a[3] = Math.floor(i/256) % 256;
+		i8a[4] = i%256;
+		u8a = new Uint8Array(i8a.buffer);
 	}
 	else if (-9223372036854775808 <= i && i < 9223372036854775808) {
-		u8a = new Int8Array(9);
-		u8a[0] = RENCODE.CHR_INT8;
+		const i8a = new Int8Array(9);
+		i8a[0] = RENCODE.CHR_INT8;
 		for (let j=0; j<8; ++j) {
-			u8a[8-j] = i%256;
+			i8a[8-j] = i%256;
 			i = Math.floor(i/256);
 		}
+		u8a = new Uint8Array(i8a.buffer);
 	}
 	else {
 		const str = i.toString();
@@ -264,18 +321,8 @@ function rdecode_string(dec) {
 	if (str_len==0) {
 		return "";
 	}
-	const CHUNK_SZ = 0x8000;
 	const sub = dec.buf.subarray(dec.pos, dec.pos+str_len);
-	if (str_len<=CHUNK_SZ) {
-		str = String.fromCharCode.apply(null, sub);
-	}
-	else {
-		const c = [];
-		for (let i=0; i < sub.length; i+=CHUNK_SZ) {
-			c.push(String.fromCharCode.apply(null, sub.subarray(i, i+CHUNK_SZ)));
-		}
-		str = c.join("");
-	}
+	const str = utf8ByteArrayToString(sub);
 	dec.pos += str_len;
 	return str;
 }
@@ -386,9 +433,9 @@ decode_func[RENCODE.CHR_NONE] = rdecode_none
 function make_fixed_length_string_decoder(len) {
 	function fixed_length_string_decoder(dec) {
 		dec.pos++;
-		const str = String.fromCharCode.apply(null, dec.buf.subarray(dec.pos, dec.pos+len));
+		const u8a = dec.buf.subarray(dec.pos, dec.pos+len);
 		dec.pos += len;
-		return str;
+		return utf8ByteArrayToString(u8a);
 	}
 	return fixed_length_string_decoder;
 }
@@ -472,10 +519,56 @@ function rdecode(buf) {
 		for(let i=0,j=buf.length;i<j;++i){
 			u8a[i] = buf.charCodeAt(i);
 		}
-		return rdecode(u8a);
+		return _rdecode(new DecodeBuffer(u8a));
 	}
 	if (type === 'object' && buf.constructor===Uint8Array) {
 		return _rdecode(new DecodeBuffer(buf));
 	}
 	throw "cannot decode "+type;
+}
+
+
+function rencode_selftest() {
+	function test_value(input, output) {
+		var u8a_output = new Uint8Array(output);
+		var enc = rencode(input);
+		if (enc.length!=u8a_output.length) {
+			throw "failed to encode '"+input+"', expected length "+u8a_output.length+" bytes but got "+enc.length;
+		}
+		for(let i=0,j=enc.length;i<j;++i){
+			if (enc[i]!=u8a_output[i]) {
+				throw "failed to encode '"+input+"', expected '"+u8a_output+"' but got '"+enc+"', error at position "+i+": "+enc[i]+" vs "+u8a_output[i];
+			}
+		}
+		var dec = rdecode(enc);
+		if (dec!=input) {
+			throw "failed to decode '"+enc+"', expected '"+input+"' but got '"+dec+"'";
+		}
+	}
+
+	try {
+		test_value(true, [67]);
+		test_value(false, [68]);
+		test_value(-10, [79]);
+		test_value(-29, [98]);
+		test_value(1, [1]);
+		test_value(40, [40]);
+		test_value('foobarbaz', [137, 102, 111, 111, 98, 97, 114, 98, 97, 122]);
+		//test_value(1234.56, [66, 68, 154, 81, 236]);
+		test_value(100, [62, 100]);
+		test_value(-100, [62, 156]);
+		test_value(7483648, [64, 0, 114, 49, 0]);
+		test_value(-7483648, [64, 255, 141, 207, 0]);
+		test_value(8223372036854775808, [65, 114, 31, 73, 76, 88, 156, 0, 0]);
+		test_value(-8223372036854775808, [65, 141, 224, 182, 179, 167, 100, 0, 0]);
+		test_value(27123, [63, 105, 243]);
+		test_value(-27123, [63, 150, 13]);
+		test_value('\x00', [129, 0]);
+		test_value("fööbar", [136, 102, 195, 182, 195, 182, 98, 97, 114]);
+		return true;
+	}
+	catch (e) {
+		console.log("rencode failed its self test", e);
+		return false;
+	}
 }

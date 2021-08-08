@@ -18,6 +18,7 @@
 const XPRA_CLIENT_FORCE_NO_WORKER = false;
 const CLIPBOARD_IMAGES = true;
 const CLIPBOARD_EVENT_DELAY = 100;
+const rencode_ok = rencode && rencode_selftest();
 
 function XpraClient(container) {
 	// the container div is the "screen" on the HTML page where we
@@ -1119,8 +1120,8 @@ XpraClient.prototype._make_hello_base = function() {
 		"compression_level"	 		: 1,
 		"mouse.show"				: true,
 		// packet encoders
-		"rencode" 					: (rencode!==null && rencode!==undefined),
-		"rencodeplus"				: (rencode!==null && rencode!==undefined),
+		"rencode" 					: rencode_ok,
+		"rencodeplus"				: rencode_ok,
 		"bencode"					: true,
 		"yaml"						: false,
 		"open-url"					: this.open_url,
@@ -1768,7 +1769,10 @@ XpraClient.prototype._process_hello = function(packet, ctx) {
 		}
 		ctx.protocol.set_cipher_out(ctx.cipher_out_caps, ctx.encryption_key);
 	}
-	const PACKET_ENCODERS = ["rencodeplus", "rencode", "bencode"];
+	let PACKET_ENCODERS = ["bencode"];
+	if (rencode_ok) {
+		PACKET_ENCODERS = ["rencodeplus", "rencode", "bencode"];
+	}
 	for (const i in PACKET_ENCODERS) {
 		const packet_encoder = PACKET_ENCODERS[i];
 		if (hello[packet_encoder]) {
