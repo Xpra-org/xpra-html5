@@ -258,10 +258,8 @@ function encode_none() {
 //this will send Uint8Array as 'binary'
 //(decoding is always supported since not having it is free)
 rencode_legacy_mode = true;
-function legacy_rencode(obj) {
-	const type = typeof obj;
-	if(type === 'object' && obj.constructor===Uint8Array) {
-	}
+function rencodelegacy(obj) {
+	rencode_legacy_mode = true;
 	return rencode(obj);
 }
 function rencode(obj) {
@@ -532,6 +530,7 @@ function rencode_selftest() {
 	function test_value(input, output) {
 		var u8a_output = new Uint8Array(output);
 		var enc = rencode(input);
+		//console.log("test_value(", input, ", ", output, ") rencode("+input+")="+enc);
 		if (enc.length!=u8a_output.length) {
 			throw "failed to encode '"+input+"', expected length "+u8a_output.length+" bytes but got "+enc.length;
 		}
@@ -554,6 +553,7 @@ function rencode_selftest() {
 		test_value(1, [1]);
 		test_value(40, [40]);
 		test_value('foobarbaz', [137, 102, 111, 111, 98, 97, 114, 98, 97, 122]);
+		//we don't handle floats
 		//test_value(1234.56, [66, 68, 154, 81, 236]);
 		test_value(100, [62, 100]);
 		test_value(-100, [62, 156]);

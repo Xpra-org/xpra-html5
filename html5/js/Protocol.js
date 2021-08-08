@@ -461,7 +461,7 @@ XpraProtocol.prototype.process_send_queue = function() {
 				proto_flags = 0x0;
 			}
 			else if (this.packet_encoder=="rencode") {
-				bdata = rencode(packet)
+				bdata = rencodelegacy(packet)
 				proto_flags = 0x1;
 			}
 			else if (this.packet_encoder=="rencodeplus") {
