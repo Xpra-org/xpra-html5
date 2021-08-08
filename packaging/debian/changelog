@@ -1,12 +1,4 @@
-xpra-html5 (4.3-r944-1) UNRELEASED; urgency=low
-  * TODO
-
- -- Antoine Martin antoine@xpra.org  Fri, 06 Aug 2021 22:39:32 +0700 +700
-
-xpra-html5 (4.3-r943-1) UNRELEASED; urgency=low
-  * TODO
-
- -- Antoine Martin antoine@xpra.org  Fri, 06 Aug 2021 22:38:49 +0700 +700
+xpra-html5 (4.3-r954-1) UNRELEASED; urgency=low
 
 xpra-html5 (4.3-r910-1) UNRELEASED; urgency=low
   * build and packaging:
@@ -45,8 +37,7 @@ xpra-html5 (4.3-r910-1) UNRELEASED; urgency=low
     - log disconnection messages
     - prevent console errors with Internet Explorer
 
-
- -- Antoine Martin antoine@xpra.org  Tue, 27 Jul 2021 19:55:03 +0700 +700
+ -- Antoine Martin antoine@xpra.org  Sun, 08 Aug 2021 22:39:29 +0700 +700
 
 xpra-html5 (4.2-r889-1) UNRELEASED; urgency=low
   * select session attributes from list of options exposed by the server

@@ -73,13 +73,7 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
-* Fri Aug 06 2021 Antoine Martin <antoine@xpra.org> 4.3-944-1
-- TODO
-
-* Fri Aug 06 2021 Antoine Martin <antoine@xpra.org> 4.3-943-1
-- TODO
-
-* Fri Aug 06 2021 Antoine Martin <antoine@xpra.org> 4.3-910-1
+* Sun Aug 08 2021 Antoine Martin <antoine@xpra.org> 4.3-954-1
 - build and packaging:
    installation with python2 build environment
    create symlinks for some fonts
