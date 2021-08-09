@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [4.3] 2021-08-06
+## [4.3] 2021-08-09
 * build and packaging:
     * installation with python2 build environment
     * create symlinks for some fonts
@@ -34,8 +34,9 @@ All notable changes to this project will be documented in this file.
     * change titlebar focused / unfocused colours
     * make window corners round
     * try to scale application cursors to match window zoom
-* misc fixes:
+* misc:
     * audio debugging was wrongly enabled (extra CPU usage and lag)
+    * remove http mp3 stream audio support
     * log disconnection messages
     * prevent console errors with Internet Explorer
 

@@ -73,7 +73,7 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
-* Sun Aug 08 2021 Antoine Martin <antoine@xpra.org> 4.3-956-1
+* Mon Aug 09 2021 Antoine Martin <antoine@xpra.org> 4.3-956-1
 - build and packaging:
    installation with python2 build environment
    create symlinks for some fonts
@@ -105,8 +105,9 @@ rm -rf $RPM_BUILD_ROOT
    change titlebar focused / unfocused colours
    make window corners round
    try to scale application cursors to match window zoom
-- misc fixes:
+- misc:
    audio debugging was wrongly enabled (extra CPU usage and lag)
+   remove http mp3 stream audio support
    log disconnection messages
    prevent console errors with Internet Explorer
 
