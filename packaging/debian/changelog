@@ -1,4 +1,4 @@
-xpra-html5 (4.3-r956-1) UNRELEASED; urgency=low
+xpra-html5 (4.3-r962-1) UNRELEASED; urgency=low
   * build and packaging:
     - installation with python2 build environment
     - create symlinks for some fonts
