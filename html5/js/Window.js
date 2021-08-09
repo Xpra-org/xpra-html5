@@ -1075,13 +1075,11 @@ XpraWindow.prototype.set_cursor = function(encoding, w, h, xhot, yhot, img_data)
 		return;
 	}
 	this.png_cursor_data = [w, h, xhot, yhot, img_data];
-	let b64 = null;
-    if ((typeof img_data) === 'object' && img_data.constructor===Uint8Array) {
-		b64 = Utilities.ArrayBufferToBase64(img_data);
+	let array = img_data;
+	if ((typeof img_data) === 'string') {
+		array = Utilities.StringToUint8(img_data);
 	}
-	else {
-		b64 = window.btoa(img_data);
-	}
+	const b64 = Utilities.ArrayBufferToBase64(array);
 	const window_element = jQuery("#"+String(this.wid));
 	const cursor_url = "data:image/" + encoding + ";base64," + b64;
 	//j.src = "data:image/"+coding+";base64," + Utilities.ArrayBufferToBase64(img_data);
@@ -1443,14 +1441,13 @@ XpraWindow.prototype.do_paint = function paint(x, y, width, height, coding, img_
 				const uint = new Uint8Array(target_stride*height);
 				let i = 0,
 					j = 0,
-					k = 0,
 					l = img_data.length;
 				if (rowstride==width*3) {
-					//fast path
+					//faster path, single loop:
 					while (i<l) {
-						for (k=0; k<3; k++) {
-							uint[j++] = img_data[i++];
-						}
+						uint[j++] = img_data[i++];
+						uint[j++] = img_data[i++];
+						uint[j++] = img_data[i++];
 						uint[j++] = 255;
 					}
 				}

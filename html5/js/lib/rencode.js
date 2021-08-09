@@ -57,8 +57,7 @@ function utf8ByteArrayToString(bytes) {
 			var c2 = bytes[pos++];
 			var c3 = bytes[pos++];
 			var c4 = bytes[pos++];
-			var u = ((c1 & 7) << 18 | (c2 & 63) << 12 | (c3 & 63) << 6 | c4 & 63) -
-				0x10000;
+			var u = ((c1 & 7) << 18 | (c2 & 63) << 12 | (c3 & 63) << 6 | c4 & 63) - 0x10000;
 			out[c++] = String.fromCharCode(0xD800 + (u >> 10));
 			out[c++] = String.fromCharCode(0xDC00 + (u & 1023));
 		} else {
@@ -320,9 +319,19 @@ function rdecode_string(dec) {
 		return "";
 	}
 	const sub = dec.buf.subarray(dec.pos, dec.pos+str_len);
-	const str = utf8ByteArrayToString(sub);
 	dec.pos += str_len;
-	return str;
+	if (rencode_legacy_mode) {
+		return Uint8ToString(sub);
+	}
+	return utf8ByteArrayToString(sub)
+}
+function Uint8ToString(u8a){
+	const CHUNK_SZ = 0x8000;
+	const c = [];
+	for (let i=0; i < u8a.length; i+=CHUNK_SZ) {
+		c.push(String.fromCharCode.apply(null, u8a.subarray(i, i+CHUNK_SZ)));
+	}
+	return c.join("");
 }
 function rdecode_list(dec) {
 	dec.pos++;
@@ -508,6 +517,15 @@ function _rdecode(dec) {
 		throw "no decoder for typecode "+typecode+" at position "+dec.pos;
 	}
 	return decode(dec);
+}
+
+function rdecodelegacy(buf) {
+	rencode_legacy_mode = true;
+	return rdecode(buf);
+}
+function rdecodeplus(buf) {
+	rencode_legacy_mode = false;
+	return rdecode(buf);
 }
 
 function rdecode(buf) {

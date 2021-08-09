@@ -402,8 +402,11 @@ XpraProtocol.prototype.do_process_receive_queue = function() {
 		//decode raw packet string into objects:
 		let packet = null;
 		try {
-			if (proto_flags==0x1 || proto_flags==0x10) {
-				packet = rdecode(packet_data);
+			if (proto_flags==0x1) {
+				packet = rdecodelegacy(packet_data);
+			}
+			else if (proto_flags==0x10) {
+				packet = rdecodeplus(packet_data);
 			} else {
 				packet = bdecode(packet_data);
 			}
@@ -424,11 +427,15 @@ XpraProtocol.prototype.do_process_receive_queue = function() {
 			if(packet[0] === 'draw'){
 				const img_data = packet[7];
 				if (typeof img_data === 'string') {
-					const uint = new Uint8Array(img_data.length);
-					for(i=0,j=img_data.length;i<j;++i) {
-						uint[i] = img_data.charCodeAt(i);
+					//rencode does not distinguish bytes and strings
+					//we converted to string in the network layer,
+					//and now we're converting back to bytes...
+					//(use 'rencodeplus' to avoid all this unnecessary churn)
+					const u8a = new Uint8Array(img_data.length);
+					for(let i=0,j=img_data.length;i<j;++i){
+						u8a[i] = img_data.charCodeAt(i);
 					}
-					packet[7] = uint;
+					packet[7] = u8a;
 				}
 			}
 			if (this.is_worker){
