@@ -260,7 +260,7 @@ const MediaSourceUtil = {
 			asb.addEventListener('abort', 		function(e) { debug_buffer_event('abort'); });
 		},
 
-		get_supported_codecs : function(mediasource, aurora, http, ignore_audio_blacklist) {
+		get_supported_codecs : function(mediasource, aurora, ignore_audio_blacklist) {
 			const codecs_supported = {};
 			if (mediasource) {
 				const mediasource_codecs = MediaSourceUtil.getMediaSourceAudioCodecs(ignore_audio_blacklist);
@@ -276,14 +276,6 @@ const MediaSourceUtil = {
 						continue;
 					}
 					codecs_supported["aurora:"+codec_option] = "legacy: "+MediaSourceConstants.CODEC_DESCRIPTION[codec_option];
-				}
-			}
-			if (http) {
-				const stream_codecs = ["mp3"];
-				for (const i in stream_codecs) {
-					const codec_option = stream_codecs[i];
-					console.log("stream codecs=", stream_codecs, "codec=", codec_option);
-					codecs_supported["http-stream:"+codec_option] = "http stream: "+MediaSourceConstants.CODEC_DESCRIPTION[codec_option];
 				}
 			}
 			return codecs_supported;

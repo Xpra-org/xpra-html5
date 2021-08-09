@@ -104,7 +104,6 @@ XpraClient.prototype.init_state = function(container) {
 	this.audio_enabled = false;
 	this.audio_mediasource_enabled = MediaSourceUtil.getMediaSourceClass()!=null;
 	this.audio_aurora_enabled = typeof AV!=='undefined' && AV!=null && AV.Decoder!=null && AV.Player.fromXpraSource!=null;
-	this.audio_httpstream_enabled = true;
 	this.audio_codecs = {};
 	this.audio_framework = null;
 	this.audio_aurora_ctx = null;
@@ -2861,7 +2860,7 @@ XpraClient.prototype._process_draw_queue = function(packet, ctx){
  * Audio
  */
 XpraClient.prototype.init_audio = function(ignore_audio_blacklist) {
-	this.debug("audio", "init_audio() enabled=", this.audio_enabled, ", mediasource enabled=", this.audio_mediasource_enabled, ", aurora enabled=", this.audio_aurora_enabled, ", http-stream enabled=", this.audio_httpstream_enabled);
+	this.debug("audio", "init_audio() enabled=", this.audio_enabled, ", mediasource enabled=", this.audio_mediasource_enabled, ", aurora enabled=", this.audio_aurora_enabled);
 	if(this.audio_mediasource_enabled) {
 		this.mediasource_codecs = MediaSourceUtil.getMediaSourceAudioCodecs(ignore_audio_blacklist);
 		for (const codec_option in this.mediasource_codecs) {
@@ -2876,15 +2875,6 @@ XpraClient.prototype.init_audio = function(ignore_audio_blacklist) {
 				continue;
 			}
 			this.audio_codecs[codec_option] = this.aurora_codecs[codec_option];
-		}
-	}
-	if (this.audio_httpstream_enabled) {
-		const stream_codecs = ["mp3"];
-		for (const i in stream_codecs) {
-			const codec_option = stream_codecs[i];
-			if (!(codec_option in this.audio_codecs)) {
-				this.audio_codecs[codec_option] = codec_option;
-			}
 		}
 	}
 	this.debug("audio", "codecs:", this.audio_codecs);
@@ -2906,9 +2896,6 @@ XpraClient.prototype.init_audio = function(ignore_audio_blacklist) {
 			}
 			else if (this.audio_aurora_enabled && !Utilities.isIE()) {
 				this.audio_framework = "aurora";
-			}
-			else if (this.audio_httpstream_enabled) {
-				this.audio_framework = "http-stream";
 			}
 			if (this.audio_framework) {
 				this.log("using "+this.audio_framework+" audio codec: "+this.audio_codec);
@@ -2934,7 +2921,6 @@ XpraClient.prototype._sound_start_receiving = function() {
 		//choose a codec + framework to use
 		const codecs_supported = MediaSourceUtil.get_supported_codecs(this.audio_mediasource_enabled,
 				this.audio_aurora_enabled,
-				this.audio_httpstream_enabled,
 				false);
 		const audio_codec = MediaSourceUtil.get_best_codec(codecs_supported);
 		if (!audio_codec) {
@@ -2948,10 +2934,7 @@ XpraClient.prototype._sound_start_receiving = function() {
 	try {
 		this.audio_buffers = [];
 		this.audio_buffers_count = 0;
-		if (this.audio_framework=="http-stream") {
-			this._sound_start_httpstream();
-		}
-		else if (this.audio_framework=="mediasource") {
+		if (this.audio_framework=="mediasource") {
 			this._sound_start_mediasource();
 		}
 		else {
@@ -2969,31 +2952,6 @@ XpraClient.prototype._send_sound_start = function() {
 	this.send(["sound-control", "start", this.audio_codec]);
 };
 
-
-XpraClient.prototype._sound_start_httpstream = function() {
-	this.audio = document.createElement("audio");
-	this.audio.setAttribute('autoplay', true);
-	this.audio.setAttribute('controls', false);
-	this.audio.setAttribute('loop', true);
-	let url = "http";
-	if (this.ssl) {
-		url = "https";
-	}
-	url += "://"+this.host+":"+this.port+this.path;
-	if (url.endsWith("index.html")) {
-		url = url.substring(0, url.lastIndexOf("index.html"));
-	}
-	if (!url.endsWith("/")) {
-		url += "/";
-	}
-	url += "audio.mp3?uuid="+this.uuid;
-	const source = document.createElement("source");
-	source.type = "audio/mpeg";
-	source.src = url;
-	this.audio.appendChild(source);
-	this.log("starting http stream from", url);
-	document.body.appendChild(this.audio);
-};
 
 XpraClient.prototype._sound_start_aurora = function() {
 	this.audio_aurora_ctx = AV.Player.fromXpraSource();
@@ -3088,20 +3046,13 @@ XpraClient.prototype.close_audio = function() {
 	if (this.connected) {
 		this._send_sound_stop();
 	}
-	if (this.audio_framework=="http-stream") {
-		this._close_audio_httpstream();
-	}
-	else if (this.audio_framework=="mediasource") {
+	if (this.audio_framework=="mediasource") {
 		this._close_audio_mediasource();
 	}
 	else {
 		this._close_audio_aurora();
 	}
 	this.on_audio_state_change("stopped", "closed");
-};
-
-XpraClient.prototype._close_audio_httpstream = function() {
-	this._remove_audio_element();
 };
 
 XpraClient.prototype._close_audio_aurora = function() {
