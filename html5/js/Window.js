@@ -1070,43 +1070,49 @@ XpraWindow.prototype.reset_cursor = function() {
 };
 
 XpraWindow.prototype.set_cursor = function(encoding, w, h, xhot, yhot, img_data) {
-	if (encoding=="png") {
-	    if ((typeof img_data) === 'object' && img_data.constructor===Uint8Array) {
-			img_data = Utilities.Uint8ToString(img_data);
-		}
-		this.png_cursor_data = [w, h, xhot, yhot, img_data];
-		const window_element = jQuery("#"+String(this.wid));
-		const cursor_url = "data:image/" + encoding + ";base64," + window.btoa(img_data);
-		//j.src = "data:image/"+coding+";base64," + Utilities.ArrayBufferToBase64(img_data);
-		function set_cursor_url(url, x, y) {
-			const url_str = "url('"+url+"')";
-			window_element.css("cursor", url_str+", default");
-			//CSS3 with hotspot:
-			window_element.css("cursor", url_str+" "+x+" "+y+", auto");
-		}
-		let zoom = detectZoom.zoom();
-		//prefer fractional zoom values if possible:
-		if (Math.round(zoom*4)==(2*Math.round(zoom*2))){
-			zoom = Math.round(zoom*2)/2;
-		}
-		if (zoom!=1 && !Utilities.isMacOS()) {
-			//scale it:
-			const tmp_img = new Image();
-			tmp_img.onload = function() {
-				const canvas = document.createElement('canvas');
-				const ctx = canvas.getContext('2d');
-				ctx.imageSmoothingEnabled = false;
-				canvas.width = Math.round(w*window.devicePixelRatio);
-				canvas.height = Math.round(h*window.devicePixelRatio);
-				ctx.drawImage(this, 0, 0, canvas.width, canvas.height);
-				var scaled_cursor_url = canvas.toDataURL();
-				set_cursor_url(scaled_cursor_url, Math.round(xhot*window.devicePixelRatio), Math.round(yhot*window.devicePixelRatio));
-			};
-			tmp_img.src = cursor_url;
-		}
-		else {
-			set_cursor_url(cursor_url, xhot, yhot);
-		}
+	if (encoding!="png") {
+		this.warn("received an invalid cursor encoding:", encoding);
+		return;
+	}
+	this.png_cursor_data = [w, h, xhot, yhot, img_data];
+	let b64 = null;
+    if ((typeof img_data) === 'object' && img_data.constructor===Uint8Array) {
+		b64 = Utilities.ArrayBufferToBase64(img_data);
+	}
+	else {
+		b64 = window.btoa(img_data);
+	}
+	const window_element = jQuery("#"+String(this.wid));
+	const cursor_url = "data:image/" + encoding + ";base64," + b64;
+	//j.src = "data:image/"+coding+";base64," + Utilities.ArrayBufferToBase64(img_data);
+	function set_cursor_url(url, x, y) {
+		const url_str = "url('"+url+"')";
+		window_element.css("cursor", url_str+", default");
+		//CSS3 with hotspot:
+		window_element.css("cursor", url_str+" "+x+" "+y+", auto");
+	}
+	let zoom = detectZoom.zoom();
+	//prefer fractional zoom values if possible:
+	if (Math.round(zoom*4)==(2*Math.round(zoom*2))){
+		zoom = Math.round(zoom*2)/2;
+	}
+	if (zoom!=1 && !Utilities.isMacOS()) {
+		//scale it:
+		const tmp_img = new Image();
+		tmp_img.onload = function() {
+			const canvas = document.createElement('canvas');
+			const ctx = canvas.getContext('2d');
+			ctx.imageSmoothingEnabled = false;
+			canvas.width = Math.round(w*window.devicePixelRatio);
+			canvas.height = Math.round(h*window.devicePixelRatio);
+			ctx.drawImage(this, 0, 0, canvas.width, canvas.height);
+			var scaled_cursor_url = canvas.toDataURL();
+			set_cursor_url(scaled_cursor_url, Math.round(xhot*window.devicePixelRatio), Math.round(yhot*window.devicePixelRatio));
+		};
+		tmp_img.src = cursor_url;
+	}
+	else {
+		set_cursor_url(cursor_url, xhot, yhot);
 	}
 };
 
