@@ -199,6 +199,10 @@ div.windowinfocus div.windowhead {
 	transition: height 0.5s, opacity 0.5s, top 0.5s, box-shadow 0.5s, bottom 0.5s;
 	overflow: hidden;
 	padding: 40px;
+	visibility: hidden;
+}
+.notifications .alert {
+	visibility: visible;
 }
 .notification_icon {
 	max-width: 128px;
