@@ -552,12 +552,11 @@ XpraProtocol.prototype.process_message_queue = function() {
 			return;
 		}
 
-		let raw_draw_buffer = [];
-		if ((packet[0] === 'draw') && (packet[7].hasOwnProperty("buffer"))) {
-			raw_draw_buffer = packet[7].buffer;
-			packet[7] = null;
+		let raw_buffers = [];
+		if ((packet[0] === 'draw') && ("buffer" in packet[7])) {
+			raw_buffers.push(packet[7].buffer);
 		}
-		postMessage({'c': 'p', 'p': packet}, raw_draw_buffer);
+		postMessage({'c': 'p', 'p': packet}, raw_buffers);
 	}
 };
 
