@@ -438,6 +438,17 @@ XpraProtocol.prototype.do_process_receive_queue = function() {
 					packet[7] = u8a;
 				}
 			}
+			else if(packet[0] === 'sound-data'){
+				const sound_data = packet[2];
+				if (typeof sound_data === 'string') {
+					//same workaround as 'draw' above
+					const u8a = new Uint8Array(sound_data.length);
+					for(let i=0,j=sound_data.length;i<j;++i){
+						u8a[i] = sound_data.charCodeAt(i);
+					}
+					packet[2] = u8a;
+				}
+			}
 			if (this.is_worker){
 				this.mQ[this.mQ.length] = packet;
 				const me = this;
@@ -555,6 +566,9 @@ XpraProtocol.prototype.process_message_queue = function() {
 		let raw_buffers = [];
 		if ((packet[0] === 'draw') && ("buffer" in packet[7])) {
 			raw_buffers.push(packet[7].buffer);
+		}
+		else if ((packet[0] === "sound-data") && ("buffer" in packet[7])) {
+			raw_buffers.push(packet[2].buffer);
 		}
 		postMessage({'c': 'p', 'p': packet}, raw_buffers);
 	}
