@@ -169,6 +169,7 @@ XpraClient.prototype.init_state = function(container) {
 	this.dQ = [];
 	this.dQ_interval_id = null;
 	this.process_interval = 4;
+	this.decode_worker = null;
 
 	this.server_display = "";
 	this.server_platform = "";
@@ -409,6 +410,41 @@ XpraClient.prototype.connect = function() {
 		// ask the worker to check for websocket support, when we receive a reply
 		// through the eventlistener above, _do_connect() will finish the job
 		worker.postMessage({'cmd': 'check'});
+
+		const decode_worker = new Worker('js/DecodeWorker.js');
+		decode_worker.addEventListener('message', function(e) {
+			const data = e.data;
+			if (data['draw']) {
+				me.do_process_draw(data['draw'], me);
+				return;
+			}
+			if (data['error']) {
+				const msg = data['error'],
+					packet = data['packet'],
+					wid = packet[1],
+					width = packet[2],
+					height = packet[3],
+					coding = packet[6],
+					packet_sequence = packet[8];
+				me.clog("decode error on ", coding, "packet sequence", packet_sequence, ":", msg);
+				me.do_send_damage_sequence(packet_sequence, wid, width, height, -1, msg);
+				return;
+			}
+			switch (data['result']) {
+			case true:
+				me.clog("we can decode using a worker");
+				me.decode_worker = decode_worker;
+				break;
+			case false:
+				me.clog("we can't decode using a worker");
+				break;
+			default:
+				me.clog("client got unknown message from the decode worker");
+			}
+		}, false);
+		// ask the worker to check for websocket support, when we receive a reply
+		// through the eventlistener above, _do_connect() will finish the job
+		decode_worker.postMessage({'cmd': 'check'});
 	} else {
 		// no webworker support
 		this.clog("no webworker support at all.");
@@ -2732,15 +2768,29 @@ XpraClient.prototype._process_window_icon = function(packet, ctx) {
  * Window Painting
  */
 XpraClient.prototype._process_draw = function(packet, ctx) {
-	if(ctx.queue_draw_packets){
-		if (ctx.dQ_interval_id === null) {
-			ctx.dQ_interval_id = setInterval(function(){
-				ctx._process_draw_queue(null, ctx);
-			}, ctx.process_interval);
+	if (ctx.decode_worker) {
+		let raw_buffers = [];
+		if ("buffer" in packet[7]) {
+			raw_buffers.push(packet[7].buffer);
 		}
-		ctx.dQ[ctx.dQ.length] = packet;
+		ctx.decode_worker.postMessage({'cmd': 'decode', 'packet' : packet}, raw_buffers);
+		//the worker draw event will call do_process_draw
+	}
+	else {
+		ctx.do_process_draw(packet);
+	}
+}
+
+XpraClient.prototype.do_process_draw = function(packet) {
+	if(this.queue_draw_packets){
+		if (this.dQ_interval_id === null) {
+			this.dQ_interval_id = setInterval(function(){
+				this._process_draw_queue(null, ctx);
+			}, this.process_interval);
+		}
+		this.dQ[this.dQ.length] = packet;
 	} else {
-		ctx._process_draw_queue(packet, ctx);
+		this._process_draw_queue(packet, this);
 	}
 };
 
@@ -2781,6 +2831,14 @@ XpraClient.prototype.request_redraw = function(win) {
 	}
 };
 
+XpraClient.prototype.do_send_damage_sequence = function(packet_sequence, wid, width, height, decode_time, message) {
+	const protocol = this.protocol;
+	if (!protocol) {
+		return;
+	}
+	protocol.send(["damage-sequence", packet_sequence, wid, width, height, decode_time, message]);
+}
+
 XpraClient.prototype._process_draw_queue = function(packet, ctx){
 	if(!packet && ctx.queue_draw_packets){
 		packet = ctx.dQ.shift();
@@ -2817,7 +2875,7 @@ XpraClient.prototype._process_draw_queue = function(packet, ctx){
 		return;
 	}
 	function send_damage_sequence(decode_time, message) {
-		protocol.send(["damage-sequence", packet_sequence, wid, width, height, decode_time, message]);
+		ctx.do_send_damage_sequence(packet_sequence, wid, width, height, decode_time, message);
 	}
 	if (!win) {
 		ctx.debug("draw", 'cannot paint, window not found:', wid);

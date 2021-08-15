@@ -1370,6 +1370,10 @@ XpraWindow.prototype.do_paint = function paint(x, y, width, height, coding, img_
 	let enc_width = width;
 	let enc_height = height;
 	const scaled_size = options["scaled_size"];
+	const bitmap = coding.startsWith("bitmap:");
+	if (bitmap) {
+		coding = coding.split(":")[1];
+	}
 	if(scaled_size) {
 		enc_width = scaled_size[0];
 		enc_height = scaled_size[1];
@@ -1482,6 +1486,15 @@ XpraWindow.prototype.do_paint = function paint(x, y, width, height, coding, img_
 		}
 		else if (coding=="jpeg" || coding=="png" || coding=="webp") {
 			this._non_video_paint(coding);
+			if (bitmap) {
+				//the decode worker is giving us a Bitmap object ready to use:
+				this.debug("draw", "painting", coding, "bitmap:", img_data);
+				this.offscreen_canvas_ctx.clearRect(x, y, img_data.width, img_data.height);
+				this.offscreen_canvas_ctx.drawImage(img_data, x, y);
+				painted();
+				this.may_paint_now();
+				return;
+			}
 			const j = new Image();
 			j.onload = function () {
 				if (j.width==0 || j.height==0) {
