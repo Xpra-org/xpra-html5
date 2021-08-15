@@ -5,6 +5,7 @@
 //importScripts("./Decode.js");
 importScripts("./lib/zlib.js");
 importScripts("./lib/lz4.js");
+importScripts("./lib/broadway/Decoder.js");
 
 // initialise LZ4 library
 var Buffer = require('buffer').Buffer;
@@ -118,7 +119,16 @@ function decode_rgb(packet) {
 	//packet[6] = "bitmap:"+coding;
 	//packet[7] = bitmap;
 	//console.log("converted", orig_data, "to", data);
-	return packet;
+}
+
+const broadway_decoders = {};
+function close_broadway(wid) {
+	try {
+		delete broadway_decoders[wid];
+	}
+	catch (e) {
+		//not much we can do
+	}
 }
 
 onmessage = function(e) {
@@ -126,6 +136,11 @@ onmessage = function(e) {
 	switch (data.cmd) {
 	case 'check':
 		self.postMessage({'result': true});
+		break;
+	case 'eos':
+		const wid = data.wid;
+		close_broadway(wid);
+		//console.log("decode worker eos for wid", wid);
 		break;
 	case 'decode':
 		const packet = data.packet;
@@ -139,8 +154,8 @@ onmessage = function(e) {
 		try {
 			const coding = packet[6];
 			if (coding=="rgb24" || coding=="rgb32") {
-				const decoded = decode_rgb(packet)
-				send_back(decoded, [decoded[7].buffer]);
+				decode_rgb(packet)
+				send_back(packet, [packet[7].buffer]);
 			}
 			else if (coding=="png" || coding=="jpeg" || coding=="webp") {
 				const data = packet[7];
@@ -150,6 +165,59 @@ onmessage = function(e) {
 					packet[7] = bitmap;
 					send_back(packet, [bitmap]);
 				}, decode_error);
+			}
+			else if (coding=="h264") {
+				const wid = packet[1];
+				let options = {};
+				if (packet.length>10)
+					options = packet[10];
+				let enc_width = packet[4];
+				let enc_height = packet[5];
+				const data = packet[7];
+				const scaled_size = options["scaled_size"];
+				if (scaled_size) {
+					enc_width = scaled_size[0];
+					enc_height = scaled_size[1];
+				}
+				const frame = options["frame"] || 0;
+				if (frame==0) {
+					close_broadway();
+				}
+				let decoder = broadway_decoders[wid];
+				if (decoder && (decoder._enc_size[0]!=enc_width || decoder._enc_size[1]!=enc_height)) {
+					close_broadway();
+					decoder = null;
+				}
+				//console.log("decoder=", decoder);
+				if (!decoder) {
+					decoder = new Decoder({
+						"rgb": 	true,
+						"size": { "width" : enc_width, "height" : enc_height },
+					});
+					decoder._enc_size = [enc_width, enc_height];
+					broadway_decoders[wid] = decoder;
+				}
+				let count = 0;
+				decoder.onPictureDecoded = function(buffer, p_width, p_height, infos) {
+					//console.log("broadway frame: enc size=", enc_width, enc_height, ", decode size=", p_width, p_height);
+					count++;
+					//forward it as rgb32:
+					packet[6] = "rgb32";
+					packet[7] = buffer;
+					options["scaled_size"] = [p_width, p_height];
+					send_back(packet, [packet[7].buffer]);
+				};
+				// we can pass a buffer full of NALs to decode() directly
+				// as long as they are framed properly with the NAL header
+				if (!Array.isArray(data)) {
+					img_data = Array.from(data);
+				}
+				decoder.decode(data);
+				// broadway decoding is actually synchronous
+				// and onPictureDecoded is called from decode(data) above.
+				if (count==0) {
+					decode_error("no "+coding+" picture decoded");
+				}
 			}
 			else {
 				//pass-through:

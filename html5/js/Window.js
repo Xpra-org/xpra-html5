@@ -1439,14 +1439,14 @@ XpraWindow.prototype.do_paint = function paint(x, y, width, height, coding, img_
 					img_data = inflated.slice(0, uncompressedSize);
 				}
 			}
-			let target_stride = width*4;
+			let target_stride = enc_width*4;
 			this.debug("draw", "got ", img_data.length, "bytes of", coding, "to paint with stride", rowstride, ", target stride", target_stride);
 			if (coding=="rgb24") {
-				const uint = new Uint8Array(target_stride*height);
+				const uint = new Uint8Array(target_stride*enc_height);
 				let i = 0,
 					j = 0,
 					l = img_data.length;
-				if (rowstride==width*3) {
+				if (rowstride==enc_width*3) {
 					//faster path, single loop:
 					while (i<l) {
 						uint[j++] = img_data[i++];
@@ -1458,9 +1458,9 @@ XpraWindow.prototype.do_paint = function paint(x, y, width, height, coding, img_
 				else {
 					let psrc = 0,
 						pdst = 0;
-					for (i=0; i<height; i++) {
+					for (i=0; i<enc_height; i++) {
 						psrc = i*rowstride;
-						for (j=0; j<width; j++) {
+						for (j=0; j<enc_width; j++) {
 							uint[pdst++] = img_data[psrc++];
 							uint[pdst++] = img_data[psrc++];
 							uint[pdst++] = img_data[psrc++];
@@ -1473,14 +1473,18 @@ XpraWindow.prototype.do_paint = function paint(x, y, width, height, coding, img_
 			}
 			let img = null;
 			if (rowstride>target_stride) {
-				img = this.offscreen_canvas_ctx.createImageData(Math.round(rowstride/4), height);
+				img = this.offscreen_canvas_ctx.createImageData(Math.round(rowstride/4), enc_height);
 			}
 			else {
-				img = this.offscreen_canvas_ctx.createImageData(width, height);
+				img = this.offscreen_canvas_ctx.createImageData(enc_width, enc_height);
 			}
 			img.data.set(img_data);
-			this.offscreen_canvas_ctx.clearRect(x, y, width, height);
-			this.offscreen_canvas_ctx.putImageData(img, x, y, 0, 0, width, height);
+			//this.offscreen_canvas_ctx.clearRect(x, y, width, height);
+			this.offscreen_canvas_ctx.putImageData(img, x, y, 0, 0, enc_width, enc_height);
+			if (enc_width!=width || enc_height!=height) {
+				//scale it:
+				this.offscreen_canvas_ctx.drawImage(this.offscreen_canvas, x, y, enc_width, enc_height, x, y, width, height);
+			}
 			painted();
 			this.may_paint_now();
 		}
