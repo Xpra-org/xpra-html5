@@ -115,8 +115,8 @@ onmessage = function(e) {
 	case 'decode':
 		const packet = data.packet;
 		//console.log("packet to decode:", data.packet);
-		function send_back(p, raw_buffers) {
-			self.postMessage({'draw': p}, raw_buffers);
+		function send_back(raw_buffers) {
+			self.postMessage({'draw': packet}, raw_buffers);
 		}
 		function decode_error(msg) {
 			self.postMessage({'error': msg, 'packet' : packet});
@@ -125,7 +125,7 @@ onmessage = function(e) {
 			const coding = packet[6];
 			if (coding=="rgb24" || coding=="rgb32") {
 				decode_rgb(packet)
-				send_back(packet, [packet[7].buffer]);
+				send_back([packet[7].buffer]);
 			}
 			else if (coding=="png" || coding=="jpeg" || coding=="webp") {
 				const data = packet[7];
@@ -133,7 +133,7 @@ onmessage = function(e) {
 				createImageBitmap(blob).then(function(bitmap) {
 					packet[6] = "bitmap:"+coding;
 					packet[7] = bitmap;
-					send_back(packet, [bitmap]);
+					send_back([bitmap]);
 				}, decode_error);
 			}
 			else if (coding=="h264") {
@@ -175,7 +175,7 @@ onmessage = function(e) {
 					packet[6] = "rgb32";
 					packet[7] = buffer;
 					options["scaled_size"] = [p_width, p_height];
-					send_back(packet, [packet[7].buffer]);
+					send_back([packet[7].buffer]);
 				};
 				// we can pass a buffer full of NALs to decode() directly
 				// as long as they are framed properly with the NAL header
@@ -191,7 +191,7 @@ onmessage = function(e) {
 			}
 			else {
 				//pass-through:
-				send_back(packet, []);
+				send_back([]);
 			}
 		}
 		catch (e) {
