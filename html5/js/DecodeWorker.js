@@ -7,10 +7,6 @@ importScripts("./lib/zlib.js");
 importScripts("./lib/lz4.js");
 importScripts("./lib/broadway/Decoder.js");
 
-// initialise LZ4 library
-var Buffer = require('buffer').Buffer;
-var LZ4 = require('lz4');
-
 //deals with zlib or lz4 pixel compression
 //as well as converting rgb24 to rb32 and
 //re-striding the pixel data if needed
@@ -25,37 +21,11 @@ function decode_rgb(packet) {
 	if (packet.length>10)
 		options = packet[10];
 	if (options!=null && options["zlib"]>0) {
-		//show("decompressing "+data.length+" bytes of "+coding+"/zlib");
 		data = new Zlib.Inflate(data).decompress();
 		delete options["zlib"];
 	}
 	else if (options!=null && options["lz4"]>0) {
-		// in future we need to make sure that we use typed arrays everywhere...
-		let d;
-		if (data.subarray) {
-			d = data.subarray(0, 4);
-		} else {
-			d = data.slice(0, 4);
-		}
-		// will always be little endian
-		const length = d[0] | (d[1] << 8) | (d[2] << 16) | (d[3] << 24);
-		// decode the LZ4 block
-		const inflated = new Buffer(length);
-		let uncompressedSize;
-		if (data.subarray) {
-			uncompressedSize = LZ4.decodeBlock(data.subarray(4), inflated);
-		}
-		else {
-			uncompressedSize = LZ4.decodeBlock(data.slice(4), inflated);
-		}
-		data = inflated.slice(0, uncompressedSize);
-		if (uncompressedSize==length) {
-			data = inflated;
-		}
-		else {
-			//this should not happen?
-			data = inflated.slice(0, uncompressedSize);
-		}
+		data = lz4.decode(data);
 		delete options["lz4"];
 	}
 	let target_stride = width*4;

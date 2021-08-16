@@ -11,7 +11,7 @@
  * xpra wire protocol with worker support
  *
  * requires:
- *	bencode.js
+ *  bencode.js
  *  inflate.js
  *  lz4.js
  *  brotli_decode.js
@@ -366,24 +366,10 @@ XpraProtocol.prototype.do_process_receive_queue = function() {
 	if (level!=0) {
 		let inflated;
 		if (level & 0x10) {
-			// lz4
-			// python-lz4 inserts the length of the uncompressed data as an int
-			// at the start of the stream
-			// output buffer length is stored as little endian
-			const length = packet_data[0] | (packet_data[1] << 8) | (packet_data[2] << 16) | (packet_data[3] << 24);
-			// decode the LZ4 block
-			// console.log("lz4 decompress packet size", packet_size, ", lz4 length=", length);
-			inflated = new Uint8Array(length);
-			const uncompressedSize = LZ4.decodeBlock(packet_data, inflated, 4);
-			// if lz4 errors out at the end of the buffer, ignore it:
-			if (uncompressedSize<=0 && packet_data.length+uncompressedSize!=0) {
-				this.protocol_error("failed to decompress lz4 data, error code: "+uncompressedSize);
-				return false;
-			}
+			inflated = lz4.decode(packet_data);
 		} else if (level & 0x40) {
 			inflated = BrotliDecode(packet_data);
 		} else {
-			// zlib
 			inflated = new Zlib.Inflate(packet_data).decompress();
 		}
 		//debug("inflated("+packet_data+")="+inflated);
@@ -674,8 +660,3 @@ if (!(typeof window == "object" && typeof document == "object" && window.documen
 	// tell host we are ready
 	postMessage({'c': 'r'});
 }
-
-
-// initialise LZ4 library
-var Buffer = require('buffer').Buffer;
-var LZ4 = require('lz4');

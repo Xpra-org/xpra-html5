@@ -1413,31 +1413,7 @@ XpraWindow.prototype.do_paint = function paint(x, y, width, height, coding, img_
 				//show("decompressing "+img_data.length+" bytes of "+coding+"/zlib");
 				img_data = new Zlib.Inflate(img_data).decompress();
 			} else if (options!=null && options["lz4"]>0) {
-				// in future we need to make sure that we use typed arrays everywhere...
-				let d;
-				if(img_data.subarray) {
-					d = img_data.subarray(0, 4);
-				} else {
-					d = img_data.slice(0, 4);
-				}
-				// will always be little endian
-				const length = d[0] | (d[1] << 8) | (d[2] << 16) | (d[3] << 24);
-				// decode the LZ4 block
-				const inflated = new Buffer(length);
-				let uncompressedSize;
-				if(img_data.subarray) {
-					uncompressedSize = LZ4.decodeBlock(img_data.subarray(4), inflated);
-				} else {
-					uncompressedSize = LZ4.decodeBlock(img_data.slice(4), inflated);
-				}
-				img_data = inflated.slice(0, uncompressedSize);
-				if (uncompressedSize==length) {
-					img_data = inflated;
-				}
-				else {
-					//this should not happen?
-					img_data = inflated.slice(0, uncompressedSize);
-				}
+				img_data = lz4.decode(img_data);
 			}
 			let target_stride = enc_width*4;
 			this.debug("draw", "got ", img_data.length, "bytes of", coding, "to paint with stride", rowstride, ", target stride", target_stride);
