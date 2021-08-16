@@ -411,7 +411,7 @@ XpraClient.prototype.connect = function() {
 		decode_worker.addEventListener('message', function(e) {
 			const data = e.data;
 			if (data['draw']) {
-				me.do_process_draw(data['draw'], me);
+				me.do_process_draw(data['draw']);
 				return;
 			}
 			if (data['error']) {
@@ -2782,10 +2782,6 @@ XpraClient.prototype._process_draw = function(packet, ctx) {
 	}
 }
 
-XpraClient.prototype.do_process_draw = function(packet) {
-	this._process_draw_queue(packet, this);
-};
-
 XpraClient.prototype._process_eos = function(packet, ctx) {
 	ctx.do_process_draw(packet);
 	const wid = packet[1];
@@ -2833,16 +2829,16 @@ XpraClient.prototype.do_send_damage_sequence = function(packet_sequence, wid, wi
 	protocol.send(["damage-sequence", packet_sequence, wid, width, height, decode_time, message]);
 }
 
-XpraClient.prototype._process_draw_queue = function(packet, ctx){
+XpraClient.prototype.do_process_draw = function(packet) {
 	if(!packet){
 		//no valid draw packet, likely handle errors for that here
 		return;
 	}
 	const ptype = packet[0],
 		wid = packet[1];
-	const win = ctx.id_to_window[wid];
+	const win = this.id_to_window[wid];
 	if (ptype=="eos") {
-		ctx.debug("draw", "eos for window", wid);
+		this.debug("draw", "eos for window", wid);
 		if (win) {
 			win.eos();
 		}
@@ -2861,15 +2857,16 @@ XpraClient.prototype._process_draw_queue = function(packet, ctx){
 	let options = {};
 	if (packet.length>10)
 		options = packet[10];
-	const protocol = ctx.protocol;
+	const protocol = this.protocol;
 	if (!protocol) {
 		return;
 	}
+	const me = this;
 	function send_damage_sequence(decode_time, message) {
-		ctx.do_send_damage_sequence(packet_sequence, wid, width, height, decode_time, message);
+		me.do_send_damage_sequence(packet_sequence, wid, width, height, decode_time, message);
 	}
 	if (!win) {
-		ctx.debug("draw", 'cannot paint, window not found:', wid);
+		this.debug("draw", 'cannot paint, window not found:', wid);
 		send_damage_sequence(-1, "window "+wid+" not found");
 		return;
 	}
@@ -2881,26 +2878,26 @@ XpraClient.prototype._process_draw_queue = function(packet, ctx){
 				const flush = options["flush"] || 0;
 				let decode_time = -1;
 				if(flush==0) {
-					ctx.request_redraw(win);
+					me.request_redraw(win);
 				}
 				if (error) {
-					ctx.request_redraw(win);
+					me.request_redraw(win);
 				}
 				else {
 					decode_time = Math.round(Utilities.monotonicTime() - start);
 				}
-				ctx.debug("draw", "decode time for ", coding, " sequence ", packet_sequence, ": ", decode_time, ", flush=", flush);
+				me.debug("draw", "decode time for ", coding, " sequence ", packet_sequence, ": ", decode_time, ", flush=", flush);
 				send_damage_sequence(decode_time, error || "");
 			}
 		);
 	}
 	catch(e) {
-		ctx.exc(e, "error painting", coding, "sequence no", packet_sequence);
+		me.exc(e, "error painting", coding, "sequence no", packet_sequence);
 		send_damage_sequence(-1, String(e));
 		//there may be other screen updates pending:
 		win.paint_pending = 0;
 		win.may_paint_now();
-		ctx.request_redraw(win);
+		me.request_redraw(win);
 	}
 };
 
