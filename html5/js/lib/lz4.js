@@ -740,7 +740,6 @@ lz4.compress = function compress (src, maxSize) {
 //convenience function added for xpra:
 lz4.decode = function(data) {
 	const length = data[0] | (data[1] << 8) | (data[2] << 16) | (data[3] << 24);
-	console.log("length(", data[0], data[1], data[2], data[3], ")=", length);
 	if (length<=0) {
 		throw "invalid length: "+length;
 	}
