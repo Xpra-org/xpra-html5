@@ -165,10 +165,6 @@ XpraClient.prototype.init_state = function(container) {
 	this.server_load = null;
 	this.server_ok = false;
 	//packet handling
-	this.queue_draw_packets = false;
-	this.dQ = [];
-	this.dQ_interval_id = null;
-	this.process_interval = 4;
 	this.decode_worker = null;
 
 	this.server_display = "";
@@ -2787,16 +2783,7 @@ XpraClient.prototype._process_draw = function(packet, ctx) {
 }
 
 XpraClient.prototype.do_process_draw = function(packet) {
-	if(this.queue_draw_packets){
-		if (this.dQ_interval_id === null) {
-			this.dQ_interval_id = setInterval(function(){
-				this._process_draw_queue(null, ctx);
-			}, this.process_interval);
-		}
-		this.dQ[this.dQ.length] = packet;
-	} else {
-		this._process_draw_queue(packet, this);
-	}
+	this._process_draw_queue(packet, this);
 };
 
 XpraClient.prototype._process_eos = function(packet, ctx) {
@@ -2847,9 +2834,6 @@ XpraClient.prototype.do_send_damage_sequence = function(packet_sequence, wid, wi
 }
 
 XpraClient.prototype._process_draw_queue = function(packet, ctx){
-	if(!packet && ctx.queue_draw_packets){
-		packet = ctx.dQ.shift();
-	}
 	if(!packet){
 		//no valid draw packet, likely handle errors for that here
 		return;
