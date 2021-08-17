@@ -101,6 +101,8 @@ function close_broadway(wid) {
 	}
 }
 
+const on_hold = new Map();
+
 onmessage = function(e) {
 	var data = e.data;
 	switch (data.cmd) {
@@ -108,21 +110,46 @@ onmessage = function(e) {
 		self.postMessage({'result': true});
 		break;
 	case 'eos':
-		const wid = data.wid;
-		close_broadway(wid);
+		close_broadway(data.wid);
+		if (data.wid in on_hold) {
+			on_hold.remove(data.wid);
+		}
 		//console.log("decode worker eos for wid", wid);
 		break;
 	case 'decode':
-		const packet = data.packet;
+		const packet = data.packet,
+			wid = packet[1],
+			coding = packet[6],
+			packet_sequence = packet[8];
+		let wid_hold = on_hold.get(wid);
 		//console.log("packet to decode:", data.packet);
 		function send_back(raw_buffers) {
+			//console.log("send_back: wid_hold=", wid_hold);
+			if (wid_hold) {
+				//find the highest sequence number which is still lower than this packet
+				let seq_holding = 0;
+				for (let seq of wid_hold.keys()) {
+					if (seq>seq_holding && seq<packet_sequence) {
+						seq_holding = seq;
+					}
+				}
+				if (seq_holding) {
+					const held = wid_hold.get(seq_holding);
+					if (held) {
+						held.push([packet, raw_buffers]);
+						return;
+					}
+				}
+			}
 			self.postMessage({'draw': packet}, raw_buffers);
+		}
+		function do_send_back(p, raw_buffers) {
+			self.postMessage({'draw': p}, raw_buffers);
 		}
 		function decode_error(msg) {
 			self.postMessage({'error': msg, 'packet' : packet});
 		}
 		try {
-			const coding = packet[6];
 			if (coding=="rgb24" || coding=="rgb32") {
 				decode_rgb(packet)
 				send_back([packet[7].buffer]);
@@ -130,14 +157,44 @@ onmessage = function(e) {
 			else if (coding=="png" || coding=="jpeg" || coding=="webp") {
 				const data = packet[7];
 				const blob = new Blob([data.buffer]);
+				//we're loading asynchronously
+				//so ensure that any packet sequence arriving after this one will be put on hold
+				//until we have finished decoding this one:
+				if (!wid_hold) {
+					wid_hold = new Map();
+					on_hold.set(wid, wid_hold);
+				}
+				//console.log("holding=", packet_sequence);
+				wid_hold[packet_sequence] = [];
+				function release() {
+					//release any packets held back by this image:
+					const held = wid_hold[packet_sequence];
+					//console.log("release held=", held);
+					if (held) {
+						let i;
+						for (i=0; i<held.length; i++) {
+							const held_packet = held[i][0];
+							const held_raw_buffers = held[i][1];
+							do_send_back(held_packet, held_raw_buffers);
+						}
+						wid_hold.delete(packet_sequence);
+						//console.log("wid_hold=", wid_hold, "on_hold=", on_hold);
+						if (wid_hold.size==0 && on_hold.has(wid)) {
+							on_hold.delete(wid);
+						}
+					}
+				}
 				createImageBitmap(blob).then(function(bitmap) {
 					packet[6] = "bitmap:"+coding;
 					packet[7] = bitmap;
 					send_back([bitmap]);
-				}, decode_error);
+					release();
+				}, function(e) {
+					decode_error(e);
+					release();
+				});
 			}
 			else if (coding=="h264") {
-				const wid = packet[1];
 				let options = {};
 				if (packet.length>10)
 					options = packet[10];

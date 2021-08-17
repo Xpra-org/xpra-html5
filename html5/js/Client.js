@@ -380,72 +380,75 @@ XpraClient.prototype.connect = function() {
 			return;
 		}
 	}
-	// detect websocket in webworker support and degrade gracefully
-	if(window.Worker) {
-		this.clog("we have webworker support");
-		// spawn worker that checks for a websocket
-		const me = this;
-		const worker = new Worker('js/lib/wsworker_check.js');
-		worker.addEventListener('message', function(e) {
-			const data = e.data;
-			switch (data['result']) {
-			case true:
-				// yey, we can use websocket in worker!
-				me.clog("we can use websocket in webworker");
-				me._do_connect(true);
-				break;
-			case false:
-				me.clog("we can't use websocket in webworker, won't use webworkers");
-				me._do_connect(false);
-				break;
-			default:
-				me.clog("client got unknown message from worker");
-				me._do_connect(false);
-			}
-		}, false);
-		// ask the worker to check for websocket support, when we receive a reply
-		// through the eventlistener above, _do_connect() will finish the job
-		worker.postMessage({'cmd': 'check'});
+	this.initialize_workers();
+}
 
-		const decode_worker = new Worker('js/DecodeWorker.js');
-		decode_worker.addEventListener('message', function(e) {
-			const data = e.data;
-			if (data['draw']) {
-				me.do_process_draw(data['draw']);
-				return;
-			}
-			if (data['error']) {
-				const msg = data['error'],
-					packet = data['packet'],
-					wid = packet[1],
-					width = packet[2],
-					height = packet[3],
-					coding = packet[6],
-					packet_sequence = packet[8];
-				me.clog("decode error on ", coding, "packet sequence", packet_sequence, ":", msg);
-				me.do_send_damage_sequence(packet_sequence, wid, width, height, -1, msg);
-				return;
-			}
-			switch (data['result']) {
-			case true:
-				me.clog("we can decode using a worker");
-				me.decode_worker = decode_worker;
-				break;
-			case false:
-				me.clog("we can't decode using a worker");
-				break;
-			default:
-				me.clog("client got unknown message from the decode worker");
-			}
-		}, false);
-		// ask the worker to check for websocket support, when we receive a reply
-		// through the eventlistener above, _do_connect() will finish the job
-		decode_worker.postMessage({'cmd': 'check'});
-	} else {
+XpraClient.prototype.initialize_workers = function() {
+	// detect websocket in webworker support and degrade gracefully
+	if (!window.Worker) {
 		// no webworker support
 		this.clog("no webworker support at all.");
 		this._do_connect(false);
 	}
+	this.clog("we have webworker support");
+	// spawn worker that checks for a websocket
+	const me = this;
+	const worker = new Worker('js/lib/wsworker_check.js');
+	worker.addEventListener('message', function(e) {
+		const data = e.data;
+		switch (data['result']) {
+		case true:
+			// yey, we can use websocket in worker!
+			me.clog("we can use websocket in webworker");
+			me._do_connect(true);
+			break;
+		case false:
+			me.clog("we can't use websocket in webworker, won't use webworkers");
+			me._do_connect(false);
+			break;
+		default:
+			me.clog("client got unknown message from worker");
+			me._do_connect(false);
+		}
+	}, false);
+	// ask the worker to check for websocket support, when we receive a reply
+	// through the eventlistener above, _do_connect() will finish the job
+	worker.postMessage({'cmd': 'check'});
+
+	const decode_worker = new Worker('js/DecodeWorker.js');
+	decode_worker.addEventListener('message', function(e) {
+		const data = e.data;
+		if (data['draw']) {
+			me.do_process_draw(data['draw']);
+			return;
+		}
+		if (data['error']) {
+			const msg = data['error'],
+				packet = data['packet'],
+				wid = packet[1],
+				width = packet[2],
+				height = packet[3],
+				coding = packet[6],
+				packet_sequence = packet[8];
+			me.clog("decode error on ", coding, "packet sequence", packet_sequence, ":", msg);
+			me.do_send_damage_sequence(packet_sequence, wid, width, height, -1, msg);
+			return;
+		}
+		switch (data['result']) {
+		case true:
+			me.clog("we can decode using a worker");
+			me.decode_worker = decode_worker;
+			break;
+		case false:
+			me.clog("we can't decode using a worker");
+			break;
+		default:
+			me.clog("client got unknown message from the decode worker");
+		}
+	}, false);
+	// ask the worker to check for websocket support, when we receive a reply
+	// through the eventlistener above, _do_connect() will finish the job
+	decode_worker.postMessage({'cmd': 'check'});
 };
 
 XpraClient.prototype._do_connect = function(with_worker) {

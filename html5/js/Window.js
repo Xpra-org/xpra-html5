@@ -1303,6 +1303,13 @@ XpraWindow.prototype._non_video_paint = function(coding) {
  * The image is painted into off-screen canvas.
  */
 XpraWindow.prototype.paint = function paint() {
+	if (this.client.decode_worker) {
+		//no need to synchronize paint packets here
+		//the decode worker ensures that we get the packets
+		//in the correct order, ready to update the canvas
+		XpraWindow.prototype.do_paint.apply(this, arguments);
+		return;
+	}
 	//process all paint request in order using the paint_queue:
 	const item = Array.prototype.slice.call(arguments);
 	this.paint_queue.push(item);
