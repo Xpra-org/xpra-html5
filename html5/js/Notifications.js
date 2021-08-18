@@ -39,7 +39,7 @@ $(function() {
 				//h = icon[2],
 				img_data = icon[3];
 			if (encoding=="png") {
-				const src = "data:image/"+encoding+";base64," + window.btoa(img_data);
+				const src = "data:image/"+encoding+";base64," + Utilities.ArrayBufferToBase64(img_data);
 				$("#notification_icon"+nID).attr('src', src);
 			}
 		}
