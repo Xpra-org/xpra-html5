@@ -18,6 +18,7 @@
 const XPRA_CLIENT_FORCE_NO_WORKER = false;
 const CLIPBOARD_IMAGES = true;
 const CLIPBOARD_EVENT_DELAY = 100;
+const DECODE_WORKER = true;
 const rencode_ok = rencode && rencode_selftest();
 
 function XpraClient(container) {
@@ -415,6 +416,9 @@ XpraClient.prototype.initialize_workers = function() {
 	// through the eventlistener above, _do_connect() will finish the job
 	worker.postMessage({'cmd': 'check'});
 
+	if (!DECODE_WORKER) {
+		return;
+	}
 	const decode_worker = new Worker('js/DecodeWorker.js');
 	decode_worker.addEventListener('message', function(e) {
 		const data = e.data;
