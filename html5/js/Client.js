@@ -2640,8 +2640,8 @@ XpraClient.prototype._process_notify_show = function(packet, ctx) {
 	//const app_icon = packet[5];
 	const nid = packet[2];
 	const replaces_nid = packet[4];
-	const summary = packet[6];
-	const body = packet[7];
+	const summary = Utilities.s(packet[6]);
+	const body = Utilities.s(packet[7]);
 	const expire_timeout = packet[8];
 	const icon = packet[9];
 	const actions = packet[10];
@@ -2655,8 +2655,9 @@ XpraClient.prototype._process_notify_show = function(packet, ctx) {
 
 	function notify() {
 		let icon_url = "";
-		if (icon) {
-			icon_url = "data:image/png;base64," + Utilities.ArrayBufferToBase64(icon);
+		if (icon && icon[0]=="png") {
+			icon_url = "data:image/png;base64," + Utilities.ArrayBufferToBase64(icon[3]);
+			console.log("notification icon_url=", icon_url);
 		}
 		/*
 		const nactions = [];
