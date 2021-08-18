@@ -138,13 +138,59 @@ function decode_draw_packet(packet) {
 		self.postMessage({'error': msg, 'packet' : packet});
 	}
 
+	function hold() {
+		//we're loading asynchronously
+		//so ensure that any packet sequence arriving after this one will be put on hold
+		//until we have finished decoding this one:
+		let wid_hold = on_hold.get(wid);
+		if (!wid_hold) {
+			wid_hold = new Map();
+			on_hold.set(wid, wid_hold);
+		}
+		//console.log("holding=", packet_sequence);
+		wid_hold.set(packet_sequence, []);
+		return wid_hold;
+	}
+
+	function release() {
+		let wid_hold = on_hold.get(wid);
+		if (!wid_hold) {
+			//could have been cancelled by EOS
+			return;
+		}
+		//release any packets held back by this image:
+		const held = wid_hold.get(packet_sequence);
+		//console.log("release held=", held);
+		if (!held) {
+			//could have been cancelled by EOS
+			return;
+		}
+		let i;
+		for (i=0; i<held.length; i++) {
+			const held_packet = held[i][0];
+			const held_raw_buffers = held[i][1];
+			do_send_back(held_packet, held_raw_buffers);
+		}
+		wid_hold.delete(packet_sequence);
+		//console.log("wid_hold=", wid_hold, "on_hold=", on_hold);
+		if (wid_hold.size==0 && on_hold.has(wid)) {
+			//this was the last held sequence for this window
+			on_hold.delete(wid);
+		}
+	}
+
 	function send_rgb32_back(data, width, height, options) {
 		const img = new ImageData(new Uint8ClampedArray(data.buffer), width, height);
+		hold();
 		createImageBitmap(img, 0, 0, width, height, options).then(function(bitmap) {
 			packet[6] = "bitmap:rgb32";
 			packet[7] = bitmap;
 			send_back([bitmap]);
-		}, decode_error);
+			release();
+		}, function(e) {
+			decode_error("failed to create "+width+"x"+height+" rgb32 bitmap from buffer "+data);
+			release();
+		});
 	}
 
 	try {
@@ -157,34 +203,7 @@ function decode_draw_packet(packet) {
 		else if (coding=="png" || coding=="jpeg" || coding=="webp") {
 			const data = packet[7];
 			const blob = new Blob([data.buffer]);
-			let wid_hold = on_hold.get(wid);
-			//we're loading asynchronously
-			//so ensure that any packet sequence arriving after this one will be put on hold
-			//until we have finished decoding this one:
-			if (!wid_hold) {
-				wid_hold = new Map();
-				on_hold.set(wid, wid_hold);
-			}
-			//console.log("holding=", packet_sequence);
-			wid_hold[packet_sequence] = [];
-			function release() {
-				//release any packets held back by this image:
-				const held = wid_hold[packet_sequence];
-				//console.log("release held=", held);
-				if (held) {
-					let i;
-					for (i=0; i<held.length; i++) {
-						const held_packet = held[i][0];
-						const held_raw_buffers = held[i][1];
-						do_send_back(held_packet, held_raw_buffers);
-					}
-					wid_hold.delete(packet_sequence);
-					//console.log("wid_hold=", wid_hold, "on_hold=", on_hold);
-					if (wid_hold.size==0 && on_hold.has(wid)) {
-						on_hold.delete(wid);
-					}
-				}
-			}
+			hold();
 			createImageBitmap(blob, {
 				"premultiplyAlpha" : "none",
 			}).then(function(bitmap) {
