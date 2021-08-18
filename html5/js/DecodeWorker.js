@@ -2,7 +2,6 @@
  * Copyright (c) 2021 Antoine Martin <antoine@xpra.org>
  */
 
-//importScripts("./Decode.js");
 importScripts("./lib/zlib.js");
 importScripts("./lib/lz4.js");
 importScripts("./lib/broadway/Decoder.js");
@@ -82,13 +81,7 @@ function decode_rgb(packet) {
 			data = uint;
 		}
 	}
-	packet[7] = data;
-	//could we send a prepared BitMap back?
-	//const img = new ImageData(data, width, height);
-	//const bitmap = createImageBitmap(img);
-	//packet[6] = "bitmap:"+coding;
-	//packet[7] = bitmap;
-	//console.log("converted", orig_data, "to", data);
+	return data;
 }
 
 const broadway_decoders = {};
@@ -119,6 +112,8 @@ onmessage = function(e) {
 	case 'decode':
 		const packet = data.packet,
 			wid = packet[1],
+			width = packet[4],
+			height = packet[5],
 			coding = packet[6],
 			packet_sequence = packet[8];
 		let wid_hold = on_hold.get(wid);
@@ -149,10 +144,22 @@ onmessage = function(e) {
 		function decode_error(msg) {
 			self.postMessage({'error': msg, 'packet' : packet});
 		}
+
+		function send_rgb32_back(data, width, height, options) {
+			const img = new ImageData(new Uint8ClampedArray(data.buffer), width, height);
+			createImageBitmap(img, 0, 0, width, height, options).then(function(bitmap) {
+				packet[6] = "bitmap:rgb32";
+				packet[7] = bitmap;
+				send_back([bitmap]);
+			}, decode_error);
+		}
+
 		try {
 			if (coding=="rgb24" || coding=="rgb32") {
-				decode_rgb(packet)
-				send_back([packet[7].buffer]);
+				const data = decode_rgb(packet);
+				send_rgb32_back(data, width, height, {
+					"premultiplyAlpha" : "none",
+					});
 			}
 			else if (coding=="png" || coding=="jpeg" || coding=="webp") {
 				const data = packet[7];
@@ -198,13 +205,14 @@ onmessage = function(e) {
 				let options = {};
 				if (packet.length>10)
 					options = packet[10];
-				let enc_width = packet[4];
-				let enc_height = packet[5];
 				const data = packet[7];
+				let enc_width = width;
+				let enc_height = height;
 				const scaled_size = options["scaled_size"];
 				if (scaled_size) {
 					enc_width = scaled_size[0];
 					enc_height = scaled_size[1];
+					delete options["scaled-size"];
 				}
 				const frame = options["frame"] || 0;
 				if (frame==0) {
@@ -229,16 +237,15 @@ onmessage = function(e) {
 					//console.log("broadway frame: enc size=", enc_width, enc_height, ", decode size=", p_width, p_height);
 					count++;
 					//forward it as rgb32:
-					packet[6] = "rgb32";
-					packet[7] = buffer;
-					options["scaled_size"] = [p_width, p_height];
-					send_back([packet[7].buffer]);
+					send_rgb32_back(buffer, p_width, p_height, {
+						"premultiplyAlpha" 	: "none",
+						"resizeWidth" 		: width,
+						"resizeHeight"		: height,
+						"resizeQuality"		: "medium",
+						});
 				};
 				// we can pass a buffer full of NALs to decode() directly
 				// as long as they are framed properly with the NAL header
-				if (!Array.isArray(data)) {
-					img_data = Array.from(data);
-				}
 				decoder.decode(data);
 				// broadway decoding is actually synchronous
 				// and onPictureDecoded is called from decode(data) above.

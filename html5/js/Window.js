@@ -1408,6 +1408,18 @@ XpraWindow.prototype.do_paint = function paint(x, y, width, height, coding, img_
 		decode_callback(""+e);
 	}
 
+	function paint_bitmap() {
+		//the decode worker is giving us a Bitmap object ready to use:
+		me.debug("draw", "painting", coding, "bitmap:", img_data);
+		//console.log("draw", "painting", coding, "bitmap:", img_data);
+		me.offscreen_canvas_ctx.clearRect(x, y, img_data.width, img_data.height);
+		me.offscreen_canvas_ctx.drawImage(img_data, x, y);
+		painted();
+		//this isn't really needed since we don't use the paint_queue at all
+		//when decoding in the worker (bitmaps can only come from the decode worker)
+		me.may_paint_now();
+	}
+
 	try {
 		if (coding=="void") {
 			painted(true);
@@ -1415,6 +1427,10 @@ XpraWindow.prototype.do_paint = function paint(x, y, width, height, coding, img_
 		}
 		else if (coding=="rgb32" || coding=="rgb24") {
 			this._non_video_paint(coding);
+			if (bitmap) {
+				paint_bitmap();
+				return;
+			}
 			//show("options="+(options).toSource());
 			if (options!=null && options["zlib"]>0) {
 				//show("decompressing "+img_data.length+" bytes of "+coding+"/zlib");
@@ -1474,12 +1490,7 @@ XpraWindow.prototype.do_paint = function paint(x, y, width, height, coding, img_
 		else if (coding=="jpeg" || coding=="png" || coding=="webp") {
 			this._non_video_paint(coding);
 			if (bitmap) {
-				//the decode worker is giving us a Bitmap object ready to use:
-				this.debug("draw", "painting", coding, "bitmap:", img_data);
-				this.offscreen_canvas_ctx.clearRect(x, y, img_data.width, img_data.height);
-				this.offscreen_canvas_ctx.drawImage(img_data, x, y);
-				painted();
-				this.may_paint_now();
+				paint_bitmap();
 				return;
 			}
 			const j = new Image();
