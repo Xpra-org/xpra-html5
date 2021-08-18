@@ -1371,7 +1371,6 @@ XpraWindow.prototype._close_jsmpeg = function _close_jsmpeg() {
 };
 
 XpraWindow.prototype.do_paint = function paint(x, y, width, height, coding, img_data, packet_sequence, rowstride, options, decode_callback) {
-	this.debug("draw", "do_paint(", img_data.length, " bytes of ", ("zlib" in options?"zlib ":""), coding, " data ", width, "x", height, " at ", x, ",", y, ") focused=", this.focused);
 	const me = this;
 
 	let enc_width = width;
@@ -1380,6 +1379,10 @@ XpraWindow.prototype.do_paint = function paint(x, y, width, height, coding, img_
 	const bitmap = coding.startsWith("bitmap:");
 	if (bitmap) {
 		coding = coding.split(":")[1];
+		this.debug("draw", coding, img_data, " at ", ""+x+","+y, ") focused=", this.focused);
+	}
+	else {
+		this.debug("draw", "do_paint(", img_data.length, " bytes of", coding, " data ", width, "x", height, " at ", x, ",", y, ") focused=", this.focused);
 	}
 	if(scaled_size) {
 		enc_width = scaled_size[0];
@@ -1410,8 +1413,6 @@ XpraWindow.prototype.do_paint = function paint(x, y, width, height, coding, img_
 
 	function paint_bitmap() {
 		//the decode worker is giving us a Bitmap object ready to use:
-		me.debug("draw", "painting", coding, "bitmap:", img_data);
-		//console.log("draw", "painting", coding, "bitmap:", img_data);
 		me.offscreen_canvas_ctx.clearRect(x, y, img_data.width, img_data.height);
 		me.offscreen_canvas_ctx.drawImage(img_data, x, y);
 		painted();
