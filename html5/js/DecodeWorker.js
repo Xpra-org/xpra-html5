@@ -109,10 +109,10 @@ function decode_draw_packet(packet) {
 		height = packet[5],
 		coding = packet[6],
 		packet_sequence = packet[8];
-	let wid_hold = on_hold.get(wid);
 	//console.log("packet to decode:", data.packet);
 	function send_back(raw_buffers) {
 		//console.log("send_back: wid_hold=", wid_hold);
+		const wid_hold = on_hold.get(wid);
 		if (wid_hold) {
 			//find the highest sequence number which is still lower than this packet
 			let seq_holding = 0;
@@ -157,6 +157,7 @@ function decode_draw_packet(packet) {
 		else if (coding=="png" || coding=="jpeg" || coding=="webp") {
 			const data = packet[7];
 			const blob = new Blob([data.buffer]);
+			let wid_hold = on_hold.get(wid);
 			//we're loading asynchronously
 			//so ensure that any packet sequence arriving after this one will be put on hold
 			//until we have finished decoding this one:
