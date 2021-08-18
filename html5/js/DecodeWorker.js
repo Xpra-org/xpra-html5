@@ -184,13 +184,15 @@ function decode_draw_packet(packet) {
 					}
 				}
 			}
-			createImageBitmap(blob).then(function(bitmap) {
+			createImageBitmap(blob, {
+				"premultiplyAlpha" : "none",
+			}).then(function(bitmap) {
 				packet[6] = "bitmap:"+coding;
 				packet[7] = bitmap;
 				send_back([bitmap]);
 				release();
 			}, function(e) {
-				decode_error(e);
+				decode_error("failed to create image bitmap from "+coding+" "+blob+": "+e);
 				release();
 			});
 		}
@@ -252,7 +254,7 @@ function decode_draw_packet(packet) {
 		}
 	}
 	catch (e) {
-		decode_error(e);
+		decode_error("error processing "+coding+" packet "+packet_sequence+": "+e);
 	}
 }
 
