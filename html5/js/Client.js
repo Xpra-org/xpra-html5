@@ -1154,7 +1154,8 @@ XpraClient.prototype._make_hello_base = function() {
 		"compression_level"	 		: 1,
 		"mouse.show"				: true,
 		// packet encoders
-		"rencode" 					: rencode_ok,
+		//don't enable plain rencode (too many problems with bytes and strings)
+		//"rencode" 					: rencode_ok,
 		"rencodeplus"				: rencode_ok,
 		"bencode"					: true,
 		"yaml"						: false,
