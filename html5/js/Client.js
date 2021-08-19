@@ -2778,11 +2778,19 @@ XpraClient.prototype._process_window_icon = function(packet, ctx) {
  * Window Painting
  */
 XpraClient.prototype._process_draw = function(packet, ctx) {
-	if (ctx.decode_worker) {
-		let raw_buffers = [];
-		if ("buffer" in packet[7]) {
-			raw_buffers.push(packet[7].buffer);
+	//ensure that the pixel data is in a byte array:
+	const coding = packet[6];
+	let img_data = packet[7];
+	const raw_buffers = [];
+	if (coding!="scroll") {
+		if (!(img_data instanceof Uint8Array)) {
+			//the legacy bencoder can give us a string here
+			img_data = Utilities.StringToUint8(img_data);
+			packet[7] = img_data;
 		}
+		raw_buffers.push(img_data.buffer);
+	}
+	if (ctx.decode_worker) {
 		ctx.decode_worker.postMessage({'cmd': 'decode', 'packet' : packet}, raw_buffers);
 		//the worker draw event will call do_process_draw
 	}
