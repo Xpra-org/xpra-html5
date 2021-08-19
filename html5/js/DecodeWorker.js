@@ -212,7 +212,7 @@ function decode_draw_packet(packet) {
 				send_back([bitmap]);
 				release();
 			}, function(e) {
-				decode_error("failed to create image bitmap from "+coding+" "+blob+": "+e);
+				decode_error("failed to create image bitmap from "+coding+" "+blob+", data="+data+": "+e);
 				release();
 			});
 		}
