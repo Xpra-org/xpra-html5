@@ -1552,9 +1552,6 @@ XpraWindow.prototype.do_paint = function paint(x, y, width, height, coding, img_
 			this.broadway_paint_location = [x, y];
 			// we can pass a buffer full of NALs to decode() directly
 			// as long as they are framed properly with the NAL header
-			if (!Array.isArray(img_data)) {
-				img_data = Array.from(img_data);
-			}
 			this.broadway_decoder.decode(img_data);
 			// broadway decoding is synchronous:
 			// (and already painted via the onPictureDecoded callback)
