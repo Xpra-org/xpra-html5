@@ -202,6 +202,10 @@ function decode_draw_packet(packet) {
 		}
 		else if (coding=="png" || coding=="jpeg" || coding=="webp") {
 			const data = packet[7];
+			if (!data.buffer) {
+				decode_error("missing pixel data buffer: "+(typeof data));
+				return;
+			}
 			const blob = new Blob([data.buffer]);
 			hold();
 			createImageBitmap(blob, {
