@@ -135,7 +135,7 @@ function decode_draw_packet(packet) {
 		self.postMessage({'draw': p}, raw_buffers);
 	}
 	function decode_error(msg) {
-		self.postMessage({'error': msg, 'packet' : packet});
+		self.postMessage({'error': ""+msg, 'packet' : packet});
 	}
 
 	function hold() {
