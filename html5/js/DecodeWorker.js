@@ -58,30 +58,28 @@ function decode_rgb(packet) {
 		}
 		packet[9] = target_stride;
 		packet[6] = "rgb32";
-		data = uint;
+		return uint;
 	}
-	else {
-		//coding=rgb32
-		if (target_stride!=rowstride) {
-			//re-striding
-			//might be quicker to copy 32bit at a time using Uint32Array
-			//and then casting the result?
-			const uint = new Uint8Array(target_stride*height);
-			let i = 0,
-				j = 0;
-			let psrc = 0,
-				pdst = 0;
-			for (i=0; i<height; i++) {
-				psrc = i*rowstride;
-				pdst = i*target_stride;
-				for (j=0; j<width*4; j++) {
-					uint[pdst++] = data[psrc++];
-				}
-			}
-			data = uint;
+	//coding=rgb32
+	if (target_stride==rowstride) {
+		return data;
+	}
+	//re-striding
+	//might be quicker to copy 32bit at a time using Uint32Array
+	//and then casting the result?
+	const uint = new Uint8Array(target_stride*height);
+	let i = 0,
+		j = 0,
+		psrc = 0,
+		pdst = 0;
+	for (i=0; i<height; i++) {
+		psrc = i*rowstride;
+		pdst = i*target_stride;
+		for (j=0; j<target_stride; j++) {
+			uint[pdst++] = data[psrc++];
 		}
 	}
-	return data;
+	return uint;
 }
 
 const broadway_decoders = {};
