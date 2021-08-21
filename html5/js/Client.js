@@ -2817,6 +2817,7 @@ XpraClient.prototype.request_redraw = function(win) {
 	if(!window.requestAnimationFrame) {
 		// requestAnimationFrame is not available, draw immediately
 		win.draw();
+		return;
 	}
 	if (!this.pending_redraw.includes(win)) {
 		this.pending_redraw.push(win);
