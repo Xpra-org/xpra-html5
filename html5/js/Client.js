@@ -2814,29 +2814,34 @@ XpraClient.prototype.request_redraw = function(win) {
 	// request that drawing to screen takes place at next available opportunity if possible
 	this.debug("draw", "request_redraw for", win);
 	win.swap_buffers();
-	if(window.requestAnimationFrame) {
-		if (!this.pending_redraw.includes(win)) {
-			this.pending_redraw.push(win);
-		}
-		// schedule a screen refresh if one is not already due:
-		if (this.draw_pending==0) {
-			this.draw_pending = Utilities.monotonicTime();
-			const me = this;
-			window.requestAnimationFrame(function() {
-				me.debug("draw", "animation frame:", me.pending_redraw.length, "windows to paint, processing delay", Utilities.monotonicTime()-me.draw_pending, "ms");
-				me.draw_pending = 0;
-				// draw all the windows in the list:
-				while (me.pending_redraw.length>0) {
-					const w = me.pending_redraw.shift();
-					w.draw();
-				}
-			});
-		}
-	} else {
+	if(!window.requestAnimationFrame) {
 		// requestAnimationFrame is not available, draw immediately
 		win.draw();
 	}
+	if (!this.pending_redraw.includes(win)) {
+		this.pending_redraw.push(win);
+	}
+	if (this.draw_pending) {
+		// already scheduled
+		return;
+	}
+	// schedule a screen refresh if one is not already due:
+	this.draw_pending = Utilities.monotonicTime();
+	const me = this;
+	window.requestAnimationFrame(function() {me.draw_pending_list()});
 };
+
+XpraClient.prototype.draw_pending_list = function() {
+	this.debug("draw", "animation frame:", this.pending_redraw.length,
+		"windows to paint, processing delay", Utilities.monotonicTime()-this.draw_pending, "ms");
+	this.draw_pending = 0;
+	// draw all the windows in the list:
+	while (this.pending_redraw.length>0) {
+		const w = this.pending_redraw.shift();
+		w.draw();
+	}
+}
+
 
 XpraClient.prototype.do_send_damage_sequence = function(packet_sequence, wid, width, height, decode_time, message) {
 	const protocol = this.protocol;
