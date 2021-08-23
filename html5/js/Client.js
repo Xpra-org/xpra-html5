@@ -1808,7 +1808,7 @@ XpraClient.prototype._process_hello = function(packet, ctx) {
 	}
 	let PACKET_ENCODERS = ["bencode"];
 	if (rencode_ok) {
-		PACKET_ENCODERS = ["rencodeplus", "rencode", "bencode"];
+		PACKET_ENCODERS = ["rencodeplus", "bencode"];
 	}
 	for (const i in PACKET_ENCODERS) {
 		const packet_encoder = PACKET_ENCODERS[i];
