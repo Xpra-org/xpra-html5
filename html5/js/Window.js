@@ -1507,7 +1507,7 @@ XpraWindow.prototype.do_paint = function paint(x, y, width, height, coding, img_
 				me.may_paint_now();
 			};
 			j.onerror = function () {
-				paint_error("failed to load into image tag:", coding);
+				paint_error("failed to load "+coding+" into image tag");
 				me.may_paint_now();
 			};
 			j.src = "data:image/"+coding+";base64," + Utilities.ArrayBufferToBase64(img_data);
