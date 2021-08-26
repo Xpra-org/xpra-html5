@@ -357,8 +357,9 @@ XpraProtocol.prototype.do_process_receive_queue = function() {
 		this.cipher_in.update(forge.util.createBuffer(uintToString(packet_data)));
 		const decrypted = this.cipher_in.output.getBytes();
 		packet_data = [];
-		for (i=0; i<decrypted.length; i++)
+		for (i=0; i<decrypted.length; i++) {
 			packet_data.push(decrypted[i].charCodeAt(0));
+		}
 		packet_data = new Uint8Array(packet_data.slice(0, -1 * padding));
 	}
 
