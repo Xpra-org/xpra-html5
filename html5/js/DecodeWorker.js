@@ -298,5 +298,5 @@ onmessage = function(e) {
 		break
 	default:
 		console.error("decode worker got unknown message: "+data.cmd);
-	};
+	}
 }
