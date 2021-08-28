@@ -181,16 +181,16 @@ function decode_draw_packet(packet) {
 		}
 	}
 
-	function send_rgb32_back(data, width, height, options) {
-		const img = new ImageData(new Uint8ClampedArray(data.buffer), width, height);
+	function send_rgb32_back(data, actual_width, actual_height, options) {
+		const img = new ImageData(new Uint8ClampedArray(data.buffer), actual_width, actual_height);
 		hold();
-		createImageBitmap(img, 0, 0, width, height, options).then(function(bitmap) {
+		createImageBitmap(img, 0, 0, actual_width, actual_height, options).then(function(bitmap) {
 			packet[6] = "bitmap:rgb32";
 			packet[7] = bitmap;
 			send_back([bitmap]);
 			release();
 		}, function(e) {
-			decode_error("failed to create "+width+"x"+height+" rgb32 bitmap from buffer "+data);
+			decode_error("failed to create "+actual_width+"x"+actual_height+" rgb32 bitmap from buffer "+data);
 			release();
 		});
 	}
