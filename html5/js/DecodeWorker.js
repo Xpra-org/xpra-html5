@@ -30,35 +30,9 @@ function decode_rgb(packet) {
 	let target_stride = width*4;
 	//this.debug("draw", "got ", data.length, "bytes of", coding, "to paint with stride", rowstride, ", target stride", target_stride);
 	if (coding=="rgb24") {
-		const uint = new Uint8Array(target_stride*height);
-		let i = 0,
-			j = 0,
-			l = data.length;
-		if (rowstride==width*3) {
-			//faster path, single loop:
-			while (i<l) {
-				uint[j++] = data[i++];
-				uint[j++] = data[i++];
-				uint[j++] = data[i++];
-				uint[j++] = 255;
-			}
-		}
-		else {
-			let psrc = 0,
-				pdst = 0;
-			for (i=0; i<height; i++) {
-				psrc = i*rowstride;
-				for (j=0; j<width; j++) {
-					uint[pdst++] = data[psrc++];
-					uint[pdst++] = data[psrc++];
-					uint[pdst++] = data[psrc++];
-					uint[pdst++] = 255;
-				}
-			}
-		}
 		packet[9] = target_stride;
 		packet[6] = "rgb32";
-		return uint;
+		return rgb24_to_rgb32(data, width, height, rowstride, target_stride);
 	}
 	//coding=rgb32
 	if (target_stride==rowstride) {
@@ -77,6 +51,36 @@ function decode_rgb(packet) {
 		pdst = i*target_stride;
 		for (j=0; j<target_stride; j++) {
 			uint[pdst++] = data[psrc++];
+		}
+	}
+	return uint;
+}
+
+function rgb24_to_rgb32(data, width, height, rowstride, target_stride) {
+	const uint = new Uint8Array(target_stride*height);
+	let i = 0,
+		j = 0,
+		l = data.length;
+	if (rowstride==width*3) {
+		//faster path, single loop:
+		while (i<l) {
+			uint[j++] = data[i++];
+			uint[j++] = data[i++];
+			uint[j++] = data[i++];
+			uint[j++] = 255;
+		}
+	}
+	else {
+		let psrc = 0,
+			pdst = 0;
+		for (i=0; i<height; i++) {
+			psrc = i*rowstride;
+			for (j=0; j<width; j++) {
+				uint[pdst++] = data[psrc++];
+				uint[pdst++] = data[psrc++];
+				uint[pdst++] = data[psrc++];
+				uint[pdst++] = 255;
+			}
 		}
 	}
 	return uint;
