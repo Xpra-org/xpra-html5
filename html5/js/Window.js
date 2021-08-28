@@ -1515,10 +1515,10 @@ XpraWindow.prototype.do_paint = function paint(x, y, width, height, coding, img_
 		else if (coding=="mpeg1") {
 			const frame = options["frame"] || 0;
 			if (frame==0 || this.jsmpeg_decoder==null) {
-				const options = {};
-				options.streaming = true;
-				options.decodeFirstFrame = false;
-				this.jsmpeg_decoder = new JSMpeg.Decoder.MPEG1Video(options);
+				const mpeg_options = {};
+				mpeg_options.streaming = true;
+				mpeg_options.decodeFirstFrame = false;
+				this.jsmpeg_decoder = new JSMpeg.Decoder.MPEG1Video(mpeg_options);
 				//TODO: instead of delegating, we should probably subclass the renderer
 				// (but which one! GL or not?):
 				const renderer = new Object();
