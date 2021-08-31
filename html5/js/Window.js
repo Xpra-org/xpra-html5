@@ -498,9 +498,9 @@ XpraWindow.prototype.update_metadata = function(metadata, safe) {
 XpraWindow.prototype.set_metadata_safe = function(metadata) {
 	if ("title" in metadata) {
 		this.title = Utilities.s(metadata["title"]);
-		const decodedTitle = decodeURIComponent(escape(this.title));
-		jQuery('#title' + this.wid).html(decodedTitle);
-		const trimmedTitle = Utilities.trimString(decodedTitle, 30);
+		console.log("title=", this.title, typeof this.title, this.title.constructor)
+		jQuery('#title' + this.wid).html(this.title);
+		const trimmedTitle = Utilities.trimString(this.title, 30);
 		jQuery('#windowlistitemtitle'+this.wid).text(trimmedTitle);
 	}
 	if ("has-alpha" in metadata) {

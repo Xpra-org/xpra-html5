@@ -2371,8 +2371,7 @@ XpraClient.prototype._new_window = function(wid, x, y, w, h, metadata, override_
 		this.scale
 		);
 	if(win && !override_redirect && win.metadata["window-type"]=="NORMAL"){
-		const decodedTitle = decodeURIComponent(escape(win.title));
-		const trimmedTitle = Utilities.trimString(decodedTitle,30);
+		const trimmedTitle = Utilities.trimString(win.title,30);
 		window.addWindowListItem(wid, trimmedTitle);
 	}
 	this.id_to_window[wid] = win;
