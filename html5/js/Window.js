@@ -497,7 +497,11 @@ XpraWindow.prototype.update_metadata = function(metadata, safe) {
  */
 XpraWindow.prototype.set_metadata_safe = function(metadata) {
 	if ("title" in metadata) {
-		this.title = Utilities.s(metadata["title"]);
+		let title = Utilities.s(metadata["title"]);
+		if (this.client.protocol.packet_encoder!="rencodeplus") {
+			title = decodeURIComponent(escape(title));
+		}
+		this.title = title;
 		console.log("title=", this.title, typeof this.title, this.title.constructor)
 		jQuery('#title' + this.wid).html(this.title);
 		const trimmedTitle = Utilities.trimString(this.title, 30);
