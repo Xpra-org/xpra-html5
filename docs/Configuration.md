@@ -83,3 +83,33 @@ By default the HTML5 client will refuse to send passwords over remote unencrypte
 |`exit_with_children` |If starting a new session, terminate it when the last start command exits|No|
 |`exit_with_client`|If starting a new session, terminate it when the connection is closed|No|
 </details>
+
+<details>
+  <summary>Apache Proxy</summary>
+
+  To use the Xpra html5 client and connect to the xpra server via an Apache web proxy, you must use [mod_proxy](https://httpd.apache.org/docs/2.4/mod/mod_proxy.html).
+
+  ie: start an xpra server listening on a TCP port, ie:
+```shell
+xpra start :100 --start-child=xterm --bind-tcp=0.0.0.0:14500
+```
+And add the following configuration to your apache web server:
+```
+<Location "/xpra">
+
+  RewriteEngine on
+  RewriteCond %{HTTP:UPGRADE} ^WebSocket$ [NC]
+  RewriteCond %{HTTP:CONNECTION} ^Upgrade$ [NC]
+  RewriteRule .* ws://localhost:14500/%{REQUEST_URI} [P]
+
+  ProxyPass ws://localhost:14500
+  ProxyPassReverse ws://localhost:14500
+
+  ProxyPass http://localhost:14500
+  ProxyPassReverse http://localhost:14500
+</Location>
+```
+Make sure to reload the server to update the configuration.
+
+If you are not using the default connect dialog page, you may need to override the `path` option.
+</details>
