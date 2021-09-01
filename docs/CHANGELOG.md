@@ -11,6 +11,11 @@ All notable changes to this project will be documented in this file.
     * new, clean javascript implementation
     * remove workarounds for Safari, encryption, compression, etc
     * handle byte arrays natively without copying
+* core:
+    * decode screen updates in a dedicated worker thread
+      (except on Mobile devices due to strange compatibility issues)
+    * switch to pure javascript lz4 implementation
+      (fixes compatibility issues with browsers, encryption options, etc)
 * geometry fixes:
     * option to adjust viewport to screen width via scaling
     * window visibility adjustements no longer snap to the sides
@@ -29,12 +34,15 @@ All notable changes to this project will be documented in this file.
     * missing session, category and command icons with latest google chrome
     * pass w3c validation without any warnings
 * cosmetic:
+    * notifications geometry and styling
     * scale window icons to fit in the title bar
     * use sans-serif font for window title
     * change titlebar focused / unfocused colours
     * make window corners round
     * try to scale application cursors to match window zoom
 * misc:
+    * fix zero-copy web worker regression from 4.2
+    * use zero-copy for transferring audio buffers from the worker
     * audio debugging was wrongly enabled (extra CPU usage and lag)
     * remove http mp3 stream audio support
     * log disconnection messages
