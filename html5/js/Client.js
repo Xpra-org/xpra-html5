@@ -115,6 +115,7 @@ XpraClient.prototype.init_state = function(container) {
 	this.mediasource_codecs = {};
 	// encryption
 	this.encryption = false;
+	this.encryption_mode = null;
 	this.encryption_key = null;
 	this.cipher_in_caps = null;
 	this.cipher_out_caps = null;
@@ -1198,8 +1199,11 @@ XpraClient.prototype._make_hello_base = function() {
 	if(this.encryption) {
 		this.cipher_in_caps = {
 			"cipher"					: this.encryption,
+			"cipher.mode"				: this.encryption_mode || "CBC",
 			"cipher.iv"					: Utilities.getSecureRandomString(16),
 			"cipher.key_salt"			: Utilities.getSecureRandomString(32),
+			"cipher.key_size"			: 32,
+			"cipher.key_hash"			: "SHA1",
 			"cipher.key_stretch_iterations"	: 1000,
 			"cipher.padding.options"	: ["PKCS#7"],
 		};
@@ -1799,7 +1803,11 @@ XpraClient.prototype._process_hello = function(packet, ctx) {
 	// check for server encryption caps update
 	if(ctx.encryption) {
 		ctx.cipher_out_caps = {};
-		const CIPHER_CAPS = ["", ".iv", ".key_salt", ".key_stretch_iterations"];
+		const CIPHER_CAPS = [
+			"", ".mode", ".iv",
+			".key_salt", ".key_size", ".key_hash", ".key_stretch_iterations",
+			".padding", ".padding.options",
+			];
 		for (let i=0; i<CIPHER_CAPS.length; ++i) {
 			const cipher_key = "cipher"+CIPHER_CAPS[i];
 			ctx.cipher_out_caps[cipher_key] = hello[cipher_key];

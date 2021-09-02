@@ -307,7 +307,7 @@ XpraProtocol.prototype.do_process_receive_queue = function() {
 
 	// work out padding if necessary
 	let padding = 0;
-	if (proto_crypto) {
+	if (proto_crypto && this.cipher_in_block_size>0) {
 		padding = (this.cipher_in_block_size - packet_size % this.cipher_in_block_size);
 		packet_size += padding;
 	}
@@ -356,11 +356,10 @@ XpraProtocol.prototype.do_process_receive_queue = function() {
 	if (proto_crypto) {
 		this.cipher_in.update(forge.util.createBuffer(uintToString(packet_data)));
 		const decrypted = this.cipher_in.output.getBytes();
-		packet_data = [];
-		for (i=0; i<decrypted.length; i++) {
-			packet_data.push(decrypted[i].charCodeAt(0));
+		packet_data = new Uint8Array(packet_size-padding);
+		for (i=0; i<packet_size-padding; i++) {
+			packet_data[i] = decrypted[i].charCodeAt(0);
 		}
-		packet_data = new Uint8Array(packet_data.slice(0, -1 * padding));
 	}
 
 	//decompress it if needed:
@@ -575,17 +574,51 @@ XpraProtocol.prototype.set_packet_handler = function(callback, ctx) {
 };
 
 XpraProtocol.prototype.set_cipher_in = function(caps, key) {
-	this.cipher_in_block_size = 32;
+	if (!key) {
+		throw "missing encryption key";
+	}
 	// stretch the password
-	const secret = forge.pkcs5.pbkdf2(key, caps['cipher.key_salt'], caps['cipher.key_stretch_iterations'], this.cipher_in_block_size);
+	const cipher = caps["cipher"];
+	if (cipher!="AES") {
+		throw "unsupported encryption specified: '"+cipher+"'";
+	}
+	const salt = caps["cipher.key_salt"];
+	const iterations = caps["cipher.key_stretch_iterations"];
+	if (iterations<0) {
+		throw "invalid number of iterations: "+iterations;
+	}
+	const DEFAULT_KEYSIZE = 32;
+	const key_size = caps["cipher.key_size"] || DEFAULT_KEYSIZE;
+	if (key_size<=16) {
+		throw "invalid key size '"+key_size+"'";
+	}
+	const DEFAULT_KEY_HASH = "SHA1";
+	const key_hash = (caps["cipher.key_hash"] || DEFAULT_KEY_HASH).toLowerCase();
+	const secret = forge.pkcs5.pbkdf2(key, salt, iterations, key_size, key_hash);
+	const DEFAULT_MODE = "CBC";
+	const mode = caps["cipher.mode"] || DEFAULT_MODE;
+    if (mode=="CBC") {
+		this.cipher_in_block_size = 32;
+	}
+	else if (["CFB", "CTR"].indexOf(mode)>=0){
+		this.cipher_in_block_size = 0;
+	}
+	else {
+		throw "unsupported AES mode '"+mode+"'";
+	}
 	// start the cipher
-	this.cipher_in = forge.cipher.createDecipher('AES-CBC', secret);
-	this.cipher_in.start({iv: caps['cipher.iv']});
+	this.cipher_in = forge.cipher.createDecipher(cipher+"-"+mode, secret);
+	const iv = caps["cipher.iv"];
+	if (!iv) {
+		throw "missing IV";
+	}
+	this.cipher_in.start({iv: iv, tagLength : 0, tag : ""});
 };
 
 XpraProtocol.prototype.set_cipher_out = function(caps, key) {
-	this.cipher_out_block_size = 32;
-	// stretch the password
+	if (!key) {
+		throw "missing encryption key";
+	}
 	function cipher_cap(k) {
 		var value = caps['cipher'+k];
 		if ((typeof value) === 'object' && value.constructor===Uint8Array) {
@@ -593,10 +626,41 @@ XpraProtocol.prototype.set_cipher_out = function(caps, key) {
 		}
 		return value;
 	}
-	const secret = forge.pkcs5.pbkdf2(key, cipher_cap('.key_salt'), cipher_cap('.key_stretch_iterations'), this.cipher_out_block_size);
+	const cipher = cipher_cap("") || "AES";
+	if (cipher!="AES") {
+		throw "unsupported encryption specified: '"+cipher+"'";
+	}
+	const key_salt = cipher_cap('.key_salt');
+	const iterations = cipher_cap('.key_stretch_iterations');
+	if (iterations<0) {
+		throw "invalid number of iterations: "+iterations;
+	}
+	const DEFAULT_KEYSIZE = 32;
+	const key_size = cipher_cap('.key_size') || DEFAULT_KEYSIZE;
+	if (key_size<=16) {
+		throw "invalid key size '"+key_size+"'";
+	}
+	// stretch the password
+	const DEFAULT_KEY_HASH = "SHA1";
+	const key_hash = (cipher_cap(".key_hash") || DEFAULT_KEY_HASH).toLowerCase();
+	const secret = forge.pkcs5.pbkdf2(key, key_salt, iterations, key_size, key_hash);
+	const DEFAULT_MODE = "CBC";
+	const mode = cipher_cap(".mode") || DEFAULT_MODE;
+    if (mode=="CBC") {
+		this.cipher_out_block_size = 32;
+	}
+	else if (["CFB", "CTR"].indexOf(mode)>=0){
+		this.cipher_out_block_size = 0;
+	}
+	else {
+		throw "unsupported AES mode '"+mode+"'";
+	}
 	// start the cipher
 	const iv = cipher_cap('.iv');
-	this.cipher_out = forge.cipher.createCipher('AES-CBC', secret);
+	if (!iv) {
+		throw "missing IV";
+	}
+	this.cipher_out = forge.cipher.createCipher(cipher+"-"+mode, secret);
 	this.cipher_out.start({iv: iv});
 };
 
