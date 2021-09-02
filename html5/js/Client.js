@@ -115,7 +115,6 @@ XpraClient.prototype.init_state = function(container) {
 	this.mediasource_codecs = {};
 	// encryption
 	this.encryption = false;
-	this.encryption_mode = null;
 	this.encryption_key = null;
 	this.cipher_in_caps = null;
 	this.cipher_out_caps = null;
@@ -1197,9 +1196,14 @@ XpraClient.prototype._make_hello_base = function() {
 	});
 
 	if(this.encryption) {
+		const enc = this.encryption.split("-")[0];
+		if (enc!="AES") {
+			throw "invalid encryption specified: '"+enc+"'";
+		}
+		const mode = this.encryption.split("-")[1] || "CBC";
 		this.cipher_in_caps = {
-			"cipher"					: this.encryption,
-			"cipher.mode"				: this.encryption_mode || "CBC",
+			"cipher"					: enc,
+			"cipher.mode"				: mode,
 			"cipher.iv"					: Utilities.getSecureRandomString(16),
 			"cipher.key_salt"			: Utilities.getSecureRandomString(32),
 			"cipher.key_size"			: 32,
@@ -1208,7 +1212,6 @@ XpraClient.prototype._make_hello_base = function() {
 			"cipher.padding.options"	: ["PKCS#7"],
 		};
 		this._update_capabilities(this.cipher_in_caps);
-		// copy over the encryption caps with the key for recieved data
 		this.protocol.set_cipher_in(this.cipher_in_caps, this.encryption_key);
 	}
 	if(this.start_new_session) {

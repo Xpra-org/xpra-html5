@@ -707,11 +707,12 @@
 				}
 
 				// check for encryption parameters
-				if(encryption && encryption.toLowerCase()!="no" && encryption.toLowerCase()!="false") {
-					client.encryption = "AES";
+				if(encryption && ["0", "false", "no", "disabled"].indexOf(encryption)<0) {
+					client.encryption = encryption.toUpperCase();
 					if(key) {
 						client.encryption_key = key;
 					}
+					console.log("encryption:", client.encryption);
 				}
 
 				// attach a callback for when client closes

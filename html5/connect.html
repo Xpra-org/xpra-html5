@@ -64,7 +64,7 @@
 			  	<span id="ssl-span"><input type="checkbox" id="ssl"> Secure Sockets</span>
 			  	<span id="insecure-span"><input type="checkbox" id="insecure"> Insecure plain-text passwords</span>
 			  	<br />
-			  	<span id="encryption-span"><input type="checkbox" id="encryption"> AES</span>
+				<span id="encryption-span"><input type="checkbox" id="aes"><span id="aes-label"> AES</span> <select id="encryption"><option value="AES-CBC">AES-CBC</option><option value="AES-CFB">AES-CFB</option><option value="AES-CTR">AES-CTR</option></select></span>
 				<span id="encryption-key-span"><input type="password" class="form-control" id="key" autocomplete="on" placeholder="AES-KEY" size="32" maxlength="256"></span>
 			</div>
 
@@ -322,6 +322,7 @@
 const VALUE_PROPERTIES = ["server", "port", "path", "username", "password", "key",
 					"bandwidth_limit", "encoding", "keyboard_layout", "audio_codec", "toolbar_position",
 					"display", "shadow_display", "override_width",
+					"encryption",
 					];
 const BOOLEAN_PROPERTIES = ["keyboard", "clipboard", "printing", "file_transfer",
 		"sound", "ignore_audio_blacklist",
@@ -329,7 +330,7 @@ const BOOLEAN_PROPERTIES = ["keyboard", "clipboard", "printing", "file_transfer"
 		"sharing", "steal", "reconnect", "swap_keys",
 		"scroll_reverse_x", "scroll_reverse_y",
 		"video", "mediasource_video",
-		"ssl", "insecure", "encryption",
+		"ssl", "insecure",
 		"floating_menu", "autohide", "clock",
 		"debug_main", "debug_keyboard", "debug_geometry", "debug_mouse", "debug_clipboard", "debug_draw", "debug_audio", "debug_network",
 	];
@@ -550,22 +551,37 @@ function fill_form(default_settings) {
 	$('input#insecure').prop("checked", insecure);
 	const ssl_input = document.getElementById("ssl");
 	const insecure_input = document.getElementById("insecure");
-	const encryption_input = document.getElementById("encryption");
-	const key_input = document.getElementById("key");
+	const aes_input = document.getElementById("aes");
 	const has_session_storage = Utilities.hasSessionStorage();
 	$('span#encryption-key-span').hide();
-	encryption_input.onchange = function() {
-		if (encryption_input.checked) {
+	aes_input.onchange = function() {
+		if (aes_input.checked) {
 			ssl_input.checked = false;
+			$('select#encryption').show();
+			$('span#aes-label').hide();
 			$('span#encryption-key-span').show();
+			const key_input = document.getElementById("key");
 			if (!key_input.value) {
 				key_input.focus();
 			}
 		}
 		else {
+			$('select#encryption').hide();
+			$('span#aes-label').show();
 			$('span#encryption-key-span').hide();
 		}
 	};
+	const encryption = (getparam("encryption") || "AES-CBC").toUpperCase();
+	if (encryption) {
+		let enc = encryption.split("-")[0];
+		if (enc=="AES") {
+			if (!ssl) {
+				aes_input.checked = true;
+			}
+			let enc_mode = encryption.split("-")[1] || "CBC";
+			document.getElementById("encryption").value = "AES-"+enc_mode;
+		}
+	}
 	if (!has_session_storage) {
 		//passwords would be sent on URL,
 		//so show insecure checkbox whenever ssl is off:
@@ -573,7 +589,7 @@ function fill_form(default_settings) {
 			$('input#password').prop("disabled", !has_session_storage && !ssl_input.checked && !insecure_input.checked);
 			if (ssl_input.checked) {
 			   	$('span#insecure-span').hide();
-			   	encryption_input.checked = false;
+				aes_input.checked = false;
 			}
 			else {
 			   	$('span#insecure-span').show();
@@ -585,7 +601,7 @@ function fill_form(default_settings) {
 	   	$('span#insecure-span').hide();
 		ssl_input.onchange = function() {
 			if (ssl_input.checked) {
-			   	encryption_input.checked = false;
+				aes_input.checked = false;
 				$('span#encryption-key-span').hide();
 			}
 		}
@@ -947,7 +963,7 @@ function fill_form(default_settings) {
 
 	let target_changed_timer = 0;
 	let ajax_delay = 2000;
-	let watched_elements = ["server", "port", "ssl", "encryption"];
+	let watched_elements = ["server", "port", "ssl", "encryption", "aes"];
 	let host_address = "";
 	for (var i=0, l=watched_elements.length; i<l; i++) {
 		let watched_element = watched_elements[i];
@@ -1075,7 +1091,6 @@ function fill_form(default_settings) {
 	$('input#sound').prop("checked", sound && Object.keys(codecs_supported).length>0);
 
 	const bool_props = ["keyboard", "clipboard", "printing", "file_transfer",
-		"encryption",
 		"exit_with_children", "exit_with_client",
 		"sharing", "steal", "reconnect", "swap_keys",
 		"video", "mediasource_video", "floating_menu", "autohide", "clock",
@@ -1123,7 +1138,7 @@ function fill_form(default_settings) {
 		document.getElementById('toolbar_position').value = toolbar_position;
 	}
 
-	encryption_input.onchange();
+	aes_input.onchange();
 
 	//this may override default values (ie: terminate flags are off for connect mode):
 	set_exit_actions(action=="connect" || action=="");
