@@ -96,17 +96,6 @@ const Utilities = {
 		return String.fromCharCode.apply(null, u);
 	},
 
-	getSalt: function(l) {
-		if(l<32 || l>256) {
-			throw 'invalid salt length';
-		}
-		let s = '';
-		while (s.length<l) {
-			s += Utilities.getHexUUID();
-		}
-		return s.slice(0, l);
-	},
-
 	xorString: function(str1, str2){
 		let result = '';
 		if(str1.length !== str2.length) {

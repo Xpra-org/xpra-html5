@@ -2144,7 +2144,7 @@ XpraClient.prototype._process_challenge = function(packet, ctx) {
 		//other digest, 32 random bytes is enough:
 		l = 32;
 	}
-	client_salt = Utilities.getSalt(l);
+	client_salt = Utilities.getSecureRandomString(l);
 	ctx.clog("challenge using salt digest", salt_digest);
 	const salt = ctx._gendigest(salt_digest, client_salt, server_salt);
 	if (!salt) {
