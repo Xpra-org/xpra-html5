@@ -1194,12 +1194,12 @@ XpraClient.prototype._make_hello_base = function() {
 	this._update_capabilities({
 		"clipboard.preferred-targets" : this.clipboard_targets,
 	});
-	
+
 	if(this.encryption) {
 		this.cipher_in_caps = {
 			"cipher"					: this.encryption,
-			"cipher.iv"					: Utilities.getHexUUID().slice(0, 16),
-			"cipher.key_salt"			: Utilities.getHexUUID()+Utilities.getHexUUID(),
+			"cipher.iv"					: Utilities.getSecureRandomString(16),
+			"cipher.key_salt"			: Utilities.getSecureRandomString(32),
 			"cipher.key_stretch_iterations"	: 1000,
 			"cipher.padding.options"	: ["PKCS#7"],
 		};

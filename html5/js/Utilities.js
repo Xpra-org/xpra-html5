@@ -82,6 +82,20 @@ const Utilities = {
 		return s.join("");
 	},
 
+	getSecureRandomString: function(len) {
+		const crypto = window.crypto || window.mscrypto;
+		if (!crypto) {
+			let s = "";
+			while (s.length<len) {
+				s += Utilities.getHexUUID();
+			}
+			return s.substr(0, len);
+		}
+		const u = new Uint8Array(len);
+		crypto.getRandomValues(u);
+		return String.fromCharCode.apply(null, u);
+	},
+
 	getSalt: function(l) {
 		if(l<32 || l>256) {
 			throw 'invalid salt length';
