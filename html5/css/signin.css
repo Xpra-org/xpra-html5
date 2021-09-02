@@ -1,6 +1,3 @@
-body {
-}
-
 div.bg-image {
 	position:fixed;
 	height: 100%;
@@ -86,4 +83,13 @@ div.container {
 	color: red;
 	font-size: smaller;
 	padding-left: 10px;
+}
+
+.form-signin img.field-icon {
+	margin-left: -32px;
+	position: relative;
+	z-index: 2;
+	font-family: bootstrap-icons;
+	width: 1.2em;
+	height: 1.2em;
 }

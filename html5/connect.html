@@ -59,13 +59,21 @@
 			<input title="Username" type="text" class="form-control" id="username" autocomplete="username" placeholder="Username" size="16" maxlength="256">
 			<label class="sr-only" for="password">Password</label>
 			<input title="Password" type="password" class="form-control" id="password"  autocomplete="current-password" placeholder="Password" size="16" maxlength="256">
+			<img id="toggle-password" class="field-icon" src="./icons/eye-slash.png"></span>
 			<br>
 			<div class="security-box">
 			  	<span id="ssl-span"><input type="checkbox" id="ssl"> Secure Sockets</span>
 			  	<span id="insecure-span"><input type="checkbox" id="insecure"> Insecure plain-text passwords</span>
 			  	<br />
-				<span id="encryption-span"><input type="checkbox" id="aes"><span id="aes-label"> AES</span> <select id="encryption"><option value="AES-CBC">AES-CBC</option><option value="AES-CFB">AES-CFB</option><option value="AES-CTR">AES-CTR</option></select></span>
-				<span id="encryption-key-span"><input type="password" class="form-control" id="key" autocomplete="on" placeholder="AES-KEY" size="32" maxlength="256"></span>
+				<span id="encryption-span">
+					<input type="checkbox" id="aes">
+					<span id="aes-label"> AES</span>
+					<select id="encryption"><option value="AES-CBC">AES-CBC</option><option value="AES-CFB">AES-CFB</option><option value="AES-CTR">AES-CTR</option></select>
+				</span>
+				<span id="encryption-key-span">
+					<input type="password" class="form-control" id="key" autocomplete="on" placeholder="AES-KEY" size="32" maxlength="256">
+					<img id="toggle-key" class="field-icon" src="./icons/eye-slash.png">
+				</span>
 			</div>
 
 			<div class="panel-group">
@@ -558,6 +566,7 @@ function fill_form(default_settings) {
 		if (aes_input.checked) {
 			ssl_input.checked = false;
 			$('select#encryption').show();
+			$('img#toggle-key').show();
 			$('span#aes-label').hide();
 			$('span#encryption-key-span').show();
 			const key_input = document.getElementById("key");
@@ -567,6 +576,7 @@ function fill_form(default_settings) {
 		}
 		else {
 			$('select#encryption').hide();
+			$('img#toggle-key').hide();
 			$('span#aes-label').show();
 			$('span#encryption-key-span').hide();
 		}
@@ -582,6 +592,26 @@ function fill_form(default_settings) {
 			document.getElementById("encryption").value = "AES-"+enc_mode;
 		}
 	}
+
+	//reveal password and aes key:
+	function toggle_reveal(el) {
+		let x = document.getElementById(el);
+		if (x.type === "password") {
+			x.type = "text";
+			return "eye.png";
+		} else {
+			x.type = "password";
+			return "eye-slash.png";
+		}
+	}
+	$('#toggle-password').on("click", function() {
+		$('#toggle-password').attr("src", "../icons/"+toggle_reveal("password"));
+	});
+	$('#toggle-key').on("click", function() {
+		$('#toggle-key').attr("src", "../icons/"+toggle_reveal("key"));
+	});
+
+
 	if (!has_session_storage) {
 		//passwords would be sent on URL,
 		//so show insecure checkbox whenever ssl is off:
