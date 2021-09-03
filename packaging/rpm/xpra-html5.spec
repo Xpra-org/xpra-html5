@@ -23,9 +23,11 @@ BuildRoot:			%{_tmppath}/%{name}-%{version}-root
 Conflicts:			xpra < 2.1
 %if 0%{?el8}%{?fedora}
 BuildRequires:		uglify-js
+BuildRequires:		python3
 %else
 %define minifier ""
 %define python python2
+BuildRequires:		python2
 %endif
 #don't depend on this package,
 #so we can also install on a pure RHEL distro:
