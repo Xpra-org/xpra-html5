@@ -12,6 +12,7 @@ so that you can access it using the builtin web server.
 # Installation
 ```
 git clone https://github.com/Xpra-org/xpra-html5
+cd xpra-html5
 ./setup.py install /usr/share/xpra/www
 ```
 To install with Nginx or Apache, you may need to change the installation path to something like `/var/www/html/`.
