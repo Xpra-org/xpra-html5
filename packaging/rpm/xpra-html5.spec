@@ -3,7 +3,7 @@
 # Xpra is released under the terms of the GNU GPL v2, or, at your option, any
 # later version. See the file COPYING for details.
 
-%define version 4.3
+%define version 4.4
 %define release 1.r889%{?dist}
 %define minifier uglifyjs
 %define python python3
@@ -73,7 +73,21 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
-* Fri Sep 03 2021 Antoine Martin <antoine@xpra.org> 4.3-1016-1
+* Fri Sep 03 2021 Antoine Martin <antoine@xpra.org> 4.4-1017-1
+- encryption:
+   support more AES modes: CBC, CFB and CTR
+   use secure random numbers
+- core:
+   decode screen updates in a dedicated worker thread
+   (except on Mobile devices due to strange compatibility issues)
+   switch to pure javascript lz4 implementation
+   (fixes compatibility issues with browsers, encryption options, etc)
+- misc:
+   notifications geometry and styling
+   fix zero-copy web worker regression from 4.3
+   use zero-copy for transferring audio buffers from the worker
+
+* Mon Aug 09 2021 Antoine Martin <antoine@xpra.org> 4.3-962-1
 - build and packaging:
    installation with python2 build environment
    create symlinks for some fonts
@@ -82,12 +96,6 @@ rm -rf $RPM_BUILD_ROOT
    new, clean javascript implementation
    remove workarounds for Safari, encryption, compression, etc
    handle byte arrays natively without copying
-- encryption:
-   support more AES modes: CBC, CFB and CTR
-   use secure random numbers
-- core:
-   decode screen updates in a dedicated worker thread
-   switch to pure javascript lz4 implementation
 - geometry fixes:
    option to adjust viewport to screen width via scaling
    window visibility adjustements no longer snap to the sides
@@ -106,15 +114,12 @@ rm -rf $RPM_BUILD_ROOT
    missing session, category and command icons with latest google chrome
    pass w3c validation without any warnings
 - cosmetic:
-   notifications geometry and styling
    scale window icons to fit in the title bar
    use sans-serif font for window title
    change titlebar focused / unfocused colours
    make window corners round
    try to scale application cursors to match window zoom
 - misc:
-   fix zero-copy web worker regression from 4.2
-   use zero-copy for transferring audio buffers from the worker
    audio debugging was wrongly enabled (extra CPU usage and lag)
    remove http mp3 stream audio support
    log disconnection messages

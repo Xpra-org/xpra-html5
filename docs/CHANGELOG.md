@@ -2,15 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [4.3] 2021-09-03
-* build and packaging:
-    * installation with python2 build environment
-    * create symlinks for some fonts
-    * more reliable git branch detection
-* rencode packet encoder:
-    * new, clean javascript implementation
-    * remove workarounds for Safari, encryption, compression, etc
-    * handle byte arrays natively without copying
+## [4.4] 2021-09-03
 * encryption:
     * support more AES modes: CBC, CFB and CTR
     * use secure random numbers
@@ -19,6 +11,20 @@ All notable changes to this project will be documented in this file.
       (except on Mobile devices due to strange compatibility issues)
     * switch to pure javascript lz4 implementation
       (fixes compatibility issues with browsers, encryption options, etc)
+* misc:
+    * notifications geometry and styling
+    * fix zero-copy web worker regression from 4.3
+    * use zero-copy for transferring audio buffers from the worker
+
+## [4.3] 2021-08-10
+* build and packaging:
+    * installation with python2 build environment
+    * create symlinks for some fonts
+    * more reliable git branch detection
+* rencode packet encoder:
+    * new, clean javascript implementation
+    * remove workarounds for Safari, encryption, compression, etc
+    * handle byte arrays natively without copying
 * geometry fixes:
     * option to adjust viewport to screen width via scaling
     * window visibility adjustements no longer snap to the sides
@@ -37,15 +43,12 @@ All notable changes to this project will be documented in this file.
     * missing session, category and command icons with latest google chrome
     * pass w3c validation without any warnings
 * cosmetic:
-    * notifications geometry and styling
     * scale window icons to fit in the title bar
     * use sans-serif font for window title
     * change titlebar focused / unfocused colours
     * make window corners round
     * try to scale application cursors to match window zoom
 * misc:
-    * fix zero-copy web worker regression from 4.2
-    * use zero-copy for transferring audio buffers from the worker
     * audio debugging was wrongly enabled (extra CPU usage and lag)
     * remove http mp3 stream audio support
     * log disconnection messages
