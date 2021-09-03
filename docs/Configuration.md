@@ -18,8 +18,8 @@ Default values can be specified in the [default-settings.txt](../html5/default-s
 |`insecure`	   |Allow sending of passwords over unencrypted connections|No|
 |`path`        |The WebSocket path to connect to (usually not needed)|`*1`|
 |`display`     |The display to connect to (for proxy servers)| |
-|`encryption`  |To enable encryption, specify `AES`|
-|`key`         |The `AES` key to use|
+|`encryption`  |To enable encryption, specify `AES-CBC`, `AES-CTR` or `AES-CFB` (see [#94](https://github.com/Xpra-org/xpra-html5/issues/94))|
+|`key`         |The `AES` encryption key to use|
 |`sharing`     |Allow other clients to connect to the same session|No|
 |`steal`       |Take over the session and disconnect any existing client(s)|Yes|
 |`reconnect`   |Automatically reconnect when the connection drops|Yes|
