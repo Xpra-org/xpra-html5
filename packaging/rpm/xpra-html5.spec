@@ -73,7 +73,7 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
-* Mon Aug 09 2021 Antoine Martin <antoine@xpra.org> 4.3-962-1
+* Fri Sep 03 2021 Antoine Martin <antoine@xpra.org> 4.3-1016-1
 - build and packaging:
    installation with python2 build environment
    create symlinks for some fonts
@@ -82,6 +82,9 @@ rm -rf $RPM_BUILD_ROOT
    new, clean javascript implementation
    remove workarounds for Safari, encryption, compression, etc
    handle byte arrays natively without copying
+- encryption:
+   support more AES modes: CBC, CFB and CTR
+   use secure random numbers
 - core:
    decode screen updates in a dedicated worker thread
    switch to pure javascript lz4 implementation

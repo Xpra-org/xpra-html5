@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [4.3] 2021-08-09
+## [4.3] 2021-09-03
 * build and packaging:
     * installation with python2 build environment
     * create symlinks for some fonts
@@ -11,6 +11,9 @@ All notable changes to this project will be documented in this file.
     * new, clean javascript implementation
     * remove workarounds for Safari, encryption, compression, etc
     * handle byte arrays natively without copying
+* encryption:
+    * support more AES modes: CBC, CFB and CTR
+    * use secure random numbers
 * core:
     * decode screen updates in a dedicated worker thread
       (except on Mobile devices due to strange compatibility issues)
