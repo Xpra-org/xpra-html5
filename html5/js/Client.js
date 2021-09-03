@@ -1206,7 +1206,7 @@ XpraClient.prototype._make_hello_base = function() {
 			"cipher.mode"				: mode,
 			"cipher.iv"					: Utilities.getSecureRandomString(16),
 			"cipher.key_salt"			: Utilities.getSecureRandomString(32),
-			"cipher.key_size"			: 32,
+			"cipher.key_size"			: 32,		//256 bits
 			"cipher.key_hash"			: "SHA1",
 			"cipher.key_stretch_iterations"	: 1000,
 			"cipher.padding.options"	: ["PKCS#7"],
@@ -1813,7 +1813,11 @@ XpraClient.prototype._process_hello = function(packet, ctx) {
 			];
 		for (let i=0; i<CIPHER_CAPS.length; ++i) {
 			const cipher_key = "cipher"+CIPHER_CAPS[i];
-			ctx.cipher_out_caps[cipher_key] = hello[cipher_key];
+			let value = hello[cipher_key];
+			if ((typeof value) === 'object' && value.constructor===Uint8Array) {
+				value = String.fromCharCode.apply(null, value);
+			}
+			ctx.cipher_out_caps[cipher_key] = value;
 		}
 		ctx.protocol.set_cipher_out(ctx.cipher_out_caps, ctx.encryption_key);
 	}
