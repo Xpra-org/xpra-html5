@@ -565,6 +565,7 @@ function fill_form(default_settings) {
 	aes_input.onchange = function() {
 		if (aes_input.checked) {
 			ssl_input.checked = false;
+			ssl_input.onchange();
 			$('select#encryption').show();
 			$('img#toggle-key').show();
 			$('span#aes-label').hide();
@@ -587,6 +588,7 @@ function fill_form(default_settings) {
 		if (enc=="AES") {
 			if (!ssl) {
 				aes_input.checked = true;
+				aes_input.onchange();
 			}
 			let enc_mode = encryption.split("-")[1] || "CBC";
 			document.getElementById("encryption").value = "AES-"+enc_mode;
@@ -620,6 +622,7 @@ function fill_form(default_settings) {
 			if (ssl_input.checked) {
 			   	$('span#insecure-span').hide();
 				aes_input.checked = false;
+				aes_input.onchange();
 			}
 			else {
 			   	$('span#insecure-span').show();
@@ -632,6 +635,7 @@ function fill_form(default_settings) {
 		ssl_input.onchange = function() {
 			if (ssl_input.checked) {
 				aes_input.checked = false;
+				aes_input.onchange();
 				$('span#encryption-key-span').hide();
 			}
 		}

@@ -375,7 +375,7 @@ XpraClient.prototype.connect = function() {
 	this.on_connection_progress("Connecting to server", details, 40);
 	// open the web socket, started it in a worker if available
 	// check we have enough information for encryption
-	if(this.encryption) {
+	if(this.encryption && (!this.ssl)) {
 		if((!this.encryption_key) || (this.encryption_key == "")) {
 			this.callback_close("no key specified for encryption");
 			return;
@@ -1195,7 +1195,7 @@ XpraClient.prototype._make_hello_base = function() {
 		"clipboard.preferred-targets" : this.clipboard_targets,
 	});
 
-	if(this.encryption) {
+	if(this.encryption && (!this.ssl)) {
 		const enc = this.encryption.split("-")[0];
 		if (enc!="AES") {
 			throw "invalid encryption specified: '"+enc+"'";
