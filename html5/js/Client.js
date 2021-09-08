@@ -1154,7 +1154,6 @@ XpraClient.prototype._make_hello_base = function() {
 		"salt-digest" 				: digests,
 		//compression bits:
 		"zlib"						: true,
-		"lzo"						: false,
 		"compression_level"	 		: 1,
 		"mouse.show"				: true,
 		// packet encoders
