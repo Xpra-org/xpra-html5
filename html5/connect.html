@@ -586,7 +586,7 @@ function fill_form(default_settings) {
 			$('span#encryption-key-span').hide();
 		}
 	};
-	const encryption = (getparam("encryption") || "AES-CBC").toUpperCase();
+	const encryption = (getparam("encryption") || "").toUpperCase();
 	if (encryption) {
 		let enc = encryption.split("-")[0];
 		if (enc=="AES") {
