@@ -568,6 +568,7 @@ function fill_form(default_settings) {
 			if (ssl_input.onchange) {
 				ssl_input.onchange();
 			}
+			$('select#encryption').find("option[value='']").remove();
 			$('select#encryption').show();
 			$('img#toggle-key').show();
 			$('span#aes-label').hide();
@@ -579,6 +580,7 @@ function fill_form(default_settings) {
 		}
 		else {
 			$('select#encryption').hide();
+			$('select#encryption').append('<option value="" selected="selected"></option>');
 			$('img#toggle-key').hide();
 			$('span#aes-label').show();
 			$('span#encryption-key-span').hide();
