@@ -565,7 +565,9 @@ function fill_form(default_settings) {
 	aes_input.onchange = function() {
 		if (aes_input.checked) {
 			ssl_input.checked = false;
-			ssl_input.onchange();
+			if (ssl_input.onchange) {
+				ssl_input.onchange();
+			}
 			$('select#encryption').show();
 			$('img#toggle-key').show();
 			$('span#aes-label').hide();
