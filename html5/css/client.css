@@ -57,6 +57,9 @@ div#disconnect_form {
 	line-height: 1.5em;
 	height: 1.5em;
 }
+#progress-bar {
+	height: 2em;
+}
 canvas {
 	border: none;
 	padding: 0;
