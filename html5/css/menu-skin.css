@@ -23,11 +23,11 @@ SOFTWARE.
 
 */
 
-#float_menu { 
-    display: inline-block;
-	height: 30px; 
-	padding: 0px 0px 0px 20px; 
-	z-index: 100000; 
+#float_menu {
+	display: none;
+	height: 30px;
+	padding: 0px 0px 0px 20px;
+	z-index: 100000;
 	background: repeating-linear-gradient(
 		  90deg,
 		  white,

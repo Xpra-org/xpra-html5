@@ -1171,7 +1171,9 @@
 
 			function expand_float_menu(){
 				const expanded_width = (float_menu_item_size*5);
-				document.getElementById('float_menu').style.width = expanded_width +'px';
+				const float_menu = document.getElementById('float_menu');
+				float_menu.style.display = "inline-block";
+				float_menu.style.width = expanded_width +'px';
 				$('#float_menu').children().show();
 				if(client){
 					client.reconfigure_all_trays();
@@ -1182,45 +1184,50 @@
 				document.getElementById('float_menu').style.width ='0px'; $('#float_menu').children().hide();
 			}
 
-			let client;
-			function init_page() {
+			function init_float_menu() {
 				const floating_menu = getboolparam("floating_menu", true);
 				const autohide = getboolparam("autohide", false);
 				const toolbar_position = getparam("toolbar_position");
 				const float_menu_element = $('#float_menu');
 				if (!floating_menu) {
-					float_menu_element.hide();
+					//nothing to do, it starts hidden
+					return;
+				}
+				float_menu_element.fadeIn();
+				var toolbar_width = float_menu_element.width();
+				var left = 0;
+				var top = float_menu_element.offset().top || 0;
+				var screen_width = $('#screen').width();
+				if (toolbar_position=="top-left") {
+					//no calculations needed
+				}
+				else if (toolbar_position=="top") {
+					left = screen_width/2-toolbar_width/2;
+				}
+				else if (toolbar_position=="top-right") {
+					left = screen_width-toolbar_width-100;
+				}
+				float_menu_element.offset({ top: top, left: left });
+
+				if (autohide) {
+					float_menu_element.on('mouseover', expand_float_menu);
+					float_menu_element.on('mouseout', retract_float_menu);
 				}
 				else {
-					var toolbar_width = float_menu_element.width();
-					var left = 0;
-					var top = float_menu_element.offset().top || 0;
-					var screen_width = $('#screen').width();
-					if (toolbar_position=="top-left") {
-						//no calculations needed
-					}
-					else if (toolbar_position=="top") {
-						left = screen_width/2-toolbar_width/2;
-					}
-					else if (toolbar_position=="top-right") {
-						left = screen_width-toolbar_width-100;
-					}
-					float_menu_element.offset({ top: top, left: left });
-
-					if (autohide) {
-						float_menu_element.on('mouseover', expand_float_menu);
-						float_menu_element.on('mouseout', retract_float_menu);
-					}
-					else {
-						expand_float_menu();
-					}
+					expand_float_menu();
 				}
+			}
 
+			let client;
+			function init_page() {
 				const touchaction = getparam("touchaction") || "scroll";
 				touchaction_scroll = touchaction == "scroll";
 				set_touchaction();
 				
 				client = init_client();
+				client.on_connect = function() {
+					init_float_menu();
+				};
 				client.connect();
 
 				//from now on, send log and debug to client function
