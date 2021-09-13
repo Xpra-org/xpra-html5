@@ -77,6 +77,21 @@
 			<progress id="progress-bar" max="100" value="10"></progress>
 		</div>
 
+		<div id="login-overlay">
+			<div id="login-box">
+				<div id="login-innerbox">
+					<span id="login-header"></span>
+					<br />
+					<input title="Password" type="password" id="password" autocomplete="current-password" placeholder="Password" size="16" maxlength="256">
+					<br />
+					<div id="login-buttons">
+						<a class="login-button" role="button" onclick="login_cancel();">Cancel</a>
+						<a class="login-button" role="button" onclick="login_connect();">Connect</a>
+					</div>
+				</div>
+			</div>
+		</div>
+
 		<div id="screen" style="width: 100%; height:100%;">
 			<div id="float_menu">
 				<ul class="Menu -horizontal">
@@ -348,12 +363,20 @@
 				hide_sessioninfo();
 			});
 
-			$("#pasteboard").blur(function() {
-				//force focus back to our capture widget:
-				if (client.capture_keyboard) {
-					$("#pasteboard").focus();
-				}
-			});
+			function enable_clipboard_autofocus() {
+				$("#pasteboard").blur(function() {
+					//force focus back to our capture widget:
+					if (client.capture_keyboard) {
+						$("#pasteboard").focus();
+					}
+				});
+				const pasteboard_element = $("#pasteboard");
+				pasteboard_element.prop('autofocus');
+				pasteboard_element.focus();
+			}
+			function cancel_clipboard_autofocus() {
+				$("#pasteboard").removeAttr('autofocus');
+			}
 
 			function show_about(event) {
 				$('.menu-content').slideUp();
@@ -420,15 +443,12 @@
 			}
 			function hide_bugreport() {
 				$('#bugreport').hide();
-				//focus back on our capture widget:
-				const pasteboard_element = $("#pasteboard");
-				pasteboard_element.prop('autofocus');
-				pasteboard_element.focus();
+				enable_clipboard_autofocus();
 			}
 			function show_bugreport(event) {
 				//stop capturing input, so we can interact with the bugreport form:
 				client.capture_keyboard = false;
-				$("#pasteboard").removeAttr('autofocus');
+				cancel_clipboard_autofocus();
 				//hide menu:
 				$('.menu-content').slideUp();
 				$('#bugreport').show();
@@ -460,9 +480,41 @@
 				});
 				hide_bugreport();
 			}
+			const password_input = document.getElementById("password");
+			let login_callback = null;
+			function login_cancel() {
+				$("#login-overlay").fadeOut();
+				password_input.value = "";
+				login_callback("");
+			}
+			function login_connect() {
+				$("#login-overlay").fadeOut();
+				const password = password_input.value;
+				password_input.value = "";
+				login_callback(password);
+			}
+			function password_prompt_fn(heading, callback) {
+				login_callback = callback;
+				$("#login-overlay").fadeIn();
+				$("#login-header").text(heading);
+				password_input.focus();
+				function password_special_keys(e) {
+					if (!e) {
+						e = window.event;
+					}
+					if (e.keyCode == 13) {
+						e.preventDefault();
+						login_connect();
+					}
+					if (e.keyCode == 27) {
+						e.preventDefault();
+						login_cancel();
+					}
+				}
+				password_input.addEventListener("keydown", password_special_keys);
+			}
 
 			let touchaction_scroll = true;
-
 			function toggle_touchaction() {
 				touchaction_scroll = !touchaction_scroll;
 				set_touchaction();
@@ -1227,6 +1279,8 @@
 				client = init_client();
 				client.on_connect = function() {
 					init_float_menu();
+					enable_clipboard_autofocus();
+					client.capture_keyboard = true;
 				};
 				client.connect();
 
@@ -1265,6 +1319,7 @@
 						}
 					}
 				});
+				client.password_prompt_fn = password_prompt_fn;
 				$('#fullscreen').on('click', function (e) {
 					toggle_fullscreen();
 				});

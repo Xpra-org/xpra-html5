@@ -100,6 +100,7 @@ XpraClient.prototype.init_state = function(container) {
 	this.capabilities = {};
 	this.RGB_FORMATS = ["RGBX", "RGBA", "RGB"];
 	this.disconnect_reason = null;
+	this.password_prompt_fn = null;
 	// audio
 	this.audio = null;
 	this.audio_enabled = false;
@@ -525,10 +526,7 @@ XpraClient.prototype.close_protocol = function() {
 
 XpraClient.prototype.clear_timers = function() {
 	this.stop_info_timer();
-	if (this.hello_timer) {
-		clearTimeout(this.hello_timer);
-		this.hello_timer = null;
-	}
+	this.cancel_hello_timer();
 	if (this.ping_timer) {
 		clearTimeout(this.ping_timer);
 		this.ping_timer = null;
@@ -605,7 +603,7 @@ XpraClient.prototype.init_keyboard = function() {
 	this.altgr_modifier = null;
 	this.altgr_state = false;
 
-	this.capture_keyboard = true;
+	this.capture_keyboard = false;
 	// assign the key callbacks
 	document.addEventListener('keydown', function(e) {
 		const r = me._keyb_onkeydown(e, me);
@@ -1674,13 +1672,26 @@ XpraClient.prototype._process_open = function(packet, ctx) {
 	// call the send_hello function
 	ctx.on_connection_progress("WebSocket connection established", "", 80);
 	// wait timeout seconds for a hello, then bomb
-	ctx.hello_timer = setTimeout(function () {
-		ctx.disconnect_reason = "Did not receive hello before timeout reached, not an Xpra server?";
-		ctx.close();
-	}, ctx.HELLO_TIMEOUT);
+	ctx.schedule_hello_timer();
 	ctx._send_hello();
 	ctx.on_open();
 };
+
+XpraClient.prototype.schedule_hello_timer = function() {
+	this.cancel_hello_timer();
+	const me = this;
+	this.hello_timer = setTimeout(function () {
+		me.disconnect_reason = "Did not receive hello before timeout reached, not an Xpra server?";
+		me.close();
+	}, this.HELLO_TIMEOUT);
+}
+XpraClient.prototype.cancel_hello_timer = function() {
+	if (this.hello_timer) {
+		clearTimeout(this.hello_timer);
+		this.hello_timer = null;
+	}
+}
+
 
 XpraClient.prototype._process_error = function(packet, ctx) {
 	ctx.cerror("websocket error: ", packet[1], "reason: ", ctx.disconnect_reason);
@@ -2113,11 +2124,6 @@ XpraClient.prototype.on_connect = function() {
 };
 
 XpraClient.prototype._process_challenge = function(packet, ctx) {
-	ctx.clog("process challenge");
-	if ((!ctx.password) || (ctx.password == "")) {
-		ctx.callback_close("No password specified for authentication challenge");
-		return;
-	}
 	if(ctx.encryption) {
 		if(packet.length >=3) {
 			ctx.cipher_out_caps = packet[2];
@@ -2127,22 +2133,39 @@ XpraClient.prototype._process_challenge = function(packet, ctx) {
 			return;
 		}
 	}
-	let s = Utilities.s;
-	const digest = s(packet[3]);
-	const server_salt = s(packet[1]);
+	const digest = Utilities.s(packet[3]);
+	const server_salt = Utilities.s(packet[1]);
+	const salt_digest = Utilities.s(packet[4]) || "xor";
+	ctx.clog("process challenge:", digest);
+	function do_process_challenge(password) {
+		ctx.do_process_challenge(digest, server_salt, salt_digest, password);
+	}
+	if (ctx.password) {
+		do_process_challenge(ctx.password);
+	}
+	if (ctx.password_prompt_fn) {
+		const address = ""+client.host+":"+client.port;
+		ctx.cancel_hello_timer();
+		ctx.password_prompt_fn("The server at "+address+" requires a password", do_process_challenge);
+		return;
+	}
+	ctx.callback_close("No password specified for authentication challenge");
+}
+
+XpraClient.prototype.do_process_challenge = function(digest, server_salt, salt_digest, password) {
+	this.schedule_hello_timer();
 	let client_salt = null;
-	const salt_digest = s(packet[4]) || "xor";
 	let l = server_salt.length;
 	if (salt_digest=="xor") {
 		//don't use xor over unencrypted connections unless explicitly allowed:
 		if (digest == "xor") {
-			if((!ctx.ssl) && (!ctx.encryption) && (!ctx.insecure) && (ctx.host!="localhost") && (ctx.host!="127.0.0.1")) {
-				ctx.callback_close("server requested digest xor, cowardly refusing to use it without encryption with "+ctx.host);
+			if((!this.ssl) && (!this.encryption) && (!this.insecure) && (this.host!="localhost") && (this.host!="127.0.0.1")) {
+				ctx.callback_close("server requested digest xor, cowardly refusing to use it without encryption with "+this.host);
 				return;
 			}
 		}
 		if (l<16 || l>256) {
-			ctx.callback_close("invalid server salt length for xor digest:"+l);
+			this.callback_close("invalid server salt length for xor digest:"+l);
 			return;
 		}
 	}
@@ -2151,16 +2174,16 @@ XpraClient.prototype._process_challenge = function(packet, ctx) {
 		l = 32;
 	}
 	client_salt = Utilities.getSecureRandomString(l);
-	ctx.clog("challenge using salt digest", salt_digest);
-	const salt = ctx._gendigest(salt_digest, client_salt, server_salt);
+	this.clog("challenge using salt digest", salt_digest);
+	const salt = this._gendigest(salt_digest, client_salt, server_salt);
 	if (!salt) {
 		this.callback_close("server requested an unsupported salt digest " + salt_digest);
 		return;
 	}
-	ctx.clog("challenge using digest", digest);
-	const challenge_response = ctx._gendigest(digest, ctx.password, salt);
+	this.clog("challenge using digest", digest);
+	const challenge_response = this._gendigest(digest, password, salt);
 	if (challenge_response) {
-		ctx._send_hello(challenge_response, client_salt);
+		this._send_hello(challenge_response, client_salt);
 	}
 	else {
 		this.callback_close("server requested an unsupported digest " + digest);

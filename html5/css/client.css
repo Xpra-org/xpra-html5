@@ -41,7 +41,7 @@ div#disconnect_form {
 	position: fixed;
 	top: 0; right: 0; bottom: 0; left: 0;
 	opacity: 0.5;
-	z-index: 100000;
+	z-index: 10;
 	text-align: center;
 	padding-top: 3em;
 }
@@ -380,6 +380,77 @@ table#sessiondata td {
 
 .simple-keyboard {
 	z-index: 100000;
+}
+
+#login-overlay {
+	position: fixed;
+	display: none;
+	width: 100%;
+	height: 100%;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background-color: rgba(0, 0, 0, 0.7);
+	z-index: 20;
+	cursor: pointer;
+}
+#login-box {
+	height: 320px;
+	width: 480px;
+	margin: auto;
+	margin-top: 20px;
+	position: relative;
+	z-index: 3;
+	background: #D8D8D8;
+	border-radius: 20px;
+	padding: 20px;
+}
+#login-innerbox {
+	margin: auto;
+	height: 100%;
+	z-index: 3;
+	background: #E8E8E8;
+	border-radius: 20px;
+	text-align: center;
+}
+#login-header {
+	font-size: 2em;
+	clear: both;
+	display: inline-block;
+	margin: 0.5em;
+}
+#login-innerbox input {
+	font-size: 1.5em;
+	clear: both;
+	display: inline-block;
+	margin: 0.5em;
+	padding: 2px;
+	border: 2px solid #101010;
+	border-radius: 4px;
+}
+#login-buttons {
+	margin: 2em;
+}
+.login-button {
+	margin: 1em;
+	padding: 10px 32px;
+	font-size: 18px;
+	line-height: 1.3333333;
+	border-radius: 6px;
+	color: #fff;
+	background-color: #5cb85c;
+	border-color: #4cae4c;
+	display: inline-block;
+	text-align: center;
+	white-space: nowrap;
+	vertical-align: middle;
+	touch-action: manipulation;
+	cursor: pointer;
+	user-select: none;
+	background-image: none;
+	border: 1px solid transparent;
+	border-radius: 4px;
 }
 
 @media screen {
