@@ -6,7 +6,7 @@
 			Copyright (c) 2013-2020 Antoine Martin <antoine@xpra.org>
 			Copyright (c) 2014 Joshua Higgins <josh@kxes.net>
 			Licensed under MPL 2.0
- 		-->
+		-->
 
 		<title>xpra websockets client</title>
 		<meta charset="utf-8">
@@ -98,7 +98,7 @@
 					<li class="-hasSubmenu -noChevron">
 						<a href="#" title="Xpra" class="noDrag" data-icon="menu"></a>
 						<ul id="menu_list">
-							<li  class="-hasSubmenu" >
+							<li class="-hasSubmenu" >
 								<a data-icon="apps" href="#">Start</a>
 								<ul id="startmenu">
 								</ul>
@@ -145,7 +145,7 @@
 						<a href="#" id="sound_button" title="Audio" data-icon="volume_off"></a>
 					</li>
 				</ul>
-				<div id="float_tray"  class="menu-divright"></div>
+				<div id="float_tray" class="menu-divright"></div>
 			</div>
 			<img id="shadow_pointer" alt="shadow pointer">
 		</div>
@@ -308,17 +308,17 @@
 			let fps = -1;
 			let vrefresh = -1;
 			function animation_cb(now) {
-			    let l = animation_times.push(now);
-			    if (l > 100) {
+				let l = animation_times.push(now);
+				if (l > 100) {
 					animation_times.shift();
 				}
 				let t0 = animation_times[0];
 				if (now>t0) {
-			        fps = Math.floor(1000 * (l-1) / (now - t0));
+					fps = Math.floor(1000 * (l-1) / (now - t0));
 				}
 				cdebug("draw", "animation_cb", now, "fps", fps, "vrefresh", vrefresh);
 				if (vrefresh<0) {
-				    window.requestAnimationFrame(animation_cb);
+					window.requestAnimationFrame(animation_cb);
 				}
 			};
 			window.requestAnimationFrame(animation_cb);
@@ -432,8 +432,8 @@
 					$("#client_latency").html(client.client_ping_latency);
 				//TODO:
 				// * add packet counter to Protocol.js
-	  			//"Packets Received"
-	  			//"Encoding + Compression"
+				//"Packets Received"
+				//"Encoding + Compression"
 				}, false);
 
 
@@ -707,7 +707,7 @@
 				// client.disable_encoding("h264");
 				if(action && (action!="connect")) {
 					const sns = {
-							"mode" 	: action,
+							"mode"	: action,
 					};
 					if (exit_with_children) {
 						sns["exit-with-children"] = true;
@@ -864,15 +864,15 @@
 			}
 
 			function init_tablet_input(client) {
-			   	//keyboard input for tablets:
+				//keyboard input for tablets:
 				const pasteboard = $('#pasteboard');
 				pasteboard.on("input", function(e) {
 					const txt = pasteboard.val();
 					pasteboard.val("");
-			   		cdebug("keyboard", "oninput: '"+txt+"'");
-			   		if (!client.topwindow) {
-			   			return;
-			   		}
+					cdebug("keyboard", "oninput: '"+txt+"'");
+					if (!client.topwindow) {
+						return;
+					}
 					for (let i = 0; i < txt.length; i++) {
 						const str = txt[i];
 						const keycode = str.charCodeAt(0);
@@ -886,22 +886,22 @@
 								client._check_browser_language(key_language);
 							}
 						}
-				   		try {
-				   			const modifiers = [];
-				   			const keyval = keycode;
-				   			const group = 0;
+						try {
+							const modifiers = [];
+							const keyval = keycode;
+							const group = 0;
 							let packet = ["key-action", client.topwindow, keyname, true, modifiers, keyval, str, keycode, group];
 							cdebug("keyboard", packet);
 							client.send(packet);
 							packet = ["key-action", client.topwindow, keyname, false, modifiers, keyval, str, keycode, group];
 							cdebug("keyboard", packet);
 							client.send(packet);
-				   		}
-				   		catch (e) {
-					   		client.exc(e, "input handling error");
-				   		}
-			   		}
-			   	});
+						}
+						catch (e) {
+							client.exc(e, "input handling error");
+						}
+					}
+				});
 			}
 
 			function init_clipboard(client) {
@@ -999,7 +999,7 @@
 					may_set_clipboard();
 				});
 				$("#screen").keypress(function() {
-  					may_set_clipboard();
+					may_set_clipboard();
 				});
 			}
 
@@ -1009,7 +1009,7 @@
 					onKeyPress: button => onKeyPress(button),
 					onKeyReleased: button => onKeyReleased(button),
 					display : {
-						".com" 	: "|",
+						".com" : "|",
 						"{tab}" : "tab",
 						"{lock}" : "lock",
 						"{shift}" : "shift",
@@ -1029,10 +1029,10 @@
 				}
 				function forward_key(pressed, button) {
 					let key = {
-						"{bksp}" 	: "Backspace",
-						"{enter}" 	: "Return",
-						"{space}" 	: "Space",
-						"{tab}" 	: "Tab",
+						"{bksp}"	: "Backspace",
+						"{enter}"	: "Return",
+						"{space}"	: "Space",
+						"{tab}"		: "Tab",
 						"{lock}"	: "CapsLock",
 						"{shift}"	: "Shift",
 						".com"		: "|",
@@ -1296,12 +1296,12 @@
 				if (client.clipboard_enabled) {
 					init_clipboard(client);
 				}
-			   	if (client.file_transfer) {
-			   		init_file_transfer(client);
-			   	}
-			   	else {
-			   		$('upload_link').removeAttr('href');
-			   	}
+				if (client.file_transfer) {
+					init_file_transfer(client);
+				}
+				else {
+					$('upload_link').removeAttr('href');
+				}
 				init_keyboard(client);
 				init_clock(client, getboolparam("clock", true));
 				init_audio(client);
@@ -1362,7 +1362,7 @@
 					}
 					init_page();
 				};
-				xhr.onerror  = function() {
+				xhr.onerror = function() {
 					clog("network", "default settings request failed with code", xhr.status);
 					init_page();
 				};

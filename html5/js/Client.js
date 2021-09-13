@@ -495,7 +495,7 @@ XpraClient.prototype.request_refresh = function(wid) {
 		"buffer-refresh", wid, 0, 100,
 		{
 			"refresh-now"	: true,
-			"batch"		  : {"reset" : true},
+			"batch"			: {"reset" : true},
 		},
 		{},	//no client_properties
 		]);
@@ -1129,7 +1129,7 @@ XpraClient.prototype._make_hello_base = function() {
 		"version"					: Utilities.VERSION,
 		"build.revision"			: Utilities.REVISION,
 		"build.local_modifications"	: Utilities.LOCAL_MODIFICATIONS,
-		"build.branch"	            : Utilities.BRANCH,
+		"build.branch"				: Utilities.BRANCH,
 		"platform"					: Utilities.getPlatformName(),
 		"platform.name"				: Utilities.getPlatformName(),
 		"platform.processor"		: Utilities.getPlatformProcessor(),
@@ -1162,7 +1162,7 @@ XpraClient.prototype._make_hello_base = function() {
 		"yaml"						: false,
 		"open-url"					: this.open_url,
 		"ping-echo-sourceid"		: true,
-		"vrefresh"                  : this.vrefresh,
+		"vrefresh"					: this.vrefresh,
 	});
 	if (this.bandwidth_limit>0) {
 		this._update_capabilities({
@@ -1254,7 +1254,7 @@ XpraClient.prototype._make_hello = function() {
 		"encoding.transparency"		: true,
 		"encoding.scrolling"		: true,
 		"encoding.decoder-speed"	: {"video" : 0},
-		"encodings.packet"		    : true,
+		"encodings.packet"			: true,
 		//"encoding.scrolling.min-percent" : 30,
 		//"encoding.min-speed"		: 80,
 		//"encoding.min-quality"	: 50,
@@ -1797,11 +1797,7 @@ XpraClient.prototype._connection_change = function(e) {
 
 XpraClient.prototype._process_hello = function(packet, ctx) {
 	//show("process_hello("+packet+")");
-	// clear hello timer
-	if(ctx.hello_timer) {
-		clearTimeout(ctx.hello_timer);
-		ctx.hello_timer = null;
-	}
+	ctx.cancel_hello_timer();
 	const hello = packet[1];
 	ctx.server_display = hello["display"] || "";
 	ctx.server_platform = hello["platform"] || "";
@@ -1998,8 +1994,8 @@ XpraClient.prototype._process_hello = function(packet, ctx) {
 		return true;
 	}, ctx.PING_FREQUENCY);
 	ctx.reconnect_attempt = 0;
-        // Drop start_new_session to avoid creating new displays
-        // on reconnect
+	// Drop start_new_session to avoid creating new displays
+	// on reconnect
 	ctx.start_new_session = null;
 	ctx.on_connection_progress("Session started", "", 100);
 	ctx.on_connect();
