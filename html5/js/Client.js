@@ -2138,6 +2138,7 @@ XpraClient.prototype._process_challenge = function(packet, ctx) {
 	}
 	if (ctx.password) {
 		do_process_challenge(ctx.password);
+		return;
 	}
 	if (ctx.password_prompt_fn) {
 		const address = ""+client.host+":"+client.port;
