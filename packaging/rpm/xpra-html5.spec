@@ -3,7 +3,7 @@
 # Xpra is released under the terms of the GNU GPL v2, or, at your option, any
 # later version. See the file COPYING for details.
 
-%define version 4.4
+%define version 4.5
 %define release 1.r889%{?dist}
 %define minifier uglifyjs
 %define python python3
@@ -75,6 +75,10 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Wed Sep 15 2021 Antoine Martin <antoine@xpra.org> 4.5-1031-1
+- prompt for passwords
+- fix AES errors when connecting via the dialog
+
 * Fri Sep 03 2021 Antoine Martin <antoine@xpra.org> 4.4-1017-1
 - encryption:
    support more AES modes: CBC, CFB and CTR

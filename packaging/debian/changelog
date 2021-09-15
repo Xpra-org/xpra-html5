@@ -1,3 +1,9 @@
+xpra-html5 (4.5-r1031-1) UNRELEASED; urgency=low
+  * prompt for passwords
+  * fix AES errors when connecting via the dialog
+
+ -- Antoine Martin antoine@xpra.org  Wed, 15 Sep 2021 23:09:23 +0700 +700
+
 xpra-html5 (4.4-r1017-1) UNRELEASED; urgency=low
   * encryption:
     - support more AES modes: CBC, CFB and CTR

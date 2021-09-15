@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.5] 2021-09-15
+* prompt for passwords
+* fix AES errors when connecting via the dialog
+
 ## [4.4] 2021-09-03
 * encryption:
     * support more AES modes: CBC, CFB and CTR
