@@ -2132,6 +2132,7 @@ XpraClient.prototype._process_challenge = function(packet, ctx) {
 	const digest = Utilities.s(packet[3]);
 	const server_salt = Utilities.s(packet[1]);
 	const salt_digest = Utilities.s(packet[4]) || "xor";
+	const prompt = Utilities.s(packet[5]) || "password";
 	ctx.clog("process challenge:", digest);
 	function do_process_challenge(password) {
 		ctx.do_process_challenge(digest, server_salt, salt_digest, password);
@@ -2145,7 +2146,7 @@ XpraClient.prototype._process_challenge = function(packet, ctx) {
 	if (ctx.password_prompt_fn) {
 		const address = ""+client.host+":"+client.port;
 		ctx.cancel_hello_timer();
-		ctx.password_prompt_fn("The server at "+address+" requires a password", do_process_challenge);
+		ctx.password_prompt_fn("The server at "+address+" requires a "+prompt, do_process_challenge);
 		return;
 	}
 	ctx.callback_close("No password specified for authentication challenge");
