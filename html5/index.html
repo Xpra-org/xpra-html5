@@ -484,33 +484,35 @@
 			let login_callback = null;
 			function login_cancel() {
 				$("#login-overlay").fadeOut();
+				password_input.removeEventListener("keydown", password_special_keys);
 				password_input.value = "";
 				login_callback("");
 			}
 			function login_connect() {
 				$("#login-overlay").fadeOut();
 				const password = password_input.value;
+				password_input.removeEventListener("keydown", password_special_keys);
 				password_input.value = "";
 				login_callback(password);
+			}
+			function password_special_keys(e) {
+				if (!e) {
+					e = window.event;
+				}
+				if (e.keyCode == 13) {
+					e.preventDefault();
+					login_connect();
+				}
+				if (e.keyCode == 27) {
+					e.preventDefault();
+					login_cancel();
+				}
 			}
 			function password_prompt_fn(heading, callback) {
 				login_callback = callback;
 				$("#login-overlay").fadeIn();
 				$("#login-header").text(heading);
 				password_input.focus();
-				function password_special_keys(e) {
-					if (!e) {
-						e = window.event;
-					}
-					if (e.keyCode == 13) {
-						e.preventDefault();
-						login_connect();
-					}
-					if (e.keyCode == 27) {
-						e.preventDefault();
-						login_cancel();
-					}
-				}
 				password_input.addEventListener("keydown", password_special_keys);
 			}
 

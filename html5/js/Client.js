@@ -2137,7 +2137,9 @@ XpraClient.prototype._process_challenge = function(packet, ctx) {
 		ctx.do_process_challenge(digest, server_salt, salt_digest, password);
 	}
 	if (ctx.password) {
-		do_process_challenge(ctx.password);
+		const password = ctx.password;
+		ctx.password = null;	//next challenge will fall through
+		do_process_challenge(password);
 		return;
 	}
 	if (ctx.password_prompt_fn) {
