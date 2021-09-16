@@ -429,6 +429,11 @@ table#sessiondata td {
 	border: 2px solid #101010;
 	border-radius: 4px;
 }
+#password-box {
+	background: url("../icons/authentication.png") no-repeat;
+	margin-left: 2em;
+	margin-right: 2em;
+}
 #login-buttons {
 	margin: 2em;
 }
