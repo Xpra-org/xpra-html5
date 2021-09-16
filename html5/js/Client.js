@@ -2132,7 +2132,7 @@ XpraClient.prototype._process_challenge = function(packet, ctx) {
 	const digest = Utilities.s(packet[3]);
 	const server_salt = Utilities.s(packet[1]);
 	const salt_digest = Utilities.s(packet[4]) || "xor";
-	const prompt = Utilities.s(packet[5]) || "password";
+	const prompt = (Utilities.s(packet[5]) || "password").replace(/[^a-zA-Z0-9\.,:\+/]/gi, '');
 	ctx.clog("process challenge:", digest);
 	function do_process_challenge(password) {
 		ctx.do_process_challenge(digest, server_salt, salt_digest, password);
