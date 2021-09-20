@@ -49,7 +49,7 @@ XpraClient.prototype.init_settings = function(container) {
 	this.ssl = null;
 	this.path = "";
 	this.username = "";
-	this.password = null;
+	this.passwords = [];
 	this.insecure = false;
 	this.uri = "";
 	//connection options:
@@ -1072,7 +1072,7 @@ XpraClient.prototype._send_hello = function(challenge_response, client_salt) {
 	// make the base hello
 	this._make_hello_base();
 	// handle a challenge if we need to
-	if((this.password) && (!challenge_response)) {
+	if((this.passwords.length>0) && (!challenge_response)) {
 		// tell the server we expect a challenge (this is a partial hello)
 		this.capabilities["challenge"] = true;
 		this.clog("sending partial hello");
@@ -2137,9 +2137,8 @@ XpraClient.prototype._process_challenge = function(packet, ctx) {
 	function do_process_challenge(password) {
 		ctx.do_process_challenge(digest, server_salt, salt_digest, password);
 	}
-	if (ctx.password) {
-		const password = ctx.password;
-		ctx.password = null;	//next challenge will fall through
+	if (ctx.passwords.length>0) {
+		const password = ctx.passwords.shift();
 		do_process_challenge(password);
 		return;
 	}

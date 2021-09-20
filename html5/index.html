@@ -550,7 +550,20 @@
 
 				// look at url parameters
 				const username = getparam("username") || getparam("handle") || null;
-				const password = getparam("password") || getparam("token") || null;
+				const passwords = [];
+				for (let i=0; i<10; i++) {
+					let password = getparam("password"+i) || getparam("token"+i) || null;
+					if (!password && i==0) {
+						//try with no suffix:
+						password = getparam("password") || getparam("token") || null;
+					}
+					if (password) {
+						passwords.push(password);
+					}
+					else {
+						break;
+					}
+				}
 				const sound = getboolparam("sound", true) || null;
 				const audio_codec = getparam("audio_codec") || null;
 				const encoding = getparam("encoding") || null;
@@ -758,8 +771,8 @@
 				if(username) {
 					client.username = username;
 				}
-				if(password) {
-					client.password = password;
+				if(passwords) {
+					client.passwords = passwords;
 				}
 				if (action=="connect") {
 					client.server_display = display;
