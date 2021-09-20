@@ -549,8 +549,8 @@
 				const https = document.location.protocol=="https:";
 
 				// look at url parameters
-				const username = getparam("username") || null;
-				const password = getparam("password") || null;
+				const username = getparam("username") || getparam("handle") || null;
+				const password = getparam("password") || getparam("token") || null;
 				const sound = getboolparam("sound", true) || null;
 				const audio_codec = getparam("audio_codec") || null;
 				const encoding = getparam("encoding") || null;
@@ -595,6 +595,12 @@
 				
 				try {
 					sessionStorage.removeItem("password");
+				}
+				catch (e) {
+					//ignore
+				}
+				try {
+					sessionStorage.removeItem("token");
 				}
 				catch (e) {
 					//ignore
