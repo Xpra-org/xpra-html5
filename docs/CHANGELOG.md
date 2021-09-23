@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+
+## [4.5.1] 2021-09-23
+* workaround Firefox bug in image decoder
+* allow AES and SSL to be combined
+* support multiple authentication challenges
+
 ## [4.5] 2021-09-15
 * prompt for passwords
 * fix AES errors when connecting via the dialog

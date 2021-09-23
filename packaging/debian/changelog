@@ -1,5 +1,7 @@
 xpra-html5 (4.5.1-r1043-1) UNRELEASED; urgency=low
-  * TODO
+  * workaround Firefox bug in image decoder
+  * allow AES and SSL to be combined
+  * support multiple authentication challenges
 
  -- Antoine Martin antoine@xpra.org  Thu, 23 Sep 2021 19:20:49 +0700 +700
 

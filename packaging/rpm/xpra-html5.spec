@@ -76,7 +76,9 @@ rm -rf $RPM_BUILD_ROOT
 
 %changelog
 * Thu Sep 23 2021 Antoine Martin <antoine@xpra.org> 4.5.1-1043-1
-- TODO
+* workaround Firefox bug in image decoder
+* allow AES and SSL to be combined
+* support multiple authentication challenges
 
 * Wed Sep 15 2021 Antoine Martin <antoine@xpra.org> 4.5-1031-1
 - prompt for passwords
