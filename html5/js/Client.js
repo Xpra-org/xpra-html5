@@ -443,7 +443,7 @@ XpraClient.prototype.initialize_workers = function() {
 			me.decode_worker = decode_worker;
 			break;
 		case false:
-			me.clog("we can't decode using a worker");
+			me.clog("we can't decode using a worker: "+data['message']);
 			break;
 		default:
 			me.clog("client got unknown message from the decode worker");
