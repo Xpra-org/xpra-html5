@@ -782,7 +782,7 @@
 				}
 
 				// check for encryption parameters
-				if(encryption && ["0", "false", "no", "disabled"].indexOf(encryption)<0) {
+				if(encryption && ["0", "false", "no", "disabled"].indexOf(encryption.toLowerCase())<0) {
 					client.encryption = encryption.toUpperCase();
 					if(key) {
 						client.encryption_key = key;
