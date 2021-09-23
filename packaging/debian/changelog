@@ -1,4 +1,4 @@
-xpra-html5 (4.5.1-r1043-1) UNRELEASED; urgency=low
+xpra-html5 (4.5.1-r1045-1) UNRELEASED; urgency=low
   * workaround Firefox bug in image decoder
   * allow AES and SSL to be combined
   * support multiple authentication challenges

@@ -4,7 +4,7 @@
 # later version. See the file COPYING for details.
 
 %define version 4.5.1
-%define release 1.r889%{?dist}
+%define release 1.r1045%{?dist}
 %define minifier uglifyjs
 %define python python3
 
@@ -76,9 +76,9 @@ rm -rf $RPM_BUILD_ROOT
 
 %changelog
 * Thu Sep 23 2021 Antoine Martin <antoine@xpra.org> 4.5.1-1043-1
-* workaround Firefox bug in image decoder
-* allow AES and SSL to be combined
-* support multiple authentication challenges
+- workaround Firefox bug in image decoder
+- allow AES and SSL to be combined
+- support multiple authentication challenges
 
 * Wed Sep 15 2021 Antoine Martin <antoine@xpra.org> 4.5-1031-1
 - prompt for passwords
