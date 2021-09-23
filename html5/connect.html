@@ -564,10 +564,6 @@ function fill_form(default_settings) {
 	$('span#encryption-key-span').hide();
 	aes_input.onchange = function() {
 		if (aes_input.checked) {
-			ssl_input.checked = false;
-			if (ssl_input.onchange) {
-				ssl_input.onchange();
-			}
 			$('select#encryption').find("option[value='']").remove();
 			$('select#encryption').show();
 			$('img#toggle-key').show();
@@ -590,10 +586,8 @@ function fill_form(default_settings) {
 	if (encryption) {
 		let enc = encryption.split("-")[0];
 		if (enc=="AES") {
-			if (!ssl) {
-				aes_input.checked = true;
-				aes_input.onchange();
-			}
+			aes_input.checked = true;
+			aes_input.onchange();
 			let enc_mode = encryption.split("-")[1] || "CBC";
 			document.getElementById("encryption").value = "AES-"+enc_mode;
 		}
@@ -636,13 +630,6 @@ function fill_form(default_settings) {
 	else {
 		//local storage makes this secure
 	   	$('span#insecure-span').hide();
-		ssl_input.onchange = function() {
-			if (ssl_input.checked) {
-				aes_input.checked = false;
-				aes_input.onchange();
-				$('span#encryption-key-span').hide();
-			}
-		}
 	}
 	$('input#password').prop("disabled", !has_session_storage && !ssl_input.checked && !insecure_input.checked);
 	insecure_input.onchange = function() {
