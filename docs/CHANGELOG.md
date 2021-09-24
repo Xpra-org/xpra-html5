@@ -2,6 +2,8 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.5.2] 2021-09-24
+* fix toolbar position
 
 ## [4.5.1] 2021-09-23
 * workaround Firefox bug in image decoder
