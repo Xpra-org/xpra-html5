@@ -1721,11 +1721,17 @@ XpraClient.prototype._process_error = function(packet, ctx) {
 
 XpraClient.prototype.packet_disconnect_reason = function(packet) {
 	if (!this.disconnect_reason && packet[1]) {
-		this.disconnect_reason = packet[1];
-		let i = 2;
-		while (packet.length>i && packet[i]) {
-			this.disconnect_reason += "\n"+packet[i];
-			i++;
+		const code = packet[2];
+		if (!ctx.connected && [0, 1006, 1008, 1010, 1014, 1015].indexOf(code)>=0) {
+			this.disconnect_reason = "connection failed";
+		}
+		else {
+			this.disconnect_reason = packet[1];
+			let i = 2;
+			while (packet.length>i && packet[i]) {
+				this.disconnect_reason += "\n"+packet[i];
+				i++;
+			}
 		}
 	}
 }
