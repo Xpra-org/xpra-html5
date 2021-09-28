@@ -1722,8 +1722,8 @@ XpraClient.prototype._process_error = function(packet, ctx) {
 XpraClient.prototype.packet_disconnect_reason = function(packet) {
 	if (!this.disconnect_reason && packet[1]) {
 		const code = packet[2];
-		if (!ctx.connected && [0, 1006, 1008, 1010, 1014, 1015].indexOf(code)>=0) {
-			this.disconnect_reason = "connection failed";
+		if (!this.connected && [0, 1006, 1008, 1010, 1014, 1015].indexOf(code)>=0) {
+			this.disconnect_reason = "connection failed, invalid address?";
 		}
 		else {
 			this.disconnect_reason = packet[1];
