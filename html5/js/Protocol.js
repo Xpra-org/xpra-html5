@@ -18,6 +18,8 @@
  */
 
 
+CONNECT_TIMEOUT = 15000;
+
 /*
 A stub class to facilitate communication with the protocol when
 it is loaded in a worker
@@ -92,6 +94,7 @@ XpraProtocolWorkerHost.prototype.enable_packet_encoder = function(packet_encoder
 The main Xpra wire protocol
 */
 function XpraProtocol() {
+	this.verify_connected_timer = 0;
 	this.is_worker = false;
 	this.packet_handler = null;
 	this.packet_ctx = null;
@@ -162,6 +165,9 @@ XpraProtocol.prototype.open = function(uri) {
 	this.mQ = [];
 	this.header  = [];
 	this.websocket  = null;
+	this.verify_connected_timer = setTimeout(function() {
+			me.packet_handler(['error', "connection timed out", 0], me.packet_ctx);
+		}, CONNECT_TIMEOUT);
 	// connect the socket
 	try {
 		this.websocket = new WebSocket(uri, 'binary');
@@ -172,6 +178,10 @@ XpraProtocol.prototype.open = function(uri) {
 	}
 	this.websocket.binaryType = 'arraybuffer';
 	this.websocket.onopen = function () {
+		if (this.verify_connected_timer) {
+			clearTimeout(this.verify_connected_timer);
+			this.verify_connected_timer = 0;
+		}
 		me.packet_handler(['open'], me.packet_ctx);
 	};
 	this.websocket.onclose = function (event) {
@@ -188,9 +198,6 @@ XpraProtocol.prototype.open = function(uri) {
 			}, this.process_interval);
 	};
 };
-
-
-
 
 XpraProtocol.prototype.close = function() {
 	if (this.websocket) {
