@@ -130,20 +130,25 @@ XpraProtocol.prototype.close_event_str = function(event) {
 		'1015': 'TLS Handshake'
 		};
 	let msg = "";
-	try {
-	    if (typeof(code_mappings[event.code]) !== 'undefined') {
-			msg += "'"+code_mappings[event.code]+"' ("+event.code+")";
-	    }
-	    else {
-			msg += ""+event.code;
+	if (event.code) {
+		try {
+			if (typeof(code_mappings[event.code]) !== 'undefined') {
+				msg += "'"+code_mappings[event.code]+"' ("+event.code+")";
+			}
+			else {
+				msg += ""+event.code;
+			}
+			if (event.reason) {
+				msg += ": '"+event.reason+"'";
+			}
 		}
-	    if (event.reason) {
-			msg += ": '"+event.reason+"'";
+		catch (e) {
+			this.error("cannot parse websocket event:", e);
+			msg = "unknown reason";
 		}
 	}
-	catch (e) {
-		this.error("cannot parse websocket event:", e);
-		msg = "unknown reason";
+	else {
+		msg = "unknown reason (no websocket error code)";
 	}
 	return msg;
 }
@@ -162,7 +167,7 @@ XpraProtocol.prototype.open = function(uri) {
 		this.websocket = new WebSocket(uri, 'binary');
 	}
 	catch (e) {
-		this.packet_handler(['error', ""+e], this.packet_ctx);
+		this.packet_handler(['error', ""+e, 0], this.packet_ctx);
 		return;
 	}
 	this.websocket.binaryType = 'arraybuffer';
@@ -173,7 +178,7 @@ XpraProtocol.prototype.open = function(uri) {
 		me.packet_handler(['close', me.close_event_str(event)], me.packet_ctx);
 	};
 	this.websocket.onerror = function (event) {
-		me.packet_handler(['error', me.close_event_str(event)], me.packet_ctx);
+		me.packet_handler(['error', me.close_event_str(event), event.code || 0], me.packet_ctx);
 	};
 	this.websocket.onmessage = function (e) {
 		// push arraybuffer values onto the end
@@ -183,6 +188,9 @@ XpraProtocol.prototype.open = function(uri) {
 			}, this.process_interval);
 	};
 };
+
+
+
 
 XpraProtocol.prototype.close = function() {
 	if (this.websocket) {

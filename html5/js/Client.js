@@ -1696,13 +1696,23 @@ XpraClient.prototype.cancel_hello_timer = function() {
 
 
 XpraClient.prototype._process_error = function(packet, ctx) {
-	ctx.cerror("websocket error: ", packet[1], "reason: ", ctx.disconnect_reason);
+	const code = parseInt(packet[2]);
+	let reconnect = ctx.reconnect || ctx.reconnect_attempt<ctx.reconnect_count;
+	if (reconnect && code>=0) {
+		if ([0, 1006, 1008, 1010, 1014, 1015].indexOf(code)>=0) {
+			// don't re-connect unless we had actually managed to connect
+			// (because these specific websocket error codes are likely permanent)
+			reconnect = ctx.connected;
+		}
+	}
+	ctx.cerror("websocket error: ", packet[1], "code: ", code, "reason: ", ctx.disconnect_reason,
+				", connected: ", ctx.connected, ", reconnect: ", reconnect);
 	if (ctx.reconnect_in_progress) {
 		return;
 	}
 	ctx.packet_disconnect_reason(packet);
 	ctx.close_audio();
-	if (!ctx.reconnect || ctx.reconnect_attempt>=ctx.reconnect_count) {
+	if (!reconnect) {
 		// call the client's close callback
 		ctx.callback_close(ctx.disconnect_reason);
 	}
