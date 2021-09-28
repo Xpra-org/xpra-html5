@@ -1297,7 +1297,13 @@
 					enable_clipboard_autofocus();
 					client.capture_keyboard = true;
 				};
-				client.connect();
+				const blocked_hosts = (getparam("blocked-hosts") || "").split(",");
+				if (blocked_hosts.indexOf(client.host.toLowerCase())>=0) {
+					client.callback_close("connection to host '"+(client.host.replace(/[^A-Za-z0-9]/g, ''))+"' blocked");
+				}
+				else {
+					client.connect();
+				}
 
 				//from now on, send log and debug to client function
 				//which may forward it to the server once connected:

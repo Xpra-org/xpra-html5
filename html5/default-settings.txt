@@ -6,3 +6,5 @@
 # encoding = auto
 # bandwidth_limit = 10000000
 # debug_keyboard = true
+
+blocked-hosts = xpra.org,www.xpra.org
