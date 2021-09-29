@@ -1299,7 +1299,7 @@
 				};
 				const blocked_hosts = (getparam("blocked-hosts") || "").split(",");
 				if (blocked_hosts.indexOf(client.host.toLowerCase())>=0) {
-					client.callback_close("connection to host '"+(client.host.replace(/[^A-Za-z0-9]/g, ''))+"' blocked");
+					client.callback_close("connection to host '"+(client.host.replace(/[^A-Za-z0-9\.\:]/g, ''))+"' blocked");
 				}
 				else {
 					client.connect();
