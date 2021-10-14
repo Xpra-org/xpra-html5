@@ -208,7 +208,7 @@ function decode_draw_packet(packet) {
 				decode_error("missing pixel data buffer: "+(typeof data));
 				return;
 			}
-			const blob = new Blob([data.buffer]);
+			const blob = new Blob([data.buffer], {type: "image/"+coding});
 			hold();
 			createImageBitmap(blob, {
 				"premultiplyAlpha" : "none",
