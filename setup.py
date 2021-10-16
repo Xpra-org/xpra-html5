@@ -426,7 +426,7 @@ def make_deb():
     os.mkdir("./xpra-html5")
     shutil.copytree("./packaging/debian", "./xpra-html5/DEBIAN")
     install_html5("./xpra-html5/usr/share/xpra/www/", "uglifyjs")
-    assert Popen(["dpkg-deb", "--build", "xpra-html5"]).wait()==0
+    assert Popen(["dpkg-deb", "-Zxz", "--build", "xpra-html5"]).wait()==0
     assert os.path.exists("./xpra-html5.deb")
     shutil.rmtree("./xpra-html5")
     version = ""
