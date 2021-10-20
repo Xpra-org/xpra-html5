@@ -691,7 +691,7 @@ function fill_form(default_settings) {
 	}
 
 	function json_action(uri, success_fn, error_fn) {
-		const url = get_host_address()+uri;
+		const url = `${get_host_address()}/${uri}`;
 		Utilities.json_action(url, success_fn, error_fn);
 	}
 
@@ -731,7 +731,7 @@ function fill_form(default_settings) {
 	function init_command_menu() {
 		$('#command_category_icon').hide();
 		$('#command_entry_icon').hide();
-		json_action("/Menu",
+		json_action("Menu",
 		function(xhr, response) {
 			let categories = Object.keys(response);
 			//find the category matching "start":
@@ -801,7 +801,7 @@ function fill_form(default_settings) {
 
 	function init_desktop_menu() {
 		$('#desktop_entry_icon').hide();
-		json_action("/DesktopMenu", function(xhr, response) {
+		json_action("DesktopMenu", function(xhr, response) {
 			var desktop_sessions = Object.keys(response);
 			desktop_entry.innerText = null;
 			let default_start_desktop = start;
@@ -848,7 +848,7 @@ function fill_form(default_settings) {
 
 	const display = getparam("display") || "";
 	function init_shadow_display() {
-		json_action("/Displays", function(xhr, response) {
+		json_action("Displays", function(xhr, response) {
 			var displays = Object.keys(response);
 			const select_shadow_display = document.getElementById("select_shadow_display");
 			select_shadow_display.innerText = null;
@@ -883,7 +883,7 @@ function fill_form(default_settings) {
 	}
 
 	function init_connect_display() {
-		json_action("/Sessions", function(xhr, response) {
+		json_action("Sessions", function(xhr, response) {
 			var sessions = Object.keys(response);
 			const select_display = document.getElementById("select_display");
 			select_display.innerText = null;
@@ -970,7 +970,7 @@ function fill_form(default_settings) {
 		}
 	}
 	function init_mode() {
-		json_action("/Info", function(xhr, response) {
+		json_action("Info", function(xhr, response) {
 			Utilities.log("/Info=", response);
 			let mode = response.mode || "";
 			if (mode.indexOf("seamless")>=0 || mode.indexOf("desktop")>=0 || mode.indexOf("shadow")>=0) {
@@ -1060,7 +1060,7 @@ function fill_form(default_settings) {
 		keyboard_layout = Utilities.getKeyboardLayout();
 	}
 	document.getElementById('keyboard_layout').value = keyboard_layout;
-	json_action("/favicon.png?echo-headers", function(xhr, response) {
+	json_action("favicon.png?echo-headers", function(xhr, response) {
 		const headers = Utilities.ParseResponseHeaders(xhr.getAllResponseHeaders());
 		Utilities.debug("headers:", headers);
 		let lang = headers["Echo-Accept-Language"];
