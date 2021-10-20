@@ -52,6 +52,7 @@ XpraClient.prototype.init_settings = function(container) {
 	this.passwords = [];
 	this.insecure = false;
 	this.uri = "";
+	this.packet_encoder = null;
 	//connection options:
 	this.sharing = false;
 	this.open_url = true;
@@ -1875,6 +1876,7 @@ XpraClient.prototype._process_hello = function(packet, ctx) {
 	for (const i in PACKET_ENCODERS) {
 		const packet_encoder = PACKET_ENCODERS[i];
 		if (hello[packet_encoder]) {
+			ctx.packet_encoder = packet_encoder;
 			ctx.protocol.enable_packet_encoder(packet_encoder);
 			Utilities.clog("packet encoder:", packet_encoder);
 			break;

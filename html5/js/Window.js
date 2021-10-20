@@ -498,11 +498,16 @@ XpraWindow.prototype.update_metadata = function(metadata, safe) {
 XpraWindow.prototype.set_metadata_safe = function(metadata) {
 	if ("title" in metadata) {
 		let title = Utilities.s(metadata["title"]);
-		if (this.client.protocol.packet_encoder!="rencodeplus") {
-			title = decodeURIComponent(escape(title));
+		if (this.client.packet_encoder!="rencodeplus") {
+			try {
+				title = decodeURIComponent(escape(title));
+			}
+			catch (e) {
+				this.log("unable to decode title string '"+title+"' received from ", this.client.protocol.packet_encoder, ": "+e);
+			}
 		}
 		this.title = title;
-		console.log("title=", this.title, typeof this.title, this.title.constructor)
+		this.log("title=", this.title, typeof this.title, this.title.constructor)
 		jQuery('#title' + this.wid).html(this.title);
 		const trimmedTitle = Utilities.trimString(this.title, 30);
 		jQuery('#windowlistitemtitle'+this.wid).text(trimmedTitle);
