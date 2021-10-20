@@ -59,9 +59,6 @@ XpraClient.prototype.init_settings = function(container) {
 	this.remote_logging = true;
 	this.enabled_encodings = [];
 	this.supported_encodings = ["jpeg", "png", "rgb", "rgb32", "rgb24"];	//"h264", "vp8+webm", "h264+mp4", "mpeg4+mp4"];
-	if (Utilities.canUseWebP()) {
-		this.supported_encodings.push("webp");
-	}
 	this.debug_categories = [];
 	this.start_new_session = null;
 	this.clipboard_enabled = false;
@@ -389,8 +386,10 @@ XpraClient.prototype.initialize_workers = function() {
 	// detect websocket in webworker support and degrade gracefully
 	if (!window.Worker) {
 		// no webworker support
+		this.decode_worker = false;
 		this.clog("no webworker support at all.");
 		this._do_connect(false);
+		return;
 	}
 	this.clog("we have webworker support");
 	// spawn worker that checks for a websocket
@@ -418,6 +417,7 @@ XpraClient.prototype.initialize_workers = function() {
 	worker.postMessage({'cmd': 'check'});
 
 	if (!DECODE_WORKER) {
+		this.decode_worker = false;
 		return;
 	}
 	const decode_worker = new Worker('js/DecodeWorker.js');
@@ -441,14 +441,24 @@ XpraClient.prototype.initialize_workers = function() {
 		}
 		switch (data['result']) {
 		case true:
-			me.clog("we can decode using a worker");
+			const formats = data['formats'];
+			me.clog("we can decode using a worker: "+formats);
+			for (let i = 0; i < formats.length; i++) {
+				const format = formats[i];
+				if (me.supported_encodings.indexOf(format)<0) {
+					me.supported_encodings.push(format);
+				}
+			}
+			me.clog("full list of supported encodings:", me.supported_encodings);
 			me.decode_worker = decode_worker;
 			break;
 		case false:
 			me.clog("we can't decode using a worker: "+data['message']);
+			me.decode_worker = false;
 			break;
 		default:
 			me.clog("client got unknown message from the decode worker");
+			me.decode_worker = false;
 		}
 	}, false);
 	// ask the worker to check for websocket support, when we receive a reply
@@ -1070,7 +1080,20 @@ XpraClient.prototype.emit_connection_established = function(event_type) {
 /**
  * Hello
  */
-XpraClient.prototype._send_hello = function(challenge_response, client_salt) {
+XpraClient.prototype._send_hello = function() {
+	if (this.decode_worker==null) {
+		this.clog("waiting for decode worker to finish initializing");
+		const me = this;
+		setTimeout(function() {
+			me._send_hello();
+		}, 100);
+	}
+	else {
+		this.do_send_hello(null, null);
+	}
+}
+
+XpraClient.prototype.do_send_hello = function(challenge_response, client_salt) {
 	// make the base hello
 	this._make_hello_base();
 	// handle a challenge if we need to
@@ -2200,7 +2223,7 @@ XpraClient.prototype.do_process_challenge = function(digest, server_salt, salt_d
 	this.clog("challenge using digest", digest);
 	const challenge_response = this._gendigest(digest, password, salt);
 	if (challenge_response) {
-		this._send_hello(challenge_response, client_salt);
+		this.do_send_hello(challenge_response, client_salt);
 	}
 	else {
 		this.callback_close("server requested an unsupported digest " + digest);
