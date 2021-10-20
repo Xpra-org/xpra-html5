@@ -437,6 +437,7 @@ XpraClient.prototype.initialize_workers = function() {
 				coding = packet[6],
 				packet_sequence = packet[8];
 			me.clog("decode error on ", coding, "packet sequence", packet_sequence, ":", msg);
+			me.clog(" pixel data:", packet[7]);
 			me.do_send_damage_sequence(packet_sequence, wid, width, height, -1, msg);
 			return;
 		}
