@@ -687,11 +687,12 @@ function fill_form(default_settings) {
 			}
 			url += path;
 		}
+		url += "/";
 		return url;
 	}
 
 	function json_action(uri, success_fn, error_fn) {
-		const url = `${get_host_address()}/${uri}`;
+		const url = get_host_address()+uri;
 		Utilities.json_action(url, success_fn, error_fn);
 	}
 
@@ -716,14 +717,14 @@ function fill_form(default_settings) {
 		var cc = command_category.options[command_category.selectedIndex].innerHTML;
 		var c = command_entry.options[command_entry.selectedIndex].innerHTML;
 		Utilities.log("command_category=", cc, ", command_entry=", c);
-		load_icon(command_entry_icon, "/MenuIcon/"+cc+"/"+c);
+		load_icon(command_entry_icon, `MenuIcon/${cc}/${c}`);
 		$('#command_entry_icon').show();
 	}
 	command_entry.addEventListener("change", command_entry_changed);
 	function command_category_changed() {
 		var cc = command_category.options[command_category.selectedIndex].innerHTML;
 		Utilities.log("command_category=", cc);
-		load_icon(command_category_icon, "/MenuIcon/"+cc);
+		load_icon(command_category_icon, `MenuIcon/${cc}`);
 		$('#command_category_icon').show();
 	}
 	command_category.addEventListener("change", command_category_changed);
@@ -795,7 +796,7 @@ function fill_form(default_settings) {
 	function desktop_entry_changed() {
 		var de = desktop_entry.options[desktop_entry.selectedIndex].innerHTML;
 		Utilities.log("desktop_session=", de);
-		load_icon(desktop_entry_icon, "/DesktopMenuIcon/"+de);
+		load_icon(desktop_entry_icon, `DesktopMenuIcon/${de}`);
 	}
 	desktop_entry.addEventListener("change", desktop_entry_changed);
 
@@ -971,7 +972,7 @@ function fill_form(default_settings) {
 	}
 	function init_mode() {
 		json_action("Info", function(xhr, response) {
-			Utilities.log("/Info=", response);
+			Utilities.log("Info=", response);
 			let mode = response.mode || "";
 			if (mode.indexOf("seamless")>=0 || mode.indexOf("desktop")>=0 || mode.indexOf("shadow")>=0) {
 				show_mode(false);
