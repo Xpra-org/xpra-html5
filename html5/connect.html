@@ -686,8 +686,10 @@ function fill_form(default_settings) {
 				url += "/";
 			}
 			url += path;
+			if (!path.endsWith("/")) {
+				url += "/";
+			}
 		}
-		url += "/";
 		return url;
 	}
 
