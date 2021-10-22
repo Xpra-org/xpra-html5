@@ -687,6 +687,7 @@ function fill_form(default_settings) {
 			}
 			url += path;
 		}
+		url += "/";
 		return url;
 	}
 
@@ -716,14 +717,14 @@ function fill_form(default_settings) {
 		var cc = command_category.options[command_category.selectedIndex].innerHTML;
 		var c = command_entry.options[command_entry.selectedIndex].innerHTML;
 		Utilities.log("command_category=", cc, ", command_entry=", c);
-		load_icon(command_entry_icon, "/MenuIcon/"+cc+"/"+c);
+		load_icon(command_entry_icon, `MenuIcon/${cc}/${c}`);
 		$('#command_entry_icon').show();
 	}
 	command_entry.addEventListener("change", command_entry_changed);
 	function command_category_changed() {
 		var cc = command_category.options[command_category.selectedIndex].innerHTML;
 		Utilities.log("command_category=", cc);
-		load_icon(command_category_icon, "/MenuIcon/"+cc);
+		load_icon(command_category_icon, `MenuIcon/${cc}`);
 		$('#command_category_icon').show();
 	}
 	command_category.addEventListener("change", command_category_changed);
@@ -731,7 +732,7 @@ function fill_form(default_settings) {
 	function init_command_menu() {
 		$('#command_category_icon').hide();
 		$('#command_entry_icon').hide();
-		json_action("/Menu",
+		json_action("Menu",
 		function(xhr, response) {
 			let categories = Object.keys(response);
 			//find the category matching "start":
@@ -795,13 +796,13 @@ function fill_form(default_settings) {
 	function desktop_entry_changed() {
 		var de = desktop_entry.options[desktop_entry.selectedIndex].innerHTML;
 		Utilities.log("desktop_session=", de);
-		load_icon(desktop_entry_icon, "/DesktopMenuIcon/"+de);
+		load_icon(desktop_entry_icon, `DesktopMenuIcon/${de}`);
 	}
 	desktop_entry.addEventListener("change", desktop_entry_changed);
 
 	function init_desktop_menu() {
 		$('#desktop_entry_icon').hide();
-		json_action("/DesktopMenu", function(xhr, response) {
+		json_action("DesktopMenu", function(xhr, response) {
 			var desktop_sessions = Object.keys(response);
 			desktop_entry.innerText = null;
 			let default_start_desktop = start;
@@ -848,7 +849,7 @@ function fill_form(default_settings) {
 
 	const display = getparam("display") || "";
 	function init_shadow_display() {
-		json_action("/Displays", function(xhr, response) {
+		json_action("Displays", function(xhr, response) {
 			var displays = Object.keys(response);
 			const select_shadow_display = document.getElementById("select_shadow_display");
 			select_shadow_display.innerText = null;
@@ -883,7 +884,7 @@ function fill_form(default_settings) {
 	}
 
 	function init_connect_display() {
-		json_action("/Sessions", function(xhr, response) {
+		json_action("Sessions", function(xhr, response) {
 			var sessions = Object.keys(response);
 			const select_display = document.getElementById("select_display");
 			select_display.innerText = null;
@@ -970,8 +971,8 @@ function fill_form(default_settings) {
 		}
 	}
 	function init_mode() {
-		json_action("/Info", function(xhr, response) {
-			Utilities.log("/Info=", response);
+		json_action("Info", function(xhr, response) {
+			Utilities.log("Info=", response);
 			let mode = response.mode || "";
 			if (mode.indexOf("seamless")>=0 || mode.indexOf("desktop")>=0 || mode.indexOf("shadow")>=0) {
 				show_mode(false);
@@ -1060,7 +1061,7 @@ function fill_form(default_settings) {
 		keyboard_layout = Utilities.getKeyboardLayout();
 	}
 	document.getElementById('keyboard_layout').value = keyboard_layout;
-	json_action("/favicon.png?echo-headers", function(xhr, response) {
+	json_action("favicon.png?echo-headers", function(xhr, response) {
 		const headers = Utilities.ParseResponseHeaders(xhr.getAllResponseHeaders());
 		Utilities.debug("headers:", headers);
 		let lang = headers["Echo-Accept-Language"];
