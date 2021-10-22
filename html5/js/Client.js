@@ -153,6 +153,8 @@ XpraClient.prototype.init_state = function(container) {
 	else {
 		this.log("no clipboard write support: no images, navigator.clipboard=", navigator.clipboard);
 	}
+	// root window click fix
+	this.root_window_click_fix = (default_settings["root_window_click_fix"] || "false") == true;
 	// printing / file-transfer:
 	this.remote_printing = false;
 	this.remote_file_transfer = false;

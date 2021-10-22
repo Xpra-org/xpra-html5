@@ -148,11 +148,16 @@ function XpraWindow(client, canvas_state, wid, x, y, w, h, metadata, override_re
 			jQuery(this.div).draggable({ transform: true });
 		}
 		jQuery(this.div).draggable({ cancel: "canvas" });
+		// Fake a click on the root window.
+		// This helps some buggy Java applications close their popup menus.
+		// However, this can also break the UX in other situations
+		// (ex: when dragging over other maximized windows, causing them to raise),
+		// so this is gated behind a settings flag.
 		function root_window_click(ev) {
-			//fake a click on the root window,
-			//this helps some buggy Java applications close their popup menus
-			client.do_window_mouse_click(ev, null, true);
-			client.do_window_mouse_click(ev, null, false);
+			if (client.root_window_click_fix === true) {
+				client.do_window_mouse_click(ev, null, true);
+				client.do_window_mouse_click(ev, null, false);
+			}
 		}
 		jQuery("#head"+String(this.wid)).click(root_window_click);
 		jQuery(this.div).on("dragstart",function(ev,ui){
