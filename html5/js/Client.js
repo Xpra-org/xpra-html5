@@ -140,6 +140,7 @@ XpraClient.prototype.init_state = function(container) {
 	this.scroll_reverse_x = false;
 	this.scroll_reverse_y = false;
 	// clipboard
+	this.clipboard_direction = default_settings["clipboard_direction"] || "both";
 	this.clipboard_datatype = null;
 	this.clipboard_buffer = "";
 	this.clipboard_server_buffers = {};
@@ -879,11 +880,8 @@ XpraClient.prototype.do_keyb_process = function(pressed, event) {
 		unpress_now = true;
 	}
 
-	//if (keyname=="Control_L" || keyname=="Control_R")
-	this._poll_clipboard(event);
-
 	let allow_default = false;
-	if (this.clipboard_enabled) {
+	if (this.clipboard_enabled && client.clipboard_direction !== "to-server") {
 		//allow some key events that need to be seen by the browser
 		//for handling the clipboard:
 		let clipboard_modifier_keys = ["Control_L", "Control_R", "Shift_L", "Shift_R"];
@@ -1459,7 +1457,7 @@ XpraClient.prototype.do_window_mouse_click = function(e, window, pressed) {
 		return;
 	}
 	let send_delay = 0;
-	if (this._poll_clipboard(e)) {
+	if (client.clipboard_direction !== "to-server" && this._poll_clipboard(e)) {
 		send_delay = CLIPBOARD_EVENT_DELAY;
 	}
 	const mouse = this.getMouse(e, window),
