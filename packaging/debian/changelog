@@ -1,4 +1,4 @@
-xpra-html5 (4.5.2-r1046-1) UNRELEASED; urgency=low
+xpra-html5 (4.5.2-r1075-1) UNRELEASED; urgency=low
   * fix toolbar position
   * image decoding time accounting
   * skip re-connecting when the error is likely to be permanent
@@ -14,7 +14,7 @@ xpra-html5 (4.5.2-r1046-1) UNRELEASED; urgency=low
   * force xz compression for DEB packages (zstd support missing from repository webhost)
   * remove unnecessary time wrapper
 
- -- Antoine Martin antoine@xpra.org  Mon, 25 Sep 2021 20:23:43 +0700 +700
+ -- Antoine Martin antoine@xpra.org  Mon, 25 Oct 2021 20:26:05 +0700 +700
 
 xpra-html5 (4.5.1-r1045-1) UNRELEASED; urgency=low
   * workaround Firefox bug in image decoder

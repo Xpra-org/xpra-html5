@@ -11,7 +11,7 @@
 
 const Utilities = {
 	VERSION : "4.5.2",
-	REVISION : 1046,
+	REVISION : 1075,
 	LOCAL_MODIFICATIONS : 0,
 	BRANCH : "master",
 
