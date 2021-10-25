@@ -206,6 +206,7 @@ function decode_draw_packet(packet, start) {
 			const data = packet[7];
 			if (!data.buffer) {
 				decode_error("missing pixel data buffer: "+(typeof data));
+				release();
 				return;
 			}
 			const blob = new Blob([data.buffer], {type: "image/"+coding});
