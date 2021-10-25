@@ -425,7 +425,7 @@ XpraClient.prototype.initialize_workers = function() {
 	decode_worker.addEventListener('message', function(e) {
 		const data = e.data;
 		if (data['draw']) {
-			me.do_process_draw(data['draw']);
+			me.do_process_draw(data['draw'], data['start']);
 			return;
 		}
 		if (data['error']) {
@@ -2881,6 +2881,7 @@ XpraClient.prototype._process_draw = function(packet, ctx) {
 	const coding = packet[6];
 	let img_data = packet[7];
 	const raw_buffers = [];
+	const now = Utilities.monotonicTime();
 	if (coding!="scroll") {
 		if (!(img_data instanceof Uint8Array)) {
 			//the legacy bencoder can give us a string here
@@ -2890,16 +2891,16 @@ XpraClient.prototype._process_draw = function(packet, ctx) {
 		raw_buffers.push(img_data.buffer);
 	}
 	if (ctx.decode_worker) {
-		ctx.decode_worker.postMessage({'cmd': 'decode', 'packet' : packet}, raw_buffers);
+		ctx.decode_worker.postMessage({'cmd': 'decode', 'packet' : packet, 'start' : now}, raw_buffers);
 		//the worker draw event will call do_process_draw
 	}
 	else {
-		ctx.do_process_draw(packet);
+		ctx.do_process_draw(packet, now);
 	}
 }
 
 XpraClient.prototype._process_eos = function(packet, ctx) {
-	ctx.do_process_draw(packet);
+	ctx.do_process_draw(packet, 0);
 	const wid = packet[1];
 	ctx.decode_worker_eos(wid);
 };
@@ -2948,10 +2949,11 @@ XpraClient.prototype.do_send_damage_sequence = function(packet_sequence, wid, wi
 	if (!protocol) {
 		return;
 	}
-	protocol.send(["damage-sequence", packet_sequence, wid, width, height, decode_time, message]);
+	const packet = ["damage-sequence", packet_sequence, wid, width, height, decode_time, message];
+	protocol.send(packet);
 }
 
-XpraClient.prototype.do_process_draw = function(packet) {
+XpraClient.prototype.do_process_draw = function(packet, start) {
 	if(!packet){
 		//no valid draw packet, likely handle errors for that here
 		return;
@@ -2967,8 +2969,7 @@ XpraClient.prototype.do_process_draw = function(packet) {
 		return;
 	}
 
-	const start = Utilities.monotonicTime(),
-		x = packet[2],
+	const x = packet[2],
 		y = packet[3],
 		width = packet[4],
 		height = packet[5],
@@ -3002,11 +3003,11 @@ XpraClient.prototype.do_process_draw = function(packet) {
 				if(flush==0) {
 					me.request_redraw(win);
 				}
-				if (error) {
+				if (error || start==0) {
 					me.request_redraw(win);
 				}
 				else {
-					decode_time = Math.round(Utilities.monotonicTime() - start);
+					decode_time = 1000*Math.round(Utilities.monotonicTime() - start);
 				}
 				me.debug("draw", "decode time for ", coding, " sequence ", packet_sequence, ": ", decode_time, ", flush=", flush);
 				send_damage_sequence(decode_time, error || "");

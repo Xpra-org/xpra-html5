@@ -105,13 +105,13 @@ function decode_eos(wid) {
 	}
 }
 
-function decode_draw_packet(packet) {
+function decode_draw_packet(packet, start) {
 	const wid = packet[1],
 		width = packet[4],
 		height = packet[5],
 		coding = packet[6],
 		packet_sequence = packet[8];
-	//console.log("packet to decode:", data.packet);
+	//console.log("decode worker sequence "+packet_sequence+": start="+start);
 	function send_back(raw_buffers) {
 		//console.log("send_back: wid_hold=", wid_hold);
 		const wid_hold = on_hold.get(wid);
@@ -131,13 +131,13 @@ function decode_draw_packet(packet) {
 				}
 			}
 		}
-		self.postMessage({'draw': packet}, raw_buffers);
+		do_send_back(packet, raw_buffers);
 	}
 	function do_send_back(p, raw_buffers) {
-		self.postMessage({'draw': p}, raw_buffers);
+		self.postMessage({'draw': p, 'start' : start}, raw_buffers);
 	}
 	function decode_error(msg) {
-		self.postMessage({'error': ""+msg, 'packet' : packet});
+		self.postMessage({'error': ""+msg, 'packet' : packet, 'start' : start});
 	}
 
 	function hold() {
@@ -344,7 +344,7 @@ onmessage = function(e) {
 		decode_eos(data.wid);
 		break;
 	case 'decode':
-		decode_draw_packet(data.packet);
+		decode_draw_packet(data.packet, data.start);
 		break
 	default:
 		console.error("decode worker got unknown message: "+data.cmd);
