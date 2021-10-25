@@ -506,11 +506,13 @@ XpraWindow.prototype.set_metadata_safe = function(metadata) {
 				this.log("unable to decode title string '"+title+"' received from ", this.client.protocol.packet_encoder, ": "+e);
 			}
 		}
-		this.title = title;
-		this.log("title=", this.title, typeof this.title, this.title.constructor)
-		jQuery('#title' + this.wid).html(this.title);
-		const trimmedTitle = Utilities.trimString(this.title, 30);
-		jQuery('#windowlistitemtitle'+this.wid).text(trimmedTitle);
+		if (this.title!=title) {
+			this.title = title;
+			this.log("title=", this.title)
+			jQuery('#title' + this.wid).html(this.title);
+			const trimmedTitle = Utilities.trimString(this.title, 30);
+			jQuery('#windowlistitemtitle'+this.wid).text(trimmedTitle);
+		}
 	}
 	if ("has-alpha" in metadata) {
 		this.has_alpha = metadata["has-alpha"];
