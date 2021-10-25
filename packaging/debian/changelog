@@ -1,7 +1,20 @@
 xpra-html5 (4.5.2-r1046-1) UNRELEASED; urgency=low
   * fix toolbar position
+  * image decoding time accounting
+  * skip re-connecting when the error is likely to be permanent
+  * more helpful disconnection messages
+  * ensure we timeout if the websocket connection fails
+  * provide an easy way to prevent unwanted connections (ie: xpra.org)
+  * fix decode worker sanity checks, validate jpeg, png and webp
+  * window title string decoding errors
+  * create directories as needed when installing
+  * css syntax error
+  * better support for relative URLs (proxied configurations)
+  * window resize offset bug, minimization bugs
+  * force xz compression for DEB packages (zstd support missing from repository webhost)
+  * remove unnecessary time wrapper
 
- -- Antoine Martin antoine@xpra.org  Fri, 24 Sep 2021 11:34:21 +0700 +700
+ -- Antoine Martin antoine@xpra.org  Mon, 25 Sep 2021 20:23:43 +0700 +700
 
 xpra-html5 (4.5.1-r1045-1) UNRELEASED; urgency=low
   * workaround Firefox bug in image decoder

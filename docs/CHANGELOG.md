@@ -2,8 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
-## [4.5.2] 2021-09-24
+## [4.5.2] 2021-10-25
 * fix toolbar position
+* image decoding time accounting
+* skip re-connecting when the error is likely to be permanent
+* more helpful disconnection messages
+* ensure we timeout if the websocket connection fails
+* provide an easy way to prevent unwanted connections (ie: xpra.org)
+* fix decode worker sanity checks, validate jpeg, png and webp
+* window title string decoding errors
+* create directories as needed when installing
+* css syntax error
+* better support for relative URLs (proxied configurations)
+* window resize offset bug, minimization bugs
+* force xz compression for DEB packages (zstd support missing from repository webhost)
+* remove unnecessary time wrapper
 
 ## [4.5.1] 2021-09-23
 * workaround Firefox bug in image decoder

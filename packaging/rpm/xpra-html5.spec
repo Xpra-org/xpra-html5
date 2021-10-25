@@ -75,8 +75,21 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
-* Fri Sep 24 2021 Antoine Martin <antoine@xpra.org> 4.5.2-1046-1
+* Mon Oct 25 2021 Antoine Martin <antoine@xpra.org> 4.5.2-1046-1
 - fix toolbar position
+- image decoding time accounting
+- skip re-connecting when the error is likely to be permanent
+- more helpful disconnection messages
+- ensure we timeout if the websocket connection fails
+- provide an easy way to prevent unwanted connections (ie: xpra.org)
+- fix decode worker sanity checks, validate jpeg, png and webp
+- window title string decoding errors
+- create directories as needed when installing
+- css syntax error
+- better support for relative URLs (proxied configurations)
+- window resize offset bug, minimization bugs
+- force xz compression for DEB packages (zstd support missing from repository webhost)
+- remove unnecessary time wrapper
 
 * Thu Sep 23 2021 Antoine Martin <antoine@xpra.org> 4.5.1-1043-1
 - workaround Firefox bug in image decoder
