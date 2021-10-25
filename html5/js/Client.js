@@ -3007,7 +3007,7 @@ XpraClient.prototype.do_process_draw = function(packet, start) {
 					me.request_redraw(win);
 				}
 				else {
-					decode_time = 1000*Math.round(performance.now() - start);
+					decode_time = Math.round(1000*performance.now() - 1000*start);
 				}
 				me.debug("draw", "decode time for ", coding, " sequence ", packet_sequence, ": ", decode_time, ", flush=", flush);
 				send_damage_sequence(decode_time, error || "");
