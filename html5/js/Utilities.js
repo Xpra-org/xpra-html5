@@ -418,13 +418,6 @@ const Utilities = {
 	    }
 	},
 
-	monotonicTime : function() {
-		if (performance) {
-			return Math.round(performance.now());
-		}
-		return Date.now();
-	},
-
 	StringToUint8 : function(str) {
 		const u8a = new Uint8Array(str.length);
 		for(let i=0,j=str.length;i<j;++i){

@@ -706,7 +706,7 @@ XpraClient.prototype._check_browser_language = function(key_layout) {
 	 * This function may send the new detected keyboard layout.
 	 * (ignoring the keyboard_layout preference)
 	 */
-	const now = Utilities.monotonicTime();
+	const now = performance.now();
 	if (now<this.browser_language_change_embargo_time) {
 		return;
 	}
@@ -914,7 +914,7 @@ XpraClient.prototype.do_keyb_process = function(pressed, event) {
 				this.debug("keyboard", "passing clipboard combination to browser:", clipboard_modifier, "+", keyname);
 				allow_default = true;
 				if (l=="v") {
-					this.clipboard_delayed_event_time = Utilities.monotonicTime()+CLIPBOARD_EVENT_DELAY;
+					this.clipboard_delayed_event_time = performance.now()+CLIPBOARD_EVENT_DELAY;
 				}
 			}
 		}
@@ -932,7 +932,7 @@ XpraClient.prototype.do_keyb_process = function(pressed, event) {
 		//a clipboard event (a click or control-v)
 		//then we send with a slight delay:
 		let delay = 0;
-		const now = Utilities.monotonicTime();
+		const now = performance.now();
 		if (this.clipboard_delayed_event_time>now) {
 			delay = this.clipboard_delayed_event_time-now;
 		}
@@ -1487,7 +1487,7 @@ XpraClient.prototype.do_window_mouse_click = function(e, window, pressed) {
 	}
 	const me = this;
 	setTimeout(function() {
-		this.clipboard_delayed_event_time = Utilities.monotonicTime()+CLIPBOARD_EVENT_DELAY;
+		this.clipboard_delayed_event_time = performance.now()+CLIPBOARD_EVENT_DELAY;
 		me.send(["button-action", wid, button, pressed, [x, y], modifiers, buttons]);
 	}, send_delay);
 };
@@ -1609,7 +1609,7 @@ XpraClient.prototype._poll_clipboard = function(e) {
 	this.debug("clipboard", "clipboard contents have changed");
 	this.clipboard_buffer = clipboard_buffer;
 	this.send_clipboard_token(clipboard_buffer);
-	this.clipboard_delayed_event_time = Utilities.monotonicTime()+CLIPBOARD_EVENT_DELAY;
+	this.clipboard_delayed_event_time = performance.now()+CLIPBOARD_EVENT_DELAY;
 	return true;
 };
 
@@ -1626,7 +1626,7 @@ XpraClient.prototype.read_clipboard_text = function() {
 			client.debug("clipboard", "clipboard contents have changed");
 			client.clipboard_buffer = clipboard_buffer;
 			client.send_clipboard_token(clipboard_buffer);
-			client.clipboard_delayed_event_time = Utilities.monotonicTime()+CLIPBOARD_EVENT_DELAY;
+			client.clipboard_delayed_event_time = performance.now()+CLIPBOARD_EVENT_DELAY;
 		}
 		client.clipboard_pending = false;
 	}, function(err) {
@@ -2258,7 +2258,7 @@ XpraClient.prototype._send_ping = function() {
 		return;
 	}
 	const me = this;
-	const now_ms = Math.ceil(Utilities.monotonicTime());
+	const now_ms = Math.ceil(performance.now());
 	this.send(["ping", now_ms]);
 	// add timeout to wait for ping timout
 	this.ping_timeout_timer = setTimeout(function () {
@@ -2293,7 +2293,7 @@ XpraClient.prototype._process_ping_echo = function(packet, ctx) {
 		l2 = packet[3],
 		l3 = packet[4];
 	ctx.client_ping_latency = packet[5];
-	ctx.server_ping_latency = Math.ceil(Utilities.monotonicTime())-ctx.last_ping_echoed_time;
+	ctx.server_ping_latency = Math.ceil(performance.now())-ctx.last_ping_echoed_time;
 	ctx.server_load = [l1/1000.0, l2/1000.0, l3/1000.0];
 	// make sure server goes OK immediately instead of waiting for next timeout
 	ctx._check_server_echo(0);
@@ -2881,7 +2881,7 @@ XpraClient.prototype._process_draw = function(packet, ctx) {
 	const coding = packet[6];
 	let img_data = packet[7];
 	const raw_buffers = [];
-	const now = Utilities.monotonicTime();
+	const now = performance.now();
 	if (coding!="scroll") {
 		if (!(img_data instanceof Uint8Array)) {
 			//the legacy bencoder can give us a string here
@@ -2927,14 +2927,14 @@ XpraClient.prototype.request_redraw = function(win) {
 		return;
 	}
 	// schedule a screen refresh if one is not already due:
-	this.draw_pending = Utilities.monotonicTime();
+	this.draw_pending = performance.now();
 	const me = this;
 	window.requestAnimationFrame(function() {me.draw_pending_list()});
 };
 
 XpraClient.prototype.draw_pending_list = function() {
 	this.debug("draw", "animation frame:", this.pending_redraw.length,
-		"windows to paint, processing delay", Utilities.monotonicTime()-this.draw_pending, "ms");
+		"windows to paint, processing delay", performance.now()-this.draw_pending, "ms");
 	this.draw_pending = 0;
 	// draw all the windows in the list:
 	while (this.pending_redraw.length>0) {
@@ -3007,7 +3007,7 @@ XpraClient.prototype.do_process_draw = function(packet, start) {
 					me.request_redraw(win);
 				}
 				else {
-					decode_time = 1000*Math.round(Utilities.monotonicTime() - start);
+					decode_time = 1000*Math.round(performance.now() - start);
 				}
 				me.debug("draw", "decode time for ", coding, " sequence ", packet_sequence, ": ", decode_time, ", flush=", flush);
 				send_damage_sequence(decode_time, error || "");

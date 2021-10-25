@@ -1333,12 +1333,12 @@ XpraWindow.prototype.paint = function paint() {
  */
 XpraWindow.prototype.may_paint_now = function paint() {
 	this.debug("draw", "may_paint_now() paint pending=", this.paint_pending, ", paint queue length=", this.paint_queue.length);
-	let now = Utilities.monotonicTime();
+	let now = performance.now();
 	while ((this.paint_pending==0 || (now-this.paint_pending)>=2000) && this.paint_queue.length>0) {
 		this.paint_pending = now;
 		const item = this.paint_queue.shift();
 		this.do_paint.apply(this, item);
-		now = Utilities.monotonicTime();
+		now = performance.now();
 	}
 };
 
