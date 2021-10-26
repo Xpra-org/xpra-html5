@@ -455,7 +455,7 @@ XpraClient.prototype.initialize_workers = function() {
 			me.decode_worker = decode_worker;
 			break;
 		case false:
-			me.clog("we can't decode using a worker: "+data['message']);
+			me.clog("we can't decode using a worker: "+data['errors']);
 			me.decode_worker = false;
 			break;
 		default:
