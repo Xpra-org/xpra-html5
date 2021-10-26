@@ -465,7 +465,12 @@ XpraClient.prototype.initialize_workers = function() {
 	}, false);
 	// ask the worker to check for websocket support, when we receive a reply
 	// through the eventlistener above, _do_connect() will finish the job
-	decode_worker.postMessage({'cmd': 'check'});
+	let encodings = this.enabled_encodings;
+	if (encodings.length==0) {
+		encodings = this.supported_encodings;
+	}
+	this.clog("decode worker will check:", encodings);
+	decode_worker.postMessage({'cmd': 'check', 'encodings' : encodings});
 };
 
 XpraClient.prototype._do_connect = function(with_worker) {
