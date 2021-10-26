@@ -587,11 +587,11 @@ function fill_form(default_settings) {
 		let enc = encryption.split("-")[0];
 		if (enc=="AES") {
 			aes_input.checked = true;
-			aes_input.onchange();
 			let enc_mode = encryption.split("-")[1] || "CBC";
 			document.getElementById("encryption").value = "AES-"+enc_mode;
 		}
 	}
+	aes_input.onchange();
 
 	//reveal password and aes key:
 	function toggle_reveal(el) {
