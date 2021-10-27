@@ -212,6 +212,7 @@ XpraClient.prototype.init_state = function(container) {
 	const div = document.getElementById("screen");
 	function on_mousescroll(e) {
 		me.on_mousescroll(e);
+		return e.preventDefault();
 	}
 	if (Utilities.isEventSupported("wheel")) {
 		div.addEventListener('wheel',			on_mousescroll, false);
