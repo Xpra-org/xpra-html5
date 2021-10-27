@@ -1260,25 +1260,33 @@
 			}
 
 			function init_float_menu() {
-				const toolbar_position = getparam("toolbar_position");
 				const floating_menu = getboolparam("floating_menu", true);
 				const autohide = getboolparam("autohide", false);
+				const toolbar_position = getparam("toolbar_position");
 				const float_menu_element = $('#float_menu');
 				if (!floating_menu) {
 					//nothing to do, it starts hidden
 					return;
 				}
 				float_menu_element.fadeIn();
-				if(client){
-					client.toolbar_position = toolbar_position;
+				var toolbar_width = float_menu_element.width();
+				var left = 0;
+				var top = float_menu_element.offset().top || 0;
+				var screen_width = $('#screen').width();
+				if (toolbar_position=="top-left") {
+					//no calculations needed
 				}
+				else if (toolbar_position=="top") {
+					left = screen_width/2-toolbar_width/2;
+				}
+				else if (toolbar_position=="top-right") {
+					left = screen_width-toolbar_width-100;
+				}
+				float_menu_element.offset({ top: top, left: left });
+
 				if (autohide) {
 					float_menu_element.on('mouseover', expand_float_menu);
 					float_menu_element.on('mouseout', retract_float_menu);
-					// Expand and retract the floating menu so it
-					// is correctly positioned and collapsed
-					expand_float_menu();
-					retract_float_menu();
 				}
 				else {
 					expand_float_menu();
