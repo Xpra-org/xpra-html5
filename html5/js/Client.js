@@ -166,6 +166,8 @@ XpraClient.prototype.init_state = function(container) {
 	this.server_ok = false;
 	//packet handling
 	this.decode_worker = null;
+	// floating menu
+	this.toolbar_position = "top";
 
 	this.server_display = "";
 	this.server_platform = "";
@@ -603,6 +605,8 @@ XpraClient.prototype._screen_resized = function(event, ctx) {
 		const iwin = ctx.id_to_window[i];
 		iwin.screen_resized();
 	}
+	// Re-position floating toolbar menu
+	this.position_float_menu();
 };
 
 /**
@@ -2342,6 +2346,28 @@ XpraClient.prototype.stop_info_timer = function() {
 /**
  * System Tray forwarding
  */
+
+XpraClient.prototype.position_float_menu = function() {
+	const float_menu_element = $('#float_menu');
+	var toolbar_width = float_menu_element.width();
+	var left = float_menu_element.offset().left || 0;
+	var top = float_menu_element.offset().top || 0;
+	var screen_width = $('#screen').width();
+	if (this.toolbar_position=="custom") {
+		//no calculations needed
+	}
+	else if (this.toolbar_position=="top-left") {
+		//no calculations needed
+	}
+	else if (this.toolbar_position=="top") {
+		left = screen_width/2-toolbar_width/2;
+	}
+	else if (this.toolbar_position=="top-right") {
+		left = screen_width-toolbar_width-100;
+	}
+	float_menu_element.offset({ top: top, left: left });
+}
+
 XpraClient.prototype._process_new_tray = function(packet, ctx) {
 	const wid = packet[1];
 	//let w = packet[2];
@@ -2419,6 +2445,7 @@ XpraClient.prototype.reconfigure_all_trays = function() {
 	// only set if float_menu is visible
 	if($('#float_menu').width() > 0){
 		float_menu.style.width = float_menu_width;
+		this.position_float_menu();
 	}
 };
 
