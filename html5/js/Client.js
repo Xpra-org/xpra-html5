@@ -2350,10 +2350,13 @@ XpraClient.prototype.stop_info_timer = function() {
 XpraClient.prototype.position_float_menu = function() {
 	const float_menu_element = $('#float_menu');
 	var toolbar_width = float_menu_element.width();
-	var left = 0;
+	var left = float_menu_element.offset().left || 0;
 	var top = float_menu_element.offset().top || 0;
 	var screen_width = $('#screen').width();
-	if (this.toolbar_position=="top-left") {
+	if (this.toolbar_position=="custom") {
+		//no calculations needed
+	}
+	else if (this.toolbar_position=="top-left") {
 		//no calculations needed
 	}
 	else if (this.toolbar_position=="top") {

@@ -119,6 +119,7 @@ $(function() {
 	});
 	float_menu.on("dragstop",function(ev,ui){
 		client.mouse_grabbed = false;
+		client.toolbar_position="custom";
 		client.reconfigure_all_trays();
 	});
 
