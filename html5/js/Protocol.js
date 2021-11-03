@@ -158,6 +158,7 @@ XpraProtocol.prototype.close_event_str = function(event) {
 
 XpraProtocol.prototype.open = function(uri) {
 	const me = this;
+	const ctx = this.packet_ctx;
 	// (re-)init
 	this.raw_packets = [];
 	this.rQ = [];
@@ -165,30 +166,33 @@ XpraProtocol.prototype.open = function(uri) {
 	this.mQ = [];
 	this.header  = [];
 	this.websocket  = null;
+	function handle(packet) {
+		me.packet_handler(packet, ctx);
+	}
 	this.verify_connected_timer = setTimeout(function() {
-			me.packet_handler(['error', "connection timed out", 0], me.packet_ctx);
+			handle(['error', "connection timed out", 0]);
 		}, CONNECT_TIMEOUT);
 	// connect the socket
 	try {
 		this.websocket = new WebSocket(uri, 'binary');
 	}
 	catch (e) {
-		this.packet_handler(['error', ""+e, 0], this.packet_ctx);
+		handle(['error', ""+e, 0]);
 		return;
 	}
 	this.websocket.binaryType = 'arraybuffer';
 	this.websocket.onopen = function () {
-		if (this.verify_connected_timer) {
-			clearTimeout(this.verify_connected_timer);
-			this.verify_connected_timer = 0;
+		if (me.verify_connected_timer) {
+			clearTimeout(me.verify_connected_timer);
+			me.verify_connected_timer = 0;
 		}
-		me.packet_handler(['open'], me.packet_ctx);
+		handle(['open']);
 	};
 	this.websocket.onclose = function (event) {
-		me.packet_handler(['close', me.close_event_str(event)], me.packet_ctx);
+		handle(['close', me.close_event_str(event)]);
 	};
 	this.websocket.onerror = function (event) {
-		me.packet_handler(['error', me.close_event_str(event), event.code || 0], me.packet_ctx);
+		handle(['error', me.close_event_str(event), event.code || 0]);
 	};
 	this.websocket.onmessage = function (e) {
 		// push arraybuffer values onto the end
