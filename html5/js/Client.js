@@ -58,8 +58,13 @@ XpraClient.prototype.init_settings = function(container) {
 	this.open_url = true;
 	this.steal = true;
 	this.remote_logging = true;
-	this.enabled_encodings = [];
-	this.supported_encodings = ["jpeg", "png", "rgb", "rgb32", "rgb24"];	//"h264", "vp8+webm", "h264+mp4", "mpeg4+mp4"];
+	this.encoding = "auto";
+	//basic set of encodings:
+	//(more may be added after checking via the DecodeWorker)
+	this.supported_encodings = ["jpeg", "png", "rgb", "rgb32", "rgb24"];
+	//extra encodings we enable if validated via the decode worker:
+	//(we also validate jpeg and png as a sanity check)
+	this.check_encodings = ["webp", "jpeg", "png"];	//"h264", "vp8+webm", "h264+mp4", "mpeg4+mp4"];
 	this.debug_categories = [];
 	this.start_new_session = null;
 	this.clipboard_enabled = false;
@@ -463,14 +468,8 @@ XpraClient.prototype.initialize_workers = function() {
 			me.decode_worker = false;
 		}
 	}, false);
-	// ask the worker to check for websocket support, when we receive a reply
-	// through the eventlistener above, _do_connect() will finish the job
-	let encodings = this.enabled_encodings;
-	if (encodings.length==0) {
-		encodings = this.supported_encodings;
-	}
-	this.clog("decode worker will check:", encodings);
-	decode_worker.postMessage({'cmd': 'check', 'encodings' : encodings});
+	this.clog("decode worker will check:", this.check_encodings);
+	decode_worker.postMessage({'cmd': 'check', 'encodings' : this.check_encodings});
 };
 
 XpraClient.prototype._do_connect = function(with_worker) {
@@ -558,20 +557,10 @@ XpraClient.prototype.clear_timers = function() {
 	}
 };
 
-XpraClient.prototype.enable_encoding = function(encoding) {
+XpraClient.prototype.set_encoding = function(encoding) {
 	// add an encoding to our hello.encodings list
-	this.clog("enable", encoding);
-	this.enabled_encodings.push(encoding);
-};
-
-XpraClient.prototype.disable_encoding = function(encoding) {
-	// remove an encoding from our hello.encodings.core list
-	// as if we don't support it
-	this.clog("disable", encoding);
-	const index = this.supported_encodings.indexOf(encoding);
-	if(index > -1) {
-		this.supported_encodings.splice(index, 1);
-	}
+	this.clog("encoding:", encoding);
+	this.encoding = encoding;
 };
 
 XpraClient.prototype._route_packet = function(packet, ctx) {
@@ -1016,16 +1005,6 @@ XpraClient.prototype._get_screen_sizes = function() {
 	return [screen];
 };
 
-XpraClient.prototype._get_encodings = function() {
-	if(this.enabled_encodings.length == 0) {
-		// return all supported encodings
-		this.clog("return all encodings: ", this.supported_encodings);
-		return this.supported_encodings;
-	} else {
-		this.clog("return just enabled encodings: ", this.enabled_encodings);
-		return this.enabled_encodings;
-	}
-};
 
 XpraClient.prototype._update_capabilities = function(appendobj) {
 	for (const attr in appendobj) {
@@ -1126,11 +1105,11 @@ XpraClient.prototype.do_send_hello = function(challenge_response, client_salt) {
 	this.clog("hello capabilities", this.capabilities);
 	// verify:
 	for (const key in this.capabilities) {
-		const value = this.capabilities[key];
-		if(key==null) {
+		if (key==null) {
 			throw new Error("invalid null key in hello packet data");
 		}
-		else if(value==null) {
+		const value = this.capabilities[key];
+		if (value==null) {
 			throw new Error("invalid null value for key "+key+" in hello packet data");
 		}
 	}
@@ -1276,9 +1255,10 @@ XpraClient.prototype._make_hello = function() {
 										"decorations", "override-redirect", "tray", "modal", "opacity",
 										//"shadow", "desktop",
 										],
-		"encodings"					: this._get_encodings(),
+		"encoding"					: this.encoding,
+		"encodings"					: this.supported_encodings,
 		"encoding.icons.max_size"	: [30, 30],
-		"encodings.core"			: this._get_encodings(),
+		"encodings.core"			: this.supported_encodings,
 		"encodings.rgb_formats"	 	: this.RGB_FORMATS,
 		"encodings.window-icon"		: ["png"],
 		"encodings.cursor"			: ["png"],

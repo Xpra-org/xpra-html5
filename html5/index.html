@@ -712,22 +712,23 @@
 					};
 				}
 
-				// mediasource video
 				if(video) {
-					client.supported_encodings.push("h264");
+					// broadway h264 decoder:
+					client.check_encodings.push("h264");
 					if (JSMpeg && JSMpeg.Renderer && JSMpeg.Decoder) {
+						//TODO: should be moved to 'check_encodings'
+						//and added to the decode worker:
 						client.supported_encodings.push("mpeg1");
 					}
 					if(mediasource_video) {
 						client.supported_encodings.push("vp8+webm", "h264+mp4", "mpeg4+mp4");
 					}
 				}
-				else if(encoding && (encoding !== "auto")) {
-					// the primary encoding can be set
-					client.enable_encoding(encoding);
+				if (encoding) {
+					// the primary encoding
+					client.set_encoding(encoding);
 				}
-				// encodings can be disabled like so
-				// client.disable_encoding("h264");
+
 				if(action && (action!="connect")) {
 					const sns = {
 							"mode"	: action,
