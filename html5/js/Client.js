@@ -2164,6 +2164,11 @@ XpraClient.prototype._process_challenge = function(packet, ctx) {
 	const prompt = (Utilities.s(packet[5]) || "password").replace(/[^a-zA-Z0-9\.,:\+/]/gi, '');
 	ctx.clog("process challenge:", digest);
 	function do_process_challenge(password) {
+		if (password==null) {
+			ctx.disconnect_reason = "password prompt cancelled";
+			ctx.close();
+			return;
+		}
 		ctx.do_process_challenge(digest, server_salt, salt_digest, password);
 	}
 	if (ctx.passwords.length>0) {

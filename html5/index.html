@@ -488,7 +488,7 @@
 				$("#login-overlay").fadeOut();
 				password_input.removeEventListener("keydown", password_special_keys);
 				password_input.value = "";
-				login_callback("");
+				login_callback(null);
 			}
 			function login_connect() {
 				$("#login-overlay").fadeOut();
