@@ -492,7 +492,8 @@ def make_rpm():
             os.unlink("./dist/%s.rpm")
         except OSError:
             pass
-        os.rename(NOARCH+rpm+".rpm", "./dist/%s.rpm" % rpm)
+        rpmfile = "%s.rpm" % rpm
+        copy2(os.path.join(NOARCH, rpmfile), "./dist")
 
 def sdist():
     record_vcs_info()
