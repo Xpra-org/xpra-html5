@@ -174,7 +174,7 @@ def load_vcs_info():
                     info[parts[0]] = parts[1]
     return info
 
-def install_html5(install_dir="www", minifier="uglifyjs", gzip=True, brotli=True, configuration_files=[]):
+def install_html5(install_dir="www", minifier="uglifyjs", gzip=True, brotli=True, configuration_files=[], config_dir="www"):
     if minifier not in ("", None, "copy"):
         print("minifying html5 client to '%s' using %s" % (install_dir, minifier))
     else:
@@ -238,7 +238,10 @@ def install_html5(install_dir="www", minifier="uglifyjs", gzip=True, brotli=True
                 fname = os.path.join(*parts[1:])
             if install_dir==".":
                 install_dir = os.getcwd()
-            dst = os.path.join(install_dir, fname)
+            if fname in configuration_files:
+                dst = os.path.join(config_dir, fname)
+            else:
+                dst = os.path.join(install_dir, fname)
             if os.path.exists(dst):
                 os.unlink(dst)
             #try to find an existing installed library and symlink it:
@@ -429,19 +432,17 @@ def make_deb():
         shutil.rmtree("./xpra-html5")
     os.mkdir("./xpra-html5")
     shutil.copytree("./packaging/debian", "./xpra-html5/DEBIAN")
-    conf_dir = "/etc/xpra/html5-client"
-    real_conf_dir = os.path.join("./xpra-html5", conf_dir)
+    config_dir = "/etc/xpra/html5-client"
+    real_config_dir = os.path.join("./xpra-html5", config_dir)
     www_dir = "./xpra-html5/usr/share/xpra/www/"
-    install_html5(www_dir, "uglifyjs", configuration_files=configuration_files)
-    # Move and symlink configuration files
-    os.makedirs(real_conf_dir, exist_ok=True)
+    install_html5(www_dir, "uglifyjs", configuration_files=configuration_files,
+                  config_dir=real_config_dir)
+    # Symlink configuration files
     for filename in configuration_files:
-        symlink_source = os.path.join(conf_dir, filename)
-        real_symlink_source = os.path.join(real_conf_dir, filename)
+        symlink_source = os.path.join(config_dir, filename)
         symlink_target = os.path.join(www_dir, filename)
         print("Checking existence of %s" % symlink_target)
-        if os.path.exists(symlink_target):
-           os.rename(symlink_target, real_symlink_source)
+        if os.path.exists(symlink_source):
            os.symlink(symlink_source, symlink_target)
     # Create debian package
     assert Popen(["dpkg-deb", "-Zxz", "--build", "xpra-html5"]).wait()==0
@@ -528,23 +529,40 @@ def main(args):
             except Exception:
                 print("Warning: src_info is missing")
         minifier = "yuicompressor" if sys.platform.startswith("win") else "uglifyjs"
-        conf_dir = os.path.normpath(os.path.join(sys.prefix, "../etc/xpra/html5-client"))
-        www_dir = os.path.normpath(os.path.join(sys.prefix, "share/xpra/www"))
-        install_dir = www_dir
+        install_dir = os.path.normpath(os.path.join(sys.prefix, "share/xpra/www"))
+        # Platform-dependent configuration file location:
+        if sys.platform.startswith('freebsd'):
+            # FreeBSD
+            config_dir = os.path.normpath(os.path.join(sys.prefix,
+                                          "etc/xpra/html5-client"))
+        elif os.name=="posix":
+            # POSIX but not FreeBSD
+            config_dir = "/etc/xpra/html5-client"
+        else:
+            # windows
+            config_dir = install_dir
+        # Non-standard installation directory:
+        # install configuration files into it
         if len(args)>=3:
             install_dir = os.path.normpath(args[2])
+            config_dir = install_dir
+        # Minifier to use
         if len(args)>=4:
             minifier = args[3]
-        install_html5(install_dir, minifier, configuration_files=configuration_files)
-        # Move and symlink configuration files if installdir is default
-        if install_dir==www_dir:
-            os.makedirs(conf_dir, exist_ok=True)
+        # Perform installation
+        install_html5(install_dir, minifier,
+                      configuration_files=configuration_files,
+                      config_dir=config_dir)
+        # Symlink configuration files on POSIX systems
+        # if configuration file directory differs from
+        # main installation directory
+        # (see https://qiita.com/msi/items/ee9a8dd4432cb7095d15)
+        if os.name=="posix" and not config_dir==install_dir:
             for filename in configuration_files:
-                symlink_source = os.path.join(conf_dir, filename)
-                symlink_target = os.path.join(www_dir, filename)
+                symlink_source = os.path.join(config_dir, filename)
+                symlink_target = os.path.join(install_dir, filename)
                 print("Checking existence of %s" % symlink_target)
-                if os.path.exists(symlink_target):
-                    os.rename(symlink_target, symlink_source)
+                if os.path.exists(symlink_source):
                     os.symlink(symlink_source, symlink_target)
         return 0
     if cmd=="deb":
