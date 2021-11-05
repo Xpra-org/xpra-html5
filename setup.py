@@ -16,6 +16,10 @@ VERSION = "4.5.2"
 AUTHOR = "Antoine Martin"
 AUTHOR_EMAIL = "antoine@xpra.org"
 
+# Configuration files that must not be minified or compressed.
+# They must be moved to /etc/xpra and symlinked to /usr/share/xpra/www if no
+# custom installation directory is set
+configuration_files = ["default-settings.txt"]
 
 def glob_recurse(srcdir):
     m = {}
@@ -170,7 +174,7 @@ def load_vcs_info():
                     info[parts[0]] = parts[1]
     return info
 
-def install_html5(install_dir="www", minifier="uglifyjs", gzip=True, brotli=True):
+def install_html5(install_dir="www", minifier="uglifyjs", gzip=True, brotli=True, configuration_files=[]):
     if minifier not in ("", None, "copy"):
         print("minifying html5 client to '%s' using %s" % (install_dir, minifier))
     else:
@@ -310,7 +314,7 @@ def install_html5(install_dir="www", minifier="uglifyjs", gzip=True, brotli=True
             if fsrc!=src:
                 os.unlink(fsrc)
 
-            if ftype not in ("png", ):
+            if ftype not in ("png", ) and fname not in configuration_files:
                 if gzip:
                     gzip_dst = "%s.gz" % dst
                     if os.path.exists(gzip_dst):
@@ -425,7 +429,21 @@ def make_deb():
         shutil.rmtree("./xpra-html5")
     os.mkdir("./xpra-html5")
     shutil.copytree("./packaging/debian", "./xpra-html5/DEBIAN")
-    install_html5("./xpra-html5/usr/share/xpra/www/", "uglifyjs")
+    conf_dir = "/etc/xpra/html5-client"
+    real_conf_dir = os.path.join("./xpra-html5", conf_dir)
+    www_dir = "./xpra-html5/usr/share/xpra/www/"
+    install_html5(www_dir, "uglifyjs", configuration_files=configuration_files)
+    # Move and symlink configuration files
+    os.makedirs(real_conf_dir, exist_ok=True)
+    for filename in configuration_files:
+        symlink_source = os.path.join(conf_dir, filename)
+        real_symlink_source = os.path.join(real_conf_dir, filename)
+        symlink_target = os.path.join(www_dir, filename)
+        print("Checking existence of %s" % symlink_target)
+        if os.path.exists(symlink_target):
+           os.rename(symlink_target, real_symlink_source)
+           os.symlink(symlink_source, symlink_target)
+    # Create debian package
     assert Popen(["dpkg-deb", "-Zxz", "--build", "xpra-html5"]).wait()==0
     assert os.path.exists("./xpra-html5.deb")
     shutil.rmtree("./xpra-html5")
@@ -510,12 +528,24 @@ def main(args):
             except Exception:
                 print("Warning: src_info is missing")
         minifier = "yuicompressor" if sys.platform.startswith("win") else "uglifyjs"
-        install_dir = os.path.join(sys.prefix, "share/xpra/www")
+        conf_dir = os.path.normpath(os.path.join(sys.prefix, "../etc/xpra/html5-client"))
+        www_dir = os.path.normpath(os.path.join(sys.prefix, "share/xpra/www"))
+        install_dir = www_dir
         if len(args)>=3:
-            install_dir = args[2]
+            install_dir = os.path.normpath(args[2])
         if len(args)>=4:
             minifier = args[3]
-        install_html5(install_dir, minifier)
+        install_html5(install_dir, minifier, configuration_files=configuration_files)
+        # Move and symlink configuration files if installdir is default
+        if install_dir==www_dir:
+            os.makedirs(conf_dir, exist_ok=True)
+            for filename in configuration_files:
+                symlink_source = os.path.join(conf_dir, filename)
+                symlink_target = os.path.join(www_dir, filename)
+                print("Checking existence of %s" % symlink_target)
+                if os.path.exists(symlink_target):
+                    os.rename(symlink_target, symlink_source)
+                    os.symlink(symlink_source, symlink_target)
         return 0
     if cmd=="deb":
         make_deb()
