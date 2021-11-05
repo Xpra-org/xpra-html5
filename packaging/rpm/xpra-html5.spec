@@ -4,7 +4,7 @@
 # later version. See the file COPYING for details.
 
 %define version 4.5.2
-%define release 1.r1045%{?dist}
+%define release 1.r1084%{?dist}
 %define minifier uglifyjs
 %define python python3
 
@@ -75,7 +75,7 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
-* Mon Oct 25 2021 Antoine Martin <antoine@xpra.org> 4.5.2-1075-1
+* Fri Nov 05 2021 Antoine Martin <antoine@xpra.org> 4.5.2-1084-1
 - fix toolbar position
 - image decoding time accounting
 - skip re-connecting when the error is likely to be permanent
