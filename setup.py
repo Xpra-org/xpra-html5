@@ -444,8 +444,9 @@ def make_deb():
 
 def make_rpm():
     tarxz = "xpra-html5-%s.tar.xz" % VERSION
-    if os.path.exists("dist/" + tarxz):
-        os.unlink("dist/" + tarxz)
+    disttarxz = os.path.join("dist", tarxz)
+    if os.path.exists(disttarxz):
+        os.unlink(disttarxz)
     try:
         saved = sys.argv
         sys.argv = ["./setup.py", "sdist", "--formats=xztar"]
@@ -453,18 +454,20 @@ def make_rpm():
     finally:
         sys.argv = saved
     RPMBUILD = os.path.expanduser("~/rpmbuild/")
-    SOURCES = RPMBUILD+"/SOURCES"
+    SOURCES = os.path.join(RPMBUILD, "SOURCES")
     if not os.path.exists(SOURCES):
         os.makedirs(SOURCES, 0o755)
-    os.rename("dist/" + tarxz, SOURCES + tarxz)
-    proc = Popen(["rpmspec", "-q", "--rpms", "./packaging/rpm/xpra-html5.spec"], stdout=PIPE, stderr=PIPE)
+    from shutil import copy2
+    copy2(disttarxz, SOURCES)
+    SPEC = "./packaging/rpm/xpra-html5.spec"
+    proc = Popen(["rpmspec", "-q", "--rpms", SPEC], stdout=PIPE, stderr=PIPE)
     out, err = proc.communicate()
     print(err.decode())
     rpms = []
     for line in out.decode().splitlines():
         rpms.append(line)
     print("building: %s" % (rpms,))
-    assert Popen(["rpmbuild", "-ba", "./packaging/rpm/xpra-html5.spec"]).wait()==0
+    assert Popen(["rpmbuild", "-ba", SPEC]).wait()==0
     NOARCH = RPMBUILD+"/RPMS/noarch/"
     for rpm in rpms:
         try:
