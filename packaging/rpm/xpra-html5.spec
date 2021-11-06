@@ -55,8 +55,13 @@ or by any other web server.
 %setup
 
 %install
-mkdir -p %{buildroot}/usr/share/xpra/www
-%{python} ./setup.py install %{buildroot}/usr/share/xpra/www/ %{minifier}
+mkdir -p %{buildroot}%{_datadir}/xpra/www
+mkdir -p %{buildroot}%{_sysconfdir}/xpra/html5-client
+%{python} ./setup.py install %{buildroot}%{_datadir}/xpra/www/ %{minifier}
+# Move and symlink configuration files
+cp %{buildroot}%{_datadir}/xpra/www/default-settings.txt %{buildroot}%{_sysconfdir}/xpra/html5-client/
+rm %{buildroot}%{_datadir}/xpra/www/default-settings.txt
+ln -s %{buildroot}%{_sysconfdir}/xpra/html5-client/default-settings.txt %{buildroot}%{_datadir}/xpra/www/default-settings.txt
 # Ensure there are no executeable files:
 find %{buildroot}%{_datadir}/xpra/www/ -type f -exec chmod 0644 {} \;
 mkdir -p %{buildroot}/usr/share/doc/xpra-html5/
@@ -69,6 +74,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,root,root)
+%{_sysconfdir}/xpra/html5-client
 %{_datadir}/xpra/www
 %if 0%{?el8}%{?fedora}
 %doc xpra-html5/LICENSE
