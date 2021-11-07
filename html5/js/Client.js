@@ -565,7 +565,7 @@ XpraClient.prototype.set_encoding = function(encoding) {
 
 XpraClient.prototype._route_packet = function(packet, ctx) {
 	// ctx refers to `this` because we came through a callback
-	const packet_type = packet[0];
+	const packet_type = Utilities.s(packet[0]);
 	ctx.debug("network", "received a", packet_type, "packet");
 	const fn = ctx.packet_handlers[packet_type];
 	if (fn==undefined) {
@@ -1888,7 +1888,7 @@ XpraClient.prototype._process_hello = function(packet, ctx) {
 		}
 	}
 
-	const version = hello["version"];
+	const version = Utilities.s(hello["version"]);
 	try {
 		const vparts = version.split(".");
 		const vno = [];
@@ -2871,7 +2871,7 @@ XpraClient.prototype._process_window_icon = function(packet, ctx) {
  */
 XpraClient.prototype._process_draw = function(packet, ctx) {
 	//ensure that the pixel data is in a byte array:
-	const coding = packet[6];
+	const coding = Utilities.s(packet[6]);
 	let img_data = packet[7];
 	const raw_buffers = [];
 	const now = performance.now();
@@ -2966,7 +2966,7 @@ XpraClient.prototype.do_process_draw = function(packet, start) {
 		y = packet[3],
 		width = packet[4],
 		height = packet[5],
-		coding = packet[6],
+		coding = Utilities.s(packet[6]),
 		data = packet[7],
 		packet_sequence = packet[8],
 		rowstride = packet[9];
