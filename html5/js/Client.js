@@ -129,6 +129,7 @@ XpraClient.prototype.init_state = function(container) {
 	this.browser_language_change_embargo_time = 0;
 	this.key_layout = null;
 	this.last_keycode_pressed = 0;
+	this.last_key_packet = [];
 	// mouse
 	this.last_button_event = [-1, false, -1, -1];
 	this.mousedown_event = null;
@@ -933,7 +934,9 @@ XpraClient.prototype.do_keyb_process = function(pressed, event) {
 		const me = this;
 		setTimeout(function () {
 			while (me.key_packets.length>0) {
-				me.send(me.key_packets.shift());
+				var key_packet = me.key_packets.shift();
+				me.last_key_packet = key_packet;
+				me.send(key_packet);
 			}
 		}, delay);
 	}
