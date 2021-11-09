@@ -1126,9 +1126,10 @@ function fill_form(default_settings) {
 		"scroll_reverse_x", "scroll_reverse_y",
 		"debug_main", "debug_keyboard", "debug_geometry", "debug_mouse", "debug_clipboard", "debug_draw", "debug_audio", "debug_network"];
 	const default_on = ["steal", "clipboard", "printing", "file_transfer", "reconnect", "floating_menu", "clock", "exit_with_children", "exit_with_client"];
-	if (Utilities.is_64bit()) {
-		default_on.push("video");
-	}
+	//even on 64-bit, video decoding is too slow
+	//if (Utilities.is_64bit()) {
+	//	default_on.push("video");
+	//}
 	if (Utilities.isMacOS()) {
 		default_on.push("swap_keys");
 		default_on.push("scroll_reverse_y");
