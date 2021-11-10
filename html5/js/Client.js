@@ -1296,7 +1296,9 @@ XpraClient.prototype._make_hello = function() {
 		//prefer native video in mp4/webm container to broadway plain h264:
 		"encoding.h264.score-delta"			: -20,
 		"encoding.h264+mp4.score-delta"		: 50,
+		//"encoding.h264+mp4.fast-decode"		: true,
 		"encoding.mpeg4+mp4.score-delta"	: 50,
+		//"encoding.mpeg4+mp4.fast-decode"	: true,
 		"encoding.vp8+webm.score-delta"		: 50,
 
 		"sound.receive"				: true,
