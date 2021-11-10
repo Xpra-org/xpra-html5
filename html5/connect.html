@@ -319,6 +319,7 @@
 			</div>
 		  </div>
 
+		  <input type="hidden" id="vrefresh" value="0" />
 		</form>
 
 
@@ -332,6 +333,7 @@ const VALUE_PROPERTIES = ["server", "port", "path", "username", "password", "key
 					"bandwidth_limit", "encoding", "keyboard_layout", "audio_codec", "toolbar_position",
 					"display", "shadow_display", "override_width",
 					"encryption",
+					"vrefresh",
 					];
 const BOOLEAN_PROPERTIES = ["keyboard", "clipboard", "printing", "file_transfer",
 		"sound", "ignore_audio_blacklist",
@@ -593,6 +595,24 @@ function fill_form(default_settings) {
 		}
 	}
 	aes_input.onchange();
+
+	//vrefresh:
+	let animation_times = [];
+	let vrefresh = -1;
+	function animation_cb(now) {
+		let l = animation_times.push(now);
+		if (l > 100) {
+			animation_times.shift();
+		}
+		let t0 = animation_times[0];
+		if (now>t0 && l>20) {
+			fps = Math.floor(1000 * (l-1) / (now - t0));
+			document.getElementById("vrefresh").value = ""+fps;
+			Utilities.debug("draw", "animation_cb", now, "fps", fps);
+		}
+		window.requestAnimationFrame(animation_cb);
+	};
+	window.requestAnimationFrame(animation_cb);
 
 	//reveal password and aes key:
 	function toggle_reveal(el) {
