@@ -1283,6 +1283,7 @@ XpraClient.prototype._make_hello = function() {
 			"h264+mp4"	: ["YUV420P"],
 			"vp8+webm"	: ["YUV420P"],
 			"webp"		: ["BGRX", "BGRA"],
+			"jpeg"		: ["BGRX", "BGRA", "BGR", "RGBX", "RGBA", "RGB", "YUV420P", "YUV422P", "YUV444P"],
 		},
 		//this is a workaround for server versions between 2.5.0 to 2.5.2 only:
 		"encoding.x264.YUV420P.profile"		: "baseline",

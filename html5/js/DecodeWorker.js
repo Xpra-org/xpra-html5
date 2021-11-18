@@ -195,12 +195,27 @@ function decode_draw_packet(packet, start) {
 		});
 	}
 
+	let options = {};
+	if (packet.length>10)
+		options = packet[10];
+	let enc_width = width;
+	let enc_height = height;
+	const bitmap_options = {
+		"premultiplyAlpha" 	: "none",
+		}
+	const scaled_size = options["scaled_size"];
+	if (scaled_size) {
+		enc_width = scaled_size[0];
+		enc_height = scaled_size[1];
+		delete options["scaled-size"];
+		bitmap_options["resizeWidth"] = width;
+		bitmap_options["resizeHeight"] = height;
+		bitmap_options["resizeQuality"] = "medium";
+	}
 	try {
 		if (coding=="rgb24" || coding=="rgb32") {
 			const data = decode_rgb(packet);
-			send_rgb32_back(data, width, height, {
-				"premultiplyAlpha" : "none",
-				});
+			send_rgb32_back(data, width, height, bitmap_options);
 		}
 		else if (coding=="png" || coding=="jpeg" || coding=="webp") {
 			const data = packet[7];
@@ -211,9 +226,7 @@ function decode_draw_packet(packet, start) {
 			}
 			const blob = new Blob([data.buffer], {type: "image/"+coding});
 			hold();
-			createImageBitmap(blob, {
-				"premultiplyAlpha" : "none",
-			}).then(function(bitmap) {
+			createImageBitmap(blob, bitmap_options).then(function(bitmap) {
 				packet[6] = "bitmap:"+coding;
 				packet[7] = bitmap;
 				send_back([bitmap]);
@@ -224,18 +237,7 @@ function decode_draw_packet(packet, start) {
 			});
 		}
 		else if (coding=="h264") {
-			let options = {};
-			if (packet.length>10)
-				options = packet[10];
 			const data = packet[7];
-			let enc_width = width;
-			let enc_height = height;
-			const scaled_size = options["scaled_size"];
-			if (scaled_size) {
-				enc_width = scaled_size[0];
-				enc_height = scaled_size[1];
-				delete options["scaled-size"];
-			}
 			const frame = options["frame"] || 0;
 			if (frame==0) {
 				close_broadway();
@@ -259,12 +261,7 @@ function decode_draw_packet(packet, start) {
 				//console.log("broadway frame: enc size=", enc_width, enc_height, ", decode size=", p_width, p_height);
 				count++;
 				//forward it as rgb32:
-				send_rgb32_back(buffer, p_width, p_height, {
-					"premultiplyAlpha" 	: "none",
-					"resizeWidth" 		: width,
-					"resizeHeight"		: height,
-					"resizeQuality"		: "medium",
-					});
+				send_rgb32_back(buffer, p_width, p_height, bitmap_options);
 			};
 			// we can pass a buffer full of NALs to decode() directly
 			// as long as they are framed properly with the NAL header
