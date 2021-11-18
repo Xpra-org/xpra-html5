@@ -283,10 +283,13 @@ function decode_draw_packet(packet, start) {
 }
 
 function check_image_decode(format, image_bytes, success_cb, fail_cb) {
+	if (console) {
+		console.info("checking ", format, " with test image: "+image_bytes.length+" bytes");
+	}
 	try {
 		const timer = setTimeout(function() {
 			fail_cb(format, "timeout, no "+format+" picture decoded");
-		}, 1000);
+		}, 2000);
 		if (format=="h264") {
 			const decoder = new Decoder({
 					"rgb": 	true,
@@ -321,7 +324,9 @@ onmessage = function(e) {
 	switch (data.cmd) {
 	case 'check':
 		const encodings = data.encodings;
-		//console.info("encodings to check: ", encodings, encodings.prototype);
+		if (console) {
+			console.info("decode worker checking: ", encodings);
+		}
 		const CHECKS = {
 			"png" 	: [137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 1, 0, 0, 0, 1, 8, 6, 0, 0, 0, 31, 21, 196, 137, 0, 0, 0, 13, 73, 68, 65, 84, 120, 218, 99, 252, 207, 192, 80, 15, 0, 4, 133, 1, 128, 132, 169, 140, 33, 0, 0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130],
 			"webp"	: [82, 73, 70, 70, 58, 0, 0, 0, 87, 69, 66, 80, 86, 80, 56, 32, 46, 0, 0, 0, 178, 2, 0, 157, 1, 42, 2, 0, 2, 0, 46, 105, 52, 154, 77, 34, 34, 34, 34, 34, 0, 104, 75, 40, 0, 5, 206, 150, 90, 0, 0, 254, 247, 159, 127, 253, 15, 63, 198, 192, 255, 242, 240, 96, 0, 0],
