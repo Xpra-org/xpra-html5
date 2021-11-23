@@ -36,7 +36,7 @@ function decode_rgb(packet) {
 	}
 	//coding=rgb32
 	if (target_stride==rowstride) {
-		return data;
+		return new Uint8Array(data);
 	}
 	//re-striding
 	//might be quicker to copy 32bit at a time using Uint32Array
