@@ -81,7 +81,7 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
-* Tue Nov 09 2021 Antoine Martin <antoine@xpra.org> 4.5.2-1087-1
+* Sun Dec 05 2021 Antoine Martin <antoine@xpra.org> 4.5.2-1101-1
 - fix toolbar position
 - image decoding time accounting
 - skip re-connecting when the error is likely to be permanent
