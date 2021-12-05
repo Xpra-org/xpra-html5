@@ -61,7 +61,7 @@ mkdir -p %{buildroot}%{_sysconfdir}/xpra/html5-client
 # Move and symlink configuration files
 cp %{buildroot}%{_datadir}/xpra/www/default-settings.txt %{buildroot}%{_sysconfdir}/xpra/html5-client/
 rm %{buildroot}%{_datadir}/xpra/www/default-settings.txt
-ln -s %{buildroot}%{_sysconfdir}/xpra/html5-client/default-settings.txt %{buildroot}%{_datadir}/xpra/www/default-settings.txt
+ln -sf %{_sysconfdir}/xpra/html5-client/default-settings.txt %{buildroot}%{_datadir}/xpra/www/default-settings.txt
 # Ensure there are no executeable files:
 find %{buildroot}%{_datadir}/xpra/www/ -type f -exec chmod 0644 {} \;
 mkdir -p %{buildroot}/usr/share/doc/xpra-html5/
