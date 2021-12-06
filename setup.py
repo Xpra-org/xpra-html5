@@ -333,7 +333,7 @@ def install_html5(install_dir="www", minifier="uglifyjs", gzip=True, brotli=True
                     if brotli_version and brotli_version>="1":
                         cmd = [brotli_cmd, "-k", dst]
                     else:
-                        cmd = [brotli_cmd, "--input", dst, "--output", br_dst]
+                        cmd = [brotli_cmd, "--input", dst, "--output", br_dst, "-q", "11"]
                     code, out, err = get_status_output(cmd)
                     if code!=0:
                         print("brotli error code=%i on %s" % (code, cmd))
