@@ -2887,7 +2887,7 @@ XpraClient.prototype._process_draw = function(packet, ctx) {
 		}
 		raw_buffers.push(img_data.buffer);
 	}
-	if (ctx.decode_worker) {
+	if (ctx.decode_worker && ctx.packet_encoder=="rencodeplus") {
 		ctx.decode_worker.postMessage({'cmd': 'decode', 'packet' : packet, 'start' : now}, raw_buffers);
 		//the worker draw event will call do_process_draw
 	}
