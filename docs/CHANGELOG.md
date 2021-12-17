@@ -2,21 +2,27 @@
 
 All notable changes to this project will be documented in this file.
 
-## [4.5.2] 2021-10-25
+## [4.5.2] 2021-12-17
 * fix toolbar position
+* install default settings in /etc/xpra/html5-client/
 * image decoding time accounting
+* handle scaled screen updates
 * skip re-connecting when the error is likely to be permanent
 * more helpful disconnection messages
 * ensure we timeout if the websocket connection fails
 * provide an easy way to prevent unwanted connections (ie: xpra.org)
 * fix decode worker sanity checks, validate jpeg, png and webp
+* decode worker errors with legacy packet encoders
+* validate all encodings
 * window title string decoding errors
 * create directories as needed when installing
 * css syntax error
 * better support for relative URLs (proxied configurations)
 * window resize offset bug, minimization bugs
 * force xz compression for DEB packages (zstd support missing from repository webhost)
+* compress harder with brotli
 * remove unnecessary time wrapper
+* try harder to detect the correct screen refresh rate
 
 ## [4.5.1] 2021-09-23
 * workaround Firefox bug in image decoder

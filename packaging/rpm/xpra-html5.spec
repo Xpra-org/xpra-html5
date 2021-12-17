@@ -81,21 +81,27 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
-* Mon Dec 13 2021 Antoine Martin <antoine@xpra.org> 4.5.2-1104-1
+* Fri Dec 17 2021 Antoine Martin <antoine@xpra.org> 4.5.2-1104-1
 - fix toolbar position
+- install default settings in /etc/xpra/html5-client/
 - image decoding time accounting
+- handle scaled screen updates
 - skip re-connecting when the error is likely to be permanent
 - more helpful disconnection messages
 - ensure we timeout if the websocket connection fails
 - provide an easy way to prevent unwanted connections (ie: xpra.org)
 - fix decode worker sanity checks, validate jpeg, png and webp
+- decode worker errors with legacy packet encoders
+- validate all encodings
 - window title string decoding errors
 - create directories as needed when installing
 - css syntax error
 - better support for relative URLs (proxied configurations)
 - window resize offset bug, minimization bugs
 - force xz compression for DEB packages (zstd support missing from repository webhost)
+- compress harder with brotli
 - remove unnecessary time wrapper
+- try harder to detect the correct screen refresh rate
 
 * Thu Sep 23 2021 Antoine Martin <antoine@xpra.org> 4.5.1-1043-1
 - workaround Firefox bug in image decoder
