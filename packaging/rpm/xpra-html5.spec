@@ -81,7 +81,7 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
-* Fri Dec 17 2021 Antoine Martin <antoine@xpra.org> 4.5.2-1104-1
+* Fri Dec 17 2021 Antoine Martin <antoine@xpra.org> 4.5.2-1106-1
 - fix toolbar position
 - install default settings in /etc/xpra/html5-client/
 - image decoding time accounting

@@ -1,4 +1,4 @@
-xpra-html5 (4.5.2-r1104-1) UNRELEASED; urgency=low
+xpra-html5 (4.5.2-r1106-1) UNRELEASED; urgency=low
   * fix toolbar position
   * install default settings in /etc/xpra/html5-client/
   * image decoding time accounting
