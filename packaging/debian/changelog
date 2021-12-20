@@ -1,3 +1,8 @@
+xpra-html5 (5.0-r1107-1) UNRELEASED; urgency=low
+  * TODO
+
+ -- Antoine Martin antoine@xpra.org  Mon, 20 Dec 2021 18:17:40 +0700 +700
+
 xpra-html5 (4.5.2-r1106-1) UNRELEASED; urgency=low
   * fix toolbar position
   * install default settings in /etc/xpra/html5-client/

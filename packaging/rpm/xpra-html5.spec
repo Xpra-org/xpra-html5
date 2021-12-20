@@ -3,7 +3,7 @@
 # Xpra is released under the terms of the GNU GPL v2, or, at your option, any
 # later version. See the file COPYING for details.
 
-%define version 4.5.2
+%define version 5.0
 %define release 1.r1084%{?dist}
 %define minifier uglifyjs
 %define python python3
@@ -81,6 +81,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Mon Dec 20 2021 Antoine Martin <antoine@xpra.org> 5.0-1107-1
+- TODO
+
 * Fri Dec 17 2021 Antoine Martin <antoine@xpra.org> 4.5.2-1106-1
 - fix toolbar position
 - install default settings in /etc/xpra/html5-client/
