@@ -14,6 +14,7 @@
 		<meta name="apple-mobile-web-app-capable" content="yes">
 		<meta name="mobile-web-app-capable" content="yes">
 		<link rel="shortcut icon" type="image/png" href="favicon.png" id="favicon">
+		<link rel="apple-touch-icon" href="apple-touch-icon.png">
 
 		<link rel="stylesheet" href="css/client.css">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
@@ -678,7 +679,14 @@
 				client.remote_logging = remote_logging;
 				client.sharing = sharing;
 				client.insecure = insecure;
-				client.clipboard_enabled = clipboard;
+				// TODO: Re-enable clipboard support for Safari when it implements the async clipboard API.
+				//       See https://medium.com/nerd-for-tech/navigator-clipboard-api-b96be187df5d
+				if (Utilities.isSafari() && clipboard) {
+					clog("disabling clipboard support on Safari");
+					client.clipboard_enabled = false;
+				} else {
+					client.clipboard_enabled = clipboard;
+				}
 				client.printing = printing;
 				client.file_transfer = file_transfer;
 				client.bandwidth_limit = bandwidth_limit;
