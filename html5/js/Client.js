@@ -20,6 +20,8 @@ const CLIPBOARD_IMAGES = true;
 const CLIPBOARD_EVENT_DELAY = 100;
 const DECODE_WORKER = !Utilities.isMobile();
 const rencode_ok = rencode && rencode_selftest();
+const SHOW_START_MENU = true;
+
 
 function XpraClient(container) {
 	// the container div is the "screen" on the HTML page where we
@@ -1153,7 +1155,6 @@ XpraClient.prototype._make_hello_base = function() {
 		"steal"						: this.steal,
 		"client_type"				: "HTML5",
 		"websocket.multi-packet"	: true,
-		"xdg-menu-update"			: true,
 		"setting-change"			: true,
 		"username" 					: this.username,
 		"display"					: this.server_display || "",
@@ -1175,6 +1176,11 @@ XpraClient.prototype._make_hello_base = function() {
 		"ping-echo-sourceid"		: true,
 		"vrefresh"					: this.vrefresh,
 	});
+	if (SHOW_START_MENU) {
+		this._update_capabilities({
+			"xdg-menu-update"			: true,
+			});
+	}
 	if (this.bandwidth_limit>0) {
 		this._update_capabilities({
 			"bandwidth-limit"	: this.bandwidth_limit,
@@ -1980,11 +1986,12 @@ XpraClient.prototype._process_hello = function(packet, ctx) {
 			}
 		}
 	}
-	ctx.xdg_menu = hello["xdg-menu"];
-	if (ctx.xdg_menu) {
-		ctx.process_xdg_menu();
+	if (SHOW_START_MENU) {
+		ctx.xdg_menu = hello["xdg-menu"];
+		if (ctx.xdg_menu) {
+			ctx.process_xdg_menu();
+		}
 	}
-
 
 	ctx.server_is_desktop = Boolean(hello["desktop"]);
 	ctx.server_is_shadow = Boolean(hello["shadow"]);
@@ -2119,11 +2126,12 @@ XpraClient.prototype.process_xdg_menu = function() {
 XpraClient.prototype._process_setting_change = function(packet, ctx) {
 	const setting = packet[1],
 		value = packet[2];
-	if (setting=="xdg-menu") {
+	if (setting=="xdg-menu" && SHOW_START_MENU) {
 		ctx.xdg_menu = value;
 		if (ctx.xdg_menu) {
 			ctx.process_xdg_menu();
 		}
+		$('#startmenuentry').show();
 	}
 };
 
