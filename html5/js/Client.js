@@ -1578,6 +1578,9 @@ XpraClient.prototype.do_window_mouse_scroll = function(e, window) {
 
 
 XpraClient.prototype._poll_clipboard = function(e) {
+	if (this.clipboard_enabled === false) {
+		return;
+	}
 	//see if the clipboard contents have changed:
 	if (this.clipboard_pending) {
 		//we're still waiting to set the clipboard..
@@ -1619,6 +1622,9 @@ XpraClient.prototype._poll_clipboard = function(e) {
 };
 
 XpraClient.prototype.read_clipboard_text = function() {
+	if (this.clipboard_enabled === false) {
+		return;
+	}
 	const client = this;
 	client.debug("clipboard", "read_clipboard()");
 	//warning: this can take a while,
