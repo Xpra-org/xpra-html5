@@ -496,7 +496,7 @@ XpraClient.prototype.open_protocol = function() {
 	uri += this.path;
 	// do open
 	this.uri = uri;
-	this.on_connection_progress("Opening WebSocket connection", uri, 60);
+	this.on_connection_progress("Opening WebSocket connection", uri, 50);
 	this.protocol.open(uri);
 };
 
@@ -1068,12 +1068,22 @@ XpraClient.prototype.emit_connection_established = function(event_type) {
 /**
  * Hello
  */
-XpraClient.prototype._send_hello = function() {
+XpraClient.prototype._send_hello = function(counter) {
 	if (this.decode_worker==null) {
-		this.clog("waiting for decode worker to finish initializing");
+		counter = (counter || 0);
+		if (counter==0) {
+			this.on_connection_progress("Waiting for decode worker", "", 90);
+			this.clog("waiting for decode worker to finish initializing");
+		}
+		else if (counter>100) {
+			//we have waited 10 seconds or more...
+			//continue without:
+			this.do_send_hello(null, null);
+		}
+		//try again later:
 		const me = this;
 		setTimeout(function() {
-			me._send_hello();
+			me._send_hello(counter+1);
 		}, 100);
 	}
 	else {
