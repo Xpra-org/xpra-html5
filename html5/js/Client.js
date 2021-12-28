@@ -1666,6 +1666,22 @@ XpraClient.prototype._window_set_focus = function(win) {
 	if (client.focus == wid) {
 		return;
 	}
+
+	// Keep DESKTOP-type windows per default setttings lower than all other windows.
+	// Only allow focus if all other windows are minimized.
+	if (default_settings !== undefined && default_settings.auto_fullscreen_desktop_class !== undefined && default_settings.auto_fullscreen_desktop_class.length > 0) {
+		var auto_fullscreen_desktop_class = default_settings.auto_fullscreen_desktop_class;
+		if (win.windowtype == "DESKTOP" && win.metadata['class-instance'].includes(auto_fullscreen_desktop_class)) {
+			var any_visible = false;
+			for (let i in client.id_to_window) {
+				const iwin = client.id_to_window[i];
+				if (iwin.wid == win.wid) continue;
+				any_visible ||= !iwin.minimized;
+			}
+			if (any_visible) return;
+		}
+	}
+
 	const top_stacking_layer = Object.keys(client.id_to_window).length;
 	const old_stacking_layer = win.stacking_layer;
 	const had_focus = client.focus;
@@ -1696,6 +1712,19 @@ XpraClient.prototype._window_set_focus = function(win) {
 	}
 	//client._set_favicon(wid);
 };
+
+/*
+ * detect DESKTOP-type window from settings
+ */
+XpraClient.prototype.is_window_desktop = function(win) {
+	if (default_settings !== undefined && default_settings.auto_fullscreen_desktop_class !== undefined && default_settings.auto_fullscreen_desktop_class.length > 0) {
+		var auto_fullscreen_desktop_class = default_settings.auto_fullscreen_desktop_class;
+		if (win.windowtype == "DESKTOP" && win.metadata['class-instance'].includes(auto_fullscreen_desktop_class)) {
+			return true;
+		}
+	}
+	return false;
+}
 
 /*
  * packet processing functions start here
@@ -2927,6 +2956,25 @@ XpraClient.prototype._process_eos = function(packet, ctx) {
 
 
 XpraClient.prototype.request_redraw = function(win) {
+
+	// Force fullscreen on a a given window name from the provided settings
+	if (default_settings !== undefined && default_settings.auto_fullscreen !== undefined && default_settings.auto_fullscreen.length > 0) {
+		var pattern = new RegExp(".*" + default_settings.auto_fullscreen + ".*");
+		if (win.fullscreen === false && win.metadata.title.match(pattern)) {
+			clog("auto fullscreen window: " + win.metadata.title);
+			win.set_fullscreen(true);
+			win.screen_resized();
+		}
+	}
+
+	// Make a DESKTOP-type window fullscreen automatically.
+	// This resizes things like xfdesktop according to the window size.
+	if (win.fullscreen === false && client.is_window_desktop(win)) {
+		clog("auto fullscreen desktop window: " + win.metadata.title);
+		win.set_fullscreen(true);
+		win.screen_resized();
+	}
+
 	if (document.hidden) {
 		this.debug("draw", "not redrawing, document.hidden=", document.hidden);
 		return;
