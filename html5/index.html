@@ -1223,6 +1223,28 @@
 						const req = elem.requestFullScreen || elem.webkitRequestFullScreen || elem.mozRequestFullScreen || elem.msRequestFullscreen;
 						if (req) {
 							req.call(document.body);
+
+							// event codes: https://www.w3.org/TR/uievents-code/#key-alphanumeric-writing-system
+							const keys = [
+								"AltLeft",
+								"AltRight",
+								"Tab",
+								"Escape",
+								"ContextMenu",
+								"MetaLeft",
+								"MetaRight",
+								"F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11",
+							];
+							navigator.keyboard.lock(keys).then(
+								() => {
+									console.log("keyboard lock success");
+								}
+							).catch(
+								(e) => {
+									console.log("keyboard lock failed: ", e);
+								}
+							)
+
 							$('#fullscreen').attr('src', './icons/unfullscreen.png');
 							elem.title = "Exit Fullscreen";
 							$('#fullscreen_button').attr('data-icon', 'fullscreen_exit');
@@ -1371,6 +1393,43 @@
 					return false;
 				}
 			}
+
+			window.inAltTab = false;
+			window.altTabSelIndex = 0;
+
+			// Alt-Tab window switching support when in fullscreen mode.
+			window.addEventListener('keydown', (event) => {
+				if (event.type === 'keydown' && event.altKey && event.code === 'Tab') {
+					console.log("alt-tab pressed.");
+					window.inAltTab = true;
+
+					$('.Menu a[data-icon="filter"]').parent()[0].showMenu();
+
+					var window_ids = Object.keys(client.id_to_window);
+					window.altTabSelIndex = (window.altTabSelIndex + 1) % window_ids.length;
+					console.log(`alt-tab window ${window.altTabSelIndex + 1}/${window_ids.length}`);
+
+					var win = client.id_to_window[window_ids[window.altTabSelIndex]];
+
+					// Skip over the DESKTOP type windows.
+					if (client.is_window_desktop(win)) {
+						window.altTabSelIndex = (window.altTabSelIndex + 1) % window_ids.length;
+						win = client.id_to_window[window_ids[window.altTabSelIndex]];
+					}
+
+					client._window_set_focus(win);
+				}
+			});
+
+			window.addEventListener('keyup', (event) => {
+				if (event.type === 'keyup' && event.code === 'AltLeft' && window.inAltTab) {
+					console.log("alt-tab released.");
+
+					window.inAltTab = false;
+
+					$('.Menu a[data-icon="filter"]').parent()[0].hideMenu();
+				}
+			});
 
 			$(document).ready(function() {
 				clog("document is ready, browser is", navigator.platform, "64-bit:", Utilities.is_64bit());
