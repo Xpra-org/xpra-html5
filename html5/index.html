@@ -1387,11 +1387,20 @@
 				});
 				// disable right click menu:
 				window.oncontextmenu = function(e) {
-					client._poll_clipboard(e);
+					if (this.clipboard_direction === "to-client" || this.clipboard_direction === "both") {
+						client._poll_clipboard(e);
+					}
 					e.preventDefault();
 					e.stopPropagation();
 					return false;
 				}
+
+				// Send clipboard from browser on focus if client-to-server clipboard is enabled.
+				$(window).on("focus", (e) => {
+					if (this.clipboard_direction === "to-server" || this.clipboard_direction === "both") {
+						client._poll_clipboard(e);
+					}
+				});
 			}
 
 			window.inAltTab = false;
