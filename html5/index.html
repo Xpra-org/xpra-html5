@@ -1401,6 +1401,18 @@
 						client._poll_clipboard(e);
 					}
 				});
+
+				// Prevent stuck keys.
+				$(window).on("blur", (e) => {
+					if (client.last_key_packet.length > 2 && client.last_keycode_pressed > 0) {
+						console.log("clearing keycode: " + client.last_keycode_pressed);
+						key_packet = client.last_key_packet;
+						// Set pressed = false to indicate key up.
+						key_packet[3] = false;
+						client.send(key_packet);
+						client.last_key_packet = [];
+					}
+				});
 			}
 
 			window.inAltTab = false;
