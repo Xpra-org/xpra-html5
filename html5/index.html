@@ -62,6 +62,10 @@
 		<link rel="stylesheet" type="text/css" href="css/menu-skin.css"/>
 		<link rel="stylesheet" type="text/css" href="css/icon.css"/>
 
+		<!-- slick carousel for window preview feature -->
+		<link rel="stylesheet" type="text/css" href="css/slick.css"/>
+		<script type="text/javascript" src="js/lib/slick.js"></script>
+
 		<!-- simple-keyboard -->
 		<script type="application/javascript" src="js/lib/simple-keyboard.js"></script>
 		<link rel="stylesheet" href="css/simple-keyboard.css">
@@ -152,6 +156,8 @@
 			</div>
 			<img id="shadow_pointer" alt="shadow pointer">
 		</div>
+
+		<div id="window_preview"></div>
 
 		<div class="notifications">
 		</div>
@@ -1377,6 +1383,13 @@
 					toggle_keyboard();
 				});
 
+				// Configure Xpra tray window list right click behavior.
+				$("#open_windows_list").siblings("a").on('mousedown', (e) => {
+					if (e.buttons === 2) {
+						client.toggle_window_preview();
+					}
+				});
+
 				const screen_change_events = "webkitfullscreenchange mozfullscreenchange fullscreenchange MSFullscreenChange";
 				$(document).on(screen_change_events, function () {
 					const f_el = document.fullscreenElement || document.mozFullScreen || document.webkitIsFullScreen || document.msFullscreenElement;
@@ -1415,43 +1428,6 @@
 					}
 				});
 			}
-
-			window.inAltTab = false;
-			window.altTabSelIndex = 0;
-
-			// Alt-Tab window switching support when in fullscreen mode.
-			window.addEventListener('keydown', (event) => {
-				if (event.type === 'keydown' && event.altKey && event.code === 'Tab') {
-					console.log("alt-tab pressed.");
-					window.inAltTab = true;
-
-					$('.Menu a[data-icon="filter"]').parent()[0].showMenu();
-
-					var window_ids = Object.keys(client.id_to_window);
-					window.altTabSelIndex = (window.altTabSelIndex + 1) % window_ids.length;
-					console.log(`alt-tab window ${window.altTabSelIndex + 1}/${window_ids.length}`);
-
-					var win = client.id_to_window[window_ids[window.altTabSelIndex]];
-
-					// Skip over the DESKTOP type windows.
-					if (client.is_window_desktop(win)) {
-						window.altTabSelIndex = (window.altTabSelIndex + 1) % window_ids.length;
-						win = client.id_to_window[window_ids[window.altTabSelIndex]];
-					}
-
-					client._window_set_focus(win);
-				}
-			});
-
-			window.addEventListener('keyup', (event) => {
-				if (event.type === 'keyup' && event.code === 'AltLeft' && window.inAltTab) {
-					console.log("alt-tab released.");
-
-					window.inAltTab = false;
-
-					$('.Menu a[data-icon="filter"]').parent()[0].hideMenu();
-				}
-			});
 
 			$(document).ready(function() {
 				clog("document is ready, browser is", navigator.platform, "64-bit:", Utilities.is_64bit());
