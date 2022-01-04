@@ -237,21 +237,6 @@ function XpraWindow(client, canvas_state, wid, x, y, w, h, metadata, override_re
 	jQuery(this.div).prepend('<div id="spinner'+String(wid)+'" class="spinneroverlay"><div class="spinnermiddle"><div class="spinner"></div></div></div>');
 	this.spinnerdiv = jQuery('#spinner'+String(wid));
 
-	// listen for mouse wheel events on my window
-	const div = document.getElementById(wid);
-	function on_mousescroll(e) {
-		me.on_mousescroll(e);
-	}
-	if (Utilities.isEventSupported("wheel")) {
-		div.addEventListener('wheel',			on_mousescroll, false);
-	}
-	else if (Utilities.isEventSupported("mousewheel")) {
-		div.addEventListener('mousewheel',		on_mousescroll, false);
-	}
-	else if (Utilities.isEventSupported("DOMMouseScroll")) {
-		div.addEventListener('DOMMouseScroll',	on_mousescroll, false); // for Firefox
-	}
-
 	this.png_cursor_data = null;
 	this.pointer_down = -1;
 	this.pointer_last_x = 0;
