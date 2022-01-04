@@ -1727,7 +1727,9 @@ XpraClient.prototype._window_set_focus = function(win) {
 				if (iwin.wid == win.wid) continue;
 				any_visible ||= !iwin.minimized;
 			}
-			if (any_visible) return;
+			if (any_visible) {
+				return;
+			}
 		}
 	}
 
@@ -1782,13 +1784,16 @@ XpraClient.prototype.toggle_window_preview = function(init_cb) {
 	const preview_element = $('#window_preview');
 
 	preview_element.on('init', (e, slick) => {
-		if (init_cb) init_cb(e, slick);
+		if (init_cb) {
+			init_cb(e, slick);
+		}
 	});
 
 	preview_element.on("afterChange", function(event, slick, currentSlide) {
 		const wid = $(".slick-current .window-preview-item-container").data('wid');
-		if (!client.id_to_window[wid].minimized)
+		if (!client.id_to_window[wid].minimized) {
 			client._window_set_focus(client.id_to_window[wid]);
+		}
 	});
 
 	$(window).on('click', this._handle_window_list_blur);
@@ -1798,8 +1803,9 @@ XpraClient.prototype.toggle_window_preview = function(init_cb) {
 		// Restore the current selection if it's minimized.
 		const wid = $(".slick-current .window-preview-item-container").data('wid');
 		console.log("current wid: " + wid);
-		if (client.id_to_window[wid].minimized)
+		if (client.id_to_window[wid].minimized) {
 			client._window_set_focus(client.id_to_window[wid]);
+		}
 
 		// Clear the list of window elements.
 		preview_element.children().remove();
@@ -1820,18 +1826,26 @@ XpraClient.prototype.toggle_window_preview = function(init_cb) {
 	// Sort windows by stacking order.;
 	var windows_sorted = Object.values(client.id_to_window).filter( (win) => {
 		// skip DESKTOP type windows.
-		if (client.is_window_desktop(win)) return false;
+		if (client.is_window_desktop(win)) {
+			return false;
+		}
 		return true;
 	});
 
-	if (windows_sorted.length === 0) return;
+	if (windows_sorted.length === 0) {
+		return;
+	}
 
 	var container_width = 200 * Math.min(4, windows_sorted.length);
 	preview_element.css('width', container_width + "px");
 
 	windows_sorted.sort((a, b) => {
-		if (a.stacking_layer < b.stacking_layer) return 1;
-		if (a.stacking_layer > b.stacking_layer) return -1;
+		if (a.stacking_layer < b.stacking_layer) {
+			return 1;
+		}
+		if (a.stacking_layer > b.stacking_layer) {
+			return -1;
+		}
 		return 0;
 	});
 
@@ -1884,10 +1898,18 @@ XpraClient.prototype.toggle_window_preview = function(init_cb) {
  */
 XpraClient.prototype._handle_window_list_blur = function(e) {
 	if ($('#window_preview').is(":visible")) {
-		if (e.target.id === "window_preview") return;
-		if ($(e.target).parents("#window_preview").length > 0) return;
-		if ($(e.target).hasClass("window-list-button")) return;
-		if ($(e.target).parents("#float_menu").length > 0 && $(e.target).parent().has("#open_windows_list")) return;
+		if (e.target.id === "window_preview") {
+			return;
+		}
+		if ($(e.target).parents("#window_preview").length > 0) {
+			return;
+		}
+		if ($(e.target).hasClass("window-list-button")) {
+			return;
+		}
+		if ($(e.target).parents("#float_menu").length > 0 && $(e.target).parent().has("#open_windows_list")) {
+			return;
+		}
 		// Clicked outside window list, close it.
 		client.toggle_window_preview();
 	}
