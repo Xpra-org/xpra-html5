@@ -33,7 +33,7 @@ function XpraWindow(client, canvas_state, wid, x, y, w, h, metadata, override_re
 	this.debug_categories = client.debug_categories;
 	//keep reference both the internal canvas and screen drawn canvas:
 	this.canvas = canvas_state;
-	this.canvas_ctx = this.canvas.getContext('2d');
+	this.canvas_ctx = this.client.offscreen_api ? {} : this.canvas.getContext('2d');
 	this.canvas_ctx.imageSmoothingEnabled = false;
 	this.offscreen_canvas = null;
 	this.offscreen_canvas_ctx = null;
@@ -41,6 +41,12 @@ function XpraWindow(client, canvas_state, wid, x, y, w, h, metadata, override_re
 	this.draw_canvas = this.offscreen_canvas;
 	this.paint_queue = [];
 	this.paint_pending = 0;
+
+	if (this.client.offscreen_api) {
+		// Transfer canvas control. Syntax postMessage({message_obj}, [transferlist])
+		const offscreen_handle = this.canvas.transferControlToOffscreen();
+		this.client.decode_worker.postMessage({'cmd': 'canvas', 'wid' : String(wid), 'canvas': offscreen_handle}, [offscreen_handle]);
+	}
 
 	//enclosing div in page DOM
 	this.div = jQuery("#" + String(wid));
@@ -347,6 +353,10 @@ XpraWindow.prototype.ensure_visible = function() {
 };
 
 XpraWindow.prototype.updateCanvasGeometry = function() {
+	if (this.client.offscreen_api) {
+		this.client.decode_worker.postMessage({'cmd': 'canvas-geo', 'wid': this.wid, 'w' : this.w, 'h' : this.h});
+		return;
+	}
 	// set size of both canvas if needed
 	if(this.canvas.width != this.w) {
 		this.canvas.width = this.w;

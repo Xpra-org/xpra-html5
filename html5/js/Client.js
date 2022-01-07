@@ -66,7 +66,7 @@ XpraClient.prototype.init_settings = function(container) {
 	this.supported_encodings = ["jpeg", "png", "rgb", "rgb32", "rgb24"];
 	//extra encodings we enable if validated via the decode worker:
 	//(we also validate jpeg and png as a sanity check)
-	this.check_encodings = ["webp", "jpeg", "png"];	//"h264", "vp8+webm", "h264+mp4", "mpeg4+mp4"];
+	this.check_encodings = [];	//"webp", "jpeg", "png"];	//"h264", "vp8+webm", "h264+mp4", "mpeg4+mp4"];
 	this.debug_categories = [];
 	this.start_new_session = null;
 	this.clipboard_enabled = false;
@@ -91,6 +91,7 @@ XpraClient.prototype.init_settings = function(container) {
 	this.PING_FREQUENCY = 5000;
 	this.INFO_FREQUENCY = 1000;
 	this.uuid = Utilities.getHexUUID();
+	this.offscreen_api = XpraOffscreenWorker.isAvailable();
 };
 
 XpraClient.prototype.init_state = function(container) {
@@ -431,7 +432,12 @@ XpraClient.prototype.initialize_workers = function() {
 		this.decode_worker = false;
 		return;
 	}
-	const decode_worker = new Worker('js/DecodeWorker.js');
+	let decode_worker;
+	 if (this.offscreen_api) {
+		decode_worker = new Worker('js/OffscreenDecodeWorker.js');
+	} else {
+		decode_worker = new Worker('js/DecodeWorker.js');
+	}
 	decode_worker.addEventListener('message', function(e) {
 		const data = e.data;
 		if (data['draw']) {
@@ -3245,31 +3251,35 @@ XpraClient.prototype.do_process_draw = function(packet, start) {
 	function send_damage_sequence(decode_time, message) {
 		me.do_send_damage_sequence(packet_sequence, wid, width, height, decode_time, message);
 	}
+	function decode_result(error) {
+		const flush = options["flush"] || 0;
+		let decode_time = -1;
+		if(flush==0) {
+			me.request_redraw(win);
+		}
+		if (error || start==0) {
+			me.request_redraw(win);
+		}
+		else {
+			decode_time = Math.round(1000*performance.now() - 1000*start);
+		}
+		me.debug("draw", "decode time for ", coding, " sequence ", packet_sequence, ": ", decode_time, ", flush=", flush);
+		send_damage_sequence(decode_time, error || "");
+	}
 	if (!win) {
 		this.debug("draw", 'cannot paint, window not found:', wid);
 		send_damage_sequence(-1, "window "+wid+" not found");
 		return;
 	}
+	if (coding=="offscreen-painted") {
+		//we're done!
+		decode_result(0);
+		return;
+	}
 	try {
 		win.paint(x, y,
 			width, height,
-			coding, data, packet_sequence, rowstride, options,
-			function (error) {
-				const flush = options["flush"] || 0;
-				let decode_time = -1;
-				if(flush==0) {
-					me.request_redraw(win);
-				}
-				if (error || start==0) {
-					me.request_redraw(win);
-				}
-				else {
-					decode_time = Math.round(1000*performance.now() - 1000*start);
-				}
-				me.debug("draw", "decode time for ", coding, " sequence ", packet_sequence, ": ", decode_time, ", flush=", flush);
-				send_damage_sequence(decode_time, error || "");
-			}
-		);
+			coding, data, packet_sequence, rowstride, options, decode_result);
 	}
 	catch(e) {
 		me.exc(e, "error painting", coding, "sequence no", packet_sequence);
