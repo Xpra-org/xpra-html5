@@ -608,7 +608,9 @@ function fill_form(default_settings) {
 		if (now>t0 && l>20) {
 			fps = Math.floor(1000 * (l-1) / (now - t0));
 			document.getElementById("vrefresh").value = ""+fps;
-			Utilities.debug("draw", "animation_cb", now, "fps", fps);
+			if (l<=40) {
+				Utilities.debug("draw", "animation_cb", now, "fps", fps);
+			}
 		}
 		window.requestAnimationFrame(animation_cb);
 	};
