@@ -190,11 +190,11 @@ function rencode_uint8(a) {
 	const len_len = len_str.length;
 	const u8a = new Uint8Array(len_len+1+len);
 	for (let i=0; i<len_len; ++i) {
-		u8a[1+i] = len_str.charCodeAt(i);
+		u8a[i] = len_str.charCodeAt(i);
 	}
 	const SEPARATOR = "/";
-	u8a[1+len_len] = SEPARATOR.charCodeAt(0);
-	u8a.set(a, len_len+2);
+	u8a[len_len] = SEPARATOR.charCodeAt(0);
+	u8a.set(a, len_len+1);
 	return u8a;
 }
 
