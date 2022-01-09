@@ -514,6 +514,8 @@ XpraProtocol.prototype.process_send_queue = function() {
 			}
 		} catch(e) {
 			this.error("Error: failed to encode packet:", packet);
+			this.error(" with packet encoder", this.packet_encoder);
+			this.error(e);
 			continue;
 		}
 		const payload_size = bdata.length;
