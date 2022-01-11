@@ -266,7 +266,7 @@ function XpraWindow(client, canvas_state, wid, x, y, w, h, metadata, override_re
 				const mult = 20.0*(window.devicePixelRatio || 1);
 				ev.wheelDeltaX = Math.round(dx*mult);
 				ev.wheelDeltaY = Math.round(dy*mult);
-				on_mousescroll(ev);
+				me.on_mousescroll(ev);
 			}
 		});
 		this.canvas.addEventListener("pointerup", function(ev) {
