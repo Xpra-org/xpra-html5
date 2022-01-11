@@ -14,6 +14,9 @@
 
 "use strict";
 
+
+const TASKBAR_HEIGHT = 0;
+
 /**
  * This is the class representing a window we draw on the canvas.
  * It has a geometry, it may have borders and a top bar.
@@ -828,7 +831,7 @@ XpraWindow.prototype.fill_screen = function() {
 	this.x = this.leftoffset;
 	this.y = this.topoffset;
 	this.w = (screen_size[0] - this.leftoffset) - this.rightoffset;
-	this.h = (screen_size[1] - this.topoffset) - this.bottomoffset;
+	this.h = (screen_size[1] - this.topoffset) - this.bottomoffset - TASKBAR_HEIGHT;
 	this.debug("geometry", "fill_screen() ", this.x, this.y, this.w, this.h);
 };
 
