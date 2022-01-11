@@ -59,6 +59,9 @@ function add_decoder_for_window(wid, canvas) {
         packet[7] = null;
         self.postMessage({ 'draw': packet, 'start': start }, []);
     });
+	image_decoder.on_frame_error = ((packet, start, error) => {
+		self.postMessage({'error': ""+error, 'packet' : packet, 'start' : start});
+	});
     image_decoders.set(wid, image_decoder);
 
     const video_decoder = new XpraVideoDecoder();
@@ -152,10 +155,10 @@ function close(wid) {
     const video_decoder = video_decoders.get(wid);
     if (video_decoder) {
         video_decoder._close();
-        video_decoders.remove(wid);
+        video_decoders.delete(wid);
     }
-    image_decoders.remove(wid);
-    offscreen_canvas.remove(wid);
+    image_decoders.delete(wid);
+    offscreen_canvas.delete(wid);
 }
 
 onmessage = function (e) {
