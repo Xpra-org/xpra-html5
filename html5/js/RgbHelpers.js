@@ -15,11 +15,11 @@ function decode_rgb(packet) {
 	let options = {};
 	if (packet.length>10)
 		options = packet[10];
-	if (options!=null && options["zlib"]>0) {
+	if (options["zlib"]>0) {
 		data = new Zlib.Inflate(data).decompress();
 		delete options["zlib"];
 	}
-	else if (options!=null && options["lz4"]>0) {
+	else if (options["lz4"]>0) {
 		data = lz4.decode(data);
 		delete options["lz4"];
 	}
