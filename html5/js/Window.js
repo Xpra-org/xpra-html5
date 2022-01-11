@@ -23,6 +23,15 @@
 function XpraWindow(client, canvas_state, wid, x, y, w, h, metadata, override_redirect, tray, client_properties, geometry_cb, mouse_move_cb, mouse_down_cb, mouse_up_cb, mouse_scroll_cb, set_focus_cb, window_closed_cb, scale) {
 	// use me in jquery callbacks as we lose 'this'
 	const me = this;
+
+	//xpra specific attributes:
+	this.wid = wid;
+	this.metadata = {};
+	this.override_redirect = override_redirect;
+	this.tray = tray;
+	this.has_alpha = false;
+	this.client_properties = client_properties;
+
 	// there might be more than one client
 	this.client = client;
 	this.log = function() { client.log.apply(client, arguments); };
@@ -45,7 +54,7 @@ function XpraWindow(client, canvas_state, wid, x, y, w, h, metadata, override_re
 	if (this.client.offscreen_api) {
 		// Transfer canvas control. Syntax postMessage({message_obj}, [transferlist])
 		const offscreen_handle = this.canvas.transferControlToOffscreen();
-		this.client.decode_worker.postMessage({'cmd': 'canvas', 'wid' : String(wid), 'canvas': offscreen_handle}, [offscreen_handle]);
+		this.client.decode_worker.postMessage({'cmd': 'canvas', 'wid' : wid, 'canvas': offscreen_handle}, [offscreen_handle]);
 	}
 
 	//enclosing div in page DOM
@@ -58,14 +67,6 @@ function XpraWindow(client, canvas_state, wid, x, y, w, h, metadata, override_re
 	this.mouse_up_cb = null;
 	this.mouse_scroll_cb = null;
 	this.window_closed_cb = null;
-
-	//xpra specific attributes:
-	this.wid = wid;
-	this.metadata = {};
-	this.override_redirect = override_redirect;
-	this.tray = tray;
-	this.has_alpha = false;
-	this.client_properties = client_properties;
 
 	//window attributes:
 	this.title = null;

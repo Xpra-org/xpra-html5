@@ -19,20 +19,22 @@ importScripts("./ImageDecoder.js");
 importScripts("./RgbHelpers.js");
 
 // Array of offscreen canvases and video decoders we have control over
-const offscreen_canvas = [];
-const image_decoders = [];
-const video_decoders = [];
+const offscreen_canvas = new Map();
+const image_decoders = new Map();
+const video_decoders = new Map();
 
 function add_decoder_for_window(wid, canvas) {
-    // Canvas    
-    offscreen_canvas[wid] = [];
-    offscreen_canvas[wid]["c"] = canvas;
-    offscreen_canvas[wid]["ctx"] = canvas.getContext("2d");
-    offscreen_canvas[wid]["ctx"].imageSmoothingEnabled = false;
+    // Canvas
+    const ctx = canvas.getContext("2d");
+    ctx.imageSmoothingEnabled = false;
+    offscreen_canvas.set(wid, {
+        "c"      : canvas,
+        "ctx"    : ctx,
+        });
 
     // Decoders
-    image_decoders[wid] = new XpraImageDecoder();
-    image_decoders[wid].on_frame_decoded = ((packet, start) => {
+    const image_decoder = new XpraImageDecoder();
+    image_decoder.on_frame_decoded = ((packet, start) => {
         const wid = packet[1],
             x = packet[2],
             y = packet[3],
@@ -41,7 +43,7 @@ function add_decoder_for_window(wid, canvas) {
             coding = packet[6],
             data = packet[7];
 
-        let ctx = offscreen_canvas[wid]["ctx"];
+        let ctx = offscreen_canvas.get(wid)["ctx"];
         if (coding == "bitmap") {
             // RGB is transformed to bitmap
             ctx.clearRect(x, y, width, height);
@@ -57,9 +59,10 @@ function add_decoder_for_window(wid, canvas) {
         packet[7] = null;
         self.postMessage({ 'draw': packet, 'start': start }, []);
     });
+    image_decoders.set(wid, image_decoder);
 
-    video_decoders[wid] = new XpraVideoDecoder();
-    video_decoders[wid].on_frame_decoded = ((packet, start) => {
+    const video_decoder = new XpraVideoDecoder();
+    video_decoder.on_frame_decoded = ((packet, start) => {
         const wid = packet[1],
             x = packet[2],
             y = packet[3],
@@ -77,7 +80,7 @@ function add_decoder_for_window(wid, canvas) {
             enc_height = scaled_size[1];
         }
 
-        let ctx = offscreen_canvas[wid]["ctx"];
+        let ctx = offscreen_canvas.get(wid)["ctx"];
         if (coding == "frame") {
             ctx.drawImage(data, x, y, enc_width, enc_height);
             data.close();
@@ -95,7 +98,7 @@ function add_decoder_for_window(wid, canvas) {
             }, timeout);
         }
     });
-
+    video_decoders.set(wid, video_decoder);
 }
 
 function decode_draw_packet(packet, start) {
@@ -106,12 +109,12 @@ function decode_draw_packet(packet, start) {
 
     if (image_coding.includes(coding)) {
         // Add to image queue
-        let decoder = image_decoders[wid];
+        let decoder = image_decoders.get(wid);
         decoder.queue_frame(packet, start);
 
     } else if (video_coding.includes(coding)) {
         // Add to video queue
-        let decoder = video_decoders[wid];
+        let decoder = video_decoders.get(wid);
         if (!decoder.initialized) {
             // Init with width and heigth of this packet.
             // TODO: Use video max-size? It does not seem to matter.
@@ -121,8 +124,9 @@ function decode_draw_packet(packet, start) {
     }
     else if (coding == "scroll") {
         const data = packet[7];
-        const canvas = offscreen_canvas[wid]["c"];;
-        const ctx = offscreen_canvas[wid]["ctx"];;
+        const oc = offscreen_canvas.get(wid);
+        const canvas = oc["c"];
+        const ctx = oc["ctx"];
         for (let i = 0, j = data.length; i < j; ++i) {
             const scroll_data = data[i];
             const sx = scroll_data[0],
@@ -144,12 +148,14 @@ function decode_draw_packet(packet, start) {
     }
 }
 
-function close_video(wid) {
-    try {
-        video_decoders[wid]._close();
-    } catch {
-        // TODO: Handle error.
+function close(wid) {
+    const video_decoder = video_decoders.get(wid);
+    if (video_decoder) {
+        video_decoder._close();
+        video_decoders.remove(wid);
     }
+    image_decoders.remove(wid);
+    offscreen_canvas.remove(wid);
 }
 
 onmessage = function (e) {
@@ -162,7 +168,7 @@ onmessage = function (e) {
             self.postMessage({ 'result': true, 'formats': encodings });
             break;
         case 'eos':
-            close_video(data.wid);
+            close(data.wid);
             break;
         case 'decode':
             decode_draw_packet(data.packet, data.start);
@@ -171,8 +177,9 @@ onmessage = function (e) {
             add_decoder_for_window(data.wid, data.canvas)
             break;
         case 'canvas-geo':
-            if (offscreen_canvas[data.wid]) {
-				const canvas = offscreen_canvas[data.wid]["c"];
+            const oc =  offscreen_canvas.get(data.wid);
+            if (oc) {
+                const canvas = oc["c"];
                 if (canvas.width != data.w || canvas.height != data.h) {
                     canvas.width = data.w;
                     canvas.height = data.h;
