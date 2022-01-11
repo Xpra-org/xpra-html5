@@ -3254,10 +3254,10 @@ XpraClient.prototype.do_process_draw = function(packet, start) {
 	function decode_result(error) {
 		const flush = options["flush"] || 0;
 		let decode_time = -1;
-		if(flush==0) {
+		if (flush==0) {
 			me.request_redraw(win);
 		}
-		if (error || start==0) {
+		else if (error || start==0) {
 			me.request_redraw(win);
 		}
 		else {
@@ -3273,7 +3273,8 @@ XpraClient.prototype.do_process_draw = function(packet, start) {
 	}
 	if (coding=="offscreen-painted") {
 		//we're done!
-		decode_result(0);
+		const decode_time = Math.round(1000*performance.now() - 1000*start);
+		send_damage_sequence(decode_time, "");
 		return;
 	}
 	try {
