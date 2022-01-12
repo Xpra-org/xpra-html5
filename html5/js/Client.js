@@ -2369,8 +2369,8 @@ XpraClient.prototype._process_setting_change = function(packet, ctx) {
 		ctx.xdg_menu = value;
 		if (ctx.xdg_menu) {
 			ctx.process_xdg_menu();
+			$('#startmenuentry').show();
 		}
-		$('#startmenuentry').show();
 	}
 };
 
