@@ -4057,7 +4057,7 @@ XpraClient.prototype._process_open_url = function(packet, ctx) {
 	{
 		//Popup blocked, display link in notification
 		const summary = "Open URL";
-		const body = "<a href=\""+url+"\" target=\"_blank\">"+url+"</a>";
+		const body = "<a href=\""+url+"\" rel=\"noopener\" target=\"_blank\">"+url+"</a>";
 		const timeout = 10;
 		window.doNotification("", 0, summary, body, timeout, null, null, null, null, null);
 	}
