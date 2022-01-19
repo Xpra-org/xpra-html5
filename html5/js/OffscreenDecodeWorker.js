@@ -1,6 +1,7 @@
 /*
  * This file is part of Xpra.
  * Copyright (C) 2021 Tijs van der Zwaan <tijzwa@vpo.nl>
+ * Copyright (c) 2022 Antoine Martin <antoine@xpra.org>
  * Licensed under MPL 2.0, see:
  * http://www.mozilla.org/MPL/2.0/
  *
@@ -18,21 +19,10 @@ importScripts("./VideoDecoder.js");
 importScripts("./ImageDecoder.js");
 importScripts("./RgbHelpers.js");
 
-// Array of offscreen canvases and video decoders we have control over
+// Array of offscreen canvases and decoders we have control over
 const offscreen_canvas = new Map();
-const image_decoders = new Map();
-const video_decoders = new Map();
 
-function add_decoder_for_window(wid, canvas) {
-    // Canvas
-    const ctx = canvas.getContext("2d");
-    ctx.imageSmoothingEnabled = false;
-    offscreen_canvas.set(wid, {
-        "c"      : canvas,
-        "ctx"    : ctx,
-        });
-
-    // Decoders
+function new_image_decoder() {
     const image_decoder = new XpraImageDecoder();
     image_decoder.on_frame_decoded = ((packet, start) => {
         const wid = packet[1],
@@ -48,7 +38,8 @@ function add_decoder_for_window(wid, canvas) {
             // RGB is transformed to bitmap
             ctx.clearRect(x, y, width, height);
             ctx.drawImage(data, x, y, width, height);
-        } else {
+        }
+        else {
             // All others are transformed to VideoFrame
             ctx.clearRect(x, y, width, height);
             ctx.drawImage(data.image, x, y, width, height);
@@ -57,13 +48,15 @@ function add_decoder_for_window(wid, canvas) {
         // Replace the coding & drop data
         packet[6] = "offscreen-painted";
         packet[7] = null;
-        self.postMessage({ 'draw': packet, 'start': start }, []);
+        self.postMessage({ 'draw': packet, 'start': start });
     });
-	image_decoder.on_frame_error = ((packet, start, error) => {
-		self.postMessage({'error': ""+error, 'packet' : packet, 'start' : start});
-	});
-    image_decoders.set(wid, image_decoder);
+    image_decoder.on_frame_error = ((packet, start, error) => {
+        self.postMessage({'error': ""+error, 'packet' : packet, 'start' : start});
+    });
+    return image_decoder;
+}
 
+function new_video_decoder() {
     const video_decoder = new XpraVideoDecoder();
     video_decoder.on_frame_decoded = ((packet, start) => {
         const wid = packet[1],
@@ -89,19 +82,32 @@ function add_decoder_for_window(wid, canvas) {
             data.close();
             packet[6] = "offscreen-painted";
             packet[7] = null;
-            self.postMessage({ 'draw': packet, 'start': start }, []);
-        } else {
+            self.postMessage({ 'draw': packet, 'start': start });
+        }
+        else {
             // Encoding throttle is used to slow down frame input
             // TODO: Relal error handling
             const timeout = coding == "throttle" ? 500 : 0;
             setTimeout(() => {
                 packet[6] = "offscreen-painted";
                 packet[7] = null;
-                self.postMessage({ 'draw': packet, 'start': start }, []);
+                self.postMessage({ 'draw': packet, 'start': start });
             }, timeout);
         }
     });
-    video_decoders.set(wid, video_decoder);
+    return video_decoder;
+}
+
+function add_decoders_for_window(wid, canvas) {
+    // Canvas
+    const ctx = canvas.getContext("2d");
+    ctx.imageSmoothingEnabled = false;
+    offscreen_canvas.set(wid, {
+        "c"      : canvas,
+        "ctx"    : ctx,
+        "image-decoder" : new_image_decoder(),
+        "video-decoder" : new_video_decoder(),
+        });
 }
 
 function decode_draw_packet(packet, start) {
@@ -109,15 +115,20 @@ function decode_draw_packet(packet, start) {
     const video_coding = ["h264"];
     const wid = packet[1];
     const coding = packet[6];
+    const oc = offscreen_canvas.get(wid);
+    if (!oc) {
+        self.postMessage({'error': "no offscreen context for window "+wid, 'packet' : packet, 'start' : start});
+        return;
+    }
 
     if (image_coding.includes(coding)) {
         // Add to image queue
-        let decoder = image_decoders.get(wid);
+        let decoder = oc["image-decoder"];
         decoder.queue_frame(packet, start);
-
-    } else if (video_coding.includes(coding)) {
+    }
+    else if (video_coding.includes(coding)) {
         // Add to video queue
-        let decoder = video_decoders.get(wid);
+        let decoder = oc["video-decoder"];
         if (!decoder.initialized) {
             // Init with width and heigth of this packet.
             // TODO: Use video max-size? It does not seem to matter.
@@ -127,7 +138,6 @@ function decode_draw_packet(packet, start) {
     }
     else if (coding == "scroll") {
         const data = packet[7];
-        const oc = offscreen_canvas.get(wid);
         const canvas = oc["c"];
         const ctx = oc["ctx"];
         for (let i = 0, j = data.length; i < j; ++i) {
@@ -143,22 +153,23 @@ function decode_draw_packet(packet, start) {
         }
         packet[6] = "offscreen-painted";
         packet[7] = null;
-        self.postMessage({ 'draw': packet, 'start': start }, []);
+        self.postMessage({ 'draw': packet, 'start': start });
     }
     else {
         // We dont know, pass trough
-        self.postMessage({ 'draw': packet, 'start': start }, []);
+        self.postMessage({ 'draw': packet, 'start': start });
     }
 }
 
 function close(wid) {
-    const video_decoder = video_decoders.get(wid);
-    if (video_decoder) {
-        video_decoder._close();
-        video_decoders.delete(wid);
+    const oc = offscreen_canvas.get(wid);
+    if (oc) {
+        const video_decoder = oc["video-decoder"];
+        if (video_decoder) {
+            video_decoder._close();
+        }
+        offscreen_canvas.delete(wid);
     }
-    image_decoders.delete(wid);
-    offscreen_canvas.delete(wid);
 }
 
 onmessage = function (e) {
@@ -177,7 +188,7 @@ onmessage = function (e) {
             decode_draw_packet(data.packet, data.start);
             break
         case 'canvas':
-            add_decoder_for_window(data.wid, data.canvas)
+            add_decoders_for_window(data.wid, data.canvas)
             break;
         case 'canvas-geo':
             const oc =  offscreen_canvas.get(data.wid);
