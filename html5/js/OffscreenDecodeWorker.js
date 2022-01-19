@@ -182,15 +182,19 @@ function decode_draw_packet(packet, start) {
 }
 
 function close(wid) {
+	close_video(wid);
+    offscreen_canvas.delete(wid);
+}
+function close_video(wid) {
     const oc = offscreen_canvas.get(wid);
     if (oc) {
         const video_decoder = oc["video-decoder"];
         if (video_decoder) {
             video_decoder._close();
         }
-        offscreen_canvas.delete(wid);
     }
 }
+
 
 onmessage = function (e) {
     const data = e.data;
@@ -202,7 +206,7 @@ onmessage = function (e) {
             self.postMessage({ 'result': true, 'formats': encodings });
             break;
         case 'eos':
-            close(data.wid);
+            close_video(data.wid);
             break;
         case 'decode':
             decode_draw_packet(data.packet, data.start);
