@@ -116,40 +116,57 @@ function decode_draw_packet(packet, start) {
     const wid = packet[1];
     const coding = packet[6];
     const oc = offscreen_canvas.get(wid);
+    send_error = (message) => {
+        self.postMessage({'error': message, 'packet' : packet, 'start' : start});
+    }
     if (!oc) {
-        self.postMessage({'error': "no offscreen context for window "+wid, 'packet' : packet, 'start' : start});
+        send_error("no offscreen context for window "+wid);
         return;
     }
 
     if (image_coding.includes(coding)) {
         // Add to image queue
         let decoder = oc["image-decoder"];
-        decoder.queue_frame(packet, start);
+        try {
+            decoder.queue_frame(packet, start);
+        }
+        catch (e) {
+            send_error(e);
+        }
     }
     else if (video_coding.includes(coding)) {
         // Add to video queue
         let decoder = oc["video-decoder"];
-        if (!decoder.initialized) {
-            // Init with width and heigth of this packet.
-            // TODO: Use video max-size? It does not seem to matter.
-            decoder.init(packet[4], packet[5]);
+        try {
+            if (!decoder.initialized) {
+                // Init with width and heigth of this packet.
+                // TODO: Use video max-size? It does not seem to matter.
+                decoder.init(packet[4], packet[5]);
+            }
+            decoder.queue_frame(packet, start);
         }
-        decoder.queue_frame(packet, start);
+        catch (e) {
+            send_error(e);
+        }
     }
     else if (coding == "scroll") {
         const data = packet[7];
         const canvas = oc["c"];
         const ctx = oc["ctx"];
-        for (let i = 0, j = data.length; i < j; ++i) {
-            const scroll_data = data[i];
-            const sx = scroll_data[0],
-                sy = scroll_data[1],
-                sw = scroll_data[2],
-                sh = scroll_data[3],
-                xdelta = scroll_data[4],
-                ydelta = scroll_data[5];
-
-            ctx.drawImage(canvas, sx, sy, sw, sh, sx + xdelta, sy + ydelta, sw, sh);
+        try {
+            for (let i = 0, j = data.length; i < j; ++i) {
+                const scroll_data = data[i];
+                const sx = scroll_data[0],
+                    sy = scroll_data[1],
+                    sw = scroll_data[2],
+                    sh = scroll_data[3],
+                    xdelta = scroll_data[4],
+                    ydelta = scroll_data[5];
+                ctx.drawImage(canvas, sx, sy, sw, sh, sx + xdelta, sy + ydelta, sw, sh);
+            }
+        }
+        catch (e) {
+            send_error(e);
         }
         packet[6] = "offscreen-painted";
         packet[7] = null;
