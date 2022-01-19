@@ -3174,6 +3174,11 @@ XpraClient.prototype.request_redraw = function(win) {
 		this.debug("draw", "not redrawing, document.hidden=", document.hidden);
 		return;
 	}
+
+	if (this.offscreen_api) {
+		this.error("request_redraw with offscreen api does not make sense");
+		return;
+	}
 	// request that drawing to screen takes place at next available opportunity if possible
 	this.debug("draw", "request_redraw for", win);
 	win.swap_buffers();
