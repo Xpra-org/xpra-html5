@@ -95,6 +95,9 @@ function new_video_decoder() {
             }, timeout);
         }
     });
+    video_decoder.on_frame_error = ((packet, start, error) => {
+        self.postMessage({'error': ""+error, 'packet' : packet, 'start' : start});
+    });
     return video_decoder;
 }
 

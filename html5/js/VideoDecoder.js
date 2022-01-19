@@ -7,12 +7,12 @@
  */
 
 /*
- * Receives native video packages and decode them via VideoDecoder.
+ * Receives native video packets and decodes them via VideoDecoder.
  * https://developer.mozilla.org/en-US/docs/Web/API/VideoDecoder
  * VideoDecoder is only working in Chrome 94+ and Android
- * 
+ *
  * Example taken from: https://github.com/w3c/webcodecs/blob/main/explainer.md
- * 
+ *
  */
 
 const XpraVideoDecoderLoader = {
@@ -29,6 +29,9 @@ function XpraVideoDecoder() {
     this.decoder_queue = [];
     this.frame_threshold = 250;
     this.on_frame_decoded = {}; //callback
+    this.on_frame_error = (packet, start, error) => {
+        console.error("VideoDecoder error on packet ", packet, ": ", error);
+    }
 }
 
 XpraVideoDecoder.prototype.init = function (width, height) {
@@ -71,7 +74,7 @@ XpraVideoDecoder.prototype._on_decoded_frame = function (videoFrame) {
     if (frame_timestamp == 0) {
         this.last_timestamp = 0;
     }
-    
+
     if ((this.decoder_queue.length > this.frame_threshold) || this.last_timestamp > frame_timestamp) {
         // Skip if the decoders queue is growing too big or this frames timestamp is smaller then the last one painted.
         videoFrame.close();
@@ -105,21 +108,22 @@ XpraVideoDecoder.prototype._on_decoder_error = function (err) {
 XpraVideoDecoder.prototype.queue_frame = function (packet, start) {
     let options = packet.length > 10 ? packet[10] : {};
     const data = packet[7];
+    decode_error = (error) => {
+        this.on_frame_error(packet, start, error);
+    }
 
     if (!this.had_first_key && options["type"] != "IDR" )
     {
-        // Need first frame to be a key frame
-        packet[6] = "failed";
-        packet[7] = null;
-        this.on_frame_decoded(packet, start);
+        decode_error("first frame must be a key frame");
         return;
     }
 
-    if (this.videoDecoder.state == "closed" || this.draining) {
-        packet[6] = "failed";
-        packet[7] = null;
-        this.on_frame_decoded(packet, start);
-        this._close();
+    if (this.videoDecoder.state == "closed") {
+        decode_error("video decoder is closed");
+        return;
+    }
+    if (this.draining) {
+        decode_error("video decoder is draining");
         return;
     }
 
@@ -136,8 +140,9 @@ XpraVideoDecoder.prototype.queue_frame = function (packet, start) {
 
 XpraVideoDecoder.prototype._close = function () {
     if (this.initialized) {
-        if (this.videoDecoder.state != "closed")
+        if (this.videoDecoder.state != "closed") {
             this.videoDecoder.close();
+        }
         this.had_first_key = false;
 
         // Callback on all frames (bail out)
@@ -147,12 +152,9 @@ XpraVideoDecoder.prototype._close = function () {
 
         for (let frame of drain_queue) {
             const packet = frame.p;
-            packet[6] = "failed";
-            packet[7] = null;
-            this.on_frame_decoded(packet, frame.start);   
+            this.on_frame_error(packet, 0, "video decoder is draining");
         };
         this.draining = false;
     }
     this.initialized = false;
-    
 };

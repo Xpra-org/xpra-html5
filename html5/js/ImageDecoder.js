@@ -8,10 +8,10 @@
  */
 
 /*
- * Receives native image packages and decode them via ImageDecoder.
+ * Receives native image packets and decode them via ImageDecoder.
  * https://developer.mozilla.org/en-US/docs/Web/API/ImageDecoder
  * ImageDecoder is only working in Chrome 94+ and Android
- * 
+ *
  */
 
 const XpraImageDecoderLoader = {
@@ -31,7 +31,7 @@ XpraImageDecoder.prototype.queue_frame = function (packet, start) {
     const width = packet[4];
     const height = packet[5];
     const coding = packet[6];
-    function decode_error(error) {
+    decode_error = (error) => {
         this.on_frame_error(packet, start, error);
     }
     if (coding.startsWith("rgb")) {
