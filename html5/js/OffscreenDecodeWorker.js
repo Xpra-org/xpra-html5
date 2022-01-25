@@ -76,7 +76,7 @@ function paint_video_frame(packet, start) {
         h = packet[5],
         coding = packet[6],
         data = packet[7];
-    let options = packet[10].length > 10 ? packet[10] : {};
+    let options = packet[10] || {};
 
     let enc_width = w;
     let enc_height = h;
