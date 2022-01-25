@@ -27,6 +27,9 @@ function decode_error(packet, start, error) {
     self.postMessage({'error': ""+error, 'packet' : packet, 'start' : start});
 }
 
+function decode_ok(packet, start) {
+    self.postMessage({ 'draw': packet, 'start': start });
+}
 
 function paint_image(packet, start) {
     const wid = packet[1],
@@ -52,7 +55,7 @@ function paint_image(packet, start) {
     // Replace the coding & drop data
     packet[6] = "offscreen-painted";
     packet[7] = null;
-    self.postMessage({ 'draw': packet, 'start': start });
+	decode_ok(packet, start);
 }
 
 function new_image_decoder() {
@@ -86,7 +89,7 @@ function paint_video_frame(packet, start) {
         data.close();
         packet[6] = "offscreen-painted";
         packet[7] = null;
-        self.postMessage({ 'draw': packet, 'start': start });
+		decode_ok(packet, start);
     }
     else {
         // Encoding throttle is used to slow down frame input
@@ -95,7 +98,7 @@ function paint_video_frame(packet, start) {
         setTimeout(() => {
             packet[6] = "offscreen-painted";
             packet[7] = null;
-            self.postMessage({ 'draw': packet, 'start': start });
+			decode_ok(packet, start);
         }, timeout);
     }
 }
@@ -119,11 +122,34 @@ function add_decoders_for_window(wid, canvas) {
         });
 }
 
+function paint_scroll(packet, start) {
+    const wid = packet[1];
+    const data = packet[7];
+    const oc = offscreen_canvas.get(wid);
+    const canvas = oc["c"];
+    const ctx = oc["ctx"];
+    for (let i = 0, j = data.length; i < j; ++i) {
+        const scroll_data = data[i];
+        const sx = scroll_data[0],
+            sy = scroll_data[1],
+            sw = scroll_data[2],
+            sh = scroll_data[3],
+            xdelta = scroll_data[4],
+            ydelta = scroll_data[5];
+        ctx.drawImage(canvas, sx, sy, sw, sh, sx + xdelta, sy + ydelta, sw, sh);
+    }
+    packet[6] = "offscreen-painted";
+    packet[7] = null;
+	decode_ok(packet, start);
+}
+
+
 function decode_draw_packet(packet, start) {
     const image_coding = ["rgb", "rgb32", "rgb24", "jpeg", "png", "webp"];
     const video_coding = ["h264"];
     const wid = packet[1];
     const coding = packet[6];
+    //const packet_sequence = packet[8];
     const oc = offscreen_canvas.get(wid);
     send_error = (message) => {
         self.postMessage({'error': message, 'packet' : packet, 'start' : start});
@@ -133,57 +159,32 @@ function decode_draw_packet(packet, start) {
         return;
     }
 
-    if (image_coding.includes(coding)) {
-        // Add to image queue
-        let decoder = oc["image-decoder"];
-        try {
-            decoder.queue_frame(packet, start);
-        }
-        catch (e) {
-            send_error(e);
-        }
+    try {
+	    if (coding == "scroll") {
+			this.paint_scroll(packet, start);
+	    }
+	    else if (image_coding.includes(coding)) {
+	        // Add to image queue
+	        let decoder = oc["image-decoder"];
+	        decoder.queue_frame(packet, start);
+	    }
+	    else if (video_coding.includes(coding)) {
+	        // Add to video queue
+	        let decoder = oc["video-decoder"];
+	        if (!decoder.initialized) {
+	            // Init with width and heigth of this packet.
+	            // TODO: Use video max-size? It does not seem to matter.
+	            decoder.init(packet[4], packet[5]);
+	        }
+	        decoder.queue_frame(packet, start);
+	    }
+	    else {
+	        // We dont know, pass trough
+	        self.postMessage({ 'draw': packet, 'start': start });
+	    }
     }
-    else if (video_coding.includes(coding)) {
-        // Add to video queue
-        let decoder = oc["video-decoder"];
-        try {
-            if (!decoder.initialized) {
-                // Init with width and heigth of this packet.
-                // TODO: Use video max-size? It does not seem to matter.
-                decoder.init(packet[4], packet[5]);
-            }
-            decoder.queue_frame(packet, start);
-        }
-        catch (e) {
-            send_error(e);
-        }
-    }
-    else if (coding == "scroll") {
-        const data = packet[7];
-        const canvas = oc["c"];
-        const ctx = oc["ctx"];
-        try {
-            for (let i = 0, j = data.length; i < j; ++i) {
-                const scroll_data = data[i];
-                const sx = scroll_data[0],
-                    sy = scroll_data[1],
-                    sw = scroll_data[2],
-                    sh = scroll_data[3],
-                    xdelta = scroll_data[4],
-                    ydelta = scroll_data[5];
-                ctx.drawImage(canvas, sx, sy, sw, sh, sx + xdelta, sy + ydelta, sw, sh);
-            }
-        }
-        catch (e) {
-            send_error(e);
-        }
-        packet[6] = "offscreen-painted";
-        packet[7] = null;
-        self.postMessage({ 'draw': packet, 'start': start });
-    }
-    else {
-        // We dont know, pass trough
-        self.postMessage({ 'draw': packet, 'start': start });
+    catch (e) {
+        send_error(e);
     }
 }
 
