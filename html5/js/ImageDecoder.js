@@ -48,7 +48,7 @@ XpraImageDecoder.prototype.queue_frame = function (packet, start) {
             data: packet[7],
         });
         decoder.decode({ frameIndex: 0 }).then((result) => {
-            packet[6] = "frame";
+            packet[6] = "image";
             packet[7] = result;
             decoder.close();
             this.on_frame_decoded(packet, start);

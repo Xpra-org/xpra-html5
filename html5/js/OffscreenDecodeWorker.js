@@ -46,12 +46,15 @@ function paint_image(packet, start) {
         ctx.clearRect(x, y, width, height);
         ctx.drawImage(data, x, y, width, height);
     }
-    else {
+    else if (coding == "image" ) {
         // All others are transformed to VideoFrame
         ctx.clearRect(x, y, width, height);
         ctx.drawImage(data.image, x, y, width, height);
         data.image.close();
     }
+	else {
+		decode_error(packet, start, "unsupported encoding: "+coding);
+	}
     // Replace the coding & drop data
     packet[6] = "offscreen-painted";
     packet[7] = null;
@@ -91,7 +94,7 @@ function paint_video_frame(packet, start) {
         packet[7] = null;
 		decode_ok(packet, start);
     }
-    else {
+    else if (coding == "throttle"){
         // Encoding throttle is used to slow down frame input
         // TODO: Real error handling
         const timeout = coding == "throttle" ? 500 : 0;
@@ -101,6 +104,9 @@ function paint_video_frame(packet, start) {
 			decode_ok(packet, start);
         }, timeout);
     }
+	else {
+		decode_error(packet, start, "unsupported video encoding: "+coding);
+	}
 }
 
 function new_video_decoder() {
