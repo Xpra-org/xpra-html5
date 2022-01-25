@@ -3246,9 +3246,7 @@ XpraClient.prototype.do_process_draw = function(packet, start) {
 		data = packet[7],
 		packet_sequence = packet[8],
 		rowstride = packet[9];
-	let options = {};
-	if (packet.length>10)
-		options = packet[10];
+	let options = packet[10] || {};
 	const protocol = this.protocol;
 	if (!protocol) {
 		return;
