@@ -22,7 +22,7 @@ const XpraImageDecoderLoader = {
 
 function XpraImageDecoder() {
     this.on_frame_decoded = null;
-    this.on_frame_error = (packet, start, error) => {
+    this.on_frame_error = (packet, error) => {
 	    console.error("ImageDecoder error on packet ", packet, ": ", error);
     }
 }
@@ -32,7 +32,7 @@ XpraImageDecoder.prototype.queue_frame = function (packet, start) {
     const height = packet[5];
     const coding = packet[6];
     decode_error = (error) => {
-        this.on_frame_error(packet, start, error);
+        this.on_frame_error(packet, error);
     }
     if (coding.startsWith("rgb")) {
         // TODO: Figure out how to decode rgb with ImageDecoder API;

@@ -29,7 +29,7 @@ function XpraVideoDecoder() {
     this.decoder_queue = [];
     this.frame_threshold = 250;
     this.on_frame_decoded = {}; //callback
-    this.on_frame_error = (packet, start, error) => {
+    this.on_frame_error = (packet, error) => {
         console.error("VideoDecoder error on packet ", packet, ": ", error);
     }
 }
@@ -109,7 +109,7 @@ XpraVideoDecoder.prototype.queue_frame = function (packet, start) {
     let options = packet.length > 10 ? packet[10] : {};
     const data = packet[7];
     decode_error = (error) => {
-        this.on_frame_error(packet, start, error);
+        this.on_frame_error(packet, error);
     }
 
     if (!this.had_first_key && options["type"] != "IDR" )
@@ -152,7 +152,7 @@ XpraVideoDecoder.prototype._close = function () {
 
         for (let frame of drain_queue) {
             const packet = frame.p;
-            this.on_frame_error(packet, 0, "video decoder is draining");
+            this.on_frame_error(packet, "video decoder is draining");
         };
         this.draining = false;
     }

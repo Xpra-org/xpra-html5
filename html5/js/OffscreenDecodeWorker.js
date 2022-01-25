@@ -26,9 +26,9 @@ const image_coding = ["rgb", "rgb32", "rgb24", "jpeg", "png", "webp"];
 const video_coding = ["h264"];
 
 
-function decode_error(packet, start, error) {
+function decode_error(packet, error) {
     packet[7] = null;
-    self.postMessage({'error': ""+error, 'packet' : packet, 'start' : start});
+    self.postMessage({'error': ""+error, 'packet' : packet});
 }
 
 function decode_ok(packet, start) {
@@ -92,7 +92,7 @@ function paint_packet(packet, start) {
         //we are skipping this frame
     }
     else {
-        decode_error(packet, start, "unsupported video encoding: "+coding);
+        decode_error(packet, "unsupported video encoding: "+coding);
     }
 }
 
@@ -141,7 +141,7 @@ function packet_decoded(packet, start) {
         }
     }
     catch (e) {
-        decode_error(packet, start, e);
+        decode_error(packet, e);
     }
 }
 
@@ -152,7 +152,7 @@ function decode_draw_packet(packet) {
     //const packet_sequence = packet[8];
     const oc = offscreen_canvas.get(wid);
     send_error = (message) => {
-        decode_error(packet, start, message);
+        decode_error(packet, message);
     }
     if (!oc) {
         send_error("no offscreen context for window "+wid);
@@ -181,8 +181,7 @@ function decode_draw_packet(packet) {
         }
         else {
             // We dont know, pass trough
-            // (this should not be happening?)
-            self.postMessage({ 'draw': packet, 'start': start });
+            decode_error(packet, "unsupported encoding: '"+coding+"'");
         }
     }
     catch (e) {
