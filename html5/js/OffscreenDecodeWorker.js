@@ -34,6 +34,9 @@ function decode_error(packet, start, error) {
 function decode_ok(packet, start) {
     packet[6] = "offscreen-painted";
     packet[7] = null;
+    let options = packet[10] || {};
+    options["decode_time"] = Math.round(1000*performance.now() - 1000*start);
+    packet[10] = options;
     self.postMessage({ 'draw': packet, 'start': start });
 }
 
@@ -142,7 +145,8 @@ function packet_decoded(packet, start) {
     }
 }
 
-function decode_draw_packet(packet, start) {
+function decode_draw_packet(packet) {
+	const start = performance.now();
     const wid = packet[1];
     const coding = packet[6];
     //const packet_sequence = packet[8];
@@ -214,7 +218,7 @@ onmessage = function (e) {
             close_video(data.wid);
             break;
         case 'decode':
-            decode_draw_packet(data.packet, data.start);
+            decode_draw_packet(data.packet);
             break
         case 'canvas':
             add_decoders_for_window(data.wid, data.canvas)

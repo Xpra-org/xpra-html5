@@ -3276,8 +3276,7 @@ XpraClient.prototype.do_process_draw = function(packet, start) {
 		return;
 	}
 	if (coding=="offscreen-painted") {
-		//we're done!
-		const decode_time = Math.round(1000*performance.now() - 1000*start);
+	    let decode_time = options["decode_time"];
 		send_damage_sequence(decode_time, "");
 		return;
 	}
