@@ -27,21 +27,33 @@ const video_coding = ["h264"];
 
 
 function decode_error(packet, error) {
+    console.error("decode error:", error);
     packet[7] = null;
+    const wid = packet[1];
+    const oc = offscreen_canvas.get(wid);
+    if (oc) {
+        const pending_decode = oc["pending-decode"];
+        if (pending_decode) {
+            const packet_sequence = packet[8];
+            pending_decode.delete(packet_sequence);
+        }
+    }
     self.postMessage({'error': ""+error, 'packet' : packet});
 }
 
 function decode_ok(packet, start) {
-    packet[6] = "offscreen-painted";
-    packet[7] = null;
-    let options = packet[10] || {};
+	//copy the packet so we can zero out the data:
+	const clone = Array.from(packet);
+    clone[6] = "offscreen-painted";
+    clone[7] = null;
+    let options = clone[10] || {};
     options["decode_time"] = Math.round(1000*performance.now() - 1000*start);
-    packet[10] = options;
-    self.postMessage({ 'draw': packet, 'start': start });
+    clone[10] = options;
+    self.postMessage({ 'draw': clone, 'start': start });
 }
 
 
-function paint_packet(packet, start) {
+function paint_packet(packet) {
     const wid = packet[1],
         x = packet[2],
         y = packet[3],
@@ -120,15 +132,22 @@ function add_decoders_for_window(wid, canvas) {
         "ctx"    : ctx,
         "image-decoder" : new_image_decoder(),
         "video-decoder" : new_video_decoder(),
+        "pending-paint" : new Map(),
+        "pending-decode" : new Map(),
         });
 }
 
 
-function packet_decoded(packet, start) {
+function packet_decoded(packet) {
     //for now, paint immediately:
     try {
-        paint_packet(packet, start);
+        const wid = packet[1];
         const coding = packet[6];
+        const packet_sequence = packet[8];
+        const oc = offscreen_canvas.get(wid);
+	    const pending_decode = oc["pending-decode"];
+		const start = pending_decode.get(packet_sequence);
+        pending_decode.delete(packet_sequence);
         if (coding == "throttle") {
             // Encoding throttle is used to slow down frame input
             const timeout = 500;
@@ -139,17 +158,37 @@ function packet_decoded(packet, start) {
         else {
             decode_ok(packet, start);
         }
+
+        const pending_paint = oc["pending-paint"];
+        let options = packet[10] || {};
+        const flush = options["flush"] || 0;
+        pending_paint.set(packet_sequence, packet);
+        if (flush == 0) {
+            //FIXME: we also need to wait for any pending decodes!
+            //(but only for sequence numbers lower than this one)
+            const sorted_pp = Array.from(pending_paint.keys()).sort((a, b) => a - b);
+            for (var seq of sorted_pp) {
+                const p = pending_paint.get(seq);
+                pending_paint.delete(seq);
+                paint_packet(p);
+                if (seq>packet_sequence) {
+                    //this packet is after the current flush!
+                    //FIXME: continue processing if there is still another flush in there
+                    break;
+                }
+            }
+        }
     }
     catch (e) {
+        console.error("error handling decoded packet:", e);
         decode_error(packet, e);
     }
 }
 
 function decode_draw_packet(packet) {
-	const start = performance.now();
     const wid = packet[1];
     const coding = packet[6];
-    //const packet_sequence = packet[8];
+    const packet_sequence = packet[8];
     const oc = offscreen_canvas.get(wid);
     send_error = (message) => {
         decode_error(packet, message);
@@ -159,15 +198,17 @@ function decode_draw_packet(packet) {
         return;
     }
 
+    //record this packet as pending:
+    const pending_decode = oc["pending-decode"];
+    pending_decode.set(packet_sequence, performance.now());
     try {
         if (coding == "scroll") {
             //nothing to do:
-            this.packet_decoded(packet, start);
+            this.packet_decoded(packet);
         }
         else if (image_coding.includes(coding)) {
-            // Add to image queue
             let decoder = oc["image-decoder"];
-            decoder.queue_frame(packet, start);
+            decoder.queue_frame(packet);
         }
         else if (video_coding.includes(coding)) {
             // Add to video queue
@@ -177,11 +218,10 @@ function decode_draw_packet(packet) {
                 // TODO: Use video max-size? It does not seem to matter.
                 decoder.init(packet[4], packet[5]);
             }
-            decoder.queue_frame(packet, start);
+            decoder.queue_frame(packet);
         }
         else {
-            // We dont know, pass trough
-            decode_error(packet, "unsupported encoding: '"+coding+"'");
+            send_error("unsupported encoding: '"+coding+"'");
         }
     }
     catch (e) {

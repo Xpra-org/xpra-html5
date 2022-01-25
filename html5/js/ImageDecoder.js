@@ -27,7 +27,7 @@ function XpraImageDecoder() {
     }
 }
 
-XpraImageDecoder.prototype.queue_frame = function (packet, start) {
+XpraImageDecoder.prototype.queue_frame = function (packet) {
     const width = packet[4];
     const height = packet[5];
     const coding = packet[6];
@@ -40,7 +40,7 @@ XpraImageDecoder.prototype.queue_frame = function (packet, start) {
         createImageBitmap(new ImageData(new Uint8ClampedArray(data.buffer), width, height), 0, 0, width, height).then((bitmap) => {
             packet[6] = "bitmap";
             packet[7] = bitmap;
-            this.on_frame_decoded(packet, start);
+            this.on_frame_decoded(packet);
         }).catch(decode_error);
     } else {
         const decoder = new ImageDecoder({
@@ -51,7 +51,7 @@ XpraImageDecoder.prototype.queue_frame = function (packet, start) {
             packet[6] = "image";
             packet[7] = result;
             decoder.close();
-            this.on_frame_decoded(packet, start);
+            this.on_frame_decoded(packet);
         }).catch(decode_error);
     }
 };

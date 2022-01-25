@@ -82,7 +82,7 @@ XpraVideoDecoder.prototype._on_decoded_frame = function (videoFrame) {
         const packet = current_frame.p;
         packet[6] = "throttle";
         packet[7] = null;
-        this.on_frame_decoded(packet, current_frame.start);
+        this.on_frame_decoded(packet);
         return;
     }
 
@@ -97,7 +97,7 @@ XpraVideoDecoder.prototype._on_decoded_frame = function (videoFrame) {
 
     packet[6] = "frame";
     packet[7] = videoFrame;
-    this.on_frame_decoded(packet, current_frame.start);
+    this.on_frame_decoded(packet, current_frame);
 }
 
 XpraVideoDecoder.prototype._on_decoder_error = function (err) {
@@ -105,7 +105,7 @@ XpraVideoDecoder.prototype._on_decoder_error = function (err) {
     this._close();
 };
 
-XpraVideoDecoder.prototype.queue_frame = function (packet, start) {
+XpraVideoDecoder.prototype.queue_frame = function (packet) {
     let options = packet.length > 10 ? packet[10] : {};
     const data = packet[7];
     decode_error = (error) => {
@@ -128,7 +128,7 @@ XpraVideoDecoder.prototype.queue_frame = function (packet, start) {
     }
 
     this.had_first_key = true;
-    this.decoder_queue.push({"p" : packet, start});
+    this.decoder_queue.push({"p" : packet});
     const init = {
         type: options["type"] == "IDR" ? "key" : "delta",
         data: data,
