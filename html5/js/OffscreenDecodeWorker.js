@@ -22,82 +22,88 @@ importScripts("./RgbHelpers.js");
 // Array of offscreen canvases and decoders we have control over
 const offscreen_canvas = new Map();
 
+
+function decode_error(packet, start, error) {
+    self.postMessage({'error': ""+error, 'packet' : packet, 'start' : start});
+}
+
+
+function paint_image(packet, start) {
+    const wid = packet[1],
+        x = packet[2],
+        y = packet[3],
+        width = packet[4],
+        height = packet[5],
+        coding = packet[6],
+        data = packet[7];
+
+    let ctx = offscreen_canvas.get(wid)["ctx"];
+    if (coding == "bitmap") {
+        // RGB is transformed to bitmap
+        ctx.clearRect(x, y, width, height);
+        ctx.drawImage(data, x, y, width, height);
+    }
+    else {
+        // All others are transformed to VideoFrame
+        ctx.clearRect(x, y, width, height);
+        ctx.drawImage(data.image, x, y, width, height);
+        data.image.close();
+    }
+    // Replace the coding & drop data
+    packet[6] = "offscreen-painted";
+    packet[7] = null;
+    self.postMessage({ 'draw': packet, 'start': start });
+}
+
 function new_image_decoder() {
     const image_decoder = new XpraImageDecoder();
-    image_decoder.on_frame_decoded = ((packet, start) => {
-        const wid = packet[1],
-            x = packet[2],
-            y = packet[3],
-            width = packet[4],
-            height = packet[5],
-            coding = packet[6],
-            data = packet[7];
+    image_decoder.on_frame_decoded = paint_image;
+    image_decoder.on_frame_error = decode_error;
+    return image_decoder;
+}
 
-        let ctx = offscreen_canvas.get(wid)["ctx"];
-        if (coding == "bitmap") {
-            // RGB is transformed to bitmap
-            ctx.clearRect(x, y, width, height);
-            ctx.drawImage(data, x, y, width, height);
-        }
-        else {
-            // All others are transformed to VideoFrame
-            ctx.clearRect(x, y, width, height);
-            ctx.drawImage(data.image, x, y, width, height);
-            data.image.close();
-        }
-        // Replace the coding & drop data
+function paint_video_frame(packet, start) {
+    const wid = packet[1],
+        x = packet[2],
+        y = packet[3],
+        w = packet[4],
+        h = packet[5],
+        coding = packet[6],
+        data = packet[7];
+    let options = packet[10].length > 10 ? packet[10] : {};
+
+    let enc_width = w;
+    let enc_height = h;
+    const scaled_size = options["scaled_size"];
+    if (scaled_size) {
+        enc_width = scaled_size[0];
+        enc_height = scaled_size[1];
+    }
+
+    let ctx = offscreen_canvas.get(wid)["ctx"];
+    if (coding == "frame") {
+        ctx.drawImage(data, x, y, enc_width, enc_height);
+        data.close();
         packet[6] = "offscreen-painted";
         packet[7] = null;
         self.postMessage({ 'draw': packet, 'start': start });
-    });
-    image_decoder.on_frame_error = ((packet, start, error) => {
-        self.postMessage({'error': ""+error, 'packet' : packet, 'start' : start});
-    });
-    return image_decoder;
+    }
+    else {
+        // Encoding throttle is used to slow down frame input
+        // TODO: Real error handling
+        const timeout = coding == "throttle" ? 500 : 0;
+        setTimeout(() => {
+            packet[6] = "offscreen-painted";
+            packet[7] = null;
+            self.postMessage({ 'draw': packet, 'start': start });
+        }, timeout);
+    }
 }
 
 function new_video_decoder() {
     const video_decoder = new XpraVideoDecoder();
-    video_decoder.on_frame_decoded = ((packet, start) => {
-        const wid = packet[1],
-            x = packet[2],
-            y = packet[3],
-            w = packet[4],
-            h = packet[5],
-            coding = packet[6],
-            data = packet[7];
-        let options = packet[10].length > 10 ? packet[10] : {};
-
-        let enc_width = w;
-        let enc_height = h;
-        const scaled_size = options["scaled_size"];
-        if (scaled_size) {
-            enc_width = scaled_size[0];
-            enc_height = scaled_size[1];
-        }
-
-        let ctx = offscreen_canvas.get(wid)["ctx"];
-        if (coding == "frame") {
-            ctx.drawImage(data, x, y, enc_width, enc_height);
-            data.close();
-            packet[6] = "offscreen-painted";
-            packet[7] = null;
-            self.postMessage({ 'draw': packet, 'start': start });
-        }
-        else {
-            // Encoding throttle is used to slow down frame input
-            // TODO: Relal error handling
-            const timeout = coding == "throttle" ? 500 : 0;
-            setTimeout(() => {
-                packet[6] = "offscreen-painted";
-                packet[7] = null;
-                self.postMessage({ 'draw': packet, 'start': start });
-            }, timeout);
-        }
-    });
-    video_decoder.on_frame_error = ((packet, start, error) => {
-        self.postMessage({'error': ""+error, 'packet' : packet, 'start' : start});
-    });
+    video_decoder.on_frame_decoded = paint_video_frame;
+    video_decoder.on_frame_error = decode_error;
     return video_decoder;
 }
 
@@ -182,7 +188,7 @@ function decode_draw_packet(packet, start) {
 }
 
 function close(wid) {
-	close_video(wid);
+    close_video(wid);
     offscreen_canvas.delete(wid);
 }
 function close_video(wid) {
