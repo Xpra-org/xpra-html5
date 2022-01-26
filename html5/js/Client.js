@@ -1308,6 +1308,12 @@ XpraClient.prototype._make_hello = function() {
 	this.desktop_width = this.container.clientWidth;
 	this.desktop_height = this.container.clientHeight;
 	this.key_layout = this._get_keyboard_layout();
+	if (!this.offscreen_api) {
+		this._update_capabilities({
+			"encoding.scrolling"		: true,
+			//"encoding.scrolling.min-percent" : 30,
+			});
+	}
 	this._update_capabilities({
 		"auto_refresh_delay"		: 500,
 		"randr_notify"				: true,
@@ -1330,10 +1336,8 @@ XpraClient.prototype._make_hello = function() {
 		"encodings.cursor"			: ["png"],
 		"encoding.flush"			: true,
 		"encoding.transparency"		: true,
-		"encoding.scrolling"		: true,
 		"encoding.decoder-speed"	: {"video" : 0},
 		"encodings.packet"			: true,
-		//"encoding.scrolling.min-percent" : 30,
 		//"encoding.min-speed"		: 80,
 		//"encoding.min-quality"	: 50,
 		"encoding.color-gamut"		: Utilities.getColorGamut(),
