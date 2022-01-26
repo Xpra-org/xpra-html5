@@ -42,8 +42,8 @@ function decode_error(packet, error) {
 }
 
 function decode_ok(packet, start) {
-	//copy the packet so we can zero out the data:
-	const clone = Array.from(packet);
+    //copy the packet so we can zero out the data:
+    const clone = Array.from(packet);
     clone[6] = "offscreen-painted";
     clone[7] = null;
     let options = clone[10] || {};
@@ -61,7 +61,6 @@ function paint_packet(packet) {
         height = packet[5],
         coding = packet[6],
         data = packet[7];
-
     const oc = offscreen_canvas.get(wid);
     let ctx = oc["ctx"];
     if (coding == "bitmap") {
@@ -132,6 +131,7 @@ function add_decoders_for_window(wid, canvas) {
         "ctx"    : ctx,
         "image-decoder" : new_image_decoder(),
         "video-decoder" : new_video_decoder(),
+        "flush"  : 0,
         "pending-paint" : new Map(),
         "pending-decode" : new Map(),
         });
@@ -144,9 +144,11 @@ function packet_decoded(packet) {
         const wid = packet[1];
         const coding = packet[6];
         const packet_sequence = packet[8];
+        let options = packet[10] || {};
+        let flush = options["flush"] || 0;
         const oc = offscreen_canvas.get(wid);
-	    const pending_decode = oc["pending-decode"];
-		const start = pending_decode.get(packet_sequence);
+        const pending_decode = oc["pending-decode"];
+        const start = pending_decode.get(packet_sequence);
         pending_decode.delete(packet_sequence);
         if (coding == "throttle") {
             // Encoding throttle is used to slow down frame input
@@ -160,23 +162,42 @@ function packet_decoded(packet) {
         }
 
         const pending_paint = oc["pending-paint"];
-        let options = packet[10] || {};
-        const flush = options["flush"] || 0;
         pending_paint.set(packet_sequence, packet);
-        if (flush == 0) {
-            //FIXME: we also need to wait for any pending decodes!
-            //(but only for sequence numbers lower than this one)
-            const sorted_pp = Array.from(pending_paint.keys()).sort((a, b) => a - b);
+        if (flush == 0 && oc["flush"]==0) {
+             //this is a 'flush' packet, set the marker:
+             oc["flush"] = packet_sequence;
+        }
+        let flush_seq = oc["flush"];
+        while (flush_seq>0) {
+            //find if any packets are still waiting to be decoded:
+            const pending_d = Array.from(pending_decode.keys()).filter(seq => seq<=flush_seq);
+            if (pending_d.length>0) {
+                //we are waiting for packets to be decoded
+                return;
+            }
+            //there are no pending packets to decode
+            //we can paint all the paint packets up to and including flush_seq:
+            const pending_p = Array.from(pending_paint.keys()).filter(seq => seq<=flush_seq);
+            //paint in ascending order:
+            const sorted_pp = pending_p.sort((a, b) => a - b);
             for (var seq of sorted_pp) {
                 const p = pending_paint.get(seq);
                 pending_paint.delete(seq);
                 paint_packet(p);
-                if (seq>packet_sequence) {
-                    //this packet is after the current flush!
-                    //FIXME: continue processing if there is still another flush in there
-                    break;
-                }
             }
+            //now try to find the next 'flush=0' packet, if we have one:
+            flush_seq = 0;
+            oc["flush"] = 0;
+            pending_paint.forEach((packet, seq) => {
+                let options = packet[10] || {};
+                flush = options["flush"] || 0;
+                //find the next lowest flush sequence:
+                //FIXME: should we just catch up with the highest flush sequence instead?
+                if (flush==0 && (flush_seq==0 || seq<flush_seq)) {
+                    flush_seq = seq;
+                    oc["flush"] = flush_seq;
+                }
+            });
         }
     }
     catch (e) {
