@@ -62,7 +62,9 @@ function paint_packet(packet) {
         coding = packet[6],
         data = packet[7];
     const oc = offscreen_canvas.get(wid);
-    let ctx = oc["ctx"];
+    const back_buffer = oc["back-buffer"];
+    const ctx = back_buffer.getContext("2d");
+    ctx.imageSmoothingEnabled = false;
     if (coding == "bitmap") {
         // RGB is transformed to bitmap
         ctx.clearRect(x, y, width, height);
@@ -123,12 +125,9 @@ function new_video_decoder() {
 }
 
 function add_decoders_for_window(wid, canvas) {
-    // Canvas
-    const ctx = canvas.getContext("2d");
-    ctx.imageSmoothingEnabled = false;
     offscreen_canvas.set(wid, {
         "c"      : canvas,
-        "ctx"    : ctx,
+        "back-buffer" : new OffscreenCanvas(canvas.width, canvas.height),
         "image-decoder" : new_image_decoder(),
         "video-decoder" : new_video_decoder(),
         "flush"  : 0,
@@ -178,6 +177,9 @@ function packet_decoded(packet) {
             //there are no pending packets to decode
             //we can paint all the paint packets up to and including flush_seq:
             const pending_p = Array.from(pending_paint.keys()).filter(seq => seq<=flush_seq);
+            //TODO: if we have a single update to paint,
+            // then we could just paint the front buffer directly first
+            // and perhaps video should also go directly to the front buffer?
             //paint in ascending order:
             const sorted_pp = pending_p.sort((a, b) => a - b);
             for (var seq of sorted_pp) {
@@ -185,6 +187,13 @@ function packet_decoded(packet) {
                 pending_paint.delete(seq);
                 paint_packet(p);
             }
+            //update the canvas front buffer:
+            const canvas = oc["c"];
+            const back_buffer = oc["back-buffer"];
+            const ctx = canvas.getContext("2d");
+            ctx.imageSmoothingEnabled = false;
+            ctx.drawImage(back_buffer, 0, 0);
+
             //now try to find the next 'flush=0' packet, if we have one:
             flush_seq = 0;
             oc["flush"] = 0;
@@ -290,6 +299,12 @@ onmessage = function (e) {
                 if (canvas.width != data.w || canvas.height != data.h) {
                     canvas.width = data.w;
                     canvas.height = data.h;
+                    const old_back_buffer = oc["back-buffer"];
+                    const back_buffer = new OffscreenCanvas(canvas.width, canvas.height);
+                    const ctx = back_buffer.getContext("2d");
+                    ctx.imageSmoothingEnabled = false;
+                    ctx.drawImage(old_back_buffer, 0, 0);
+                    oc["back-buffer"] = back_buffer;
                 }
             }
             break;
