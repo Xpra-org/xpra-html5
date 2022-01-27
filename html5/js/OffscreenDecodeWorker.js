@@ -59,6 +59,7 @@ class WindowDecoder {
         this.flush = 0;         //this is the sequence number of the current flush
         this.pending_paint = new Map();
         this.pending_decode = new Map();
+        this.closed = false;
     }
 
     update_geometry(w, h) {
@@ -76,6 +77,7 @@ class WindowDecoder {
     }
 
     close() {
+        this.closed = true;
         if (this.video_decoder) {
             this.video_decoder._close();
         }
@@ -150,6 +152,9 @@ class WindowDecoder {
             else {
                 decode_ok(packet, start);
             }
+            if (this.closed) {
+                return;
+            }
 
             this.pending_paint.set(packet_sequence, packet);
             if (flush == 0 && this.flush==0) {
@@ -201,12 +206,17 @@ class WindowDecoder {
     }
 
     paint_packet(packet) {
+        if (this.closed) {
+            this.decode_error(packet, "decoder is closed");
+            return;
+        }
         const x = packet[2],
             y = packet[3],
             width = packet[4],
             height = packet[5],
             coding = packet[6],
             data = packet[7];
+
         const ctx = this.back_buffer.getContext("2d");
         ctx.imageSmoothingEnabled = false;
         if (coding == "bitmap") {
@@ -253,6 +263,10 @@ class WindowDecoder {
     }
 
     redraw() {
+        if (this.closed) {
+            console.warn("cannot redraw, the decoder is closed");
+            return;
+        }
         const ctx = this.canvas.getContext("2d");
         ctx.imageSmoothingEnabled = false;
         ctx.drawImage(this.back_buffer, 0, 0);
