@@ -303,7 +303,7 @@ onmessage = function (e) {
             }
             break
         case 'redraw':
-            wd = offscreen_canvas.get(wid);
+            wd = offscreen_canvas.get(data.wid);
             if (wd) {
                 wd.redraw();
             }
