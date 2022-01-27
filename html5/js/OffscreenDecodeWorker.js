@@ -19,6 +19,7 @@ importScripts("./lib/broadway/Decoder.js");
 importScripts("./VideoDecoder.js");
 importScripts("./ImageDecoder.js");
 importScripts("./RgbHelpers.js");
+importScripts("./Constants.js");
 
 // Array of offscreen canvases and decoders we have control over
 const offscreen_canvas = new Map();
@@ -48,11 +49,12 @@ function decode_ok(packet, start) {
 
 class WindowDecoder {
 
-    constructor(canvas) {
+    constructor(canvas, debug) {
         this.canvas = canvas;
+        this.debug = debug;
         this.init();
     }
-	init() {
+    init() {
         this.back_buffer = new OffscreenCanvas(this.canvas.width, this.canvas.height);
         this.image_decoder = this.new_image_decoder();
         this.video_decoder = this.new_video_decoder();
@@ -103,7 +105,7 @@ class WindowDecoder {
         //record this packet as pending:
         this.pending_decode.set(packet_sequence, performance.now());
         try {
-            if (coding == "scroll") {
+            if (coding == "scroll" || coding == "void" ) {
                 //nothing to do:
                 this.packet_decoded(packet);
             }
@@ -214,21 +216,37 @@ class WindowDecoder {
             y = packet[3],
             width = packet[4],
             height = packet[5],
-            coding = packet[6],
+            coding_fmt = packet[6],
             data = packet[7];
 
         const ctx = this.back_buffer.getContext("2d");
         ctx.imageSmoothingEnabled = false;
+
+        const parts = coding_fmt.split(":");      //ie: "bitmap:rgb24" or "image:jpeg"
+        const coding = parts[0];                  //ie: "bitmap"
+        const paint_box = () => {
+            if (!this.debug) {
+                return;
+            }
+            const src_encoding = parts[1] || "";  //ie: "rgb24"
+            const box_color = DEFAULT_BOX_COLORS[src_encoding];
+            if (box_color) {                      //ie: "orange"
+                this.paint_box(ctx, box_color, x, y, width, height);
+            }
+        }
+
         if (coding == "bitmap") {
             // RGB is transformed to bitmap
             ctx.clearRect(x, y, width, height);
             ctx.drawImage(data, x, y, width, height);
+            paint_box();
         }
         else if (coding == "image" ) {
             // All others are transformed to VideoFrame
             ctx.clearRect(x, y, width, height);
             ctx.drawImage(data.image, x, y, width, height);
             data.image.close();
+            paint_box();
         }
         else if (coding == "scroll") {
             for (let i = 0, j = data.length; i < j; ++i) {
@@ -240,6 +258,9 @@ class WindowDecoder {
                     xdelta = scroll_data[4],
                     ydelta = scroll_data[5];
                 ctx.drawImage(this.canvas, sx, sy, sw, sh, sx + xdelta, sy + ydelta, sw, sh);
+                if (this.debug) {
+                    this.paint_box(ctx, "brown", sx+xdelta, sy+ydelta, sw, sh);
+                }
             }
         }
         else if (coding == "frame") {
@@ -253,12 +274,24 @@ class WindowDecoder {
             }
             ctx.drawImage(data, x, y, enc_width, enc_height);
             data.close();
+            paint_box();
         }
         else if (coding == "throttle"){
             //we are skipping this frame
         }
+        else if (coding == "void"){
+            //nothing to do
+        }
         else {
             this.decode_error(packet, "unsupported encoding: "+coding);
+        }
+    }
+
+    paint_box(ctx, color, px, py, pw, ph) {
+        if (color) {
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            ctx.strokeRect(px, py, pw, ph);
         }
     }
 
@@ -308,7 +341,7 @@ onmessage = function (e) {
                 wd.redraw();
             }
         case 'canvas':
-            offscreen_canvas.set(data.wid, new WindowDecoder(data.canvas));
+            offscreen_canvas.set(data.wid, new WindowDecoder(data.canvas, data.debug));
             break;
         case 'canvas-geo':
             wd = offscreen_canvas.get(data.wid);

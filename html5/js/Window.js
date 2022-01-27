@@ -57,7 +57,12 @@ function XpraWindow(client, canvas_state, wid, x, y, w, h, metadata, override_re
 	if (this.client.offscreen_api) {
 		// Transfer canvas control. Syntax postMessage({message_obj}, [transferlist])
 		const offscreen_handle = this.canvas.transferControlToOffscreen();
-		this.client.decode_worker.postMessage({'cmd': 'canvas', 'wid' : wid, 'canvas': offscreen_handle}, [offscreen_handle]);
+		this.client.decode_worker.postMessage({
+			'cmd': 'canvas',
+			'wid' : wid,
+			'canvas': offscreen_handle,
+			'debug' : this.debug_categories.includes("draw"),
+			}, [offscreen_handle]);
 	}
 
 	//enclosing div in page DOM
@@ -1361,23 +1366,6 @@ XpraWindow.prototype.may_paint_now = function paint() {
 		now = performance.now();
 	}
 };
-
-const DEFAULT_BOX_COLORS = {
-        "png"     : "yellow",
-        "h264"    : "blue",
-        "vp8"     : "green",
-        "rgb24"   : "orange",
-        "rgb32"   : "red",
-        "jpeg"    : "purple",
-        "webp"    : "pink",
-        "png/P"   : "indigo",
-        "png/L"   : "teal",
-        "h265"    : "khaki",
-        "vp9"     : "lavender",
-        "mpeg4"   : "black",
-        "scroll"  : "brown",
-        "mpeg1"   : "olive",
-        };
 
 XpraWindow.prototype.get_jsmpeg_renderer = function get_jsmpeg_renderer() {
 	if (this.jsmpeg_renderer==null) {

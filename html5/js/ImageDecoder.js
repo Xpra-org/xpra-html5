@@ -38,7 +38,7 @@ XpraImageDecoder.prototype.queue_frame = function (packet) {
         // TODO: Figure out how to decode rgb with ImageDecoder API;
         const data = decode_rgb(packet);
         createImageBitmap(new ImageData(new Uint8ClampedArray(data.buffer), width, height), 0, 0, width, height).then((bitmap) => {
-            packet[6] = "bitmap";
+            packet[6] = "bitmap:"+coding;
             packet[7] = bitmap;
             this.on_frame_decoded(packet);
         }).catch(decode_error);
@@ -48,7 +48,7 @@ XpraImageDecoder.prototype.queue_frame = function (packet) {
             data: packet[7],
         });
         decoder.decode({ frameIndex: 0 }).then((result) => {
-            packet[6] = "image";
+            packet[6] = "image:"+coding;
             packet[7] = result;
             decoder.close();
             this.on_frame_decoded(packet);

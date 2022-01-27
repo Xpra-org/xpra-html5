@@ -95,7 +95,7 @@ XpraVideoDecoder.prototype._on_decoded_frame = function (videoFrame) {
         return;
     }
 
-    packet[6] = "frame";
+    packet[6] = "frame:"+packet[6];
     packet[7] = videoFrame;
     this.on_frame_decoded(packet, current_frame);
 }
