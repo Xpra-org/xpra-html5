@@ -106,7 +106,7 @@ XpraVideoDecoder.prototype._on_decoder_error = function (err) {
 };
 
 XpraVideoDecoder.prototype.queue_frame = function (packet) {
-    let options = packet.length > 10 ? packet[10] : {};
+    let options = packet[10] || {};
     const data = packet[7];
     decode_error = (error) => {
         this.on_frame_error(packet, error);
