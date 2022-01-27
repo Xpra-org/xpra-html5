@@ -245,7 +245,7 @@ class WindowDecoder {
         else if (coding == "frame") {
             let enc_width = w;
             let enc_height = h;
-            let options = packet[10] || {};
+            const options = packet[10] || {};
             const scaled_size = options["scaled_size"];
             if (scaled_size) {
                 enc_width = scaled_size[0];
