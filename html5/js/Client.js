@@ -3177,7 +3177,7 @@ XpraClient.prototype.request_redraw = function(win) {
 	}
 
 	if (this.offscreen_api) {
-		this.error("request_redraw with offscreen api does not make sense");
+		this.decode_worker.postMessage({'cmd': 'redraw', 'wid' : win.wid});
 		return;
 	}
 	// request that drawing to screen takes place at next available opportunity if possible

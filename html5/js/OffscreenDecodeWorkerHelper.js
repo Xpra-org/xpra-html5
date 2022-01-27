@@ -17,7 +17,7 @@ const XpraOffscreenWorker = {
         if (XpraImageDecoderLoader.hasNativeDecoder() && XpraVideoDecoderLoader.hasNativeDecoder && typeof OffscreenCanvas !== "undefined") {
             //we also need the direct constructor:
             try {
-                new OffscreeenCanvas(256, 256);
+                new OffscreenCanvas(256, 256);
                 return true;
             }
             catch (e) {
