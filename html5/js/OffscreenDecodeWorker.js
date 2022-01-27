@@ -50,7 +50,10 @@ class WindowDecoder {
 
     constructor(canvas) {
         this.canvas = canvas;
-        this.back_buffer = new OffscreenCanvas(canvas.width, canvas.height);
+        this.init();
+    }
+	init() {
+        this.back_buffer = new OffscreenCanvas(this.canvas.width, this.canvas.height);
         this.image_decoder = this.new_image_decoder();
         this.video_decoder = this.new_video_decoder();
         this.flush = 0;
@@ -124,8 +127,8 @@ class WindowDecoder {
     }
 
     decode_error(packet, error) {
-        const packet_sequence = packet[8];
-        this.pending_decode.delete(packet_sequence);
+        this.close();
+        this.init();
         decode_error(packet, error);
     }
 
