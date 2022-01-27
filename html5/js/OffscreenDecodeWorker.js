@@ -56,7 +56,7 @@ class WindowDecoder {
         this.back_buffer = new OffscreenCanvas(this.canvas.width, this.canvas.height);
         this.image_decoder = this.new_image_decoder();
         this.video_decoder = this.new_video_decoder();
-        this.flush = 0;
+        this.flush = 0;         //this is the sequence number of the current flush
         this.pending_paint = new Map();
         this.pending_decode = new Map();
     }
@@ -157,25 +157,27 @@ class WindowDecoder {
                  this.flush = packet_sequence;
             }
             while (this.flush>0) {
-                //find if any packets are still waiting to be decoded:
-                const pending_d = Array.from(this.pending_decode.keys()).filter(seq => seq<=this.flush);
-                if (pending_d.length>0) {
-                    //we are waiting for packets to be decoded
-                    return;
-                }
-                //there are no pending packets to decode
-                //we can paint all the paint packets up to and including flush_seq:
+                //now that we know the sequence number for flush=0,
+                //we can paint all the packets up to and including this sequence number:
                 const pending_p = Array.from(this.pending_paint.keys()).filter(seq => seq<=this.flush);
-                //TODO: if we have a single update to paint,
-                // then we could just paint the front buffer directly first
-                // and perhaps video should also go directly to the front buffer?
-                //paint in ascending order:
+                //paint in ascending order
+                //(this is not strictly necessary with double buffering):
                 const sorted_pp = pending_p.sort((a, b) => a - b);
                 for (var seq of sorted_pp) {
                     const p = this.pending_paint.get(seq);
                     this.pending_paint.delete(seq);
                     this.paint_packet(p);
                 }
+
+                //The flush packet comes last, so we should have received
+                //and started decoding all the other updates that are part of this flush sequence.
+                //Find if any packets are still waiting to be decoded for this flush:
+                const pending_d = Array.from(this.pending_decode.keys()).filter(seq => seq<=this.flush);
+                if (pending_d.length>0) {
+                    //we are still waiting for packets to be decoded
+                    return;
+                }
+
                 //update the canvas front buffer:
                 this.redraw();
 
