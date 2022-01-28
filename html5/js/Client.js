@@ -454,7 +454,9 @@ XpraClient.prototype.initialize_workers = function() {
 				coding = packet[6],
 				packet_sequence = packet[8];
 			me.clog("decode error on ", coding, "packet sequence", packet_sequence, ":", msg);
-			me.clog(" pixel data:", packet[7]);
+			if (!me.offscreen_api) {
+				me.clog(" pixel data:", packet[7]);
+			}
 			me.do_send_damage_sequence(packet_sequence, wid, width, height, -1, msg);
 			return;
 		}
@@ -3229,6 +3231,9 @@ XpraClient.prototype.do_send_damage_sequence = function(packet_sequence, wid, wi
 		return;
 	}
 	const packet = ["damage-sequence", packet_sequence, wid, width, height, decode_time, message];
+	if (decode_time<0) {
+		console.warn("decode error packet:", packet);
+	}
 	protocol.send(packet);
 }
 
