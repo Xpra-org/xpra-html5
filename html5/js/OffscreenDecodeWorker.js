@@ -65,6 +65,9 @@ class WindowDecoder {
     }
 
     update_geometry(w, h) {
+        if (this.closed) {
+            return;
+        }
         if (this.canvas.width==w && this.canvas.height==h) {
             //unchanged
             return;
@@ -75,13 +78,17 @@ class WindowDecoder {
         this.back_buffer = new OffscreenCanvas(w, h);
         const ctx = this.back_buffer.getContext("2d");
         ctx.imageSmoothingEnabled = false;
-        ctx.drawImage(old_back_buffer, 0, 0);
+        if (old_back_buffer.width>0 && old_back_buffer.height>0) {
+            ctx.drawImage(old_back_buffer, 0, 0);
+        }
     }
 
     close() {
-        this.closed = true;
-        if (this.video_decoder) {
-            this.video_decoder._close();
+        if (!this.closed) {
+            this.closed = true;
+            if (this.video_decoder) {
+                this.video_decoder._close();
+            }
         }
     }
 
@@ -341,7 +348,9 @@ onmessage = function (e) {
                 wd.redraw();
             }
         case 'canvas':
-            offscreen_canvas.set(data.wid, new WindowDecoder(data.canvas, data.debug));
+            if (data.canvas) {
+                offscreen_canvas.set(data.wid, new WindowDecoder(data.canvas, data.debug));
+            }
             break;
         case 'canvas-geo':
             wd = offscreen_canvas.get(data.wid);
