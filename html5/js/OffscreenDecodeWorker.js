@@ -348,6 +348,7 @@ onmessage = function (e) {
                 wd.redraw();
             }
         case 'canvas':
+            console.log("canvas transfer for window", data.wid, ": ", data.canvas, data.debug);
             if (data.canvas) {
                 offscreen_canvas.set(data.wid, new WindowDecoder(data.canvas, data.debug));
             }
