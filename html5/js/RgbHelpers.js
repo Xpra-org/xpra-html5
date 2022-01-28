@@ -56,7 +56,7 @@ function rgb24_to_rgb32(data, width, height, rowstride) {
 		j = 0;
 	if (rowstride==width*3) {
 		//faster path, single loop:
-		const l = l = data.length;
+		const l = data.length;
 		while (i<l) {
 			uint[j++] = data[i++];
 			uint[j++] = data[i++];
