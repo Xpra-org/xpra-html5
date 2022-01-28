@@ -58,7 +58,7 @@ class WindowDecoder {
         this.back_buffer = new OffscreenCanvas(this.canvas.width, this.canvas.height);
         this.image_decoder = this.new_image_decoder();
         this.video_decoder = this.new_video_decoder();
-        this.flush = 0;         //this is the sequence number of the current flush
+        this.flush_seq = 0;         //this is the sequence number of the current flush
         this.pending_paint = new Map();
         this.pending_decode = new Map();
         this.closed = false;
@@ -166,14 +166,14 @@ class WindowDecoder {
             }
 
             this.pending_paint.set(packet_sequence, packet);
-            if (flush == 0 && this.flush==0) {
+            if (flush == 0 && this.flush_seq==0) {
                  //this is a 'flush' packet, set the marker:
-                 this.flush = packet_sequence;
+                 this.flush_seq = packet_sequence;
             }
-            while (this.flush>0) {
+            while (this.flush_seq>0) {
                 //now that we know the sequence number for flush=0,
                 //we can paint all the packets up to and including this sequence number:
-                const pending_p = Array.from(this.pending_paint.keys()).filter(seq => seq<=this.flush);
+                const pending_p = Array.from(this.pending_paint.keys()).filter(seq => seq<=this.flush_seq);
                 //paint in ascending order
                 //(this is not strictly necessary with double buffering):
                 const sorted_pp = pending_p.sort((a, b) => a - b);
@@ -186,7 +186,7 @@ class WindowDecoder {
                 //The flush packet comes last, so we should have received
                 //and started decoding all the other updates that are part of this flush sequence.
                 //Find if any packets are still waiting to be decoded for this flush:
-                const pending_d = Array.from(this.pending_decode.keys()).filter(seq => seq<=this.flush);
+                const pending_d = Array.from(this.pending_decode.keys()).filter(seq => seq<=this.flush_seq);
                 if (pending_d.length>0) {
                     //we are still waiting for packets to be decoded
                     return;
@@ -196,14 +196,14 @@ class WindowDecoder {
                 this.redraw();
 
                 //now try to find the next 'flush=0' packet, if we have one:
-                this.flush = 0;
+                this.flush_seq = 0;
                 this.pending_paint.forEach((packet, seq) => {
                     let options = packet[10] || {};
                     flush = options["flush"] || 0;
                     //find the next lowest flush sequence:
                     //FIXME: should we just catch up with the highest flush sequence instead?
-                    if (flush==0 && (this.flush==0 || seq<this.flush)) {
-                        this.flush = seq;
+                    if (flush==0 && (this.flush_seq==0 || seq<this.flush_seq)) {
+                        this.flush_seq = seq;
                     }
                 });
             }
