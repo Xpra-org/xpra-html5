@@ -1368,12 +1368,10 @@
 					clog("visibilitychange hidden=", document.hidden, "connected=", client.connected);
 					if (client.connected) {
 						if (document.hidden) {
-							client.send(["suspend", true, window_ids]);
+							client.suspend();
 						}
 						else {
-							client.send(["resume", true, window_ids]);
-							client.redraw_windows();
-							client.request_refresh(-1);
+							client.resume();
 						}
 					}
 				});
