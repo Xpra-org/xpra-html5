@@ -28,7 +28,7 @@ const image_coding = ["rgb", "rgb32", "rgb24", "jpeg", "png", "webp"];
 const video_coding = ["h264"];
 
 
-function decode_error(packet, error) {
+function send_decode_error(packet, error) {
     console.error("decode error:", error);
     packet[7] = null;
     self.postMessage({'error': ""+error, 'packet' : packet});
@@ -140,7 +140,7 @@ class WindowDecoder {
     decode_error(packet, error) {
         this.close();
         this.init();
-        decode_error(packet, error);
+        send_decode_error(packet, error);
     }
 
     packet_decoded(packet) {
