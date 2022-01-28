@@ -22,9 +22,9 @@ function decode_rgb(packet) {
 		data = lz4.decode(data);
 		delete options["lz4"];
 	}
-	//this.debug("draw", "got ", data.length, "bytes of", coding, "to paint with stride", rowstride, ", target stride", target_stride);
+	//this.debug("draw", "got ", data.length, "bytes of", coding, "to paint with stride", rowstride);
 	if (coding=="rgb24") {
-		packet[9] = target_stride;
+		packet[9] = width*4;
 		packet[6] = "rgb32";
 		return rgb24_to_rgb32(data, width, height, rowstride);
 	}
@@ -43,7 +43,7 @@ function decode_rgb(packet) {
 	for (i=0; i<height; i++) {
 		psrc = i*rowstride;
 		pdst = i*width*4;
-		for (j=0; j<target_stride; j++) {
+		for (j=0; j<width*4; j++) {
 			uint[pdst++] = data[psrc++];
 		}
 	}
