@@ -23,58 +23,50 @@ const TASKBAR_HEIGHT = 0;
  * The contents of the window is an image, which gets updated
  * when we receive pixels from the server.
  */
-function XpraWindow(client, canvas_state, wid, x, y, w, h, metadata, override_redirect, tray, client_properties, geometry_cb, mouse_move_cb, mouse_down_cb, mouse_up_cb, mouse_scroll_cb, set_focus_cb, window_closed_cb, scale) {
+function XpraWindow(client, wid, x, y, w, h,
+					metadata, override_redirect, tray, client_properties,
+					geometry_cb, mouse_move_cb, mouse_down_cb, mouse_up_cb, mouse_scroll_cb,
+					set_focus_cb, window_closed_cb, scale) {
 	// use me in jquery callbacks as we lose 'this'
-	const me = this;
+	this.client = client;
 
 	//xpra specific attributes:
 	this.wid = wid;
+	//enclosing div in page DOM
+	this.div = jQuery("#" + String(wid));
+
+	//these values represent the internal geometry
+	//i.e. geometry as windows appear to the compositor
+	this.x = x;
+	this.y = y;
+	this.w = w;
+	this.h = h;
+	// scaling for client display width override
+	this.scale = scale;
+
 	this.metadata = {};
 	this.override_redirect = override_redirect;
 	this.tray = tray;
 	this.has_alpha = false;
 	this.client_properties = client_properties;
 
-	// there might be more than one client
-	this.client = client;
+	this.set_focus_cb = set_focus_cb || null;
+	this.mouse_move_cb = mouse_move_cb || null;
+	this.mouse_down_cb = mouse_down_cb || null;
+	this.mouse_up_cb = mouse_up_cb || null;
+	this.mouse_scroll_cb = mouse_scroll_cb || null;
+	this.geometry_cb = geometry_cb || null;
+	this.window_closed_cb = window_closed_cb || null;
+
 	this.log = function() { client.log.apply(client, arguments); };
 	this.warn = function() { client.warn.apply(client, arguments); };
 	this.error = function() { client.error.apply(client, arguments); };
 	this.exc = function() { client.exc.apply(client, arguments); };
 	this.debug = function() { client.debug.apply(client, arguments); };
 	this.debug_categories = client.debug_categories;
-	//keep reference both the internal canvas and screen drawn canvas:
-	this.canvas = canvas_state;
-	this.canvas_ctx = this.client.offscreen_api ? {} : this.canvas.getContext('2d');
-	this.canvas_ctx.imageSmoothingEnabled = false;
-	this.offscreen_canvas = null;
-	this.offscreen_canvas_ctx = null;
-	this._init_2d_canvas();
-	this.draw_canvas = this.offscreen_canvas;
-	this.paint_queue = [];
-	this.paint_pending = 0;
 
-	if (this.client.offscreen_api) {
-		// Transfer canvas control. Syntax postMessage({message_obj}, [transferlist])
-		const offscreen_handle = this.canvas.transferControlToOffscreen();
-		this.client.decode_worker.postMessage({
-			'cmd': 'canvas',
-			'wid' : wid,
-			'canvas': offscreen_handle,
-			'debug' : this.debug_categories.includes("draw"),
-			}, [offscreen_handle]);
-	}
-
-	//enclosing div in page DOM
-	this.div = jQuery("#" + String(wid));
-
-	//callbacks start null until we finish init:
-	this.geometry_cb = null;
-	this.mouse_move_cb = null;
-	this.mouse_down_cb = null;
-	this.mouse_up_cb = null;
-	this.mouse_scroll_cb = null;
-	this.window_closed_cb = null;
+	this.canvas = null;
+	this.init_canvas();
 
 	//window attributes:
 	this.title = null;
@@ -88,16 +80,6 @@ function XpraWindow(client, canvas_state, wid, x, y, w, h, metadata, override_re
 	this.resizable = false;
 	this.stacking_layer = 0;
 
-	//these values represent the internal geometry
-	//i.e. geometry as windows appear to the compositor
-	this.x = x;
-	this.y = y;
-	this.w = w;
-	this.h = h;
-
-	// scaling for client display width override
-	this.scale = scale;
-
 	// Icon cache
 	this.icon = null;
 
@@ -106,25 +88,6 @@ function XpraWindow(client, canvas_state, wid, x, y, w, h, metadata, override_re
 	this.rightoffset = parseInt(jQuery(this.div).css('border-right-width'), 10);
 	this.topoffset = parseInt(jQuery(this.div).css('border-top-width'), 10);
 	this.bottomoffset = parseInt(jQuery(this.div).css('border-bottom-width'), 10);
-
-	// Hook up the events we want to receive:
-	this.set_focus_cb = set_focus_cb || null;
-	this.mouse_move_cb = mouse_move_cb || null;
-	this.mouse_down_cb = mouse_down_cb || null;
-	this.mouse_up_cb = mouse_up_cb || null;
-	this.mouse_scroll_cb = mouse_scroll_cb || null;
-	jQuery(this.canvas).mousedown(function (e) {
-		me.on_mousedown(e);
-	});
-	jQuery(this.canvas).mouseup(function (e) {
-		me.on_mouseup(e);
-	});
-	jQuery(this.canvas).mousemove(function (e) {
-		me.on_mousemove(e);
-	});
-
-	this.geometry_cb = geometry_cb || null;
-	this.window_closed_cb = window_closed_cb || null;
 
 	// update metadata that is safe before window is drawn
 	this.update_metadata(metadata, true);
@@ -147,105 +110,7 @@ function XpraWindow(client, canvas_state, wid, x, y, w, h, metadata, override_re
 	}
 	else if((this.windowtype == "") || (this.windowtype == "NORMAL") || (this.windowtype == "DIALOG") || (this.windowtype == "UTILITY")) {
 		this.resizable = true;
-		jQuery(this.div).addClass("border");
-		// add a title bar to this window if we need to
-		// create header
-		jQuery(this.div).prepend('<div id="head' + String(wid) + '" class="windowhead"> '+
-				'<span class="windowicon"><img class="windowicon" id="windowicon' + String(wid) + '" /></span> '+
-				'<span class="windowtitle" id="title' + String(wid) + '">' + this.title + '</span> '+
-				'<span class="windowbuttons"> '+
-				'<span id="minimize' + String(wid) + '"><img src="icons/minimize.png" /></span> '+
-				'<span id="maximize' + String(wid) + '"><img src="icons/maximize.png" /></span> '+
-				'<span id="close' + String(wid) + '"><img src="icons/close.png" /></span> '+
-				'</span></div>');
-		// make draggable
-		if (this.scale!==1) {
-			jQuery(this.div).draggable({ transform: true });
-		}
-		jQuery(this.div).draggable({ cancel: "canvas" });
-		function root_window_click(ev) {
-			//fake a click on the root window,
-			//this helps some buggy Java applications close their popup menus
-			client.do_window_mouse_click(ev, null, true);
-			client.do_window_mouse_click(ev, null, false);
-		}
-		jQuery("#head"+String(this.wid)).click(root_window_click);
-		jQuery(this.div).on("dragstart",function(ev,ui){
-			client.do_window_mouse_click(ev, me, false);
-			root_window_click(ev);
-			client.mouse_grabbed = true;
-			me.set_focus_cb(me);
-		});
-		jQuery(this.div).on("dragstop",function(ev,ui){
-			client.mouse_grabbed = false;
-			me.handle_moved(ui);
-		});
-		// Use transform if scaled
-		// This disables helper highlight, so we
-		// move the resizable borders in transform plugin
-		if (this.scale!==1) {
-			jQuery(this.div).resizable({ transform: true });
-		}
-		// attach resize handles
-		jQuery(this.div).resizable({ containment: 'parent', helper: "ui-resizable-helper", "handles": "n, e, s, w, ne, se, sw, nw" });
-		//jQuery(this.div).on("resize",jQuery.debounce(50, function(ev,ui) {
-		//  	me.handle_resized(ui);
-		//}));
-		jQuery(this.div).on("resizestart",function(ev,ui){
-			client.do_window_mouse_click(ev, me, false);
-			client.mouse_grabbed = true;
-		});
-		jQuery(this.div).on("resizestop",function(ev,ui){
-		  	me.handle_resized(ui);
-		  	me.set_focus_cb(me);
-			client.mouse_grabbed = false;
-			//workaround for the window going blank,
-			//just force a refresh:
-			setTimeout(function() {
-				me.client.request_refresh(me.wid);
-			}, 200);
-		});
-		this.d_header = '#head' + String(wid);
-		this.d_closebtn = '#close' + String(wid);
-		this.d_maximizebtn = '#maximize' + String(wid);
-		this.d_minimizebtn = '#minimize' + String(wid);
-		if (this.resizable) {
-			jQuery(this.d_header).dblclick(function() {
-				me.toggle_maximized();
-			});
-			jQuery(this.d_closebtn).click(function() {
-				window_closed_cb(me);
-			});
-			jQuery(this.d_maximizebtn).click(function() {
-				me.toggle_maximized();
-			});
-			jQuery(this.d_minimizebtn).click(function() {
-				me.toggle_minimized();
-			});
-		}
-		else {
-			jQuery(this.d_closebtn).hide();
-			jQuery(this.d_maximizebtn).hide();
-			jQuery('#windowlistitemmax' + String(wid)).hide();
-			jQuery(this.d_minimizebtn).hide();
-		}
-		// adjust top offset
-		this.topoffset = this.topoffset + parseInt(jQuery(this.d_header).css('height'), 10);
-		// stop propagation if we're over the window:
-		jQuery(this.div).mousedown(function (e) {
-			e.stopPropagation();
-		});
-		//bug 2418: if we stop 'mouseup' propagation,
-		//jQuery can't ungrab the window with Firefox
-		//jQuery(this.div).mouseup(function (e) {
-		//	e.stopPropagation();
-		//});
-		// assign callback to focus window if header is clicked.
-		jQuery(this.d_header).click(function(e) {
-			if (!me.minimized && $(e.target).parents('.windowbuttons').length === 0) {
-				me.client._window_set_focus(me);
-			}
-		});
+		this.add_window_decorations();
 	}
 
 	// create the spinner overlay div
@@ -256,40 +121,6 @@ function XpraWindow(client, canvas_state, wid, x, y, w, h, metadata, override_re
 	this.pointer_down = -1;
 	this.pointer_last_x = 0;
 	this.pointer_last_y = 0;
-	if (window.PointerEvent) {
-		this.canvas.addEventListener("pointerdown", function(ev) {
-			me.debug("mouse", "pointerdown:", ev);
-			if (ev.pointerType=="touch") {
-				me.pointer_down = ev.pointerId;
-				me.pointer_last_x = ev.offsetX;
-				me.pointer_last_y = ev.offsetY;
-			}
-		});
-		this.canvas.addEventListener("pointermove", function(ev) {
-			me.debug("mouse", "pointermove:", ev);
-			if (me.pointer_down==ev.pointerId) {
-				const dx = ev.offsetX-me.pointer_last_x;
-				const dy = ev.offsetY-me.pointer_last_y;
-				me.pointer_last_x = ev.offsetX;
-				me.pointer_last_y = ev.offsetY;
-				const mult = 20.0*(window.devicePixelRatio || 1);
-				ev.wheelDeltaX = Math.round(dx*mult);
-				ev.wheelDeltaY = Math.round(dy*mult);
-				me.on_mousescroll(ev);
-			}
-		});
-		this.canvas.addEventListener("pointerup", function(ev) {
-			me.debug("mouse", "pointerup:", ev);
-			me.pointer_down = -1;
-		});
-		this.canvas.addEventListener("pointercancel", function(ev) {
-			me.debug("mouse", "pointercancel:", ev);
-			me.pointer_down = -1;
-		});
-		this.canvas.addEventListener("pointerout", function(ev) {
-			me.debug("mouse", "pointerout:", ev);
-		});
-	}
 
 	// adapt to screen size if needed (ie: shadow / desktop windows):
 	this.screen_resized();
@@ -299,28 +130,218 @@ function XpraWindow(client, canvas_state, wid, x, y, w, h, metadata, override_re
 	this.update_metadata(metadata);
 }
 
-XpraWindow.prototype._init_2d_canvas = function() {
-	this.offscreen_canvas = document.createElement("canvas");
-	this.updateCanvasGeometry();
-	this.offscreen_canvas_ctx = this.offscreen_canvas.getContext('2d');
-	this.offscreen_canvas_ctx.imageSmoothingEnabled = false;
-};
+XpraWindow.prototype.add_window_decorations = function() {
+	const me = this;
+	const wid = this.wid;
+	jQuery(this.div).addClass("border");
+	// add a title bar to this window if we need to
+	// create header
+	jQuery(this.div).prepend('<div id="head' + String(wid) + '" class="windowhead"> '+
+			'<span class="windowicon"><img class="windowicon" id="windowicon' + String(wid) + '" /></span> '+
+			'<span class="windowtitle" id="title' + String(wid) + '">' + this.title + '</span> '+
+			'<span class="windowbuttons"> '+
+			'<span id="minimize' + String(wid) + '"><img src="icons/minimize.png" /></span> '+
+			'<span id="maximize' + String(wid) + '"><img src="icons/maximize.png" /></span> '+
+			'<span id="close' + String(wid) + '"><img src="icons/close.png" /></span> '+
+			'</span></div>');
+	// make draggable
+	if (this.scale!==1) {
+		jQuery(this.div).draggable({ transform: true });
+	}
+	jQuery(this.div).draggable({ cancel: "canvas" });
+	function root_window_click(ev) {
+		//fake a click on the root window,
+		//this helps some buggy Java applications close their popup menus
+		client.do_window_mouse_click(ev, null, true);
+		client.do_window_mouse_click(ev, null, false);
+	}
+	jQuery("#head"+String(this.wid)).click(root_window_click);
+	jQuery(this.div).on("dragstart",function(ev,ui){
+		client.do_window_mouse_click(ev, me, false);
+		root_window_click(ev);
+		client.mouse_grabbed = true;
+		me.set_focus_cb(me);
+	});
+	jQuery(this.div).on("dragstop",function(ev,ui){
+		client.mouse_grabbed = false;
+		me.handle_moved(ui);
+	});
+	// Use transform if scaled
+	// This disables helper highlight, so we
+	// move the resizable borders in transform plugin
+	if (this.scale!==1) {
+		jQuery(this.div).resizable({ transform: true });
+	}
+	// attach resize handles
+	jQuery(this.div).resizable({ containment: 'parent', helper: "ui-resizable-helper", "handles": "n, e, s, w, ne, se, sw, nw" });
+	//jQuery(this.div).on("resize",jQuery.debounce(50, function(ev,ui) {
+	//  	me.handle_resized(ui);
+	//}));
+	jQuery(this.div).on("resizestart",function(ev,ui){
+		client.do_window_mouse_click(ev, me, false);
+		client.mouse_grabbed = true;
+	});
+	jQuery(this.div).on("resizestop",function(ev,ui){
+		me.handle_resized(ui);
+		me.set_focus_cb(me);
+		client.mouse_grabbed = false;
+		//workaround for the window going blank,
+		//just force a refresh:
+		setTimeout(function() {
+			me.client.request_refresh(me.wid);
+		}, 200);
+	});
+	this.d_header = '#head' + String(wid);
+	this.d_closebtn = '#close' + String(wid);
+	this.d_maximizebtn = '#maximize' + String(wid);
+	this.d_minimizebtn = '#minimize' + String(wid);
+	if (this.resizable) {
+		jQuery(this.d_header).dblclick(function() {
+			me.toggle_maximized();
+		});
+		jQuery(this.d_closebtn).click(function() {
+			window_closed_cb(me);
+		});
+		jQuery(this.d_maximizebtn).click(function() {
+			me.toggle_maximized();
+		});
+		jQuery(this.d_minimizebtn).click(function() {
+			me.toggle_minimized();
+		});
+	}
+	else {
+		jQuery(this.d_closebtn).hide();
+		jQuery(this.d_maximizebtn).hide();
+		jQuery('#windowlistitemmax' + String(wid)).hide();
+		jQuery(this.d_minimizebtn).hide();
+	}
+	// adjust top offset
+	this.topoffset = this.topoffset + parseInt(jQuery(this.d_header).css('height'), 10);
+	// stop propagation if we're over the window:
+	jQuery(this.div).mousedown(function (e) {
+		e.stopPropagation();
+	});
+	//bug 2418: if we stop 'mouseup' propagation,
+	//jQuery can't ungrab the window with Firefox
+	//jQuery(this.div).mouseup(function (e) {
+	//	e.stopPropagation();
+	//});
+	// assign callback to focus window if header is clicked.
+	jQuery(this.d_header).click(function(e) {
+		if (!me.minimized && $(e.target).parents('.windowbuttons').length === 0) {
+			me.client._window_set_focus(me);
+		}
+	});
+}
+
+
+XpraWindow.prototype.init_canvas = function() {
+	this.canvas = null;
+	this.div.find("canvas").remove();
+	const canvas = document.createElement("canvas");
+	// set initial sizes
+	canvas.width = self.w;
+	canvas.height = self.h;
+	this.canvas = canvas;
+	this.div.append(canvas);
+	if (this.client.offscreen_api) {
+		// Transfer canvas control.
+		const offscreen_handle = canvas.transferControlToOffscreen();
+		this.client.decode_worker.postMessage({
+			'cmd'    : 'canvas',
+			'wid'    : this.wid,
+			'canvas' : offscreen_handle,
+			'debug'  : this.debug_categories.includes("draw"),
+			}, [offscreen_handle]);
+	}
+	else {
+		//we're going to paint from this class:
+		this.canvas_ctx = this.canvas.getContext('2d');
+		this.canvas_ctx.imageSmoothingEnabled = false;
+
+		this.offscreen_canvas = document.createElement("canvas");
+		this.updateCanvasGeometry();
+		this.offscreen_canvas_ctx = this.offscreen_canvas.getContext('2d');
+		this.offscreen_canvas_ctx.imageSmoothingEnabled = false;
+
+		this.draw_canvas = this.offscreen_canvas;
+		this.paint_queue = [];
+		this.paint_pending = 0;
+	}
+	this.register_canvas_mouse_events(this.canvas);
+	this.register_canvas_pointer_events(this.canvas);
+}
 
 XpraWindow.prototype.swap_buffers = function() {
 	//the up to date canvas is what we'll draw on screen:
 	this.debug("draw", "swap_buffers");
 	this.draw_canvas = this.offscreen_canvas;
-	this._init_2d_canvas();
+	this.init_offscreen_canvas();
 	this.offscreen_canvas_ctx.drawImage(this.draw_canvas, 0, 0);
 };
 
+
+XpraWindow.prototype.register_canvas_mouse_events = function(canvas) {
+	const me = this;
+	// Hook up the events we want to receive:
+	jQuery(canvas).mousedown(function (e) {
+		me.on_mousedown(e);
+	});
+	jQuery(canvas).mouseup(function (e) {
+		me.on_mouseup(e);
+	});
+	jQuery(canvas).mousemove(function (e) {
+		me.on_mousemove(e);
+	});
+}
+
+XpraWindow.prototype.register_canvas_pointer_events = function(canvas) {
+	if (!window.PointerEvent) {
+		return;
+	}
+	const me = this;
+	canvas.addEventListener("pointerdown", function(ev) {
+		me.debug("mouse", "pointerdown:", ev);
+		if (ev.pointerType=="touch") {
+			me.pointer_down = ev.pointerId;
+			me.pointer_last_x = ev.offsetX;
+			me.pointer_last_y = ev.offsetY;
+		}
+	});
+	canvas.addEventListener("pointermove", function(ev) {
+		me.debug("mouse", "pointermove:", ev);
+		if (me.pointer_down==ev.pointerId) {
+			const dx = ev.offsetX-me.pointer_last_x;
+			const dy = ev.offsetY-me.pointer_last_y;
+			me.pointer_last_x = ev.offsetX;
+			me.pointer_last_y = ev.offsetY;
+			const mult = 20.0*(window.devicePixelRatio || 1);
+			ev.wheelDeltaX = Math.round(dx*mult);
+			ev.wheelDeltaY = Math.round(dy*mult);
+			me.on_mousescroll(ev);
+		}
+	});
+	canvas.addEventListener("pointerup", function(ev) {
+		me.debug("mouse", "pointerup:", ev);
+		me.pointer_down = -1;
+	});
+	canvas.addEventListener("pointercancel", function(ev) {
+		me.debug("mouse", "pointercancel:", ev);
+		me.pointer_down = -1;
+	});
+	canvas.addEventListener("pointerout", function(ev) {
+		me.debug("mouse", "pointerout:", ev);
+	});
+}
+
 XpraWindow.prototype.set_spinner = function(state) {
-	if(state) {
+	if (state) {
 		this.spinnerdiv.hide();
 	} else {
 		this.spinnerdiv.css("display", "table");
 	}
 };
+
 
 XpraWindow.prototype.ensure_visible = function() {
 	if (this.client.server_is_desktop || this.client.server_is_shadow) {

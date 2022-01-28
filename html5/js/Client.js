@@ -2707,15 +2707,11 @@ XpraClient.prototype._new_window = function(wid, x, y, w, h, metadata, override_
 	// each window needs their own DIV that contains a canvas
 	const mydiv = document.createElement("div");
 	mydiv.id = String(wid);
-	const mycanvas = document.createElement("canvas");
-	mydiv.appendChild(mycanvas);
+
 	const screen = document.getElementById("screen");
 	screen.appendChild(mydiv);
-	// set initial sizes
-	mycanvas.width = w;
-	mycanvas.height = h;
 	// create the XpraWindow object to own the new div
-	const win = new XpraWindow(this, mycanvas, wid, x, y, w, h,
+	const win = new XpraWindow(this, wid, x, y, w, h,
 		metadata,
 		override_redirect,
 		false,
