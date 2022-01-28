@@ -58,7 +58,7 @@ class WindowDecoder {
         this.back_buffer = new OffscreenCanvas(this.canvas.width, this.canvas.height);
         this.image_decoder = this.new_image_decoder();
         this.video_decoder = this.new_video_decoder();
-        this.flush_seq = 0;         //this is the sequence number of the current flush
+        this.flush_seqs = [];    //this is the sequence numbers of the flush packets
         this.pending_paint = new Map();
         this.pending_decode = new Map();
         this.closed = false;
@@ -109,6 +109,12 @@ class WindowDecoder {
     decode_draw_packet(packet) {
         const coding = packet[6];
         const packet_sequence = packet[8];
+        const options = packet[10] || {};
+        const flush = options["flush"] || 0;
+        if (flush == 0) {
+            //this is a 'flush' fence packet, record it:
+            this.flush_seqs.push(packet_sequence);
+        }
         //record this packet as pending:
         this.pending_decode.set(packet_sequence, performance.now());
         try {
@@ -147,8 +153,6 @@ class WindowDecoder {
         try {
             const coding = packet[6];
             const packet_sequence = packet[8];
-            let options = packet[10] || {};
-            let flush = options["flush"] || 0;
             const start = this.pending_decode.get(packet_sequence);
             this.pending_decode.delete(packet_sequence);
             if (coding == "throttle") {
@@ -165,47 +169,62 @@ class WindowDecoder {
                 return;
             }
 
-            this.pending_paint.set(packet_sequence, packet);
-            if (flush == 0 && this.flush_seq==0) {
-                 //this is a 'flush' packet, set the marker:
-                 this.flush_seq = packet_sequence;
+            if (this.flush_seqs.length==0) {
+                //we haven't received the flush packet yet,
+                //so this one is definitely older:
+                this.paint_packet(packet);
+                return;
             }
-            while (this.flush_seq>0) {
-                //now that we know the sequence number for flush=0,
-                //we can paint all the packets up to and including this sequence number:
-                const pending_p = Array.from(this.pending_paint.keys()).filter(seq => seq<=this.flush_seq);
-                //paint in ascending order
-                //(this is not strictly necessary with double buffering):
-                const sorted_pp = pending_p.sort((a, b) => a - b);
-                for (var seq of sorted_pp) {
-                    const p = this.pending_paint.get(seq);
-                    this.pending_paint.delete(seq);
-                    this.paint_packet(p);
-                }
+            let flush_seq = this.flush_seqs[0];
+            if (packet_sequence>flush_seq) {
+                //queue it for later:
+                this.pending_paint.set(packet_sequence, packet);
+                return;
+            }
+            //this packet sequence no is lower than the current flush,
+            //so we can just paint it immediately:
+            this.paint_packet(packet);
 
-                //The flush packet comes last, so we should have received
-                //and started decoding all the other updates that are part of this flush sequence.
-                //Find if any packets are still waiting to be decoded for this flush:
-                const pending_d = Array.from(this.pending_decode.keys()).filter(seq => seq<=this.flush_seq);
-                if (pending_d.length>0) {
-                    //we are still waiting for packets to be decoded
-                    return;
-                }
+            //are there any packets still waiting to be decoded
+            //for the current sequence?
+            if (Array.from(this.pending_decode.keys()).filter(x => x <= flush_seq).length>0) {
+                //yes, found some pending decodes with a sequence number lower than the current flush
+                return;
+            }
+            //there are no more pending decodes for the current flush sequence no
+            //so it can be removed:
+            this.flush_seqs.shift();
+            //and we can update the canvas front buffer:
+            this.redraw();
 
-                //update the canvas front buffer:
-                this.redraw();
-
-                //now try to find the next 'flush=0' packet, if we have one:
-                this.flush_seq = 0;
+            if (this.flush_seqs.length==0) {
+                //anything pending is for a flush sequence that we have not received yet,
+                //so we can paint them all now:
+                this.pending_paint.forEach((packet) => {
+                    this.paint_packet(packet);
+                });
+                this.pending_paint = new Map();
+                return;
+            }
+            while (this.flush_seqs.length>0) {
+                //process the next flush sequence no:
+                flush_seq = this.flush_seqs[0];
+                //process any pending paints for the new current flush sequence no:
                 this.pending_paint.forEach((packet, seq) => {
-                    let options = packet[10] || {};
-                    flush = options["flush"] || 0;
-                    //find the next lowest flush sequence:
-                    //FIXME: should we just catch up with the highest flush sequence instead?
-                    if (flush==0 && (this.flush_seq==0 || seq<this.flush_seq)) {
-                        this.flush_seq = seq;
+                    if (seq<=flush_seq) {
+                        this.paint_packet(packet);
+                        this.pending_paint.delete(seq);
                     }
                 });
+                //if there are any pending decodes for this sequence no,
+                //then we have to stop there and wait to be called again
+                if (Array.from(this.pending_decode.keys()).filter(x => x <= flush_seq).length>0) {
+                    break;
+                }
+                //otherwise, we have just painted this screen update fully:
+                this.flush_seqs.shift();
+                //and we can update the canvas front buffer:
+                this.redraw();
             }
         }
         catch (e) {
