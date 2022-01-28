@@ -73,7 +73,7 @@ class WindowDecoder {
         this.canvas.height = h;
         const old_back_buffer = this.back_buffer
         this.back_buffer = new OffscreenCanvas(w, h);
-        const ctx = back_buffer.getContext("2d");
+        const ctx = this.back_buffer.getContext("2d");
         ctx.imageSmoothingEnabled = false;
         ctx.drawImage(old_back_buffer, 0, 0);
     }
