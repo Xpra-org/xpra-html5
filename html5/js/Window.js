@@ -260,7 +260,6 @@ XpraWindow.prototype.init_canvas = function() {
 		this.canvas_ctx.imageSmoothingEnabled = false;
 
 		this.init_offscreen_canvas();
-		this.updateCanvasGeometry();
 
 		this.draw_canvas = this.offscreen_canvas;
 		this.paint_queue = [];
@@ -272,6 +271,8 @@ XpraWindow.prototype.init_canvas = function() {
 
 XpraWindow.prototype.init_offscreen_canvas = function() {
 	this.offscreen_canvas = document.createElement("canvas");
+        this.offscreen_canvas.width = this.w;
+        this.offscreen_canvas.height = this.h;
 	this.offscreen_canvas_ctx = this.offscreen_canvas.getContext('2d');
 	this.offscreen_canvas_ctx.imageSmoothingEnabled = false;
 }
