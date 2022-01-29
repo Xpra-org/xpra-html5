@@ -3272,15 +3272,13 @@ XpraClient.prototype.do_process_draw = function(packet, start) {
 	}
 	function decode_result(error) {
 		const flush = options["flush"] || 0;
-		let decode_time = -1;
+		let decode_time = Math.round(1000*performance.now() - 1000*start);
 		if (flush==0) {
 			me.request_redraw(win);
 		}
-		else if (error || start==0) {
+		if (error || start==0) {
 			me.request_redraw(win);
-		}
-		else {
-			decode_time = Math.round(1000*performance.now() - 1000*start);
+			decode_time = -1
 		}
 		me.debug("draw", "decode time for ", coding, " sequence ", packet_sequence, ": ", decode_time, ", flush=", flush);
 		send_damage_sequence(decode_time, error || "");
