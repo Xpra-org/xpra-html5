@@ -28,25 +28,6 @@ const image_coding = ["rgb", "rgb32", "rgb24", "jpeg", "png", "webp"];
 const video_coding = ["h264"];
 
 
-function send_decode_error(packet, error) {
-    console.error("decode error:", error);
-    packet[7] = null;
-    self.postMessage({'error': ""+error, 'packet' : packet});
-}
-
-function decode_ok(packet, start) {
-    //copy the packet so we can zero out the data:
-    const clone = Array.from(packet);
-    const options = clone[10] || {};
-    const decode_time = Math.round(1000*(performance.now()-start));
-    options["decode_time"] = Math.max(0, decode_time);
-    clone[6] = "offscreen-painted";
-    clone[7] = null;
-    clone[10] = options;
-    self.postMessage({ 'draw': clone, 'start': start });
-}
-
-
 class WindowDecoder {
 
     constructor(canvas, debug) {
@@ -146,7 +127,9 @@ class WindowDecoder {
     decode_error(packet, error) {
         this.close();
         this.init();
-        send_decode_error(packet, error);
+        console.error("decode error:", error);
+        packet[7] = null;
+        self.postMessage({'error': ""+error, 'packet' : packet});
     }
 
     packet_decoded(packet) {
@@ -159,11 +142,11 @@ class WindowDecoder {
                 // Encoding throttle is used to slow down frame input
                 const timeout = 500;
                 setTimeout(() => {
-                    decode_ok(packet, start);
+                    this.send_decode_ok(packet, start);
                 }, timeout);
             }
             else {
-                decode_ok(packet, start);
+                this.send_decode_ok(packet, start);
             }
             if (this.closed) {
                 return;
@@ -232,6 +215,19 @@ class WindowDecoder {
             this.decode_error(packet, e);
         }
     }
+	send_decode_ok(packet, start) {
+	    //copy the packet so we can zero out the data:
+	    const clone = Array.from(packet);
+	    const options = clone[10] || {};
+	    const decode_time = Math.round(1000*(performance.now()-start));
+	    options["decode_time"] = Math.max(0, decode_time);
+	    clone[6] = "offscreen-painted";
+	    clone[7] = null;
+	    clone[10] = options;
+	    self.postMessage({ 'draw': clone, 'start': start });
+	}
+
+
 
     paint_packet(packet) {
         if (this.closed) {
