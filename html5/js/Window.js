@@ -1415,12 +1415,23 @@ XpraWindow.prototype._close_jsmpeg = function _close_jsmpeg() {
 	this.jsmpeg_decoder = null;
 };
 
-XpraWindow.prototype.do_paint = function paint(x, y, width, height, coding, img_data, packet_sequence, rowstride, options, decode_callback) {
+XpraWindow.prototype.do_paint = function paint(packet, decode_callback) {
 	const me = this;
 
-	let enc_width = width;
-	let enc_height = height;
+	const x = packet[2],
+		y = packet[3],
+		width = packet[4],
+		height = packet[5],
+		img_data = packet[7],
+	    options = packet[10] || {};
+	let coding = Utilities.s(packet[6]),
+	    enc_width = width,
+	    enc_height = height;
 	const scaled_size = options["scaled_size"];
+	if(scaled_size) {
+		enc_width = scaled_size[0];
+		enc_height = scaled_size[1];
+	}
 	const bitmap = coding.startsWith("bitmap:");
 	if (bitmap) {
 		coding = coding.split(":")[1];
@@ -1429,10 +1440,7 @@ XpraWindow.prototype.do_paint = function paint(x, y, width, height, coding, img_
 	else {
 		this.debug("draw", "do_paint(", img_data.length, " bytes of", coding, " data ", width, "x", height, " at ", x, ",", y, ") focused=", this.focused);
 	}
-	if(scaled_size) {
-		enc_width = scaled_size[0];
-		enc_height = scaled_size[1];
-	}
+
 	function paint_box(color, px, py, pw, ph) {
 		me.offscreen_canvas_ctx.strokeStyle = color;
 		me.offscreen_canvas_ctx.lineWidth = 2;
@@ -1440,7 +1448,6 @@ XpraWindow.prototype.do_paint = function paint(x, y, width, height, coding, img_
 	}
 
 	function painted(skip_box) {
-		img_data = null;
 		me.paint_pending = 0;
 		if (!skip_box && me.debug_categories.includes("draw")) {
 			const color = DEFAULT_BOX_COLORS[coding] || "white";
@@ -1450,7 +1457,6 @@ XpraWindow.prototype.do_paint = function paint(x, y, width, height, coding, img_
 	}
 
 	function paint_error(e) {
-		img_data = null;
 		me.error("error painting", coding, e);
 		me.paint_pending = 0;
 		decode_callback(""+e);
@@ -1477,59 +1483,11 @@ XpraWindow.prototype.do_paint = function paint(x, y, width, height, coding, img_
 				paint_bitmap();
 				return;
 			}
-			//show("options="+(options).toSource());
-			if (options!=null && options["zlib"]>0) {
-				//show("decompressing "+img_data.length+" bytes of "+coding+"/zlib");
-				img_data = new Zlib.Inflate(img_data).decompress();
-			} else if (options!=null && options["lz4"]>0) {
-				img_data = lz4.decode(img_data);
-			}
-			let target_stride = enc_width*4;
-			this.debug("draw", "got ", img_data.length, "bytes of", coding, "to paint with stride", rowstride, ", target stride", target_stride);
-			if (coding=="rgb24") {
-				const uint = new Uint8Array(target_stride*enc_height);
-				let i = 0,
-					j = 0,
-					l = img_data.length;
-				if (rowstride==enc_width*3) {
-					//faster path, single loop:
-					while (i<l) {
-						uint[j++] = img_data[i++];
-						uint[j++] = img_data[i++];
-						uint[j++] = img_data[i++];
-						uint[j++] = 255;
-					}
-				}
-				else {
-					let psrc = 0,
-						pdst = 0;
-					for (i=0; i<enc_height; i++) {
-						psrc = i*rowstride;
-						for (j=0; j<enc_width; j++) {
-							uint[pdst++] = img_data[psrc++];
-							uint[pdst++] = img_data[psrc++];
-							uint[pdst++] = img_data[psrc++];
-							uint[pdst++] = 255;
-						}
-					}
-				}
-				rowstride = target_stride;
-				img_data = uint;
-			}
-			let img = null;
-			if (rowstride>target_stride) {
-				img = this.offscreen_canvas_ctx.createImageData(Math.round(rowstride/4), enc_height);
-			}
-			else {
-				img = this.offscreen_canvas_ctx.createImageData(enc_width, enc_height);
-			}
-			img.data.set(img_data);
-			//this.offscreen_canvas_ctx.clearRect(x, y, width, height);
-			this.offscreen_canvas_ctx.putImageData(img, x, y, 0, 0, enc_width, enc_height);
-			if (enc_width!=width || enc_height!=height) {
-				//scale it:
-				this.offscreen_canvas_ctx.drawImage(this.offscreen_canvas, x, y, enc_width, enc_height, x, y, width, height);
-			}
+			const rgb_data = decode_rgb(packet);
+			console.warn("decode_rgb(", img_data, ")=", rgb_data);
+			const img = this.offscreen_canvas_ctx.createImageData(enc_width, enc_height);
+			img.data.set(rgb_data);
+			this.offscreen_canvas_ctx.putImageData(img, x, y, 0, 0, width, height);
 			painted();
 			this.may_paint_now();
 		}
@@ -1657,6 +1615,7 @@ XpraWindow.prototype.do_paint = function paint(x, y, width, height, coding, img_
 		}
 	}
 	catch (e) {
+		const packet_sequence = packet[8];
 		this.exc(e, "error painting", coding, "sequence no", packet_sequence);
 		paint_error(e);
 	}
