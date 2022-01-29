@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2017 Antoine Martin <antoine@xpra.org>
+ * Copyright (c) 2013-2022 Antoine Martin <antoine@xpra.org>
  * Copyright (c) 2014 Joshua Higgins <josh@kxes.net>
  * Copyright (c) 2015-2016 Spikes, Inc.
  * Licensed under MPL 2.0
@@ -1178,9 +1178,7 @@ XpraWindow.prototype.set_cursor = function(encoding, w, h, xhot, yhot, img_data)
 
 
 XpraWindow.prototype.eos = function() {
-	this._close_jsmpeg();
 	this._close_broadway();
-	this._close_video();
 };
 
 
@@ -1237,128 +1235,6 @@ XpraWindow.prototype._close_broadway = function() {
 };
 
 
-XpraWindow.prototype._close_video = function() {
-	this.debug("draw", "close_video: video_source_buffer=", this.video_source_buffer, ", media_source=", this.media_source, ", video=", this.video);
-	this.video_source_ready = false;
-	if(this.video) {
-		if(this.media_source) {
-			try {
-				if(this.video_source_buffer) {
-					this.media_source.removeSourceBuffer(this.video_source_buffer);
-				}
-				this.media_source.endOfStream();
-			} catch(e) {
-				this.exc(e, "video media source EOS error");
-			}
-			this.video_source_buffer = null;
-			this.media_source = null;
-		}
-		this.video.remove();
-		this.video = null;
-	}
-};
-
-XpraWindow.prototype._push_video_buffers = function() {
-	this.debug("draw", "_push_video_buffers()");
-	const vsb = this.video_source_buffer;
-	const vb = this.video_buffers;
-	if(!vb || !vsb || !this.video_source_ready) {
-		return;
-	}
-	if(vb.length==0 && this.video_buffers_count==0) {
-		return;
-	}
-	while(vb.length>0 && !vsb.updating) {
-		const buffers = vb.splice(0, 20);
-		const buffer = [].concat.apply([], buffers);
-		vsb.appendBuffer(new Uint8Array(buffer).buffer);
-		/*
-		 * one at a time:
-		const img_data = vb.shift();
-		const array = new Uint8Array(img_data);
-		vsb.appendBuffer(array.buffer);
-		 */
-		this.video_buffers_count += buffers.length;
-	}
-	if(vb.length>0) {
-		setTimeout(this._push_video_buffers, 25);
-	}
-};
-
-XpraWindow.prototype._init_video = function(width, height, coding, profile, level) {
-	const me = this;
-	this.media_source = MediaSourceUtil.getMediaSource();
-	//MediaSourceUtil.addMediaSourceEventDebugListeners(this.media_source, "video");
-	//<video> element:
-	this.video = document.createElement("video");
-	this.video.muted = true;
-	this.video.setAttribute('autoplay', true);
-	this.video.setAttribute('muted', true);
-	this.video.setAttribute('width', width);
-	this.video.setAttribute('height', height);
-	this.video.style.pointerEvents = "all";
-	this.video.style.position = "absolute";
-	this.video.style.zIndex = this.div.css("z-index")+1;
-	this.video.style.left  = ""+this.leftoffset+"px";
-	this.video.style.top = ""+this.topoffset+"px";
-	if (this.debug_categories.includes("audio")) {
-		MediaSourceUtil.addMediaElementEventDebugListeners(this.video, "video");
-		this.video.setAttribute('controls', "controls");
-	}
-	this.video.addEventListener('error', function() { me.error("video error"); });
-	this.video.src = window.URL.createObjectURL(this.media_source);
-	//this.video.src = "https://html5-demos.appspot.com/static/test.webm"
-	this.video_buffers = [];
-	this.video_buffers_count = 0;
-	this.video_source_ready = false;
-
-	let codec_string = "";
-	if(coding=="h264+mp4" || coding=="mpeg4+mp4") {
-		//ie: 'video/mp4; codecs="avc1.42E01E, mp4a.40.2"'
-		codec_string = 'video/mp4; codecs="avc1.' + MediaSourceConstants.H264_PROFILE_CODE[profile] + MediaSourceConstants.H264_LEVEL_CODE[level]+'"';
-	}
-	else if(coding=="vp8+webm") {
-		codec_string = 'video/webm;codecs="vp8"';
-	}
-	else if(coding=="vp9+webm") {
-		codec_string = 'video/webm;codecs="vp9"';
-	}
-	else {
-		throw new Error("invalid encoding: "+coding);
-	}
-	this.log("video codec string: "+codec_string+" for "+coding+" profile '"+profile+"', level '"+level+"'");
-	this.media_source.addEventListener('sourceopen', function() {
-		me.log("video media source open");
-		const vsb = me.media_source.addSourceBuffer(codec_string);
-		vsb.mode = "sequence";
-		me.video_source_buffer = vsb;
-		if (me.debug_categories.includes("draw")) {
-			MediaSourceUtil.addSourceBufferEventDebugListeners(vsb, "video");
-		}
-		vsb.addEventListener('error', function(e) { me.error("video source buffer error"); });
-		vsb.addEventListener('waiting', function() {
-			me._push_video_buffers();
-		});
-		//push any buffers that may have accumulated since we initialized the video element:
-		me._push_video_buffers();
-		me.video_source_ready = true;
-	});
-	this.canvas.parentElement.appendChild(this.video);
-};
-
-XpraWindow.prototype._non_video_paint = function(coding) {
-	if(this.video && this.video.style.zIndex!="-1") {
-		this.debug("draw", "bringing canvas above video for ", coding, " paint event");
-		//push video under the canvas:
-		this.video.style.zIndex = "-1";
-		//copy video to canvas:
-		const width = parseInt(this.video.getAttribute("width"));
-		const height = parseInt(this.video.getAttribute("height"));
-		this.offscreen_canvas_ctx.drawImage(this.video, 0, 0, width, height);
-	}
-};
-
-
 /**
  * Updates the window image with new pixel data
  * we have received from the server.
@@ -1391,28 +1267,6 @@ XpraWindow.prototype.may_paint_now = function paint() {
 		this.do_paint.apply(this, item);
 		now = performance.now();
 	}
-};
-
-XpraWindow.prototype.get_jsmpeg_renderer = function get_jsmpeg_renderer() {
-	if (this.jsmpeg_renderer==null) {
-		const options = {};
-		//webgl is still buggy
-		//if (JSMpeg.Renderer.WebGL.IsSupported()) {
-		//	this.jsmpeg_renderer = new JSMpeg.Renderer.WebGL(options);
-		//}
-		//else {
-		this.jsmpeg_renderer = new JSMpeg.Renderer.Canvas2D(options);
-		//}
-	}
-	return this.jsmpeg_renderer;
-};
-
-XpraWindow.prototype._close_jsmpeg = function _close_jsmpeg() {
-	if (this.jsmpeg_renderer!=null) {
-		this.jsmpeg_renderer.destroy();
-	}
-	//decoder doesn't need cleanup?
-	this.jsmpeg_decoder = null;
 };
 
 XpraWindow.prototype.do_paint = function paint(packet, decode_callback) {
@@ -1478,7 +1332,6 @@ XpraWindow.prototype.do_paint = function paint(packet, decode_callback) {
 			this.may_paint_now();
 		}
 		else if (coding=="rgb32" || coding=="rgb24") {
-			this._non_video_paint(coding);
 			if (bitmap) {
 				paint_bitmap();
 				return;
@@ -1492,7 +1345,6 @@ XpraWindow.prototype.do_paint = function paint(packet, decode_callback) {
 			this.may_paint_now();
 		}
 		else if (coding=="jpeg" || coding=="png" || coding=="webp") {
-			this._non_video_paint(coding);
 			if (bitmap) {
 				paint_bitmap();
 				return;
@@ -1515,35 +1367,6 @@ XpraWindow.prototype.do_paint = function paint(packet, decode_callback) {
 			};
 			j.src = "data:image/"+coding+";base64," + Utilities.ArrayBufferToBase64(img_data);
 		}
-		else if (coding=="mpeg1") {
-			const frame = options["frame"] || 0;
-			if (frame==0 || this.jsmpeg_decoder==null) {
-				const mpeg_options = {};
-				mpeg_options.streaming = true;
-				mpeg_options.decodeFirstFrame = false;
-				this.jsmpeg_decoder = new JSMpeg.Decoder.MPEG1Video(mpeg_options);
-				//TODO: instead of delegating, we should probably subclass the renderer
-				// (but which one! GL or not?):
-				const renderer = new Object();
-				renderer.render = function render(Y, Cr, Cb) {
-					const jsmpeg_renderer = me.get_jsmpeg_renderer();
-					jsmpeg_renderer.render(Y, Cr, Cb);
-					const canvas = jsmpeg_renderer.canvas;
-					me.offscreen_canvas_ctx.drawImage(canvas, x, y, width, height);
-					paint_box("olive", x, y, width, height);
-				};
-				renderer.resize = function resize(newWidth, newHeight) {
-					const jsmpeg_renderer = me.get_jsmpeg_renderer();
-					jsmpeg_renderer.resize(newWidth, newHeight);
-				};
-				this.jsmpeg_decoder.connect(renderer);
-			}
-			this.jsmpeg_decoder.write(frame, img_data);
-			const decoded = this.jsmpeg_decoder.decode();
-			this.debug("draw", coding, "frame", frame, "data len=", img_data.length, "decoded=", decoded);
-			//TODO: only call painted when we have actually painted the frame?
-			painted();
-		}
 		else if (coding=="h264") {
 			const frame = options["frame"] || 0;
 			if(frame==0) {
@@ -1560,39 +1383,7 @@ XpraWindow.prototype.do_paint = function paint(packet, decode_callback) {
 			// (and already painted via the onPictureDecoded callback)
 			painted();
 		}
-		else if (coding=="h264+mp4" || coding=="vp8+webm" || coding=="mpeg4+mp4") {
-			const frame = options["frame"] || -1;
-			if(frame==0) {
-				this._close_video();
-			}
-			if(!this.video) {
-				const profile = options["profile"] || "baseline";
-				const level = options["level"] || "3.0";
-				this._init_video(width, height, coding, profile, level);
-			}
-			else {
-				//keep it above the div:
-				this.video.style.zIndex = this.div.css("z-index")+1;
-			}
-			if(img_data.length>0) {
-				this.debug("draw", "video state=", MediaSourceConstants.READY_STATE[this.video.readyState], ", network state=", MediaSourceConstants.NETWORK_STATE[this.video.networkState]);
-				this.debug("draw", "video paused=", this.video.paused, ", video buffers=", this.video_buffers.length);
-				this.video_buffers.push(img_data);
-				if(this.video.paused) {
-					this.video.play();
-				}
-				this._push_video_buffers();
-				//try to throttle input:
-				const delay = Math.max(10, 50 * (this.video_buffers.length - 25));
-				setTimeout(function() {
-					painted();
-					me.may_paint_now();
-				}, delay);
-				//this.debug("draw", "video queue: ", this.video_buffers.length);
-			}
-		}
 		else if (coding=="scroll") {
-			this._non_video_paint(coding);
 			for(let i=0,j=img_data.length;i<j;++i) {
 				const scroll_data = img_data[i];
 				this.debug("draw", "scroll", i, ":", scroll_data);
@@ -1626,8 +1417,6 @@ XpraWindow.prototype.do_paint = function paint(packet, decode_callback) {
  */
 XpraWindow.prototype.destroy = function destroy() {
 	// remove div
-	this._close_jsmpeg();
 	this._close_broadway();
-	this._close_video();
 	this.div.remove();
 };

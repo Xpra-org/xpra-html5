@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2019 Antoine Martin <antoine@xpra.org>
+ * Copyright (c) 2013-2022 Antoine Martin <antoine@xpra.org>
  * Copyright (c) 2016 David Brushinski <dbrushinski@spikes.com>
  * Copyright (c) 2014 Joshua Higgins <josh@kxes.net>
  * Copyright (c) 2015-2016 Spikes, Inc.
@@ -3254,14 +3254,10 @@ XpraClient.prototype.do_process_draw = function(packet, start) {
 		return;
 	}
 
-	const x = packet[2],
-		y = packet[3],
-		width = packet[4],
+	const width = packet[4],
 		height = packet[5],
 		coding = Utilities.s(packet[6]),
-		data = packet[7],
-		packet_sequence = packet[8],
-		rowstride = packet[9];
+		packet_sequence = packet[8];
 	let options = packet[10] || {};
 	const protocol = this.protocol;
 	if (!protocol) {
@@ -3295,9 +3291,7 @@ XpraClient.prototype.do_process_draw = function(packet, start) {
 		return;
 	}
 	try {
-		win.paint(x, y,
-			width, height,
-			coding, data, packet_sequence, rowstride, options, decode_result);
+		win.paint(packet, decode_result);
 	}
 	catch(e) {
 		me.exc(e, "error painting", coding, "sequence no", packet_sequence);
