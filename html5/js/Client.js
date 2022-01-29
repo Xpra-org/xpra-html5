@@ -399,6 +399,7 @@ XpraClient.prototype.initialize_workers = function() {
 	// detect websocket in webworker support and degrade gracefully
 	if (!window.Worker) {
 		// no webworker support
+		this.offscreen_api = false;
 		this.decode_worker = false;
 		this.clog("no webworker support at all.");
 		this._do_connect(false);
