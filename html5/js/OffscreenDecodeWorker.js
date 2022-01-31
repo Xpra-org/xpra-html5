@@ -125,7 +125,6 @@ class WindowDecoder {
     }
 
     send_decode_error(packet, error) {
-        //copy the packet so we can zero out the data:
         packet[7] = null;
         self.postMessage({'error': ""+error, 'packet' : packet});
     }
@@ -138,9 +137,12 @@ class WindowDecoder {
             this.send_decode_error(p, "cancelled by decoding error");
         });
         this.init();
-        console.error("decode error:", error);
+        const coding = packet[6];
+        const packet_sequence = packet[8];
+        const message = "failed to decode '"+coding+"' draw packet sequence "+packet_sequence+": "+error;
+        console.error(message);
         packet[7] = null;
-        this.send_decode_error(packet, error);
+        this.send_decode_error(packet, message);
     }
 
     packet_decoded(packet) {
