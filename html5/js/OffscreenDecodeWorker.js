@@ -124,12 +124,23 @@ class WindowDecoder {
         }
     }
 
+    send_decode_error(packet, error) {
+        //copy the packet so we can zero out the data:
+        packet[7] = null;
+        self.postMessage({'error': ""+error, 'packet' : packet});
+    }
+
     decode_error(packet, error) {
         this.close();
+        //fail any packets pending and rely on the next refresh
+        //which is going to be triggered by the decoding error(s)
+        this.pending_paint.forEach((p) => {
+            this.send_decode_error(p, "cancelled by decoding error");
+        });
         this.init();
         console.error("decode error:", error);
         packet[7] = null;
-        self.postMessage({'error': ""+error, 'packet' : packet});
+        this.send_decode_error(packet, error);
     }
 
     packet_decoded(packet) {
@@ -215,17 +226,17 @@ class WindowDecoder {
             this.decode_error(packet, e);
         }
     }
-	send_decode_ok(packet, start) {
-	    //copy the packet so we can zero out the data:
-	    const clone = Array.from(packet);
-	    const options = clone[10] || {};
-	    const decode_time = Math.round(1000*(performance.now()-start));
-	    options["decode_time"] = Math.max(0, decode_time);
-	    clone[6] = "offscreen-painted";
-	    clone[7] = null;
-	    clone[10] = options;
-	    self.postMessage({ 'draw': clone, 'start': start });
-	}
+    send_decode_ok(packet, start) {
+        //copy the packet so we can zero out the data:
+        const clone = Array.from(packet);
+        const options = clone[10] || {};
+        const decode_time = Math.round(1000*(performance.now()-start));
+        options["decode_time"] = Math.max(0, decode_time);
+        clone[6] = "offscreen-painted";
+        clone[7] = null;
+        clone[10] = options;
+        self.postMessage({ 'draw': clone, 'start': start });
+    }
 
 
 
