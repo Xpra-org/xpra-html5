@@ -200,7 +200,7 @@ XpraWindow.prototype.add_window_decorations = function() {
 			me.toggle_maximized();
 		});
 		jQuery(this.d_closebtn).click(function() {
-			window_closed_cb(me);
+			me.window_closed_cb(me);
 		});
 		jQuery(this.d_maximizebtn).click(function() {
 			me.toggle_maximized();
