@@ -1344,7 +1344,7 @@ XpraWindow.prototype.do_paint = function paint(packet, decode_callback) {
 			painted();
 			this.may_paint_now();
 		}
-		else if (coding=="jpeg" || coding.startswith("png") || coding=="webp") {
+		else if (coding=="jpeg" || coding.startsWith("png") || coding=="webp") {
 			if (bitmap) {
 				paint_bitmap();
 				return;
