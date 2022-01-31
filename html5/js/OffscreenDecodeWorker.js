@@ -36,7 +36,8 @@ class WindowDecoder {
         this.init();
     }
     init() {
-        this.back_buffer = new OffscreenCanvas(this.canvas.width, this.canvas.height);
+        this.back_buffer = null;
+        this.init_back_buffer();
         this.image_decoder = this.new_image_decoder();
         this.video_decoder = this.new_video_decoder();
         this.flush_seqs = [];    //this is the sequence numbers of the flush packets
@@ -56,14 +57,21 @@ class WindowDecoder {
         }
         this.canvas.width = w;
         this.canvas.height = h;
+        if (this.back_buffer) {
+            this.init_back_buffer();
+        }
+    }
+
+    init_back_buffer() {
         const old_back_buffer = this.back_buffer;
-        this.back_buffer = new OffscreenCanvas(w, h);
+        this.back_buffer = new OffscreenCanvas(this.canvas.width, this.canvas.height);
         const ctx = this.back_buffer.getContext("2d");
         ctx.imageSmoothingEnabled = false;
-        if (old_back_buffer.width>0 && old_back_buffer.height>0) {
+        if (old_back_buffer && old_back_buffer.width>0 && old_back_buffer.height>0) {0
             ctx.drawImage(old_back_buffer, 0, 0);
         }
     }
+
 
     close() {
         if (!this.closed) {
@@ -249,7 +257,6 @@ class WindowDecoder {
     }
 
 
-
     paint_packet(packet) {
         if (this.closed) {
             this.decode_error(packet, "decoder is closed");
@@ -262,7 +269,8 @@ class WindowDecoder {
             coding_fmt = packet[6],
             data = packet[7];
 
-        const ctx = this.back_buffer.getContext("2d");
+        const canvas = this.back_buffer || this.canvas;
+        const ctx = canvas.getContext("2d");
         ctx.imageSmoothingEnabled = false;
 
         const parts = coding_fmt.split(":");      //ie: "bitmap:rgb24" or "image:jpeg"
@@ -347,7 +355,9 @@ class WindowDecoder {
             console.warn("a redraw is already due - a frame may have been skipped");
             return;
         }
-        this.animation_request = requestAnimationFrame(() => this.do_redraw());
+        if (this.back_buffer) {
+            this.animation_request = requestAnimationFrame(() => this.do_redraw());
+        }
     }
     do_redraw() {
         this.animation_request = 0;
