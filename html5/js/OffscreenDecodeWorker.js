@@ -24,7 +24,7 @@ importScripts("./Constants.js");
 // Array of offscreen canvases and decoders we have control over
 const offscreen_canvas = new Map();
 
-const image_coding = ["rgb", "rgb32", "rgb24", "jpeg", "png", "webp"];
+const image_coding = ["rgb", "rgb32", "rgb24", "jpeg", "png", "png/P", "png/L", "webp"];
 const video_coding = ["h264"];
 
 

@@ -64,7 +64,7 @@ XpraClient.prototype.init_settings = function(container) {
 	this.encoding = "auto";
 	//basic set of encodings:
 	//(more may be added after checking via the DecodeWorker)
-	this.supported_encodings = ["jpeg", "png", "rgb", "rgb32", "rgb24"];
+	this.supported_encodings = ["jpeg", "png", "png/P", "png/L", "rgb", "rgb32", "rgb24"];
 	//extra encodings we enable if validated via the decode worker:
 	//(we also validate jpeg and png as a sanity check)
 	this.check_encodings = [];	//"webp", "jpeg", "png"];	//"h264", "vp8+webm", "h264+mp4", "mpeg4+mp4"];
