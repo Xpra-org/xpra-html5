@@ -43,12 +43,13 @@ XpraImageDecoder.prototype.queue_frame = function (packet) {
             this.on_frame_decoded(packet);
         }).catch(decode_error);
     } else {
+        const paint_coding = coding.split("/")[0];   //ie: "png/P" -> "png"
         const decoder = new ImageDecoder({
-            type: "image/" + coding,
+            type: "image/" + paint_coding,
             data: packet[7],
         });
         decoder.decode({ frameIndex: 0 }).then((result) => {
-            packet[6] = "image:"+coding;
+            packet[6] = "image:"+paint_coding;
             packet[7] = result;
             decoder.close();
             this.on_frame_decoded(packet);

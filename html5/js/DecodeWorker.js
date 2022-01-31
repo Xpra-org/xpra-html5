@@ -139,7 +139,7 @@ function decode_draw_packet(packet, start) {
 			const data = decode_rgb(packet);
 			send_rgb32_back(data, width, height, bitmap_options);
 		}
-		else if (coding=="png" || coding=="jpeg" || coding=="webp") {
+		else if (coding.startswith("png") || coding=="jpeg" || coding=="webp") {
 			const data = packet[7];
 			if (!data.buffer) {
 				decode_error("missing pixel data buffer: "+(typeof data));

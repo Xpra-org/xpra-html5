@@ -1344,7 +1344,7 @@ XpraWindow.prototype.do_paint = function paint(packet, decode_callback) {
 			painted();
 			this.may_paint_now();
 		}
-		else if (coding=="jpeg" || coding=="png" || coding=="webp") {
+		else if (coding=="jpeg" || coding.startswith("png") || coding=="webp") {
 			if (bitmap) {
 				paint_bitmap();
 				return;
@@ -1365,7 +1365,8 @@ XpraWindow.prototype.do_paint = function paint(packet, decode_callback) {
 				paint_error("failed to load "+coding+" into image tag");
 				me.may_paint_now();
 			};
-			j.src = "data:image/"+coding+";base64," + Utilities.ArrayBufferToBase64(img_data);
+            const paint_coding = coding.split("/")[0];   //ie: "png/P" -> "png"
+			j.src = "data:image/"+paint_coding+";base64," + Utilities.ArrayBufferToBase64(img_data);
 		}
 		else if (coding=="h264") {
 			const frame = options["frame"] || 0;
