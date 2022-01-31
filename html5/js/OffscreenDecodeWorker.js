@@ -148,7 +148,10 @@ class WindowDecoder {
             const coding = packet[6];
             const packet_sequence = packet[8];
             const start = this.pending_decode.get(packet_sequence);
-            this.pending_decode.delete(packet_sequence);
+            if (!this.pending_decode.delete(packet_sequence)) {
+                //already cancelled somehow
+                return;
+            }
             if (coding == "throttle") {
                 // Encoding throttle is used to slow down frame input
                 const timeout = 500;
