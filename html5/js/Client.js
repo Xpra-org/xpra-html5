@@ -45,7 +45,7 @@ function XpraClient(container) {
 	this.init_state();
 }
 
-XpraClient.prototype.init_settings = function(container) {
+XpraClient.prototype.init_settings = function() {
 	//server:
 	this.host = null;
 	this.port = null;
@@ -95,7 +95,7 @@ XpraClient.prototype.init_settings = function(container) {
 	this.offscreen_api = OFFSCREEN_API && XpraOffscreenWorker.isAvailable();
 };
 
-XpraClient.prototype.init_state = function(container) {
+XpraClient.prototype.init_state = function() {
 	// state
 	this.connected = false;
 	this.desktop_width = 0;
