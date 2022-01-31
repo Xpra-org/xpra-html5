@@ -1337,7 +1337,6 @@ XpraWindow.prototype.do_paint = function paint(packet, decode_callback) {
 				return;
 			}
 			const rgb_data = decode_rgb(packet);
-			console.warn("decode_rgb(", img_data, ")=", rgb_data);
 			const img = this.offscreen_canvas_ctx.createImageData(enc_width, enc_height);
 			img.data.set(rgb_data);
 			this.offscreen_canvas_ctx.putImageData(img, x, y, 0, 0, width, height);
