@@ -43,6 +43,7 @@ class WindowDecoder {
         this.pending_paint = new Map();
         this.pending_decode = new Map();
         this.closed = false;
+        this.animation_request = 0;
     }
 
     update_geometry(w, h) {
@@ -70,6 +71,10 @@ class WindowDecoder {
             if (this.video_decoder) {
                 this.video_decoder._close();
             }
+        }
+        if (this.animation_request>0) {
+            cancelAnimationFrame(this.animation_request);
+            this.animation_request = 0;
         }
     }
 
@@ -334,6 +339,18 @@ class WindowDecoder {
     }
 
     redraw() {
+        if (this.closed) {
+            console.warn("cannot redraw, the decoder is closed");
+            return;
+        }
+        if (this.animation_request>0) {
+            console.warn("a redraw is already due - a frame may have been skipped");
+            return;
+        }
+        this.animation_request = requestAnimationFrame(() => this.do_redraw());
+    }
+    do_redraw() {
+        this.animation_request = 0;
         if (this.closed) {
             console.warn("cannot redraw, the decoder is closed");
             return;
