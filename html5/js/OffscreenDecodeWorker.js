@@ -348,7 +348,7 @@ class WindowDecoder {
         }
         const options = packet[10] || {};
         const flush = options["flush"] || 0;
-        if (flush == 0) {
+        if (flush == 0 && ctx.commit) {
             ctx.commit();
         }
     }
@@ -383,7 +383,9 @@ class WindowDecoder {
         const ctx = this.canvas.getContext("2d");
         ctx.imageSmoothingEnabled = false;
         ctx.drawImage(this.back_buffer, 0, 0);
-        ctx.commit();
+        if (ctx.commit) {
+            ctx.commit();
+        }
         this.back_buffer = null;
     }
 }
