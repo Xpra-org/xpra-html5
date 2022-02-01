@@ -250,13 +250,17 @@ class WindowDecoder {
             while (this.flush_seqs.length>0) {
                 //process the next flush sequence no:
                 flush_seq = this.flush_seqs[0];
-                //process any pending paints for the new current flush sequence no:
-                this.pending_paint.forEach((packet, seq) => {
-                    if (seq<=flush_seq) {
-                        this.paint_packet(packet);
-                        this.pending_paint.delete(seq);
+                //process any pending paints for the new current flush sequence no,
+                //in ascending order:
+                const seqs = Array.from(this.pending_paint.keys()).sort((a, b) => a - b);
+                for (seq of seqs) {
+                    if (seq>flush_seq) {
+                        break;
                     }
-                });
+                    packet = this.pending_paint.get(seq);
+                    this.paint_packet(packet);
+                    this.pending_paint.delete(seq);
+                }
                 //if there are any pending decodes for this sequence no,
                 //then we have to stop there and wait to be called again
                 if (Array.from(this.pending_decode.keys()).filter(x => x <= flush_seq).length>0) {
