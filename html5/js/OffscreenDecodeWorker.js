@@ -36,6 +36,8 @@ class WindowDecoder {
         this.init();
     }
     init() {
+        this.snapshot_buffer = null;
+        this.snapshot_timer = 0;
         this.back_buffer = null;
         this.image_decoder = this.new_image_decoder();
         this.video_decoder = this.new_video_decoder();
@@ -50,12 +52,17 @@ class WindowDecoder {
         if (this.closed) {
             return;
         }
+        this.take_snapshot();
         if (this.canvas.width==w && this.canvas.height==h) {
             //unchanged
             return;
         }
         this.canvas.width = w;
         this.canvas.height = h;
+        if (this.snapshot_buffer) {
+            this.snapshot_buffer.width = w;
+            this.snapshot_buffer.height = h;
+        }
         if (this.back_buffer) {
             this.init_back_buffer();
         }
@@ -83,6 +90,12 @@ class WindowDecoder {
             cancelAnimationFrame(this.animation_request);
             this.animation_request = 0;
         }
+        if (this.snapshot_timer>0) {
+            clearTimeout(this.snapshot_timer);
+            this.snapshot_timer = 0;
+        }
+        this.back_buffer = null;
+        this.snapshot_buffer = null;
     }
 
     new_image_decoder() {
@@ -197,6 +210,8 @@ class WindowDecoder {
             //the packet's sequence no is part of the current flush group,
             //so we can just paint it immediately:
             this.paint_packet(packet);
+            //any snapshot is now out of date:
+            this.snapshot_buffer = null;
 
             //are there any packets still waiting to be decoded
             //for the current sequence?
@@ -207,10 +222,20 @@ class WindowDecoder {
             //there are no more pending decodes for the current flush sequence no
             //so it can be removed:
             this.flush_seqs.shift();
-            //and we can update the canvas front buffer
+            //we're going to have a snapshot ready (when using the back buffer),
+            //or we're going to schedule a take_snapshot()
+            //so we can safely cancel the current timer:
+            if (this.snapshot_timer>0) {
+                clearTimeout(this.snapshot_timer);
+            }
+            //we can update the canvas front buffer
             //if we were using a back buffer to draw the screen updates:
             if (this.back_buffer) {
-                this.redraw();
+                this.back_to_front();
+            }
+            else {
+                //schedule a capture of the front buffer contents:
+                this.snapshot_timer = setTimeout(() => this.take_snapshot(), 100);
             }
 
             if (this.flush_seqs.length==0) {
@@ -242,7 +267,7 @@ class WindowDecoder {
                 //and we can update the canvas front buffer:
                 //if we were using a back buffer to draw the screen updates:
                 if (this.back_buffer) {
-                    this.redraw();
+                    this.back_to_front();
                 }
             }
         }
@@ -361,7 +386,7 @@ class WindowDecoder {
         }
     }
 
-    redraw() {
+    back_to_front() {
         if (this.closed) {
             console.warn("cannot redraw, the decoder is closed");
             return;
@@ -371,22 +396,43 @@ class WindowDecoder {
             return;
         }
         if (this.back_buffer) {
-            this.animation_request = requestAnimationFrame(() => this.do_redraw());
+            //show the back buffer at the next vsync:
+            this.animation_request = requestAnimationFrame(() => {
+                this.animation_request = 0;
+                if (this.closed) {
+                    return;
+                }
+                //to show this buffer, just move it to the snapshot canvas
+                //and call redraw() to paint that:
+                this.snapshot_buffer = this.back_buffer;
+                this.back_buffer = null;
+                this.redraw();
+            });
         }
     }
-    do_redraw() {
-        this.animation_request = 0;
-        if (this.closed) {
-            console.warn("cannot redraw, the decoder is closed");
+
+    redraw() {
+        if (!this.snapshot_buffer) {
             return;
         }
         const ctx = this.canvas.getContext("2d");
         ctx.imageSmoothingEnabled = false;
-        ctx.drawImage(this.back_buffer, 0, 0);
+        ctx.drawImage(this.snapshot_buffer, 0, 0);
         if (ctx.commit) {
             ctx.commit();
         }
-        this.back_buffer = null;
+    }
+
+    take_snapshot() {
+        this.snapshot_timer = 0;
+        const w = this.canvas.width;
+        const h = this.canvas.height;
+        if (w>0 && h>0) {
+            this.snapshot_buffer = new OffscreenCanvas(w, h);
+            const ctx = this.snapshot_buffer.getContext("2d");
+            ctx.imageSmoothingEnabled = false;
+            ctx.drawImage(this.canvas, 0, 0);
+        }
     }
 }
 
