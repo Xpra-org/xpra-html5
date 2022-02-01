@@ -186,13 +186,15 @@ class WindowDecoder {
                 this.paint_packet(packet);
                 return;
             }
+            //flush_seq is the current sequence no of the flush group we are dealing with:
             let flush_seq = this.flush_seqs[0];
             if (packet_sequence>flush_seq) {
+                //this packet is for a later flush sequence,
                 //queue it for later:
                 this.pending_paint.set(packet_sequence, packet);
                 return;
             }
-            //this packet sequence no is lower than the current flush,
+            //the packet's sequence no is part of the current flush group,
             //so we can just paint it immediately:
             this.paint_packet(packet);
 
@@ -205,8 +207,11 @@ class WindowDecoder {
             //there are no more pending decodes for the current flush sequence no
             //so it can be removed:
             this.flush_seqs.shift();
-            //and we can update the canvas front buffer:
-            this.redraw();
+            //and we can update the canvas front buffer
+            //if we were using a back buffer to draw the screen updates:
+            if (this.back_buffer) {
+                this.redraw();
+            }
 
             if (this.flush_seqs.length==0) {
                 //anything pending is for a flush sequence that we have not received yet,
@@ -235,7 +240,10 @@ class WindowDecoder {
                 //otherwise, we have just painted this screen update fully:
                 this.flush_seqs.shift();
                 //and we can update the canvas front buffer:
-                this.redraw();
+                //if we were using a back buffer to draw the screen updates:
+                if (this.back_buffer) {
+                    this.redraw();
+                }
             }
         }
         catch (e) {
