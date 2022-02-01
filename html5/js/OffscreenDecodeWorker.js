@@ -37,7 +37,6 @@ class WindowDecoder {
     }
     init() {
         this.back_buffer = null;
-        this.init_back_buffer();
         this.image_decoder = this.new_image_decoder();
         this.video_decoder = this.new_video_decoder();
         this.flush_seqs = [];    //this is the sequence numbers of the flush packets
@@ -270,7 +269,7 @@ class WindowDecoder {
             data = packet[7];
 
         const canvas = this.back_buffer || this.canvas;
-        const ctx = canvas.getContext("2d");
+        let ctx = canvas.getContext("2d");
         ctx.imageSmoothingEnabled = false;
 
         const parts = coding_fmt.split(":");      //ie: "bitmap:rgb24" or "image:jpeg"
@@ -300,6 +299,9 @@ class WindowDecoder {
             paint_box();
         }
         else if (coding == "scroll") {
+            this.init_back_buffer();
+            ctx = this.back_buffer.getContext("2d");
+            ctx.imageSmoothingEnabled = false;
             for (let i = 0, j = data.length; i < j; ++i) {
                 const scroll_data = data[i];
                 const sx = scroll_data[0],
@@ -336,6 +338,11 @@ class WindowDecoder {
         else {
             this.decode_error(packet, "unsupported encoding: "+coding);
         }
+        const options = packet[10] || {};
+        const flush = options["flush"] || 0;
+        if (flush == 0) {
+            ctx.commit();
+        }
     }
 
     paint_box(ctx, color, px, py, pw, ph) {
@@ -368,6 +375,8 @@ class WindowDecoder {
         const ctx = this.canvas.getContext("2d");
         ctx.imageSmoothingEnabled = false;
         ctx.drawImage(this.back_buffer, 0, 0);
+        ctx.commit();
+        this.back_buffer = null;
     }
 }
 
