@@ -190,6 +190,9 @@ XpraWindow.prototype.add_window_decorations = function() {
 		setTimeout(function() {
 			me.client.request_refresh(me.wid);
 		}, 200);
+		setTimeout(function() {
+			me.client.request_refresh(me.wid);
+		}, 500);
 	});
 	this.d_header = '#head' + String(wid);
 	this.d_closebtn = '#close' + String(wid);
