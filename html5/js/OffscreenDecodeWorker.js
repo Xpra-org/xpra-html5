@@ -288,7 +288,7 @@ class WindowDecoder {
             if (max_seq>0 && seq>max_seq) {
                 break;
             }
-            packet = this.pending_paint.get(seq);
+            let packet = this.pending_paint.get(seq);
             this.paint_packet(packet);
             this.pending_paint.delete(seq);
         }
