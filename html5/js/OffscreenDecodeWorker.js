@@ -241,26 +241,14 @@ class WindowDecoder {
             if (this.flush_seqs.length==0) {
                 //anything pending is for a flush sequence that we have not received yet,
                 //so we can paint them all now:
-                this.pending_paint.forEach((packet) => {
-                    this.paint_packet(packet);
-                });
-                this.pending_paint = new Map();
+                this.paint_all(0);
                 return;
             }
             while (this.flush_seqs.length>0) {
                 //process the next flush sequence no:
                 flush_seq = this.flush_seqs[0];
-                //process any pending paints for the new current flush sequence no,
-                //in ascending order:
-                const seqs = Array.from(this.pending_paint.keys()).sort((a, b) => a - b);
-                for (seq of seqs) {
-                    if (seq>flush_seq) {
-                        break;
-                    }
-                    packet = this.pending_paint.get(seq);
-                    this.paint_packet(packet);
-                    this.pending_paint.delete(seq);
-                }
+                //process any pending paints for the new current flush sequence no:
+                this.paint_all(flush_seq);
                 //if there are any pending decodes for this sequence no,
                 //then we have to stop there and wait to be called again
                 if (Array.from(this.pending_decode.keys()).filter(x => x <= flush_seq).length>0) {
@@ -292,6 +280,19 @@ class WindowDecoder {
         self.postMessage({ 'draw': clone, 'start': start });
     }
 
+    paint_all(max_seq) {
+        //process pending paints up to max_seq,
+        //in ascending order:
+        const seqs = Array.from(this.pending_paint.keys()).sort((a, b) => a - b);
+        for (let seq of seqs) {
+            if (max_seq>0 && seq>max_seq) {
+                break;
+            }
+            packet = this.pending_paint.get(seq);
+            this.paint_packet(packet);
+            this.pending_paint.delete(seq);
+        }
+    }
 
     paint_packet(packet) {
         if (this.closed) {
