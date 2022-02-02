@@ -28,6 +28,12 @@ const image_coding = ["rgb", "rgb32", "rgb24", "jpeg", "png", "png/P", "png/L", 
 const video_coding = ["h264"];
 
 
+function send_decode_error(packet, error) {
+    packet[7] = null;
+    self.postMessage({'error': ""+error, 'packet' : packet});
+}
+
+
 class WindowDecoder {
 
     constructor(canvas, debug) {
@@ -149,17 +155,12 @@ class WindowDecoder {
         }
     }
 
-    send_decode_error(packet, error) {
-        packet[7] = null;
-        self.postMessage({'error': ""+error, 'packet' : packet});
-    }
-
     decode_error(packet, error) {
         this.close();
         //fail any packets pending and rely on the next refresh
         //which is going to be triggered by the decoding error(s)
         this.pending_paint.forEach((p) => {
-            this.send_decode_error(p, "cancelled by decoding error");
+            send_decode_error(p, "cancelled by decoding error");
         });
         this.init();
         const coding = packet[6];
@@ -167,7 +168,7 @@ class WindowDecoder {
         const message = "failed to decode '"+coding+"' draw packet sequence "+packet_sequence+": "+error;
         console.error(message);
         packet[7] = null;
-        this.send_decode_error(packet, message);
+        send_decode_error(packet, message);
     }
 
     packet_decoded(packet) {
@@ -467,7 +468,7 @@ onmessage = function (e) {
                 wd.decode_draw_packet(packet);
             }
             else {
-                decode_error(packet, "no window decoder found for wid "+wid);
+                send_decode_error(packet, "no window decoder found for wid "+wid);
             }
             break
         case 'redraw':

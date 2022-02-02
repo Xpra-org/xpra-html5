@@ -31,9 +31,6 @@ XpraImageDecoder.prototype.queue_frame = function (packet) {
     const width = packet[4];
     const height = packet[5];
     const coding = packet[6];
-    decode_error = (error) => {
-        this.on_frame_error(packet, error);
-    }
     if (coding.startsWith("rgb")) {
         // TODO: Figure out how to decode rgb with ImageDecoder API;
         const data = decode_rgb(packet);
@@ -41,7 +38,7 @@ XpraImageDecoder.prototype.queue_frame = function (packet) {
             packet[6] = "bitmap:"+coding;
             packet[7] = bitmap;
             this.on_frame_decoded(packet);
-        }).catch(decode_error);
+        }).catch(e => this.on_frame_error(packet, e));
     } else {
         const paint_coding = coding.split("/")[0];   //ie: "png/P" -> "png"
         const decoder = new ImageDecoder({
@@ -53,6 +50,6 @@ XpraImageDecoder.prototype.queue_frame = function (packet) {
             packet[7] = result;
             decoder.close();
             this.on_frame_decoded(packet);
-        }).catch(decode_error);
+        }).catch(e => this.on_frame_error(packet, e));
     }
 };
