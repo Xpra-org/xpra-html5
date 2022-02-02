@@ -2693,10 +2693,18 @@ XpraClient.prototype.reconfigure_all_trays = function() {
 XpraClient.prototype.suspend = function() {
 	const window_ids = Object.keys(client.id_to_window).map(Number);
 	this.send(["suspend", true, window_ids]);
+	for (const i in this.id_to_window) {
+		let iwin = this.id_to_window[i];
+		iwin.suspend();
+	}
 }
 
 XpraClient.prototype.resume = function() {
 	const window_ids = Object.keys(client.id_to_window).map(Number);
+	for (const i in this.id_to_window) {
+		let iwin = this.id_to_window[i];
+		iwin.resume();
+	}
 	this.send(["resume", true, window_ids]);
 	this.redraw_windows();
 	this.request_refresh(-1);

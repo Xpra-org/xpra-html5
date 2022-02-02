@@ -243,19 +243,13 @@ XpraWindow.prototype.init_canvas = function() {
 	this.div.find("canvas").remove();
 	const canvas = document.createElement("canvas");
 	// set initial sizes
-	canvas.width = self.w;
-	canvas.height = self.h;
+	canvas.width = this.w;
+	canvas.height = this.h;
 	this.canvas = canvas;
 	this.div.append(canvas);
 	if (this.client.offscreen_api) {
 		// Transfer canvas control.
-		const offscreen_handle = canvas.transferControlToOffscreen();
-		this.client.decode_worker.postMessage({
-			'cmd'    : 'canvas',
-			'wid'    : this.wid,
-			'canvas' : offscreen_handle,
-			'debug'  : this.debug_categories.includes("draw"),
-			}, [offscreen_handle]);
+		this.transfer_canvas(canvas);
 	}
 	else {
 		//we're going to paint from this class:
@@ -270,6 +264,16 @@ XpraWindow.prototype.init_canvas = function() {
 	}
 	this.register_canvas_mouse_events(this.canvas);
 	this.register_canvas_pointer_events(this.canvas);
+}
+
+XpraWindow.prototype.transfer_canvas = function(canvas) {
+	const offscreen_handle = canvas.transferControlToOffscreen();
+	this.client.decode_worker.postMessage({
+		'cmd'    : 'canvas',
+		'wid'    : this.wid,
+		'canvas' : offscreen_handle,
+		'debug'  : this.debug_categories.includes("draw"),
+		}, [offscreen_handle]);
 }
 
 XpraWindow.prototype.init_offscreen_canvas = function() {
@@ -451,6 +455,14 @@ XpraWindow.prototype.updateFocus = function() {
 		jQuery(this.div).removeClass("windowinfocus");
 	}
 };
+
+
+XpraWindow.prototype.suspend = function() {
+}
+XpraWindow.prototype.resume = function() {
+	this.init_canvas();
+}
+
 
 /**
  * Mouse: delegate to client, telling it which window triggered the event.
