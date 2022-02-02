@@ -2894,14 +2894,11 @@ XpraClient.prototype._process_lost_window = function(packet, ctx) {
 		//it had focus, find the next highest:
 		ctx.auto_focus();
 	}
-	ctx.decode_worker_eos(wid);
-};
-
-XpraClient.prototype.decode_worker_eos = function(wid) {
-	if (this.decode_worker) {
-		this.decode_worker.postMessage({'cmd': 'eos', 'wid' : wid});
+	if (ctx.decode_worker) {
+		ctx.decode_worker.postMessage({'cmd': 'remove', 'wid' : wid});
 	}
 }
+
 
 XpraClient.prototype.auto_focus = function() {
 	let highest_window = null;
@@ -3160,8 +3157,10 @@ XpraClient.prototype._process_draw = function(packet, ctx) {
 XpraClient.prototype._process_eos = function(packet, ctx) {
 	ctx.do_process_draw(packet, 0);
 	const wid = packet[1];
-	ctx.decode_worker_eos(wid);
-};
+	if (ctx.decode_worker) {
+		ctx.decode_worker.postMessage({'cmd': 'eos', 'wid' : wid});
+	}
+}
 
 
 XpraClient.prototype.request_redraw = function(win) {

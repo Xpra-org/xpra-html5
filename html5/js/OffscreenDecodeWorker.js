@@ -85,12 +85,16 @@ class WindowDecoder {
     }
 
 
+    eos() {
+        if (this.video_decoder) {
+            this.video_decoder._close();
+        }
+    }
+
     close() {
         if (!this.closed) {
             this.closed = true;
-            if (this.video_decoder) {
-                this.video_decoder._close();
-            }
+            this.eos();
         }
         if (this.animation_request>0) {
             cancelAnimationFrame(this.animation_request);
@@ -456,6 +460,12 @@ onmessage = function (e) {
         case 'eos':
             wd = offscreen_canvas.get(data.wid);
             if (wd) {
+                wd.eos();
+            }
+            break;
+        case 'remove':
+            wd = offscreen_canvas.get(data.wid);
+            if (wd) {
                 wd.close();
                 offscreen_canvas.delete(data.wid);
             }
@@ -468,7 +478,7 @@ onmessage = function (e) {
                 wd.decode_draw_packet(packet);
             }
             else {
-                send_decode_error(packet, "no window decoder found for wid "+wid);
+                send_decode_error(packet, "no window decoder found for wid "+wid+", only:"+Array.from(offscreen_canvas.keys()).join(","));
             }
             break
         case 'redraw':
@@ -486,6 +496,9 @@ onmessage = function (e) {
             wd = offscreen_canvas.get(data.wid);
             if (wd) {
                 wd.update_geometry(data.w, data.h);
+            }
+            else {
+                console.warn("cannot update canvas geometry, window", data.wid, "not found");
             }
             break;
         default:

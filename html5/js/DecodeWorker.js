@@ -22,9 +22,6 @@ const on_hold = new Map();
 
 function decode_eos(wid) {
 	close_broadway(wid);
-	if (wid in on_hold) {
-		on_hold.remove(wid);
-	}
 }
 
 function decode_draw_packet(packet, start) {
@@ -295,6 +292,10 @@ onmessage = function(e) {
 		break;
 	case 'eos':
 		decode_eos(data.wid);
+		break;
+	case 'remove':
+		decode_eos(data.wid);
+		on_hold.remove(wid);
 		break;
 	case 'decode':
 		decode_draw_packet(data.packet, data.start);
