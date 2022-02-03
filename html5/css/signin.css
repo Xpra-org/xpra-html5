@@ -84,6 +84,9 @@ div.container {
 	font-size: smaller;
 	padding-left: 10px;
 }
+.form-signin span.disabled {
+	color: grey;
+}
 
 .form-signin img.field-icon {
 	margin-left: -32px;

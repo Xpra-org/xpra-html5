@@ -436,8 +436,10 @@ XpraClient.prototype.initialize_workers = function() {
 	}
 	let decode_worker;
 	 if (this.offscreen_api) {
+		me.clog("using offscreen decode worker");
 		decode_worker = new Worker('js/OffscreenDecodeWorker.js');
 	} else {
+		me.clog("using decode worker");
 		decode_worker = new Worker('js/DecodeWorker.js');
 	}
 	decode_worker.addEventListener('message', function(e) {

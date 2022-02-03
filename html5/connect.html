@@ -25,6 +25,11 @@
 	<script src="js/lib/es6-shim.js"></script>
 	<script src="js/lib/AudioContextMonkeyPatch.js"></script>
 
+	<script type="text/javascript" src="js/RgbHelpers.js"></script>
+	<script type="text/javascript" src="js/ImageDecoder.js"></script>
+	<script type="text/javascript" src="js/VideoDecoder.js"></script>
+	<script type="text/javascript" src="js/OffscreenDecodeWorkerHelper.js"></script>
+
 	<script src="js/lib/jquery.js"></script>
 	<script src="js/Utilities.js"></script>
 	<script src="js/MediaSourceUtil.js"></script>
@@ -144,7 +149,7 @@
 					  <option value="png">PNG</option>
 					  <option value="rgb">Raw RGB</option>
 					</select>
-					Encoding
+					Encoding &nbsp; <input type="checkbox" id="offscreen"> <span id="offscreen_label">offscreen decoding</span>
 				  </li>
 
 				  <li class="list-group-item">
@@ -330,13 +335,15 @@
 <script>
 
 const VALUE_PROPERTIES = ["server", "port", "path", "username", "password", "key",
-					"bandwidth_limit", "encoding", "keyboard_layout", "audio_codec", "toolbar_position",
+					"bandwidth_limit", "encoding",
+					"keyboard_layout", "audio_codec", "toolbar_position",
 					"display", "shadow_display", "override_width",
 					"encryption",
 					"vrefresh",
 					];
 const BOOLEAN_PROPERTIES = ["keyboard", "clipboard", "printing", "file_transfer",
 		"sound", "ignore_audio_blacklist",
+		"offscreen",
 		"exit_with_children", "exit_with_client",
 		"sharing", "steal", "reconnect", "swap_keys",
 		"scroll_reverse_x", "scroll_reverse_y",
@@ -1071,6 +1078,15 @@ function fill_form(default_settings) {
 
 	const encoding = getparam("encoding") || "auto";
 	document.getElementById('encoding').value = encoding;
+
+	const offscreen = getboolparam("offscreen", XpraOffscreenWorker.isAvailable());
+	document.getElementById("offscreen").checked = offscreen;
+	if (!XpraOffscreenWorker.isAvailable()) {
+		document.getElementById("offscreen").disabled = true;
+		document.getElementById("offscreen").setAttribute("title", "not available in your browser");
+		document.getElementById("offscreen_label").classList.add('disabled');
+		document.getElementById("offscreen_label").setAttribute("title", "not available in your browser");
+	}
 
 	let bandwidth_limit = getparam("bandwidth_limit");
 	if(bandwidth_limit==null) {
