@@ -21,7 +21,6 @@ const CLIPBOARD_EVENT_DELAY = 100;
 const DECODE_WORKER = !Utilities.isMobile();
 const rencode_ok = rencode && rencode_selftest();
 const SHOW_START_MENU = true;
-const OFFSCREEN_API = true;
 
 
 function XpraClient(container) {
@@ -92,7 +91,7 @@ XpraClient.prototype.init_settings = function() {
 	this.PING_FREQUENCY = 5000;
 	this.INFO_FREQUENCY = 1000;
 	this.uuid = Utilities.getHexUUID();
-	this.offscreen_api = OFFSCREEN_API && XpraOffscreenWorker.isAvailable();
+	this.offscreen_api = XpraOffscreenWorker.isAvailable();
 };
 
 XpraClient.prototype.init_state = function() {
