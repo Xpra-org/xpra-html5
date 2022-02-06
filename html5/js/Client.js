@@ -63,7 +63,7 @@ XpraClient.prototype.init_settings = function() {
 	this.encoding = "auto";
 	//basic set of encodings:
 	//(more may be added after checking via the DecodeWorker)
-	this.supported_encodings = ["jpeg", "png", "png/P", "png/L", "rgb", "rgb32", "rgb24"];
+	this.supported_encodings = ["jpeg", "png", "png/P", "png/L", "rgb", "rgb32", "rgb24", "scroll"];
 	//extra encodings we enable if validated via the decode worker:
 	//(we also validate jpeg and png as a sanity check)
 	this.check_encodings = [];	//"webp", "jpeg", "png"];	//"h264", "vp8+webm", "h264+mp4", "mpeg4+mp4"];
@@ -1312,6 +1312,10 @@ XpraClient.prototype._make_hello = function() {
 	this.desktop_width = this.container.clientWidth;
 	this.desktop_height = this.container.clientHeight;
 	this.key_layout = this._get_keyboard_layout();
+	if (this.supported_encodings.indexOf("scroll")>0) {
+		//support older servers which use a capability for enabling 'scroll' encoding:
+		this._update_capabilities({"encoding.scrolling"		: true});
+	}
 	this._update_capabilities({
 		"auto_refresh_delay"		: 500,
 		"randr_notify"				: true,
@@ -1334,7 +1338,6 @@ XpraClient.prototype._make_hello = function() {
 		"encodings.cursor"			: ["png"],
 		"encoding.flush"			: true,
 		"encoding.transparency"		: true,
-		"encoding.scrolling"		: true,
 		//"encoding.scrolling.min-percent" : 30,
 		"encoding.decoder-speed"	: {"video" : 0},
 		"encodings.packet"			: true,
