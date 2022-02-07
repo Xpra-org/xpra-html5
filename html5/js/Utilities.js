@@ -460,6 +460,15 @@ const Utilities = {
 		return window.btoa(s);
 	},
 
+	ToBase64 : function(v) {
+		try {
+			return window.btoa(v);
+		}
+		catch (e) {
+			return ArrayBufferToBase64(v);
+		}
+	},
+
 	convertDataURIToBinary : function (dataURI) {
 		const BASE64_MARKER = ';base64,';
 		const base64Index = dataURI.indexOf(BASE64_MARKER) + BASE64_MARKER.length;

@@ -3032,7 +3032,7 @@ XpraClient.prototype._process_notify_show = function(packet, ctx) {
 	function notify() {
 		let icon_url = "";
 		if (icon && icon[0]=="png") {
-			icon_url = "data:image/png;base64," + Utilities.ArrayBufferToBase64(icon[3]);
+			icon_url = "data:image/png;base64," + Utilities.ToBase64(icon[3]);
 			console.log("notification icon_url=", icon_url);
 		}
 		/*
