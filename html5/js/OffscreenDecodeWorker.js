@@ -454,7 +454,10 @@ onmessage = function (e) {
         case 'check':
             // We do not check. We are here because we support native decoding.
             // TODO: Reconsider this. It might be a good thing to do some testing, just for sanity??
-            const encodings = data.encodings;
+            const encodings = Array.from(data.encodings);
+            if (encodings.indexOf("webp")<0) {
+                encodings.push("webp");
+            }
             self.postMessage({ 'result': true, 'formats': encodings });
             break;
         case 'eos':
