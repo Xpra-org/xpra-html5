@@ -295,7 +295,7 @@ onmessage = function(e) {
 		break;
 	case 'remove':
 		decode_eos(data.wid);
-		on_hold.remove(wid);
+		on_hold.delete(wid);
 		break;
 	case 'decode':
 		decode_draw_packet(data.packet, data.start);
