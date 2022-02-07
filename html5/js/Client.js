@@ -2125,6 +2125,11 @@ XpraClient.prototype._process_hello = function(packet, ctx) {
 			break;
 		}
 	}
+	//don't use offscreen or decode worker with 'rencodeplus':
+	if (ctx.decode_worker && ctx.packet_encoder!="rencodeplus") {
+		ctx.decode_worker = null;
+		ctx.offscreen_api = false;
+	}
 
 	// find the modifier to use for Num_Lock
 	const modifier_keycodes = hello['modifier_keycodes'];
@@ -3157,7 +3162,7 @@ XpraClient.prototype._process_draw = function(packet, ctx) {
 		}
 		raw_buffers.push(img_data.buffer);
 	}
-	if (ctx.decode_worker && ctx.packet_encoder=="rencodeplus") {
+	if (ctx.decode_worker) {
 		ctx.decode_worker.postMessage({'cmd': 'decode', 'packet' : packet, 'start' : now}, raw_buffers);
 		//the worker draw event will call do_process_draw
 	}
