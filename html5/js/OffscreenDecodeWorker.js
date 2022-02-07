@@ -96,17 +96,25 @@ class WindowDecoder {
             this.closed = true;
             this.eos();
         }
+        this.cancel_animation_request();
+        this.cancel_snapshot_timer();
+        this.back_buffer = null;
+        this.snapshot_buffer = null;
+    }
+
+    cancel_animation_request() {
         if (this.animation_request>0) {
             cancelAnimationFrame(this.animation_request);
             this.animation_request = 0;
         }
+    }
+    cancel_snapshot_timer() {
         if (this.snapshot_timer>0) {
             clearTimeout(this.snapshot_timer);
             this.snapshot_timer = 0;
         }
-        this.back_buffer = null;
-        this.snapshot_buffer = null;
     }
+
 
     new_image_decoder() {
         const image_decoder = new XpraImageDecoder();
@@ -397,6 +405,10 @@ class WindowDecoder {
     }
 
     back_to_front() {
+        if (this.back_buffer) {
+            //no back buffer to put on screen!?
+            return;
+        }
         if (this.closed) {
             console.warn("cannot redraw, the decoder is closed");
             return;
@@ -405,20 +417,22 @@ class WindowDecoder {
             console.warn("a redraw is already due - a frame may have been skipped");
             return;
         }
-        if (this.back_buffer) {
-            //show the back buffer at the next vsync:
-            this.animation_request = requestAnimationFrame(() => {
-                this.animation_request = 0;
-                if (this.closed) {
-                    return;
-                }
-                //to show this buffer, just move it to the snapshot canvas
-                //and call redraw() to paint that:
-                this.snapshot_buffer = this.back_buffer;
-                this.back_buffer = null;
-                this.redraw();
-            });
+        //show the back buffer at the next vsync:
+        this.animation_request = requestAnimationFrame(() => {
+            this.animation_request = 0;
+            this.do_back_to_front();
+        });
+    }
+
+    do_back_to_front() {
+        if (this.closed) {
+            return;
         }
+        //to show this buffer, just move it to the snapshot canvas
+        //and call redraw() to paint that:
+        this.snapshot_buffer = this.back_buffer;
+        this.back_buffer = null;
+        this.redraw();
     }
 
     redraw() {
