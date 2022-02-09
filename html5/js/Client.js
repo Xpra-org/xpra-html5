@@ -1828,7 +1828,7 @@ XpraClient.prototype.toggle_window_preview = function(init_cb) {
 	if (preview_element.is(":visible")) {
 		// Restore the current selection if it's minimized.
 		const wid = $(".slick-current .window-preview-item-container").data('wid');
-		console.log("current wid: " + wid);
+		client.clog("current wid: " + wid);
 		if (client.id_to_window[wid].minimized) {
 			client._window_set_focus(client.id_to_window[wid]);
 		}
@@ -3045,7 +3045,7 @@ XpraClient.prototype._process_notify_show = function(packet, ctx) {
 		let icon_url = "";
 		if (icon && icon[0]=="png") {
 			icon_url = "data:image/png;base64," + Utilities.ToBase64(icon[3]);
-			console.log("notification icon_url=", icon_url);
+			this.clog("notification icon_url=", icon_url);
 		}
 		/*
 		const nactions = [];
@@ -3243,7 +3243,7 @@ XpraClient.prototype.do_send_damage_sequence = function(packet_sequence, wid, wi
 	}
 	const packet = ["damage-sequence", packet_sequence, wid, width, height, decode_time, message];
 	if (decode_time<0) {
-		console.warn("decode error packet:", packet);
+		this.cwarn("decode error packet:", packet);
 	}
 	protocol.send(packet);
 }

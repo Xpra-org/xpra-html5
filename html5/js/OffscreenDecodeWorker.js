@@ -491,7 +491,6 @@ onmessage = function (e) {
             // TODO: Reconsider this. It might be a good thing to do some testing, just for sanity??
             const encodings = Array.from(data.encodings);
             const common = encodings.filter(value => all_encodings.includes(value));
-console.log("sending back:", common);
             self.postMessage({ 'result': true, 'formats': common });
             break;
         case 'eos':
