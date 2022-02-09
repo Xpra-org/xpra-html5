@@ -21,7 +21,7 @@ importScripts("./ImageDecoder.js");
 importScripts("./RgbHelpers.js");
 importScripts("./Constants.js");
 
-// Array of offscreen canvases and decoders we have control over
+// WindowDecoder for each window we have control over:
 const offscreen_canvas = new Map();
 
 const image_coding = ["rgb", "rgb32", "rgb24", "jpeg", "png", "png/P", "png/L", "webp"];
@@ -47,7 +47,7 @@ class WindowDecoder {
         this.back_buffer = null;
         this.image_decoder = this.new_image_decoder();
         this.video_decoder = this.new_video_decoder();
-        this.flush_seqs = [];    //this is the sequence numbers of the flush packets
+        this.flush_seqs = [];    //flush packets sequence numbers
         this.pending_paint = new Map();
         this.pending_decode = new Map();
         this.closed = false;
@@ -79,7 +79,7 @@ class WindowDecoder {
         this.back_buffer = new OffscreenCanvas(this.canvas.width, this.canvas.height);
         const ctx = this.back_buffer.getContext("2d");
         ctx.imageSmoothingEnabled = false;
-        if (old_back_buffer && old_back_buffer.width>0 && old_back_buffer.height>0) {0
+        if (old_back_buffer && old_back_buffer.width>0 && old_back_buffer.height>0) {
             ctx.drawImage(old_back_buffer, 0, 0);
         }
     }
@@ -405,7 +405,7 @@ class WindowDecoder {
     }
 
     back_to_front() {
-        if (this.back_buffer) {
+        if (!this.back_buffer) {
             //no back buffer to put on screen!?
             return;
         }
