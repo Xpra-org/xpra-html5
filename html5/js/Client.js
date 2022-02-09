@@ -66,7 +66,7 @@ XpraClient.prototype.init_settings = function() {
 	this.supported_encodings = ["jpeg", "png", "png/P", "png/L", "rgb", "rgb32", "rgb24", "scroll"];
 	//extra encodings we enable if validated via the decode worker:
 	//(we also validate jpeg and png as a sanity check)
-	this.check_encodings = [];	//"webp", "jpeg", "png"];	//"h264", "vp8+webm", "h264+mp4", "mpeg4+mp4"];
+	this.check_encodings = this.supported_encodings;
 	this.debug_categories = [];
 	this.start_new_session = null;
 	this.clipboard_enabled = false;
@@ -464,14 +464,9 @@ XpraClient.prototype.initialize_workers = function() {
 		}
 		switch (data['result']) {
 		case true:
-			const formats = data['formats'];
-			me.clog("we can decode using a worker: "+formats);
-			for (let i = 0; i < formats.length; i++) {
-				const format = formats[i];
-				if (me.supported_encodings.indexOf(format)<0) {
-					me.supported_encodings.push(format);
-				}
-			}
+			const formats = Array.from(data['formats']);
+			me.clog("we can decode using a worker:", me.decode_worker);
+			me.supported_encodings = formats;
 			me.clog("full list of supported encodings:", me.supported_encodings);
 			me.decode_worker = decode_worker;
 			break;
