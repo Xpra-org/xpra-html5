@@ -26,6 +26,9 @@ const offscreen_canvas = new Map();
 
 const image_coding = ["rgb", "rgb32", "rgb24", "jpeg", "png", "png/P", "png/L", "webp"];
 const video_coding = ["h264"];
+const all_encodings = ["void", "scroll"].concat(image_coding, video_coding);
+
+const vsync = false;
 
 
 function send_decode_error(packet, error) {
@@ -48,7 +51,7 @@ class WindowDecoder {
         this.image_decoder = this.new_image_decoder();
         this.video_decoder = this.new_video_decoder();
         this.flush_seqs = [];    //flush packets sequence numbers
-        this.pending_paint = new Map();
+        this.pending_processing = new Map();
         this.pending_decode = new Map();
         this.closed = false;
         this.animation_request = 0;
@@ -104,7 +107,12 @@ class WindowDecoder {
 
     cancel_animation_request() {
         if (this.animation_request>0) {
-            cancelAnimationFrame(this.animation_request);
+            if (vsync) {
+                cancelAnimationFrame(this.animation_request);
+            }
+            else {
+                clearTimeout(this.animation_request);
+            }
             this.animation_request = 0;
         }
     }
@@ -130,15 +138,71 @@ class WindowDecoder {
     }
 
 
+    //we've received a draw packet,
+    //either call decode_packet or save it for later
+    //(pending_processing)
     decode_draw_packet(packet) {
-        const coding = packet[6];
         const packet_sequence = packet[8];
         const options = packet[10] || {};
         const flush = options["flush"] || 0;
+        if (this.closed) {
+            return;
+        }
         if (flush == 0) {
             //this is a 'flush' fence packet, record it:
             this.flush_seqs.push(packet_sequence);
         }
+        //decide if we want to decode it immediately:
+        if (this.flush_seqs.length==0 || packet_sequence<=this.flush_seqs[0]) {
+            this.decode_packet(packet);
+            return;
+        }
+        //or wait:
+        this.pending_processing.set(packet_sequence, packet);
+    }
+
+    may_decode_more() {
+        if (this.flush_seqs.length==0) {
+            //anything pending is for a flush sequence that we have not received yet,
+            //so we can paint them all now:
+            this.process_all(0);
+            //and the upcoming flush packet will trigger next_frame()
+            return;
+        }
+        const flush_seq = this.flush_seqs[0];
+        //process any pending paints for the new current flush sequence no:
+        this.process_all(flush_seq);
+        //if there are any packets waiting to be processed or decoded for this flush sequence no,
+        //then we have to stop there and wait to be called again:
+        const processing_wait = Array.from(this.pending_processing.keys()).filter(x => x <= flush_seq);
+        if (processing_wait.length>0) {
+            return;
+        }
+        const decode_wait = Array.from(this.pending_decode.keys()).filter(x => x <= flush_seq);
+        if (decode_wait.length>0) {
+            return;
+        }
+        //otherwise, we have just painted this screen update fully:
+        this.schedule_show_frame();
+    }
+
+    process_all(max_seq) {
+        //process packets up to max_seq,
+        //in ascending order:
+        const seqs = Array.from(this.pending_processing.keys()).sort((a, b) => a - b);
+        for (let seq of seqs) {
+            if (max_seq>0 && seq>max_seq) {
+                continue;
+            }
+            let packet = this.pending_processing.get(seq);
+            this.pending_processing.delete(seq);
+            this.decode_packet(packet);
+        }
+    }
+
+    decode_packet(packet) {
+        const packet_sequence = packet[8];
+        const coding = packet[6];
         //record this packet as pending:
         this.pending_decode.set(packet_sequence, performance.now());
         try {
@@ -169,11 +233,6 @@ class WindowDecoder {
 
     decode_error(packet, error) {
         this.close();
-        //fail any packets pending and rely on the next refresh
-        //which is going to be triggered by the decoding error(s)
-        this.pending_paint.forEach((p) => {
-            send_decode_error(p, "cancelled by decoding error");
-        });
         this.init();
         const coding = packet[6];
         const packet_sequence = packet[8];
@@ -206,81 +265,72 @@ class WindowDecoder {
                 return;
             }
 
-            if (this.flush_seqs.length==0) {
-                //we haven't received the flush packet yet,
-                //so this one is definitely older:
-                this.paint_packet(packet);
-                return;
-            }
-            //flush_seq is the current sequence no of the flush group we are dealing with:
-            let flush_seq = this.flush_seqs[0];
-            if (packet_sequence>flush_seq) {
-                //this packet is for a later flush sequence,
-                //queue it for later:
-                this.pending_paint.set(packet_sequence, packet);
-                return;
-            }
-            //the packet's sequence no is part of the current flush group,
-            //so we can just paint it immediately:
             this.paint_packet(packet);
+
             //any snapshot is now out of date:
             this.snapshot_buffer = null;
 
-            //are there any packets still waiting to be decoded
-            //for the current sequence?
-            if (Array.from(this.pending_decode.keys()).filter(x => x <= flush_seq).length>0) {
+            //are there any packets still waiting to be decoded?
+            if (this.flush_seqs.length==0) {
+                return;
+            }
+            //for the current flush sequence?
+            const flush_seq = this.flush_seqs[0];
+            const decode_wait = Array.from(this.pending_decode.keys()).filter(x => x <= flush_seq);
+            if (decode_wait.length>0) {
                 //yes, found some pending decodes with a sequence number lower than the current flush
                 return;
             }
-            //there are no more pending decodes for the current flush sequence no
-            //so it can be removed:
-            this.flush_seqs.shift();
             //we're going to have a snapshot ready (when using the back buffer),
             //or we're going to schedule a take_snapshot()
             //so we can safely cancel the current timer:
-            if (this.snapshot_timer>0) {
-                clearTimeout(this.snapshot_timer);
-            }
-            //we can update the canvas front buffer
-            //if we were using a back buffer to draw the screen updates:
-            if (this.back_buffer) {
-                this.back_to_front();
-            }
-            else {
-                //schedule a capture of the front buffer contents:
-                this.snapshot_timer = setTimeout(() => this.take_snapshot(), 100);
-            }
+            this.cancel_snapshot_timer();
 
-            if (this.flush_seqs.length==0) {
-                //anything pending is for a flush sequence that we have not received yet,
-                //so we can paint them all now:
-                this.paint_all(0);
-                return;
-            }
-            while (this.flush_seqs.length>0) {
-                //process the next flush sequence no:
-                flush_seq = this.flush_seqs[0];
-                //process any pending paints for the new current flush sequence no:
-                this.paint_all(flush_seq);
-                //if there are any pending decodes for this sequence no,
-                //then we have to stop there and wait to be called again
-                if (Array.from(this.pending_decode.keys()).filter(x => x <= flush_seq).length>0) {
-                    break;
-                }
-                //otherwise, we have just painted this screen update fully:
-                this.flush_seqs.shift();
-                //and we can update the canvas front buffer:
-                //if we were using a back buffer to draw the screen updates:
-                if (this.back_buffer) {
-                    this.back_to_front();
-                }
-            }
+            this.schedule_show_frame();
         }
         catch (e) {
             console.error("error handling decoded packet:", e);
             this.decode_error(packet, e);
         }
     }
+
+    schedule_show_frame() {
+        //move to the next frame at the next vsync:
+        if (vsync) {
+            this.animation_request = requestAnimationFrame((t) => {
+                this.animation_request = 0;
+                this.next_frame();
+            });
+        }
+        else {
+            this.animation_request = setTimeout(() => {
+                this.animation_request = 0;
+                this.next_frame();
+            }, 50);
+        }
+    }
+
+    next_frame() {
+        //there are no more pending decodes for the current flush sequence no
+        //so it can be removed:
+        this.flush_seqs.shift();
+        this.show_frame();
+        //we can start decoding the next frame:
+        this.may_decode_more();
+    }
+
+    show_frame() {
+        //we can update the canvas front buffer
+        //if we were using a back buffer to draw the screen updates:
+        if (this.back_buffer) {
+            this.back_to_front();
+        }
+        else {
+            //schedule a capture of the front buffer contents:
+            this.snapshot_timer = setTimeout(() => this.take_snapshot(), 100);
+        }
+    }
+
     send_decode_ok(packet, start) {
         //copy the packet so we can zero out the data:
         const clone = Array.from(packet);
@@ -291,20 +341,6 @@ class WindowDecoder {
         clone[7] = null;
         clone[10] = options;
         self.postMessage({ 'draw': clone, 'start': start });
-    }
-
-    paint_all(max_seq) {
-        //process pending paints up to max_seq,
-        //in ascending order:
-        const seqs = Array.from(this.pending_paint.keys()).sort((a, b) => a - b);
-        for (let seq of seqs) {
-            if (max_seq>0 && seq>max_seq) {
-                break;
-            }
-            let packet = this.pending_paint.get(seq);
-            this.paint_packet(packet);
-            this.pending_paint.delete(seq);
-        }
     }
 
     paint_packet(packet) {
@@ -413,21 +449,6 @@ class WindowDecoder {
             console.warn("cannot redraw, the decoder is closed");
             return;
         }
-        if (this.animation_request>0) {
-            console.warn("a redraw is already due - a frame may have been skipped");
-            return;
-        }
-        //show the back buffer at the next vsync:
-        this.animation_request = requestAnimationFrame(() => {
-            this.animation_request = 0;
-            this.do_back_to_front();
-        });
-    }
-
-    do_back_to_front() {
-        if (this.closed) {
-            return;
-        }
         //to show this buffer, just move it to the snapshot canvas
         //and call redraw() to paint that:
         this.snapshot_buffer = this.back_buffer;
@@ -469,7 +490,8 @@ onmessage = function (e) {
             // We do not check. We are here because we support native decoding.
             // TODO: Reconsider this. It might be a good thing to do some testing, just for sanity??
             const encodings = Array.from(data.encodings);
-            const common = encodings.filter(value => image_coding.includes(value) || video_coding.includes(value));
+            const common = encodings.filter(value => all_encodings.includes(value));
+console.log("sending back:", common);
             self.postMessage({ 'result': true, 'formats': common });
             break;
         case 'eos':
