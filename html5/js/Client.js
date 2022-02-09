@@ -617,10 +617,10 @@ XpraClient.prototype._screen_resized = function(event, ctx) {
 
 	// Make a DESKTOP-type window fullscreen automatically.
 	// This resizes things like xfdesktop according to the window size.
-	if (iwin.fullscreen === false && client.is_window_desktop(iwin)) {
-		clog("auto fullscreen desktop window: " + iwin.metadata.title);
-		iwin.set_fullscreen(true);
-		iwin.screen_resized();
+	if (this.fullscreen === false && this.client.is_window_desktop(iwin)) {
+		clog("auto fullscreen desktop window: " + this.metadata.title);
+		this.set_fullscreen(true);
+		this.screen_resized();
 	}
 	// Re-position floating toolbar menu
 	this.position_float_menu();
