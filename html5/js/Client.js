@@ -2139,6 +2139,7 @@ XpraClient.prototype._process_hello = function(packet, ctx) {
 	}
 	//don't use offscreen or decode worker with 'rencodeplus':
 	if (ctx.decode_worker && ctx.packet_encoder!="rencodeplus") {
+		Utilities.clog("turning off decode worker for "+ctx.packet_encoder+" packet encoder");
 		ctx.decode_worker = null;
 		ctx.offscreen_api = false;
 	}
