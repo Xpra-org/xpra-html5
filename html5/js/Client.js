@@ -1748,7 +1748,8 @@ XpraClient.prototype.read_clipboard_text = function() {
  * Focus
  */
 XpraClient.prototype._window_set_focus = function(win) {
-	if (win==null || win.client.server_readonly || !this.connected) {
+	const client = win.client;
+	if (win==null || client.server_readonly || !client.connected) {
 		return;
 	}
 	// don't send focus packet for override_redirect windows!
@@ -1759,7 +1760,6 @@ XpraClient.prototype._window_set_focus = function(win) {
 		//tell server to map it:
 		win.toggle_minimized();
 	}
-	const client = win.client;
 	const wid = win.wid;
 	if (client.focus == wid) {
 		return;
