@@ -149,19 +149,11 @@ XpraWindow.prototype.add_window_decorations = function() {
 		jQuery(this.div).draggable({ transform: true });
 	}
 	jQuery(this.div).draggable({ cancel: "canvas" });
-	function root_window_click(ev) {
-		//fake a click on the root window,
-		//this helps some buggy Java applications close their popup menus
-		client.do_window_mouse_click(ev, null, true);
-		client.do_window_mouse_click(ev, null, false);
-	}
 	jQuery("#head"+String(this.wid)).click(function(ev) {
-		root_window_click(ev);
 		me.set_focus_cb(me);
 	});
 	jQuery(this.div).on("dragstart",function(ev){
 		client.release_buttons(ev, me);
-		root_window_click(ev);
 		me.set_focus_cb(me);
 		client.mouse_grabbed = true;
 	});
