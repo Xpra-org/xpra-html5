@@ -132,6 +132,7 @@ XpraClient.prototype.init_state = function() {
 	this.last_keycode_pressed = 0;
 	this.last_key_packet = [];
 	// mouse
+	this.buttons_pressed = new Set();
 	this.last_button_event = [-1, false, -1, -1];
 	this.mousedown_event = null;
 	this.last_mouse_x = null;
@@ -1441,7 +1442,7 @@ XpraClient.prototype._new_ui_event = function() {
 /**
  * Mouse handlers
  */
-XpraClient.prototype.getMouse = function(e, window) {
+XpraClient.prototype.getMouse = function(e) {
 	// get mouse position take into account scroll
 	let mx = e.clientX + jQuery(document).scrollLeft();
 	let my = e.clientY + jQuery(document).scrollTop();
@@ -1501,7 +1502,7 @@ XpraClient.prototype.do_window_mouse_move = function(e, window) {
 	if (this.server_readonly || this.mouse_grabbed || !this.connected) {
 		return;
 	}
-	const mouse = this.getMouse(e, window),
+	const mouse = this.getMouse(e),
 		x = Math.round(mouse.x),
 		y = Math.round(mouse.y);
 	const modifiers = this._keyb_get_modifiers(e);
@@ -1523,6 +1524,18 @@ XpraClient.prototype._window_mouse_up = function(ctx, e, window) {
 	ctx.do_window_mouse_click(e, window, false);
 };
 
+XpraClient.prototype.release_buttons = function(e, window) {
+	const mouse = this.getMouse(e),
+		x = Math.round(mouse.x),
+		y = Math.round(mouse.y),
+		modifiers = this._keyb_get_modifiers(e),
+		wid = window.wid,
+		pressed = false;
+	for (let button of this.buttons_pressed) {
+		me.send_button_action(wid, button, pressed, x, y, modifiers);
+	}
+}
+
 XpraClient.prototype.do_window_mouse_click = function(e, window, pressed) {
 	if (this.server_readonly || this.mouse_grabbed || !this.connected) {
 		return;
@@ -1540,7 +1553,6 @@ XpraClient.prototype.do_window_mouse_click = function(e, window, pressed) {
 		x = Math.round(mouse.x),
 		y = Math.round(mouse.y);
 	const modifiers = this._keyb_get_modifiers(e);
-	const buttons = [];
 	let wid = 0;
 	if (window) {
 		wid = window.wid;
@@ -1566,9 +1578,20 @@ XpraClient.prototype.do_window_mouse_click = function(e, window, pressed) {
 	}
 	const me = this;
 	setTimeout(function() {
-		this.clipboard_delayed_event_time = performance.now()+CLIPBOARD_EVENT_DELAY;
-		me.send(["button-action", wid, button, pressed, [x, y], modifiers, buttons]);
+		me.clipboard_delayed_event_time = performance.now()+CLIPBOARD_EVENT_DELAY;
+		me.send_button_action(wid, button, pressed, x, y, modifiers);
 	}, send_delay);
+}
+
+XpraClient.prototype.send_button_action = function(wid, button, pressed, x, y, modifiers) {
+	const buttons = [];
+	if (pressed) {
+		this.buttons_pressed.add(button);
+	}
+	else {
+		this.buttons_pressed.delete(button);
+	}
+	this.send(["button-action", wid, button, pressed, [x, y], modifiers, buttons]);
 };
 
 XpraClient.prototype._window_mouse_scroll = function(ctx, e, window) {
@@ -1579,7 +1602,7 @@ XpraClient.prototype.do_window_mouse_scroll = function(e, window) {
 	if (this.server_readonly || this.mouse_grabbed || !this.connected) {
 		return;
 	}
-	const mouse = this.getMouse(e, window),
+	const mouse = this.getMouse(e),
 		x = Math.round(mouse.x),
 		y = Math.round(mouse.y);
 	const modifiers = this._keyb_get_modifiers(e);
