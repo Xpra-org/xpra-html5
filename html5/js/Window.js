@@ -155,7 +155,10 @@ XpraWindow.prototype.add_window_decorations = function() {
 		client.do_window_mouse_click(ev, null, true);
 		client.do_window_mouse_click(ev, null, false);
 	}
-	jQuery("#head"+String(this.wid)).click(root_window_click);
+	jQuery("#head"+String(this.wid)).click(function(ev) {
+		root_window_click(ev);
+		me.set_focus_cb(me);
+	});
 	jQuery(this.div).on("dragstart",function(ev,ui){
 		client.do_window_mouse_click(ev, me, false);
 		root_window_click(ev);
