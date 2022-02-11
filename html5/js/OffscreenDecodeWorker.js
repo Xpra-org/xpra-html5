@@ -306,7 +306,7 @@ class WindowDecoder {
             this.animation_request = setTimeout(() => {
                 this.animation_request = 0;
                 this.next_frame();
-            }, 20);
+            }, 16);
         }
     }
 
