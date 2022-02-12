@@ -136,7 +136,7 @@ function decode_draw_packet(packet, start) {
 			const data = decode_rgb(packet);
 			send_rgb32_back(data, width, height, bitmap_options);
 		}
-		else if (coding.startsWith("png") || coding=="jpeg" || coding=="webp") {
+		else if (coding.startsWith("png") || coding=="jpeg" || coding=="webp" || coding=="avif") {
 			const data = packet[7];
 			if (!data.buffer) {
 				decode_error("missing pixel data buffer: "+(typeof data));

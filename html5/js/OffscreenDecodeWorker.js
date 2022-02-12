@@ -24,7 +24,7 @@ importScripts("./Constants.js");
 // WindowDecoder for each window we have control over:
 const offscreen_canvas = new Map();
 
-const image_coding = ["rgb", "rgb32", "rgb24", "jpeg", "png", "png/P", "png/L", "webp"];
+const image_coding = ["rgb", "rgb32", "rgb24", "jpeg", "png", "png/P", "png/L", "webp", "avif"];
 const video_coding = ["h264"];
 const all_encodings = ["void", "scroll"].concat(image_coding, video_coding);
 

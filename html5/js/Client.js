@@ -63,7 +63,7 @@ XpraClient.prototype.init_settings = function() {
 	this.encoding = "auto";
 	//basic set of encodings:
 	//(more may be added after checking via the DecodeWorker)
-	this.supported_encodings = ["jpeg", "png", "png/P", "png/L", "rgb", "rgb32", "rgb24", "scroll", "webp", "void"];
+	this.supported_encodings = ["jpeg", "png", "png/P", "png/L", "rgb", "rgb32", "rgb24", "scroll", "webp", "void", "avif"];
 	//extra encodings we enable if validated via the decode worker:
 	//(we also validate jpeg and png as a sanity check)
 	this.check_encodings = this.supported_encodings;
@@ -396,9 +396,11 @@ XpraClient.prototype.connect = function() {
 }
 
 XpraClient.prototype.initialize_workers = function() {
+	const safe_encodings = ["jpeg", "png", "png/P", "png/L", "rgb", "rgb32", "rgb24", "scroll", "void"];
 	// detect websocket in webworker support and degrade gracefully
 	if (!window.Worker) {
 		// no webworker support
+		this.supported_encodings = safe_encodings;
 		this.offscreen_api = false;
 		this.decode_worker = false;
 		this.clog("no webworker support at all.");
@@ -431,6 +433,7 @@ XpraClient.prototype.initialize_workers = function() {
 	worker.postMessage({'cmd': 'check'});
 
 	if (!DECODE_WORKER) {
+		this.supported_encodings = safe_encodings;
 		this.decode_worker = false;
 		return;
 	}
