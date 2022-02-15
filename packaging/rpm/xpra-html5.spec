@@ -77,7 +77,7 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
-* Mon Dec 20 2021 Antoine Martin <antoine@xpra.org> 5.0-1107-1
+* Tue Feb 15 2022 Antoine Martin <antoine@xpra.org> 5.0-1237-1
 - TODO
 
 * Fri Dec 17 2021 Antoine Martin <antoine@xpra.org> 4.5.2-1106-1
