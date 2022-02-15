@@ -23,6 +23,7 @@ const DEFAULT_BOX_COLORS = {
         "mpeg4"   : "black",
         "scroll"  : "brown",
         "mpeg1"   : "olive",
+        "avif"    : "cyan",
         };
 
 
