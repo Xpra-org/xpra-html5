@@ -1,10 +1,10 @@
 # This file is part of Xpra.
-# Copyright (C) 2010-2021 Antoine Martin <antoine@xpra.org>
+# Copyright (C) 2010-2022 Antoine Martin <antoine@xpra.org>
 # Xpra is released under the terms of the GNU GPL v2, or, at your option, any
 # later version. See the file COPYING for details.
 
 %define version 5.0
-%define release 1.r1084%{?dist}
+%define release 1.r1237%{?dist}
 %define minifier uglifyjs
 %define python python3
 
@@ -57,12 +57,8 @@ or by any other web server.
 %install
 mkdir -p %{buildroot}%{_datadir}/xpra/www
 mkdir -p %{buildroot}%{_sysconfdir}/xpra/html5-client
-%{python} ./setup.py install %{buildroot}%{_datadir}/xpra/www/ %{minifier}
-# Move and symlink configuration files
-cp %{buildroot}%{_datadir}/xpra/www/default-settings.txt %{buildroot}%{_sysconfdir}/xpra/html5-client/
-rm %{buildroot}%{_datadir}/xpra/www/default-settings.txt
-ln -sf %{_sysconfdir}/xpra/html5-client/default-settings.txt %{buildroot}%{_datadir}/xpra/www/default-settings.txt
-# Ensure there are no executeable files:
+%{python} ./setup.py install %{buildroot} %{_datadir}/xpra/www/ %{_sysconfdir}/xpra/html5-client %{minifier}
+# Ensure there are no executable files:
 find %{buildroot}%{_datadir}/xpra/www/ -type f -exec chmod 0644 {} \;
 mkdir -p %{buildroot}/usr/share/doc/xpra-html5/
 %if 0%{?el8}%{?fedora}
@@ -77,7 +73,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_sysconfdir}/xpra/html5-client
 %{_datadir}/xpra/www
 %if 0%{?el8}%{?fedora}
-%doc xpra-html5/LICENSE
+%doc LICENSE
 %endif
 
 %changelog
