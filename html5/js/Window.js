@@ -150,7 +150,9 @@ XpraWindow.prototype.add_window_decorations = function() {
 	}
 	jQuery(this.div).draggable({ cancel: "canvas" });
 	jQuery("#head"+String(this.wid)).click(function(ev) {
-		me.set_focus_cb(me);
+		if (!me.minimized) {
+			me.set_focus_cb(me);
+		}
 	});
 	jQuery(this.div).on("dragstart",function(ev){
 		client.release_buttons(ev, me);
