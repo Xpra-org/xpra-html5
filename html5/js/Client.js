@@ -1399,6 +1399,7 @@ XpraClient.prototype._make_hello = function() {
 		// encoding stuff
 		"encoding.rgb_zlib"			: true,
 		"windows"					: true,
+		"window.pre-map"			: true,
 		//partial support:
 		"keyboard"					: true,
 		"xkbmap_layout"				: this.key_layout,
