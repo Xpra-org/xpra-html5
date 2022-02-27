@@ -632,7 +632,10 @@ XpraProtocol.prototype.setup_cipher = function(caps, key, setup_fn) {
 	if (cipher!="AES") {
 		throw "unsupported encryption specified: '"+cipher+"'";
 	}
-	const key_salt = caps["cipher.key_salt"];
+	let key_salt = caps["cipher.key_salt"];
+	if (typeof key_salt !== 'string') {
+		key_salt = String.fromCharCode.apply(null, key_salt);
+	}
 	const iterations = caps["cipher.key_stretch_iterations"];
 	if (iterations<0) {
 		throw "invalid number of iterations: "+iterations;
