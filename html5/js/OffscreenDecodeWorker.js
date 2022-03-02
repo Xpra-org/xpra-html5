@@ -404,8 +404,8 @@ class WindowDecoder {
             }
         }
         else if (coding == "frame") {
-            let enc_width = w;
-            let enc_height = h;
+            let enc_width = width;
+            let enc_height = height;
             const options = packet[10] || {};
             const scaled_size = options["scaled_size"];
             if (scaled_size) {
