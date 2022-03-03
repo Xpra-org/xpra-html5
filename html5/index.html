@@ -1409,7 +1409,7 @@
 				});
 				// disable right click menu:
 				window.oncontextmenu = function(e) {
-					if (this.clipboard_direction === "to-client" || this.clipboard_direction === "both") {
+					if (client.clipboard_direction === "to-client" || client.clipboard_direction === "both") {
 						client._poll_clipboard(e);
 					}
 					e.preventDefault();
@@ -1419,7 +1419,7 @@
 
 				// Send clipboard from browser on focus if client-to-server clipboard is enabled.
 				$(window).on("focus", (e) => {
-					if (this.clipboard_direction === "to-server" || this.clipboard_direction === "both") {
+					if (client.clipboard_direction === "to-server" || client.clipboard_direction === "both") {
 						client._poll_clipboard(e);
 					}
 				});
