@@ -371,7 +371,7 @@ def install_html5(root="/", install_dir="/usr/share/xpra/www/", config_dir="/etc
         if paths:
             extra_symlinks = {"background.png" : paths}
             for f, symlink_options in extra_symlinks.items():
-                dst = os.path.join(root, install_dir, f)
+                dst = os.path.join(root+install_dir, f)
                 if install_symlink(symlink_options, dst):
                     break
 
