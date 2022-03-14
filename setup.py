@@ -244,6 +244,8 @@ def install_html5(root="/", install_dir="/usr/share/xpra/www/", config_dir="/etc
             dst = os.path.join(root+install_dir, fname)
             if os.path.exists(dst):
                 os.unlink(dst)
+            elif not os.path.exists(root+install_dir):
+                os.makedirs(root+install_dir, 0o755)
             if fname in configuration_files and config_dir and config_dir!=install_dir:
                 #install configuration files in `config_dir` in root:
                 cdir = root+config_dir
@@ -253,8 +255,8 @@ def install_html5(root="/", install_dir="/usr/share/xpra/www/", config_dir="/etc
                 shutil.copyfile(src, config_file)
                 os.chmod(config_file, 0o644)
                 #and create a symlink from `install_dir`:
-                #pointing to the config_file without the root:
-                config_file = os.path.join(config_dir, fname)
+                #pointing to the config_file:
+                config_file = os.path.join(cdir, fname)
                 os.symlink(config_file, dst)
                 print("config file symlinked: %s -> %s" % (dst, config_file))
                 continue
