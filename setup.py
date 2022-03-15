@@ -183,6 +183,8 @@ def install_html5(root="/", install_dir="/usr/share/xpra/www/", config_dir="/etc
         print("minifying html5 client to '%s' using %s" % (install_dir, minifier))
     else:
         print("copying html5 client to '%s'" % (install_dir, ))
+    if install_dir==".":
+        install_dir = os.getcwd()
     brotli_cmd = None
     brotli_version = None
     if brotli:
@@ -239,8 +241,6 @@ def install_html5(root="/", install_dir="/usr/share/xpra/www/", config_dir="/etc
             parts = fname.split(os.path.sep)
             if parts[0]=="html5":
                 fname = os.path.join(*parts[1:])
-            if install_dir==".":
-                install_dir = os.getcwd()
             dst = os.path.join(root+install_dir, fname)
             if os.path.exists(dst):
                 os.unlink(dst)
