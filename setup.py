@@ -549,7 +549,7 @@ def main(args):
         #these default paths can be overriden on the command line:
         if len(args)>=3:
             root_dir = os.path.normpath(args[2])
-            if sys.platform.startswith("win") or sys.platform.startswith("darwin") and len(args)==3:
+            if (sys.platform.startswith("win") or sys.platform.startswith("darwin")) and len(args)==3:
                 #backwards compatibility with xpra builds that include the html5 client
                 #on MS Windows and MacOS, everything is installed in the root directory:
                 install_dir = ""
