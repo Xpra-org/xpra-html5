@@ -515,7 +515,7 @@ def sdist():
 
 
 def main(args):
-    if len(args)<2 or len(args)>=7:
+    def help():
         print("invalid number of arguments, usage:")
         print("%s sdist" % (args[0],))
         print("%s install [ROOT] [INSTALL_DIR] [MINIFIER]" % (args[0],))
@@ -523,6 +523,8 @@ def main(args):
         print("%s rpm" % (args[0],))
         print("%s set-version VERSION" % (args[0],))
         return 1
+    if len(args)<2 or len(args)>=7:
+        return help()
     cmd = args[1]
     if cmd=="sdist":
         sdist()
@@ -575,8 +577,7 @@ def main(args):
         set_version(NEW_VERSION)
         #add changelog entries if not present yet?
         return 0
-    print("invalid arguments, use 'sdist' or 'install'")
-    sys.exit(1)
+    return help()
 
 if __name__ == "__main__":
     sys.exit(main(sys.argv))
