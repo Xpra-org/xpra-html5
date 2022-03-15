@@ -242,7 +242,9 @@ def install_html5(root="/", install_dir="/usr/share/xpra/www/", config_dir="/etc
             if parts[0]=="html5":
                 fname = os.path.join(*parts[1:])
             dst = os.path.join(root+install_dir, fname)
-            if os.path.exists(dst):
+            if not os.path.exists(root+install_dir):
+                os.makedirs(root+install_dir, 0o755)
+            elif os.path.exists(dst):
                 os.unlink(dst)
             if fname in configuration_files and config_dir and config_dir!=install_dir:
                 #install configuration files in `config_dir` in root:
