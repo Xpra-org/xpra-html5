@@ -529,6 +529,21 @@
 				password_input.focus();
 				password_input.addEventListener("keydown", password_special_keys);
 			}
+			
+			function keycloak_prompt_fn(url, callback) {
+				const params = new URLSearchParams(window.location.search);
+				const code = params.get("code");
+				const error = params.get("error");
+				if (error) {
+					const error_description = params.get("error_description");
+					callback(JSON.stringify({ error, error_description }));
+				} else if (!code) {
+					window.location.href = url;
+				} else {
+					history.replaceState({}, "", window.location.pathname);
+					callback(JSON.stringify({ code }));
+				}
+			}
 
 			let touchaction_scroll = true;
 			function toggle_touchaction() {
@@ -1379,6 +1394,7 @@
 					}
 				});
 				client.password_prompt_fn = password_prompt_fn;
+				client.keycloak_prompt_fn = keycloak_prompt_fn;
 				$('#fullscreen').on('click', function (e) {
 					toggle_fullscreen();
 				});
