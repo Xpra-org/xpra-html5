@@ -469,7 +469,7 @@ XpraClient.prototype.initialize_workers = function() {
 		switch (data['result']) {
 		case true:
 			const formats = Array.from(data['formats']);
-			me.clog("we can decode using a worker:", me.decode_worker);
+			me.clog("we can decode using a worker:", decode_worker);
 			me.supported_encodings = formats;
 			me.clog("full list of supported encodings:", me.supported_encodings);
 			me.decode_worker = decode_worker;
