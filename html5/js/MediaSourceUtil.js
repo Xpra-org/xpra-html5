@@ -121,19 +121,21 @@ const MediaSourceUtil = {
 				return {};
 			}
 			const codecs_supported = {};
+			const codecs_failed = {};
 			if(AV && AV.Decoder && AV.Decoder.find) {
 				for (const codec_option in MediaSourceConstants.AURORA_CODECS) {
 					const codec_string = MediaSourceConstants.AURORA_CODECS[codec_option];
 					const decoder = AV.Decoder.find(codec_string);
 					if(decoder) {
-						Utilities.log("audio codec aurora OK  '"+codec_option+"' / '"+codec_string+"'");
 						codecs_supported[codec_option] = codec_string;
 					}
 					else {
-						Utilities.log("audio codec aurora NOK '"+codec_option+"' / '"+codec_string+"'");
+						codecs_failed[codec_option] = codec_string;
 					}
 				}
 			}
+			Utilities.log("audio aurora codecs supported:", codecs_supported);
+			Utilities.log("audio aurora codecs not available:", codecs_failed);
 			return codecs_supported;
 		},
 
@@ -148,11 +150,12 @@ const MediaSourceUtil = {
 				return [];
 			}
 			const codecs_supported = [];
+			const codecs_failed = {};
 			for (const codec_option in MediaSourceConstants.CODEC_STRING) {
 				const codec_string = MediaSourceConstants.CODEC_STRING[codec_option];
 				try {
 					if(!media_source_class.isTypeSupported(codec_string)) {
-						Utilities.log("audio codec MediaSource NOK: '"+codec_option+"' / '"+codec_string+"'");
+						codecs_failed[codec_option] = codec_string;
 						//add whitelisting here?
 						continue;
 					}
@@ -171,22 +174,23 @@ const MediaSourceUtil = {
 						}
 					}
 					if(blacklist.includes(codec_option)) {
-						Utilities.log("audio codec MediaSource '"+codec_option+"' / '"+codec_string+"' is blacklisted for "+navigator.userAgent);
 						if(ignore_blacklist) {
 							Utilities.log("blacklist overruled!");
 						}
 						else {
+							codecs_failed[codec_option] = codec_string;
 							continue;
 						}
 					}
 					codecs_supported[codec_option] = codec_string;
-					Utilities.log("audio codec MediaSource OK  '"+codec_option+"' / '"+codec_string+"'");
 				}
 				catch (e) {
 					Utilities.error("audio error probing codec '"+codec_string+"' / '"+codec_string+"': "+e);
+					codecs_failed[codec_option] = codec_string;
 				}
 			}
-			Utilities.log("getMediaSourceAudioCodecs(", ignore_blacklist, ")=", codecs_supported);
+			Utilities.log("audio codec MediaSource supported:", codecs_supported);
+			Utilities.log("audio codec MediaSource not available:", codecs_failed);
 			return codecs_supported;
 		},
 
