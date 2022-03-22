@@ -1185,7 +1185,7 @@ XpraClient.prototype.do_send_hello = function(challenge_response, client_salt) {
 			});
 		}
 	}
-	this.clog("hello capabilities", this.capabilities);
+	this.clog("sending hello capabilities", this.capabilities);
 	// verify:
 	for (const key in this.capabilities) {
 		if (key==null) {
@@ -2124,6 +2124,7 @@ XpraClient.prototype._process_hello = function(packet, ctx) {
 	//show("process_hello("+packet+")");
 	ctx.cancel_hello_timer();
 	const hello = packet[1];
+	ctx.clog("received hello capabilities", hello);
 	ctx.server_display = hello["display"] || "";
 	ctx.server_platform = hello["platform"] || "";
 	ctx.server_remote_logging = hello["remote-logging.multi-line"];
