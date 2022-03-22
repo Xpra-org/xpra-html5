@@ -1,0 +1,41 @@
+
+name: HTML5
+
+on: [push, pull_request]
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  install_nix_native:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: APT
+        run: |
+          sudo apt-get update
+          sudo apt-get -y install python3 uglifyjs brotli libjs-jquery libjs-jquery-ui gnome-backgrounds
+
+      - name: Install Direct
+        run: |
+          python3 setup.py install "/" \
+            "$HOME/inst-direct/usr/share/xpra/www/" \
+            "$HOME/inst-direct/etc/xpra/html5-client"
+      - name: List Direct
+        run:  ls -lR "$HOME/inst-direct"
+
+      - name: Install DESTDIR
+        run: |
+          python3 setup.py install "$HOME/inst-root" \
+            "/usr/share/xpra/www/" \
+            "/etc/xpra/html5-client"
+      - name: List DESTDIR
+        run: ls -lR "$HOME/inst-root"
+
+      - name: Install Root
+        run: |
+          sudo python3 setup.py install
+      - name: List Root
+        run: ls -lR /usr/share/xpra /etc/xpra
