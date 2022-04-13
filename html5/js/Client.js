@@ -1331,7 +1331,11 @@ XpraClient.prototype._make_hello = function() {
 	this.key_layout = this._get_keyboard_layout();
 	if (this.supported_encodings.indexOf("scroll")>0) {
 		//support older servers which use a capability for enabling 'scroll' encoding:
-		this._update_capabilities({"encoding.scrolling"		: true});
+		this._update_capabilities({
+			"encoding.scrolling"				: true,
+			"encoding.scrolling.min-percent" 	: 50,
+			"encoding.scrolling.preference" 	: 20,
+			});
 	}
 	this._update_capabilities({
 		"auto_refresh_delay"		: 500,
@@ -1355,7 +1359,6 @@ XpraClient.prototype._make_hello = function() {
 		"encodings.cursor"			: ["png"],
 		"encoding.flush"			: true,
 		"encoding.transparency"		: true,
-		//"encoding.scrolling.min-percent" : 30,
 		"encoding.decoder-speed"	: {"video" : 0},
 		"encodings.packet"			: true,
 		//"encoding.min-speed"		: 80,
