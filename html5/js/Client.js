@@ -107,6 +107,7 @@ XpraClient.prototype.init_state = function() {
 	this.RGB_FORMATS = ["RGBX", "RGBA", "RGB"];
 	this.disconnect_reason = null;
 	this.password_prompt_fn = null;
+	this.keycloak_prompt_fn = null;
 	// audio
 	this.audio = null;
 	this.audio_enabled = false;
@@ -1202,7 +1203,7 @@ XpraClient.prototype.do_send_hello = function(challenge_response, client_salt) {
 
 XpraClient.prototype._make_hello_base = function() {
 	this.capabilities = {};
-	const digests = ["hmac", "hmac+md5", "xor"];
+	const digests = ["hmac", "hmac+md5", "xor", "keycloak"];
 	if (typeof forge!=='undefined') {
 		try {
 			this.debug("network", "forge.md.algorithms=", forge.md.algorithms);
@@ -2478,14 +2479,19 @@ XpraClient.prototype._process_challenge = function(packet, ctx) {
 			ctx.close();
 			return;
 		}
-		ctx.do_process_challenge(digest, server_salt, salt_digest, password);
+		const challenge_digest = digest.startsWith("keycloak") ? "xor" : digest;
+		ctx.do_process_challenge(challenge_digest, server_salt, salt_digest, password);
 	}
 	if (ctx.passwords.length>0) {
 		const password = ctx.passwords.shift();
 		do_process_challenge(password);
 		return;
 	}
-	if (ctx.password_prompt_fn) {
+	if (digest.startsWith("keycloak") && ctx.keycloak_prompt_fn) {
+		ctx.cancel_hello_timer();
+		ctx.keycloak_prompt_fn(server_salt, do_process_challenge);
+		return;
+	} else if (ctx.password_prompt_fn) {
 		const address = ""+client.host+":"+client.port;
 		ctx.cancel_hello_timer();
 		ctx.password_prompt_fn("The server at "+address+" requires a "+prompt, do_process_challenge);
