@@ -18,7 +18,7 @@
 const XPRA_CLIENT_FORCE_NO_WORKER = false;
 const CLIPBOARD_IMAGES = true;
 const CLIPBOARD_EVENT_DELAY = 100;
-const DECODE_WORKER = !Utilities.isMobile();
+const DECODE_WORKER = true;
 const rencode_ok = rencode && rencode_selftest();
 const SHOW_START_MENU = true;
 
