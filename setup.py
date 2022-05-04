@@ -223,6 +223,7 @@ def install_html5(root="/", install_dir="/usr/share/xpra/www/", config_dir="/etc
             ],
         "materialicons-regular.ttf"     : [
             "/usr/share/fonts/truetype/material-design-icons-iconfont/MaterialIcons-Regular.ttf",
+            "/usr/share/fonts/material-icons-fonts/MaterialIcons-Regular.ttf",
             ],
         "materialicons-regular.woff"     : [
             "/usr/share/fonts/woff/material-design-icons-iconfont/MaterialIcons-Regular.woff",
