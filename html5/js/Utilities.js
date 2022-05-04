@@ -68,6 +68,13 @@ const Utilities = {
 		}
 	},
 
+	stristrue : function(v, default_value) {
+		if (v===null) {
+			return default_value;
+		}
+		return ["true", "on", "1", "yes", "enabled"].indexOf(String(v).toLowerCase())!==-1;
+	},
+
 	getHexUUID: function() {
 		const s = [];
 		const hexDigits = "0123456789abcdef";
