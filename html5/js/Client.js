@@ -1604,21 +1604,26 @@ XpraClient.prototype.send_button_action = function(wid, button, pressed, x, y, m
 
 // Source: https://deepmikoto.com/coding/1--javascript-detect-mouse-wheel-direction
 XpraClient.prototype.detect_vertical_scroll_direction = function(e, window) {
-	var delta = null
-	var direction = false;
-	if ( !e ) { // if the event is not provided, we get it from the window object
-		e = window.event;
+	if ( !e ) {
+		//IE? In any case, detection won't work:
+		return 0;
 	}
+	let delta = null;
 	if ( e.wheelDelta ) { // will work in most cases
-		delta = e.wheelDelta / 60;
+		delta = e.wheelDelta;
 	} else if ( e.detail ) { // fallback for Firefox
-		delta = -e.detail / 2;
+		delta = -e.detail;
 	}
-	if ( delta !== null ) {
-		direction = delta > 0 ? 'up' : 'down';
+	if (delta == null) {
+		return 0;
 	}
-
-	return direction;
+	if (delta>0) {
+		return -1;
+	}
+	if (delta<0) {
+		return 1;
+	}
+	return 0;
 };
 
 XpraClient.prototype._window_mouse_scroll = function(ctx, e, window) {
@@ -1646,7 +1651,7 @@ XpraClient.prototype.do_window_mouse_scroll = function(e, window) {
 	if (this.scroll_reverse_x) {
 		px = -px;
 	}
-	if (this.detect_vertical_scroll_direction(e, window) === "up" && py > 0) {
+	if (this.detect_vertical_scroll_direction(e, window) < 0 && py > 0) {
 		py = -py;
 	}
 	const apx = Math.abs(px);
