@@ -396,8 +396,8 @@ function rdecode_intq(dec) {
 	}
 	else {
 		//oh, IE...
-		const left =  this.getUint32(byteOffset);
-		const right = this.getUint32(byteOffset+4);
+		const left =  dv.getInt32(0);
+		const right = dv.getUint32(4);
 		s = 2**32*left + right;
 	}
 	dec.pos += 9;
