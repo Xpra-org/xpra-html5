@@ -624,7 +624,6 @@
 				const reconnect = getboolparam("reconnect", true);
 				const swap_keys = getboolparam("swap_keys", Utilities.isMacOS());
 				const scroll_reverse_x = getboolparam("scroll_reverse_x", false);
-				const scroll_reverse_y = getboolparam("scroll_reverse_y", Utilities.isMacOS());
 				const floating_menu = getboolparam("floating_menu", true);
 				const toolbar_position = getparam("toolbar_position");
 				const autohide = getboolparam("autohide", false);
@@ -715,7 +714,6 @@
 				client.swap_keys = swap_keys;
 				client.on_connection_progress = connection_progress;
 				client.scroll_reverse_x = scroll_reverse_x;
-				client.scroll_reverse_y = scroll_reverse_y;
 				client.vrefresh = vrefresh;
 				client.scale = scale;
 				//example overrides:
@@ -862,7 +860,6 @@
 									"keyboard_layout"	: keyboard_layout,
 									"swap_keys"			: swap_keys,
 									"scroll_reverse_x"	: scroll_reverse_x,
-									"scroll_reverse_y"	: scroll_reverse_y,
 									"reconnect"			: reconnect,
 									"action"			: action,
 									"display"			: display,

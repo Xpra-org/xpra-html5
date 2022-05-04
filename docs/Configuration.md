@@ -60,7 +60,6 @@ By default the HTML5 client will refuse to send passwords over remote unencrypte
 |`file_transfer`|Enable file-transfers|Yes|
 |`swap_keys`   |Swap Command and Control keys|Yes on MacOS|
 |`scroll_reverse_x` |Reverse X axis of the mouse pointer|No|
-|`scroll_reverse_y` |Reverse Y axis of the mouse pointer|Yes on MacOS|
 |`floating_menu` |Show a floating menu|Yes|
 |`toolbar_position` |Default position of the toolbar (ie: `top`, `top-right`)|`top-left`|
 |`autohide`    |Hide most of the toolbar until the pointer hovers over it|No|
