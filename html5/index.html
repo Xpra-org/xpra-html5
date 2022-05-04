@@ -1471,8 +1471,7 @@
 				});
 			}
 
-			$(document).ready(function() {
-				clog("document is ready, browser is", navigator.platform, "64-bit:", Utilities.is_64bit());
+			function load_default_settings() {
 				const xhr = new XMLHttpRequest();
 				xhr.open("GET", "./default-settings.txt");
 				xhr.onload = function() {
@@ -1494,6 +1493,11 @@
 					init_page();
 				};
 				xhr.send();
+			}
+
+			$(document).ready(function() {
+				clog("document is ready, browser is", navigator.platform, "64-bit:", Utilities.is_64bit());
+				load_default_settings();
 			});
 		</script>
 	</body>
