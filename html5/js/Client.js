@@ -18,7 +18,7 @@
 const XPRA_CLIENT_FORCE_NO_WORKER = false;
 const CLIPBOARD_IMAGES = true;
 const CLIPBOARD_EVENT_DELAY = 100;
-const DECODE_WORKER = true;
+const DECODE_WORKER = !!window.createImageBitmap;
 const rencode_ok = rencode && rencode_selftest();
 const SHOW_START_MENU = true;
 
@@ -63,10 +63,10 @@ XpraClient.prototype.init_settings = function() {
 	this.encoding = "auto";
 	//basic set of encodings:
 	//(more may be added after checking via the DecodeWorker)
-	this.supported_encodings = ["jpeg", "png", "png/P", "png/L", "rgb", "rgb32", "rgb24", "scroll", "webp", "void", "avif"];
+	this.supported_encodings = ["jpeg", "png", "png/P", "png/L", "rgb", "rgb32", "rgb24", "scroll", "void"];
 	//extra encodings we enable if validated via the decode worker:
 	//(we also validate jpeg and png as a sanity check)
-	this.check_encodings = this.supported_encodings;
+	this.check_encodings = ["jpeg", "png", "png/P", "png/L", "rgb", "rgb32", "rgb24", "scroll", "webp", "void", "avif"];
 	this.debug_categories = [];
 	this.start_new_session = null;
 	this.clipboard_enabled = false;
