@@ -966,102 +966,7 @@
 			}
 
 			function init_clipboard(client) {
-				const pasteboard = $('#pasteboard');
-				//clipboard hooks:
-				pasteboard.on('paste', function (e) {
-					let paste_data;
-					if (navigator.clipboard && navigator.clipboard.readText) {
-						navigator.clipboard.readText().then(function(text) {
-							cdebug("clipboard", "paste event, text=", text);
-							const paste_data = unescape(encodeURIComponent(text));
-							client.clipboard_buffer = paste_data;
-							client.send_clipboard_token(paste_data);
-						}, function(err) {
-							cdebug("clipboard", "paste event failed:", err);
-						});
-					}
-					else {
-						let datatype = "text/plain";
-						let clipboardData = (e.originalEvent || e).clipboardData;
-						//IE: must use window.clipboardData because the event clipboardData is null!
-						if (!clipboardData) {
-							clipboardData = window.clipboardData;
-						}
-						if (Utilities.isIE()) {
-							datatype = "Text";
-						}
-						paste_data = unescape(encodeURIComponent(clipboardData.getData(datatype)));
-						cdebug("clipboard", "paste event, data=", paste_data);
-						client.clipboard_buffer = paste_data;
-						client.send_clipboard_token(paste_data);
-					}
-					return false;
-				});
-				pasteboard.on('copy', function (e) {
-					const clipboard_buffer = client.get_clipboard_buffer();
-					pasteboard.text(decodeURIComponent(escape(clipboard_buffer)));
-					pasteboard.select();
-					cdebug("clipboard", "copy event, clipboard buffer=", clipboard_buffer);
-					client.clipboard_pending = false;
-					return true;
-				});
-				pasteboard.on('cut', function (e) {
-					const clipboard_buffer = client.get_clipboard_buffer();
-					pasteboard.text(decodeURIComponent(escape(clipboard_buffer)));
-					pasteboard.select();
-					cdebug("clipboard", "cut event, clipboard buffer=", clipboard_buffer);
-					client.clipboard_pending = false;
-					return true;
-				});
-				function may_set_clipboard() {
-					cdebug("clipboard", "pending=", client.clipboard_pending, "buffer=", client.clipboard_buffer);
-					if (!client.clipboard_pending) {
-						return;
-					}
-					let clipboard_buffer = client.get_clipboard_buffer();
-					const clipboard_datatype = (client.get_clipboard_datatype() || "").toLowerCase();
-					const is_text = clipboard_datatype.indexOf("text")>=0 || clipboard_datatype.indexOf("string")>=0;
-					if (!is_text) {
-						//maybe just abort here instead?
-						clipboard_buffer = "";
-					}
-					pasteboard.text(clipboard_buffer);
-					pasteboard.select();
-					cdebug("clipboard", "click event, with pending clipboard datatype=", clipboard_datatype, ", buffer=", clipboard_buffer);
-					//for IE:
-					let success = false;
-					if (window.hasOwnProperty("clipboardData") && window.clipboardData.hasOwnProperty("setData") && typeof window.clipboardData.setData === "function") {
-						try {
-							if (Utilities.isIE()) {
-								window.clipboardData.setData("Text", clipboard_buffer);
-							}
-							else {
-								window.clipboardData.setData(clipboard_datatype, clipboard_buffer);
-							}
-							success = true;
-						}
-						catch (e) {
-							success = false;
-						}
-					}
-					if (!success && is_text) {
-						success = document.execCommand('copy');
-					}
-					else {
-						//probably no point in trying again?
-					}
-					if (success) {
-						//clipboard_buffer may have been cleared if not set to text:
-						client.clipboard_buffer = clipboard_buffer;
-						client.clipboard_pending = false;
-					}
-				}
-				$('#screen').on('click', function (e) {
-					may_set_clipboard();
-				});
-				$("#screen").keypress(function() {
-					may_set_clipboard();
-				});
+				client.init_clipboard();
 			}
 
 			function init_keyboard(client) {
@@ -1137,28 +1042,10 @@
 			}
 
 			function init_file_transfer(client) {
-				function send_file(f) {
-					clog("file:", f.name, ", type:", f.type, ", size:", f.size);
-					const fileReader = new FileReader();
-					fileReader.onloadend = function (evt) {
-						const u8a = new Uint8Array(evt.target.result);
-						var buf = u8a;
-						if (client.packet_encoder!="rencodeplus") {
-							buf = Utilities.Uint8ToString(u8a);
-						}
-						client.send_file(f.name, f.type, f.size, buf);
-					};
-					fileReader.readAsArrayBuffer(f);
-				}
-				function sendAllFiles(files) {
-					for (let i = 0, f; f = files[i]; i++) {
-						send_file(f);
-					}
-				}
 				function handleFileSelect(evt) {
 					evt.stopPropagation();
 					evt.preventDefault();
-					sendAllFiles(evt.dataTransfer.files);
+					client.send_all_files(evt.dataTransfer.files);
 				}
 				function handleDragOver(evt) {
 					evt.stopPropagation();
@@ -1172,7 +1059,7 @@
 				$("#upload").on("change", function(evt) {
 					evt.stopPropagation();
 					evt.preventDefault();
-					sendAllFiles(this.files);
+					client.send_all_files(this.files);
 					return false;
 				});
 				$("#upload_form").on('submit',function(evt){

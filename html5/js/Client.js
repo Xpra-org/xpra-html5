@@ -1705,6 +1705,121 @@ XpraClient.prototype.do_window_mouse_scroll = function(e, window) {
 	this.wheel_delta_y = (this.wheel_delta_y>=0) ? wy : -wy;
 };
 
+XpraClient.prototype.init_clipboard = function() {
+	const me = this;
+	window.addEventListener("paste", function (e) {
+		let clipboardData = (e.originalEvent || e).clipboardData;
+		//IE: must use window.clipboardData because the event clipboardData is null!
+		if (!clipboardData) {
+			clipboardData = window.clipboardData;
+		}
+		if (clipboardData && clipboardData.files) {
+			const files = clipboardData.files;
+			me.clog("paste got", files.length, "files");
+			for (let i = 0; i < files.length; i++) {
+				let file = files.item(i);
+					//lastModified: 1634740745068
+					//lastModifiedDate: Wed Oct 20 2021 21:39:05 GMT+0700 (Indochina Time) {}
+					//name: "addresses.png"
+					//size: 17698
+					//type: "image/png"
+					//webkitRelativePath: ""
+				me.send_file(file);
+			}
+			e.preventDefault();
+			return;
+		}
+		let paste_data;
+		if (navigator.clipboard && navigator.clipboard.readText) {
+			navigator.clipboard.readText().then(function(text) {
+				me.cdebug("clipboard", "paste event, text=", text);
+				const paste_data = unescape(encodeURIComponent(text));
+				me.clipboard_buffer = paste_data;
+				me.send_clipboard_token(paste_data);
+			}, function(err) {
+				me.cdebug("clipboard", "paste event failed:", err);
+			});
+		}
+		else {
+			let datatype = "text/plain";
+			if (Utilities.isIE()) {
+				datatype = "Text";
+			}
+			paste_data = unescape(encodeURIComponent(clipboardData.getData(datatype)));
+			cdebug("clipboard", "paste event, data=", paste_data);
+			me.clipboard_buffer = paste_data;
+			me.send_clipboard_token(paste_data);
+		}
+	});
+	window.addEventListener("copy", function (e) {
+		const clipboard_buffer = me.get_clipboard_buffer();
+		const pasteboard = $("#pasteboard");
+		pasteboard.text(decodeURIComponent(escape(clipboard_buffer)));
+		pasteboard.select();
+		me.cdebug("clipboard", "copy event, clipboard buffer=", clipboard_buffer);
+		me.clipboard_pending = false;
+	});
+	window.addEventListener("cut", function (e) {
+		const clipboard_buffer = me.get_clipboard_buffer();
+		const pasteboard = $("#pasteboard");
+		pasteboard.text(decodeURIComponent(escape(clipboard_buffer)));
+		pasteboard.select();
+		me.cdebug("clipboard", "cut event, clipboard buffer=", clipboard_buffer);
+		me.clipboard_pending = false;
+	});
+	$('#screen').on('click', function (e) {
+		me.may_set_clipboard();
+	});
+	$("#screen").keypress(function() {
+		me.may_set_clipboard();
+	});
+}
+
+XpraClient.prototype.may_set_clipboard = function(e) {
+	this.cdebug("clipboard", "pending=", this.clipboard_pending, "buffer=", this.clipboard_buffer);
+	if (!this.clipboard_pending) {
+		return;
+	}
+	let clipboard_buffer = this.get_clipboard_buffer();
+	const clipboard_datatype = (this.get_clipboard_datatype() || "").toLowerCase();
+	const is_text = clipboard_datatype.indexOf("text")>=0 || clipboard_datatype.indexOf("string")>=0;
+	if (!is_text) {
+		//maybe just abort here instead?
+		clipboard_buffer = "";
+	}
+	const pasteboard = $("#pasteboard");
+	pasteboard.text(clipboard_buffer);
+	pasteboard.select();
+	this.cdebug("clipboard", "click event, with pending clipboard datatype=", clipboard_datatype, ", buffer=", clipboard_buffer);
+	//for IE:
+	let success = false;
+	if (window.hasOwnProperty("clipboardData") && window.clipboardData.hasOwnProperty("setData") && typeof window.clipboardData.setData === "function") {
+		try {
+			if (Utilities.isIE()) {
+				window.clipboardData.setData("Text", clipboard_buffer);
+			}
+			else {
+				window.clipboardData.setData(clipboard_datatype, clipboard_buffer);
+			}
+			success = true;
+		}
+		catch (e) {
+			success = false;
+		}
+	}
+	if (!success && is_text) {
+		success = document.execCommand('copy');
+	}
+	else {
+		//probably no point in trying again?
+	}
+	if (success) {
+		//clipboard_buffer may have been cleared if not set to text:
+		this.clipboard_buffer = clipboard_buffer;
+		this.clipboard_pending = false;
+	}
+}
+
 
 XpraClient.prototype._poll_clipboard = function(e) {
 	if (this.clipboard_enabled === false) {
@@ -1755,10 +1870,9 @@ XpraClient.prototype.read_clipboard_text = function() {
 		return;
 	}
 	const client = this;
-	client.debug("clipboard", "read_clipboard()");
+	client.debug("clipboard", "read_clipboard_text()");
 	//warning: this can take a while,
 	//so we may send the click before the clipboard contents...
-	this.clipboard_pending = true;
 	navigator.clipboard.readText().then(function(text) {
 		client.debug("clipboard", "paste event, text=", text);
 		const clipboard_buffer = unescape(encodeURIComponent(text));
@@ -4112,7 +4226,7 @@ XpraClient.prototype.print_document = function(filename, data, mimetype) {
 	}
 };
 
-XpraClient.prototype.send_file = function(filename, mimetype, size, buffer) {
+XpraClient.prototype.do_send_file = function(filename, mimetype, size, buffer) {
 	if (!this.file_transfer || !this.remote_file_transfer) {
 		this.warn("cannot send file: file transfers are disabled!");
 		return;
@@ -4120,6 +4234,26 @@ XpraClient.prototype.send_file = function(filename, mimetype, size, buffer) {
 	const packet = ["send-file", filename, mimetype, false, this.remote_open_files, size, buffer, {}];
 	this.send(packet);
 };
+
+XpraClient.prototype.send_file = function(f) {
+	clog("send_file:", f.name, ", type:", f.type, ", size:", f.size);
+	const me = this;
+	const fileReader = new FileReader();
+	fileReader.onloadend = function (evt) {
+		const u8a = new Uint8Array(evt.target.result);
+		var buf = u8a;
+		if (client.packet_encoder!="rencodeplus") {
+			buf = Utilities.Uint8ToString(u8a);
+		}
+		me.do_send_file(f.name, f.type, f.size, buf);
+	};
+	fileReader.readAsArrayBuffer(f);
+}
+XpraClient.prototype.send_all_files = function(files) {
+	for (let i = 0, f; f = files[i]; i++) {
+		this.send_file(f);
+	}
+}
 
 XpraClient.prototype.start_command = function(name, command, ignore) {
 	const packet = ["start-command", name, command, ignore];
