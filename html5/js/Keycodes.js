@@ -38,6 +38,10 @@ KEY_TO_NAME = {
 		"End"				: "End",
 		"PageDown"			: "Next",
 };
+DEAD_KEYS = {
+//		"`"					: "dead_grave",
+//		"'"					: "dead_acute",
+};
 NUMPAD_TO_NAME = {
 		//Num pad:
 		"NumpadDivide"		: "KP_Divide",

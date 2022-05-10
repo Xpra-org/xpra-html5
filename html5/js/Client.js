@@ -888,7 +888,14 @@ XpraClient.prototype.do_keyb_process = function(pressed, event) {
 
 	let key_language = null;
 	//some special keys are better mapped by name:
-	if (keyname in KEY_TO_NAME){
+	const map_str = this.keyboard_map[keyname];
+	this.clog("keyname in keyboard_map=", keyname in this.keyboard_map, "map_str=", map_str);
+	if (dead && map_str && map_str in DEAD_KEYS) {
+		keyname = DEAD_KEYS[map_str];
+		str = map_str;
+		this.debug("keyboard", "dead key:", keyname);
+	}
+	else if (keyname in KEY_TO_NAME){
 		keyname = KEY_TO_NAME[keyname];
 	}
 	else if (keyname=="" && str in KEY_TO_NAME){
