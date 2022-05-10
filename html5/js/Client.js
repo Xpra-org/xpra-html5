@@ -637,6 +637,7 @@ XpraClient.prototype._screen_resized = function(event, ctx) {
  */
 XpraClient.prototype.init_keyboard = function() {
 	const me = this;
+	this.query_keyboard_map();
 	// modifier keys:
 	this.num_lock_modifier = null;
 	this.alt_modifier = null;
@@ -702,6 +703,26 @@ XpraClient.prototype.init_keyboard = function() {
 	});
 };
 
+XpraClient.prototype.query_keyboard_map = function() {
+	var keyboard = navigator.keyboard;
+	this.keyboard_map = {};
+	if (!navigator.keyboard) {
+		return;
+	}
+	keyboard.getLayoutMap().then(keyboardLayoutMap => {
+		clog("got a keyboard layout map:", keyboardLayoutMap);
+		clog("keys:", Array.from(keyboardLayoutMap.keys()));
+		for (const [key, value] of keyboardLayoutMap.entries()) {
+			cdebug("keyboard", key, "=", value);
+			this.keyboard_map[key] = value;
+		}
+	});
+	if (keyboard.addEventListener) {
+		keyboard.addEventListener("layoutchange", function() {
+			clog("keyboard layout has changed!");
+		});
+	}
+};
 
 XpraClient.prototype._keyb_get_modifiers = function(event) {
 	/**

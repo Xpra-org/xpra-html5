@@ -1382,32 +1382,9 @@
 				xhr.send();
 			}
 
-			function query_keyboard_map() {
-				var keyboard = navigator.keyboard;
-				keyboard.getLayoutMap().then(keyboardLayoutMap => {
-					clog("got a keyboard layout map:", keyboardLayoutMap);
-					//TODO: build the client keymap somehow
-					load_default_settings();
-					clog("keys:", Array.from(keyboardLayoutMap.keys()));
-					for (const [key, value] of keyboardLayoutMap.entries()) {
-						cdebug("keyboard", key, "=", value);
-					}
-				});
-				if (keyboard.addEventListener) {
-					keyboard.addEventListener("layoutchange", function() {
-						clog("keyboard layout has changed!");
-					});
-				}
-			}
-
 			$(document).ready(function() {
 				clog("document is ready, browser is", navigator.platform, "64-bit:", Utilities.is_64bit());
-				if (navigator.keyboard && navigator.keyboard.getLayoutMap) {
-					query_keyboard_map();
-				}
-				else {
-					load_default_settings();
-				}
+				load_default_settings();
 			});
 		</script>
 	</body>
