@@ -865,9 +865,9 @@ XpraClient.prototype.do_keyb_process = function(pressed, event) {
 	let unpress_now = false;
 	this.debug("keyboard", "last keycode pressed=", this.last_keycode_pressed, ", keycode=", keycode, ", pressed=", pressed, ", str=", str);
 	const dead = str.toLowerCase()=="dead";
-	if (this.last_keycode_pressed!=keycode && !pressed && dead) {
+	if (dead && ((this.last_keycode_pressed!=keycode && !pressed) || pressed)) {
 		//dead key unpress without first getting a key pressed event,
-		//send a pair:
+		//or just a regular pressed dead key, in both cases send a pair:
 		pressed = true;
 		unpress_now = true;
 	}
@@ -879,7 +879,7 @@ XpraClient.prototype.do_keyb_process = function(pressed, event) {
 		this.last_keycode_pressed = 0;
 	}
 
-	this.debug("keyboard", "processKeyEvent(", pressed, ", ", event, ") key=", keyname, "keycode=", keycode);
+	this.debug("keyboard", "processKeyEvent(", pressed, ", ", event, ") key=", keyname, "keycode=", keycode, "dead=", dead);
 
 	//sync numlock
 	if (keycode==144 && pressed) {
