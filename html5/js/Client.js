@@ -843,7 +843,8 @@ XpraClient.prototype.do_keyb_process = function(pressed, event) {
 	let str = event.key || String.fromCharCode(keycode);
 	let unpress_now = false;
 	this.debug("keyboard", "last keycode pressed=", this.last_keycode_pressed, ", keycode=", keycode, ", pressed=", pressed, ", str=", str);
-	if (this.last_keycode_pressed!=keycode && !pressed && str=="Dead") {
+	const dead = str.toLowerCase()=="dead";
+	if (this.last_keycode_pressed!=keycode && !pressed && dead) {
 		//dead key unpress without first getting a key pressed event,
 		//send a pair:
 		pressed = true;
