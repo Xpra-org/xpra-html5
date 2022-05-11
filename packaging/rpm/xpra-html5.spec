@@ -4,7 +4,7 @@
 # later version. See the file COPYING for details.
 
 %define version 5.0
-%define release 1.r1237%{?dist}
+%define release 1.r1275%{?dist}
 %define minifier uglifyjs
 %define python python3
 

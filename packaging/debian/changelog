@@ -1,4 +1,4 @@
-xpra-html5 (5.0-r1237-1) UNRELEASED; urgency=low
+xpra-html5 (5.0-r1275-1) UNRELEASED; urgency=low
   * auto-fullscreen, alt-tabbing with window previews
   * decode images using an offscreen worker thread
   * decode `avif` images, grayscale and palette `png`
