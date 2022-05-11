@@ -2,6 +2,30 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.0] 2022-05-11
+* auto-fullscreen, alt-tabbing with window previews
+* decode images using an offscreen worker thread
+* decode `avif` images, grayscale and palette `png`
+* handle `void` paint packets
+* increase default non-vsynced target framerate
+* tell servers to use 'scroll' encoding less aggressively
+* keycloak authentication (requires xpra server version 4.4 or later)
+* support pre-mapped windows (requires xpra server version 4.4 or later)
+* support clipboard pasting file into the session
+* detect inverted vertical scrolling (ie: on MacOS)
+* improved dead key mapping for non-us layouts
+* 64-bit rencode decoding bug with Safari (and IE)
+* notification errors with bencoder
+* avoid popping up the on-screen keyboard on mobile touch events
+* updated on-screen simple-keyboard UI and file saver library
+* shifted characters with simple-keyboard
+* prevent stuck keys
+* focus and raise windows when their title bar is clicked
+* spurious focus events when minimizing windows
+* fix AES encryption when used with authentication and rencodeplus
+* build script refactoring
+
+
 ## [4.5.2] 2021-12-17
 * fix toolbar position
 * install default settings in /etc/xpra/html5-client/

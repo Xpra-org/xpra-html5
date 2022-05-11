@@ -1,7 +1,27 @@
 xpra-html5 (5.0-r1237-1) UNRELEASED; urgency=low
-  * TODO
+  * auto-fullscreen, alt-tabbing with window previews
+  * decode images using an offscreen worker thread
+  * decode `avif` images, grayscale and palette `png`
+  * handle `void` paint packets
+  * increase default non-vsynced target framerate
+  * tell servers to use 'scroll' encoding less aggressively
+  * keycloak authentication (requires xpra server version 4.4 or later)
+  * support pre-mapped windows (requires xpra server version 4.4 or later)
+  * support clipboard pasting file into the session
+  * detect inverted vertical scrolling (ie: on MacOS)
+  * improved dead key mapping for non-us layouts
+  * 64-bit rencode decoding bug with Safari (and IE)
+  * notification errors with bencoder
+  * avoid popping up the on-screen keyboard on mobile touch events
+  * updated on-screen simple-keyboard UI and file saver library
+  * shifted characters with simple-keyboard
+  * prevent stuck keys
+  * focus and raise windows when their title bar is clicked
+  * spurious focus events when minimizing windows
+  * fix AES encryption when used with authentication and rencodeplus
+  * build script refactoring
 
- -- Antoine Martin antoine@xpra.org  Tue, 15 Feb 2022 22:44:21 +0700 +700
+ -- Antoine Martin antoine@xpra.org  Wed, 11 May 2022 16:55:59 +0700 +700
 
 xpra-html5 (4.5.2-r1106-1) UNRELEASED; urgency=low
   * fix toolbar position

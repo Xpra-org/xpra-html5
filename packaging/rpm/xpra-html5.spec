@@ -77,8 +77,28 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
-* Tue Feb 15 2022 Antoine Martin <antoine@xpra.org> 5.0-1237-1
-- TODO
+* Wed May 11 2022 Antoine Martin <antoine@xpra.org> 5.0-1237-1
+- auto-fullscreen, alt-tabbing with window previews
+- decode images using an offscreen worker thread
+- decode `avif` images, grayscale and palette `png`
+- handle `void` paint packets
+- increase default non-vsynced target framerate
+- tell servers to use 'scroll' encoding less aggressively
+- keycloak authentication (requires xpra server version 4.4 or later)
+- support pre-mapped windows (requires xpra server version 4.4 or later)
+- support clipboard pasting file into the session
+- detect inverted vertical scrolling (ie: on MacOS)
+- improved dead key mapping for non-us layouts
+- 64-bit rencode decoding bug with Safari (and IE)
+- notification errors with bencoder
+- avoid popping up the on-screen keyboard on mobile touch events
+- updated on-screen simple-keyboard UI and file saver library
+- shifted characters with simple-keyboard
+- prevent stuck keys
+- focus and raise windows when their title bar is clicked
+- spurious focus events when minimizing windows
+- fix AES encryption when used with authentication and rencodeplus
+- build script refactoring
 
 * Fri Dec 17 2021 Antoine Martin <antoine@xpra.org> 4.5.2-1106-1
 - fix toolbar position
