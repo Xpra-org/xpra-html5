@@ -39,8 +39,8 @@ KEY_TO_NAME = {
 		"PageDown"			: "Next",
 };
 DEAD_KEYS = {
-//		"`"					: "dead_grave",
-//		"'"					: "dead_acute",
+		"`"					: "dead_grave",
+		"'"					: "dead_acute",
 };
 NUMPAD_TO_NAME = {
 		//Num pad:
