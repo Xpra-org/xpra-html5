@@ -4287,9 +4287,6 @@ XpraClient.prototype._check_chunk_receiving = function(chunk_id, chunk_no) {
 	}
 };
 
-XpraClient.prototype._process_ack_file_chunk = function(packet, ctx) {
-};
-
 XpraClient.prototype.transfer_progress_update = function(send, transfer_id, elapsed, position, total, error) {
 	//this.clog("progress:", Math.round(position*100/total));
 }
@@ -4481,9 +4478,113 @@ XpraClient.prototype.do_send_file = function(filename, mimetype, size, buffer) {
 		this.warn("cannot send file: file transfers are disabled!");
 		return;
 	}
-	const packet = ["send-file", filename, mimetype, false, this.remote_open_files, size, buffer, {}];
+	let cdata = buffer;
+	const options = {};
+	const chunk_size = Math.min(FILE_CHUNKS_SIZE, this.remote_file_chunks || 0);
+	if (chunk_size>0 && size>chunk_size) {
+		if (this.send_chunks_in_progress.size>=MAX_CONCURRENT_FILES) {
+			throw Exception("too many file transfers in progress:"+this.send_chunks_in_progress.size);
+		}
+		//chunking is supported and the file is big enough
+		const chunk_id = Utilities.getHexUUID();
+		options["file-chunk-id"] = chunk_id;
+		//timer to check that the other end is requesting more chunks:
+		const timer = setTimeout(() => {
+			this._check_chunk_sending(chunk_id, 0);
+		}, CHUNK_TIMEOUT);
+		const chunk_state = [Date.now(), buffer, chunk_size, timer, 0];
+		this.send_chunks_in_progress.set(chunk_id, chunk_state);
+		cdata = ""
+		this.debug("main", "using chunks, sending initial file-chunk-id=", chunk_id, ", for chunk size", chunk_size);
+	}
+	else {
+		//send everything now:
+		this.debug("main", "sending full file:", size, "bytes, chunk size", chunk_size);
+	}
+	const packet = ["send-file", filename, mimetype, false, this.remote_open_files, size, cdata, options];
 	this.send(packet);
 };
+
+XpraClient.prototype._check_chunk_sending = function(chunk_id, chunk_no) {
+	const chunk_state = this.send_chunks_in_progress.get(chunk_id);
+	this.debug("main", "chunk id", chunk_id, "chunk_no", chunk_no, "found chunk_state", new Boolean(chunk_state));
+	if (!chunk_state) {
+		return;
+	}
+	chunk_state[3] = 0		 //timer has fired
+	if (chunk_state[13]==chunk_no) {
+		this.error("Error: chunked file transfer", chunk_id, "timed out");
+		this.error(" on chunk", chunk_no)
+		this.cancel_sending(chunk_id)
+	}
+};
+
+XpraClient.prototype.cancel_sending = function(chunk_id) {
+	const chunk_state = this.send_chunks_in_progress.get(chunk_id);
+	this.debug("main", "cancel_sending", chunk_id, "chunk state found:", new Boolean(chunk_state));
+	if (!chunk_state) {
+		return;
+	}
+	const timer = chunk_state[3];
+	if (timer) {
+		chunk_state[3] = 0;
+		clearTimeout(timer);
+	}
+	this.send_chunks_in_progress.delete(chunk_id);
+};
+
+XpraClient.prototype._process_ack_file_chunk = function(packet, ctx) {
+	//the other end received our send-file or send-file-chunk,
+	//send some more file data
+	ctx.debug("main", "ack-file-chunk: ", packet);
+	const	chunk_id = Utilities.s(packet[1]),
+			state = packet[2],
+			error_message = packet[3];
+	let chunk = packet[4];
+	if (!state) {
+		ctx.debug("main", "the remote end is cancelling the file transfer:")
+		ctx.debug("main", " %s", Utilities.s(error_message));
+		ctx.cancel_sending(chunk_id);
+		return;
+	}
+	const chunk_state = ctx.send_chunks_in_progress.get(chunk_id);
+	if (!chunk_state) {
+		ctx.error("Error: cannot find the file transfer id '%r'", chunk_id);
+		return;
+	}
+	if (chunk_state[4]!=chunk) {
+		this.error("Error: chunk number mismatch", chunk_state, "vs", chunk);
+		this.cancel_sending(chunk_id);
+		return;
+	}
+	const	start_time = chunk_state[0],
+			chunk_size = chunk_state[2];
+	let timer = chunk_state[3],
+		data = chunk_state[1];
+	if (!data) {
+		//all sent!
+		const elapsed = Date.now()-start_time;
+		ctx.log(chunk, "chunks of", chunk_size, "bytes sent in", Math.round(elapsed), "ms",
+					8*chunk*chunk_size/elapsed, "bps");
+		ctx.cancel_sending(chunk_id);
+		return;
+	}
+	if (chunk_size<=0) {
+		throw Exception("invalid chunk size "+chunk_size);
+	}
+	//carve out another chunk:
+	const cdata = data.subarray(0, chunk_size);
+	data = data.subarray(chunk_size);
+	chunk += 1;
+	if (timer) {
+		clearTimeout(timer);
+	}
+	timer = setTimeout(() => {
+		self._check_chunk_sending(chunk_id, chunk);
+	}, CHUNK_TIMEOUT);
+	ctx.send_chunks_in_progress.set(chunk_id, [start_time, data, chunk_size, timer, chunk]);
+	ctx.send(["send-file-chunk", chunk_id, chunk, cdata, data.length>0]);
+}
 
 
 XpraClient.prototype.start_command = function(name, command, ignore) {
