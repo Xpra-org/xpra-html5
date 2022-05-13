@@ -21,6 +21,10 @@ const CLIPBOARD_EVENT_DELAY = 100;
 const DECODE_WORKER = !!window.createImageBitmap;
 const rencode_ok = rencode && rencode_selftest();
 const SHOW_START_MENU = true;
+const FILE_SIZE_LIMIT = 4*1024*1024*1024; //are we even allowed to allocate this much memory?
+const FILE_CHUNKS_SIZE = 128*1024;
+const MAX_CONCURRENT_FILES = 5;
+const CHUNK_TIMEOUT = 10*1000;
 
 
 function XpraClient(container) {
@@ -71,6 +75,10 @@ XpraClient.prototype.init_settings = function() {
 	this.start_new_session = null;
 	this.clipboard_enabled = false;
 	this.file_transfer = false;
+	this.remote_file_size_limit = 0;
+	this.remote_file_chunks = 0;
+	this.send_chunks_in_progress = new Map();
+	this.receive_chunks_in_progress = new Map();
 	this.keyboard_layout = null;
 	this.printing = false;
 	this.key_packets = [];
@@ -363,6 +371,8 @@ XpraClient.prototype.init_packet_handlers = function() {
 		'set-clipboard-enabled': this._process_set_clipboard_enabled,
 		'clipboard-request': this._process_clipboard_request,
 		'send-file': this._process_send_file,
+		'ack-file-chunk': this._process_ack_file_chunk,
+		'send-file-chunk': this._process_send_file_chunk,
 		'open-url': this._process_open_url,
 		'setting-change': this._process_setting_change,
 		'pointer-position': this._process_pointer_position,
@@ -1286,6 +1296,11 @@ XpraClient.prototype._make_hello_base = function() {
 		"ping-echo-sourceid"		: true,
 		"vrefresh"					: this.vrefresh,
 	});
+	if (rencode_ok) {
+		this._update_capabilities({
+			"file-chunks"		: FILE_CHUNKS_SIZE,
+			});
+	}
 	if (SHOW_START_MENU) {
 		this._update_capabilities({
 			"xdg-menu-update"			: true,
@@ -1459,7 +1474,7 @@ XpraClient.prototype._make_hello = function() {
 		// printing
 		"file-transfer" 			: this.file_transfer,
 		"printing" 					: this.printing,
-		"file-size-limit"			: 10,
+		"file-size-limit"			: 4*1024,
 		"flush"						: true,
 	});
 };
@@ -2489,6 +2504,10 @@ XpraClient.prototype._process_hello = function(packet, ctx) {
 		};
 		ctx._connection_change();
 	}
+
+	// file transfer attributes:
+	ctx.remote_file_size_limit = hello["file-size-limit"] || 0;
+	ctx.remote_file_chunks = Math.max(0, Math.min(ctx.remote_file_size_limit*1024*1024, hello["file-chunks"] || 0));
 
 	// start sending our own pings
 	ctx._send_ping();
@@ -4204,21 +4223,204 @@ XpraClient.prototype._process_send_file = function(packet, ctx) {
 	const basefilename = Utilities.s(packet[1]);
 	const mimetype = Utilities.s(packet[2]);
 	const printit = packet[3];
-	const datasize = packet[5];
+	const filesize = packet[5];
 	const data = packet[6];
+	const options = packet[7] || {};
+	const send_id = Utilities.s(packet[8]);
 
 	// check the data size for file
-	if(data.length != datasize) {
-		ctx.warn("send-file: invalid data size, received", data.length, "bytes, expected", datasize);
+	if (filesize<=0 || filesize>FILE_SIZE_LIMIT) {
+		ctx.cerror("send-file: invalid data size, received", data.length, "bytes, expected", filesize);
 		return;
 	}
-	if (printit) {
-		ctx.print_document(basefilename, data, mimetype);
+	if (data.length==filesize) {
+		//got the whole file
+		ctx._got_file(basefilename, data, printit, mimetype, options);
+		return;
 	}
-	else {
-		ctx.save_file(basefilename, data, mimetype);
+	if (!send_id) {
+		ctx.cerror("send-file: partial file is missing send-id");
+		return;
+	}
+	const chunk_id = Utilities.s(options["file-chunk-id"] || "");
+	if (!chunk_id) {
+		ctx.cerror("send-file: partial file is missing file-chunk-id");
+		return;
+	}
+	const chunk = 0;
+	if (ctx.receive_chunks_in_progress.size>MAX_CONCURRENT_FILES) {
+		ctx.cancel_file(chunk_id, "too many concurrent files being downloaded", chunk);
+		return;
+	}
+	//start receiving chunks:
+	const timer = setTimeout(function() {
+		ctx._check_chunk_receiving(chunk_id, chunk);
+	}, CHUNK_TIMEOUT);
+	const openit = true;
+	const digest = "";		//not implemented yet
+	const chunk_state = [
+				Date.now(),
+				[], basefilename, mimetype,
+				printit, openit, filesize,
+				options, digest, 0, false, send_id,
+				timer, chunk,
+				];
+	ctx.receive_chunks_in_progress.set(chunk_id, chunk_state);
+	ctx.send(["ack-file-chunk", chunk_id, true, "", chunk]);
+	ctx.log("receiving chunks for", basefilename, "with transfer id", chunk_id);
+};
+
+XpraClient.prototype._check_chunk_receiving = function(chunk_id, chunk_no) {
+	const chunk_state = this.receive_chunks_in_progress.get(chunk_id);
+	this.debug("main", "check_chunk_receiving(", chunk_id, ",", chunk_no, ") chunk_state=", chunk_state);
+	if (!chunk_state) {
+		return;
+	}
+	if (chunk_state[10]) {
+		//transfer has been cancelled
+		return;
+	}
+	chunk_state[12] = 0		//this timer has been used
+	if (chunk_state[-1]==0) {
+		this.cerror("Error: chunked file transfer", chunk_id, "timed out");
+		this.receive_chunks_in_progress.delete(chunk_id);
 	}
 };
+
+XpraClient.prototype._process_ack_file_chunk = function(packet, ctx) {
+};
+
+XpraClient.prototype.transfer_progress_update = function(send, transfer_id, elapsed, position, total, error) {
+	//this.clog("progress:", Math.round(position*100/total));
+}
+
+XpraClient.prototype.cancel_file = function(chunk_id, message, chunk) {
+	const chunk_state = this.receive_chunks_in_progress.get(chunk_id);
+	if (chunk_state) {
+		//mark it as cancelled:
+		chunk_state[10] = true;
+		//free the buffers
+		chunk_state[1] = [];
+		//stop the timer
+		const timer = chunk_state[12];
+		if (timer) {
+			clearTimeout(timer);
+			chunk_state[12] = 0;
+		}
+		//remove this transfer after a little while,
+		//so in-flight packets won't cause errors
+		setTimeout(() => this.receive_chunks_in_progress.delete(chunk_id), 20000);
+	}
+	this.send(["ack-file-chunk", chunk_id, false, message, chunk]);
+}
+
+XpraClient.prototype._process_send_file_chunk = function(packet, ctx) {
+	const	chunk_id = Utilities.s(packet[1]),
+			chunk = packet[2],
+			file_data = packet[3],
+			has_more = packet[4];
+	ctx.debug("main", "_process_send_file_chunk(", chunk_id, chunk, ""+file_data.length+" bytes", has_more, ")");
+	const chunk_state = ctx.receive_chunks_in_progress.get(chunk_id);
+	if (!chunk_state) {
+		ctx.cerror("Error: cannot find the file transfer id", chunk_id);
+		ctx.cancel_file(chunk_id, "file transfer id"+chunk_id+"not found", chunk);
+		return;
+	}
+	if (chunk_state[10]) {
+		ctx.debug("main", "got chunk for a cancelled file transfer, ignoring it");
+		return;
+	}
+	const filesize = chunk_state[6];
+	function progress(position, error) {
+		const start = chunk_state[0];
+		const send_id = chunk_state[-3];
+		ctx.transfer_progress_update(false, send_id, Date.now()-start, position, filesize, error);
+	}
+	if (chunk_state[13]+1!=chunk) {
+		ctx.cerror("Error: chunk number mismatch, expected", chunk_state[13]+1, "but got", chunk);
+		ctx.cancel_file(chunk_id, "chunk number mismatch", chunk);
+		ctx.file_progress(-1, "chunk no mismatch")
+		return
+	}
+	//update chunk number:
+	chunk_state[13] = chunk;
+	const written = chunk_state[9] + file_data.length
+	if (written>filesize) {
+		ctx.cerror("Error: too much data received");
+		progress(-1, "file size mismatch");
+		return
+	}
+	chunk_state[9] = written;
+	chunk_state[1].push(file_data);
+	//const digest = chunk_state[8];
+	//digest.update(file_data)
+	ctx.send(["ack-file-chunk", chunk_id, true, "", chunk]);
+	if (has_more) {
+		progress(written);
+		const timer = chunk_state[12];
+		if (timer) {
+			clearTimeout(timer);
+		}
+		//remote end will send more after receiving the ack
+		chunk_state[-2] = setTimeout(() => {
+			ctx._check_chunk_receiving(chunk_id, chunk);
+		}, CHUNK_TIMEOUT);
+		return;
+	}
+	ctx.receive_chunks_in_progress.delete(chunk_id);
+	//check file size and digest then process it:
+	if (written!=filesize) {
+		ctx.cerror("Error: expected a file of", filesize, "bytes, got", written);
+		progress(-1, "file size mismatch");
+		return
+	}
+	/*expected_digest = options.strget("sha1")
+	if expected_digest and digest.hexdigest()!=expected_digest:
+		progress(-1, "checksum mismatch")
+		ctx.digest_mismatch(filename, digest, expected_digest, "sha1")
+		return*/
+	progress(written);
+	const start_time = chunk_state[0];
+	const elapsed = Date.now()-start_time;
+	ctx.clog(filesize, "bytes received in", chunk, "chunks, took", Math.round(elapsed*1000), "ms");
+	const filename = chunk_state[2];
+	const mimetype = chunk_state[3];
+	const printit = chunk_state[4];
+	const options = chunk_state[7];
+	//join all the data into a single typed array:
+	const data = new Uint8Array(filesize);
+	let start = 0;
+	const chunks = chunk_state[1];
+	for (let i=0; i<chunks.length; ++i) {
+		data.set(chunks[i], start);
+		start += chunks[i].length;
+	}
+	ctx._got_file(filename, data, mimetype, printit, mimetype, options);
+};
+
+
+XpraClient.prototype._got_file = function(basefilename, data, printit, mimetype, options) {
+	function check_digest(algo) {
+		const digest = options[algo];
+		if (digest) {
+			//h = libfn()
+			//h.update(file_data)
+			//l("digest: - expected", algo, h.hexdigest(), digest)
+			//if digest!=h.hexdigest():
+			//	ctx.digest_mismatch(filename, digest, h.hexdigest(), algo)
+		}
+	}
+	check_digest("sha256")
+	check_digest("sha1")
+	check_digest("md5")
+	if (printit) {
+		this.print_document(basefilename, data, mimetype);
+	}
+	else {
+		this.save_file(basefilename, data, mimetype);
+	}
+};
+
 
 XpraClient.prototype.save_file = function(filename, data, mimetype) {
 	if (!this.file_transfer || !this.remote_file_transfer) {
@@ -4254,15 +4456,12 @@ XpraClient.prototype.print_document = function(filename, data, mimetype) {
 	}
 };
 
-XpraClient.prototype.do_send_file = function(filename, mimetype, size, buffer) {
-	if (!this.file_transfer || !this.remote_file_transfer) {
-		this.warn("cannot send file: file transfers are disabled!");
-		return;
-	}
-	const packet = ["send-file", filename, mimetype, false, this.remote_open_files, size, buffer, {}];
-	this.send(packet);
-};
 
+XpraClient.prototype.send_all_files = function(files) {
+	for (let i = 0, f; f = files[i]; i++) {
+		this.send_file(f);
+	}
+}
 XpraClient.prototype.send_file = function(f) {
 	clog("send_file:", f.name, ", type:", f.type, ", size:", f.size);
 	const me = this;
@@ -4277,11 +4476,15 @@ XpraClient.prototype.send_file = function(f) {
 	};
 	fileReader.readAsArrayBuffer(f);
 }
-XpraClient.prototype.send_all_files = function(files) {
-	for (let i = 0, f; f = files[i]; i++) {
-		this.send_file(f);
+XpraClient.prototype.do_send_file = function(filename, mimetype, size, buffer) {
+	if (!this.file_transfer || !this.remote_file_transfer) {
+		this.warn("cannot send file: file transfers are disabled!");
+		return;
 	}
-}
+	const packet = ["send-file", filename, mimetype, false, this.remote_open_files, size, buffer, {}];
+	this.send(packet);
+};
+
 
 XpraClient.prototype.start_command = function(name, command, ignore) {
 	const packet = ["start-command", name, command, ignore];
@@ -4292,7 +4495,7 @@ XpraClient.prototype._process_open_url = function(packet, ctx) {
 	const url = packet[1];
 	//const send_id = packet[2];
 	if (!ctx.open_url) {
-		ctx.cwarn("Warning: received a request to open URL '%s'", url);
+		ctx.cwarn("Warning: received a request to open URL", url);
 		ctx.clog(" but opening of URLs is disabled");
 		return;
 	}
