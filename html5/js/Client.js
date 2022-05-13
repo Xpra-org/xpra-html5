@@ -4201,8 +4201,8 @@ XpraClient.prototype.send_clipboard_contents = function(request_id, selection, d
  * File transfers and printing
  */
 XpraClient.prototype._process_send_file = function(packet, ctx) {
-	const basefilename = packet[1];
-	const mimetype = packet[2];
+	const basefilename = Utilities.s(packet[1]);
+	const mimetype = Utilities.s(packet[2]);
 	const printit = packet[3];
 	const datasize = packet[5];
 	const data = packet[6];
