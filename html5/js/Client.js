@@ -4580,7 +4580,7 @@ XpraClient.prototype._process_ack_file_chunk = function(packet, ctx) {
 		clearTimeout(timer);
 	}
 	timer = setTimeout(() => {
-		self._check_chunk_sending(chunk_id, chunk);
+		ctx._check_chunk_sending(chunk_id, chunk);
 	}, CHUNK_TIMEOUT);
 	ctx.send_chunks_in_progress.set(chunk_id, [start_time, data, chunk_size, timer, chunk]);
 	ctx.send(["send-file-chunk", chunk_id, chunk, cdata, data.length>0]);
