@@ -521,7 +521,7 @@ def main(args):
     def help():
         print("invalid number of arguments, usage:")
         print("%s sdist" % (args[0],))
-        print("%s install [ROOT] [INSTALL_DIR] [MINIFIER]" % (args[0],))
+        print("%s install [ROOT] [INSTALL_DIR] [CONFIG_DIR] [MINIFIER]" % (args[0],))
         print("%s deb" % (args[0],))
         print("%s rpm" % (args[0],))
         print("%s set-version VERSION" % (args[0],))
