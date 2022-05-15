@@ -691,12 +691,18 @@ if (!(typeof window == "object" && typeof document == "object" && window.documen
 	protocol.is_worker = true;
 	// we create a custom packet handler which posts packet as a message
 	protocol.set_packet_handler(function (packet, ctx) {
-		let raw_draw_buffer = [];
+		let raw_buffer = [];
 		if ((packet[0] === 'draw') && (packet[7].hasOwnProperty("buffer"))) {
-			raw_draw_buffer = packet[7].buffer;
+			//zero-copy the draw buffer
+			raw_buffer = packet[7].buffer;
 			packet[7] = null;
 		}
-		postMessage({'c': 'p', 'p': packet}, raw_draw_buffer);
+		else if ((packet[0] === 'send-file-chunk') && (packet[3].hasOwnProperty("buffer"))) {
+			//zero-copy the file data buffer
+			raw_buffer = packet[3].buffer;
+			packet[3] = null;
+		}
+		postMessage({'c': 'p', 'p': packet}, raw_buffer);
 	}, null);
 	// attach listeners from main thread
 	self.addEventListener('message', function(e) {
