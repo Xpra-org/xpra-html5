@@ -17,10 +17,8 @@
  *  brotli_decode.js
  */
 
-"use strict";
 
-
-const CONNECT_TIMEOUT = 15000;
+CONNECT_TIMEOUT = 15000;
 
 /*
 A stub class to facilitate communication with the protocol when
@@ -31,9 +29,8 @@ class XpraProtocolWorkerHost {
 	constructor() {
 		this.worker = null;
 		this.packet_handler = null;
-		this.packet_ctx = null;
 	}
-	
+
 	open(uri) {
 		if (this.worker) {
 			//re-use the existing worker:
@@ -49,7 +46,7 @@ class XpraProtocolWorkerHost {
 					break;
 				case 'p':
 					if (this.packet_handler) {
-						this.packet_handler(data.p, this.packet_ctx);
+						this.packet_handler(data.p);
 					}
 					break;
 				case 'l':
@@ -61,32 +58,31 @@ class XpraProtocolWorkerHost {
 			}
 		}, false);
 	};
-	
+
 	close = function() {
 		this.worker.postMessage({'c': 'c'});
 	};
-	
+
 	terminate = function() {
 		this.worker.postMessage({'c': 't'});
 	};
-	
+
 	send = function(packet) {
 		this.worker.postMessage({'c': 's', 'p': packet});
 	};
-	
-	set_packet_handler = function(callback, ctx) {
+
+	set_packet_handler = function(callback) {
 		this.packet_handler = callback;
-		this.packet_ctx = ctx;
 	};
-	
+
 	set_cipher_in = function(caps, key) {
 		this.worker.postMessage({'c': 'z', 'p': caps, 'k': key});
 	};
-	
+
 	set_cipher_out = function(caps, key) {
 		this.worker.postMessage({'c': 'x', 'p': caps, 'k': key});
 	};
-	
+
 	enable_packet_encoder = function(packet_encoder) {
 		this.worker.postMessage({'c': 'p', 'pe' : packet_encoder});
 	}

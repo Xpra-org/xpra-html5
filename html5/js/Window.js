@@ -31,12 +31,12 @@ class XpraWindow {
 				set_focus_cb, window_closed_cb, scale) {
 		// use me in jquery callbacks as we lose 'this'
 		this.client = client;
-	
+
 		//xpra specific attributes:
 		this.wid = wid;
 		//enclosing div in page DOM
 		this.div = jQuery("#" + String(wid));
-	
+
 		//these values represent the internal geometry
 		//i.e. geometry as windows appear to the compositor
 		this.x = x;
@@ -45,13 +45,13 @@ class XpraWindow {
 		this.h = h;
 		// scaling for client display width override
 		this.scale = scale;
-	
+
 		this.metadata = {};
 		this.override_redirect = override_redirect;
 		this.tray = tray;
 		this.has_alpha = false;
 		this.client_properties = client_properties;
-	
+
 		this.set_focus_cb = set_focus_cb || null;
 		this.mouse_move_cb = mouse_move_cb || null;
 		this.mouse_down_cb = mouse_down_cb || null;
@@ -59,17 +59,17 @@ class XpraWindow {
 		this.mouse_scroll_cb = mouse_scroll_cb || null;
 		this.geometry_cb = geometry_cb || null;
 		this.window_closed_cb = window_closed_cb || null;
-	
+
 		this.log = () => client.log.apply(client, arguments);
 		this.warn = () => client.warn.apply(client, arguments);
 		this.error = () => client.error.apply(client, arguments);
 		this.exc = () => client.exc.apply(client, arguments);
 		this.debug = () => client.debug.apply(client, arguments);
 		this.debug_categories = client.debug_categories;
-	
+
 		this.canvas = null;
 		this.init_canvas();
-	
+
 		//window attributes:
 		this.title = null;
 		this.windowtype = null;
@@ -81,25 +81,25 @@ class XpraWindow {
 		this.decorations = true;
 		this.resizable = false;
 		this.stacking_layer = 0;
-	
+
 		// Icon cache
 		this.icon = null;
-	
+
 		// get offsets
 		this.leftoffset = parseInt(jQuery(this.div).css('border-left-width'), 10);
 		this.rightoffset = parseInt(jQuery(this.div).css('border-right-width'), 10);
 		this.topoffset = parseInt(jQuery(this.div).css('border-top-width'), 10);
 		this.bottomoffset = parseInt(jQuery(this.div).css('border-bottom-width'), 10);
-	
+
 		// update metadata that is safe before window is drawn
 		this.update_metadata(metadata, true);
-	
+
 		// create the decoration as part of the window, style is in CSS
 		jQuery(this.div).addClass("window");
 		if (this.windowtype) {
 			jQuery(this.div).addClass("window-" + this.windowtype);
 		}
-	
+
 		if (this.client.server_is_desktop || this.client.server_is_shadow) {
 			jQuery(this.div).addClass("desktop");
 			this.resizable = false;
@@ -114,16 +114,16 @@ class XpraWindow {
 			this.resizable = true;
 			this.add_window_decorations();
 		}
-	
+
 		// create the spinner overlay div
 		jQuery(this.div).prepend('<div id="spinner'+String(wid)+'" class="spinneroverlay"><div class="spinnermiddle"><div class="spinner"></div></div></div>');
 		this.spinnerdiv = jQuery('#spinner'+String(wid));
-	
+
 		this.png_cursor_data = null;
 		this.pointer_down = -1;
 		this.pointer_last_x = 0;
 		this.pointer_last_y = 0;
-	
+
 		// adapt to screen size if needed (ie: shadow / desktop windows):
 		this.screen_resized();
 		// set the CSS geometry
@@ -131,7 +131,7 @@ class XpraWindow {
 		// now read all metadata
 		this.update_metadata(metadata);
 	}
-	
+
 	add_window_decorations() {
 		const wid = this.wid;
 		jQuery(this.div).addClass("border");
@@ -220,8 +220,8 @@ class XpraWindow {
 			}
 		});
 	}
-	
-	
+
+
 	init_canvas() {
 		this.canvas = null;
 		this.div.find("canvas").remove();
@@ -239,9 +239,9 @@ class XpraWindow {
 			//we're going to paint from this class:
 			this.canvas_ctx = this.canvas.getContext('2d');
 			this.canvas_ctx.imageSmoothingEnabled = false;
-	
+
 			this.init_offscreen_canvas();
-	
+
 			this.draw_canvas = this.offscreen_canvas;
 			this.paint_queue = [];
 			this.paint_pending = 0;
@@ -249,7 +249,7 @@ class XpraWindow {
 		this.register_canvas_mouse_events(this.canvas);
 		this.register_canvas_pointer_events(this.canvas);
 	}
-	
+
 	transfer_canvas(canvas) {
 		const offscreen_handle = canvas.transferControlToOffscreen();
 		this.client.decode_worker.postMessage({
@@ -259,7 +259,7 @@ class XpraWindow {
 			'debug'  : this.debug_categories.includes("draw"),
 			}, [offscreen_handle]);
 	}
-	
+
 	init_offscreen_canvas() {
 		this.offscreen_canvas = document.createElement("canvas");
 	        this.offscreen_canvas.width = this.w;
@@ -267,7 +267,7 @@ class XpraWindow {
 		this.offscreen_canvas_ctx = this.offscreen_canvas.getContext('2d');
 		this.offscreen_canvas_ctx.imageSmoothingEnabled = false;
 	}
-	
+
 	swap_buffers() {
 		//the up to date canvas is what we'll draw on screen:
 		this.debug("draw", "swap_buffers");
@@ -275,15 +275,15 @@ class XpraWindow {
 		this.init_offscreen_canvas();
 		this.offscreen_canvas_ctx.drawImage(this.draw_canvas, 0, 0);
 	};
-	
-	
+
+
 	register_canvas_mouse_events(canvas) {
 		// Hook up the events we want to receive:
 		jQuery(canvas).mousedown((e) => this.on_mousedown(e));
 		jQuery(canvas).mouseup((e) => this.on_mouseup(e));
 		jQuery(canvas).mousemove((e) => this.on_mousemove(e));
 	}
-	
+
 	register_canvas_pointer_events(canvas) {
 		if (!window.PointerEvent) {
 			return;
@@ -321,7 +321,7 @@ class XpraWindow {
 			this.debug("mouse", "pointerout:", ev);
 		});
 	}
-	
+
 	set_spinner(state) {
 		if (state) {
 			this.spinnerdiv.hide();
@@ -329,8 +329,8 @@ class XpraWindow {
 			this.spinnerdiv.css("display", "table");
 		}
 	};
-	
-	
+
+
 	ensure_visible() {
 		if (this.client.server_is_desktop || this.client.server_is_shadow) {
 			//those windows should usually be centered on screen,
@@ -369,7 +369,7 @@ class XpraWindow {
 		}
 		return true;
 	};
-	
+
 	updateCanvasGeometry() {
 		if (this.client.offscreen_api) {
 			this.client.decode_worker.postMessage({'cmd': 'canvas-geo', 'wid': this.wid, 'w' : this.w, 'h' : this.h});
@@ -389,7 +389,7 @@ class XpraWindow {
 			this.offscreen_canvas.height = this.h;
 		}
 	};
-	
+
 	updateCSSGeometry() {
 		// set size of canvas
 		this.updateCanvasGeometry();
@@ -410,15 +410,15 @@ class XpraWindow {
 		jQuery(this.div).css('top', this.outerY);
 		this.debug("geometry", "updateCSSGeometry() left=", this.outerX, ", top=", this.outerY, ", width=", this.outerW, ", height=", this.outerH);
 	};
-	
+
 	updateFocus() {
 		if(this.focused) {
 			// set focused style to div
 			jQuery(this.div).addClass("windowinfocus");
-	
+
 			// Update window title
 			jQuery("title").text(location.pathname.replaceAll("/","") + ": " + this.title);
-	
+
 			// Update the icon
 			if (this.icon !== null) {
 				const src = this.update_icon(this.icon.width, this.icon.height, this.icon.encoding, this.icon.img_data);
@@ -431,16 +431,16 @@ class XpraWindow {
 			jQuery(this.div).removeClass("windowinfocus");
 		}
 	};
-	
-	
+
+
 	suspend() {
 	}
-	
+
 	resume() {
 		this.init_canvas();
 	}
-	
-	
+
+
 	/**
 	 * Mouse: delegate to client, telling it which window triggered the event.
 	 */
@@ -449,33 +449,33 @@ class XpraWindow {
 		e.preventDefault();
 		return false;
 	};
-	
+
 	on_mousedown(e) {
 		this.mouse_down_cb(this.client, e, this);
 		e.preventDefault();
 		return false;
 	};
-	
+
 	on_mouseup(e) {
 		this.mouse_up_cb(this.client, e, this);
 		e.preventDefault();
 		return false;
 	};
-	
+
 	on_mousescroll(e) {
 		this.mouse_scroll_cb(this.client, e, this);
 		//e.preventDefault();
 		return false;
 	};
-	
+
 	/**
 	 * toString allows us to identify windows by their unique window id.
 	 */
 	toString() {
 		return "Window("+this.wid+")";
 	};
-	
-	
+
+
 	update_zindex() {
 		let z = 5000 + this.stacking_layer;
 		if (this.tray) {
@@ -507,8 +507,8 @@ class XpraWindow {
 		}
 		jQuery(this.div).css('z-index', z);
 	};
-	
-	
+
+
 	/**
 	 * Update our metadata cache with new key-values,
 	 * then call set_metadata with these new key-values.
@@ -526,7 +526,7 @@ class XpraWindow {
 		}
 		this.update_zindex();
 	};
-	
+
 	/**
 	 * Apply only metadata settings that are safe before window is drawn
 	 */
@@ -575,7 +575,7 @@ class XpraWindow {
 		if ("iconic" in metadata) {
 			this.set_minimized(metadata["iconic"]==1);
 		}
-		
+
 		//if the attribute is set, add the corresponding css class:
 		const attrs = ["modal", "above", "below"];
 		for (let i = 0; i < attrs.length; i++) {
@@ -616,7 +616,7 @@ class XpraWindow {
 			}
 		}
 	};
-	
+
 	apply_size_constraints() {
 		if (!this.resizable) {
 			return;
@@ -670,8 +670,8 @@ class XpraWindow {
 		}
 		//TODO: aspectRatio, grid
 	};
-	
-	
+
+
 	/**
 	 * Apply new metadata settings.
 	 */
@@ -684,7 +684,7 @@ class XpraWindow {
 			this.set_maximized(metadata["maximized"]==1);
 		}
 	};
-	
+
 	/**
 	 * Save the window geometry so we can restore it later
 	 * (ie: when un-maximizing or un-fullscreening)
@@ -715,7 +715,7 @@ class XpraWindow {
 		this.handle_resized();
 		this.set_focus_cb(this);
 	};
-	
+
 	/**
 	 * Maximize / unmaximizes the window.
 	 */
@@ -723,7 +723,7 @@ class XpraWindow {
 		if(jQuery(this.div).is(":hidden")){
 			jQuery(this.div).show();
 		}
-	
+
 		if (this.maximized==maximized) {
 			return;
 		}
@@ -734,14 +734,14 @@ class XpraWindow {
 		// this will take care of disabling the "draggable" code:
 		this.apply_size_constraints();
 	};
-	
+
 	/**
 	 * Toggle maximized state
 	 */
 	toggle_maximized() {
 		this.set_maximized(!this.maximized);
 	};
-	
+
 	/**
 	 * Minimizes / unminimizes the window.
 	 */
@@ -757,8 +757,8 @@ class XpraWindow {
 			jQuery(this.div).show(200);
 		}
 	};
-	
-	
+
+
 	/**
 	 * Toggle minimized state
 	 */
@@ -781,7 +781,7 @@ class XpraWindow {
 			this.client._window_set_focus(this);
 		}
 	};
-	
+
 	/**
 	 * Fullscreen / unfullscreen the window.
 	 */
@@ -808,8 +808,8 @@ class XpraWindow {
 		this.handle_resized();
 		this.set_focus_cb(this);
 	};
-	
-	
+
+
 	_set_decorated(decorated) {
 		this.topoffset = parseInt(jQuery(this.div).css('border-top-width'), 10);
 		if (decorated) {
@@ -827,7 +827,7 @@ class XpraWindow {
 			jQuery(this.div).addClass("undecorated");
 		}
 	}
-	
+
 	/**
 	 * Either:
 	 * - save the geometry and use all the space
@@ -842,7 +842,7 @@ class XpraWindow {
 			this.restore_geometry();
 		}
 	}
-	
+
 	/**
 	 * Use up all the available screen space
 	 */
@@ -857,8 +857,8 @@ class XpraWindow {
 		this.h = (screen_size[1] - this.topoffset) - this.bottomoffset - TASKBAR_HEIGHT;
 		this.debug("geometry", "fill_screen() ", this.x, this.y, this.w, this.h);
 	}
-	
-	
+
+
 	/**
 	 * We have resized the window, so we need to:
 	 * - work out new position of internal canvas
@@ -882,7 +882,7 @@ class XpraWindow {
 		// send geometry callback
 		this.geometry_cb(this);
 	}
-	
+
 	/**
 	 * Like handle_resized, except we should
 	 * store internal geometry, external is always in CSS left and top
@@ -901,7 +901,7 @@ class XpraWindow {
 		// tell remote we have moved window
 		this.geometry_cb(this);
 	}
-	
+
 	/**
 	 * The "screen" has been resized, we may need to resize our window to match
 	 * if it is fullscreen or maximized.
@@ -928,7 +928,7 @@ class XpraWindow {
 			this.geometry_cb(this);
 		}
 	}
-	
+
 	recenter(force_update_geometry) {
 		let x = this.x,
 			y = this.y;
@@ -949,8 +949,8 @@ class XpraWindow {
 			this.warn("window does not fit in canvas, offsets: ", x, y);
 		}
 	}
-	
-	
+
+
 	match_screen_size() {
 		const maxw = this.client.desktop_width;
 		const maxh = this.client.desktop_height;
@@ -1001,12 +1001,12 @@ class XpraWindow {
 		this.h = newh;
 		this.recenter(true);
 	}
-	
-	
+
+
 	/**
 	 * Things ported from original shape
 	 */
-	
+
 	move_resize(x, y, w, h) {
 		this.debug("geometry", "move_resize(", x, y, w, h, ")");
 		// only do it if actually changed!
@@ -1025,17 +1025,17 @@ class XpraWindow {
 			}
 		}
 	}
-	
+
 	move(x, y) {
 		this.debug("geometry", "move(", x, y, ")");
 		this.move_resize(x, y, this.w, this.h);
 	}
-	
+
 	resize(w, h) {
 		this.debug("geometry", "resize(", w, h, ")");
 		this.move_resize(this.x, this.y, w, h);
 	}
-	
+
 	initiate_moveresize(mousedown_event, x_root, y_root, direction, button, source_indication) {
 		const dir_str = MOVERESIZE_DIRECTION_STRING[direction];
 		this.log("initiate_moveresize", dir_str, [x_root, y_root, direction, button, source_indication]);
@@ -1061,8 +1061,8 @@ class XpraWindow {
 			}
 		}
 	}
-	
-	
+
+
 	/**
 	 * Returns the geometry of the window backing image,
 	 * the inner window geometry (without any borders or top bar).
@@ -1079,7 +1079,7 @@ class XpraWindow {
 			h : this.h
 			};
 	}
-	
+
 	/**
 	 * Handle mouse click from this window's canvas,
 	 * then we fire "mouse_click_cb" (if it is set).
@@ -1090,8 +1090,8 @@ class XpraWindow {
 		// internal geometry anymore
 		this.mouse_click_cb(this, button, pressed, mx, my, modifiers, buttons);
 	}
-	
-	
+
+
 	update_icon(width, height, encoding, img_data) {
 		// Cache the icon.
 		this.icon = {
@@ -1100,7 +1100,7 @@ class XpraWindow {
 			encoding: encoding,
 			img_data: img_data
 		};
-	
+
 		let src = "favicon.png";
 		if (encoding=="png") {
 			//move title to the right:
@@ -1118,13 +1118,13 @@ class XpraWindow {
 		jQuery('#windowlistitemicon' + String(this.wid)).attr('src', src);
 		return src;
 	}
-	
-	
+
+
 	reset_cursor() {
 		jQuery("#"+String(this.wid)).css("cursor", 'default');
 		this.png_cursor_data = null;
 	}
-	
+
 	set_cursor(encoding, w, h, xhot, yhot, img_data) {
 		if (encoding!="png") {
 			this.warn("received an invalid cursor encoding:", encoding);
@@ -1169,13 +1169,13 @@ class XpraWindow {
 			set_cursor_url(cursor_url, xhot, yhot);
 		}
 	}
-	
-	
+
+
 	eos() {
 		this._close_broadway();
 	}
-	
-	
+
+
 	/**
 	 * This function draws the contents of the off-screen canvas to the visible
 	 * canvas. However the drawing is requested by requestAnimationFrame which allows
@@ -1189,8 +1189,8 @@ class XpraWindow {
 		}
 		this.canvas_ctx.drawImage(this.draw_canvas, 0, 0);
 	}
-	
-	
+
+
 	/**
 	 * The following function inits the Broadway h264 decoder
 	 */
@@ -1205,7 +1205,7 @@ class XpraWindow {
 			this._broadway_paint(buffer, enc_width, enc_height, width, height, p_width, p_height, infos);
 		};
 	}
-	
+
 	_broadway_paint(buffer, enc_width, enc_height, width, height, p_width, p_height, infos) {
 		this.debug("draw", "broadway picture decoded: ", buffer.length, "bytes, size ", p_width, "x", p_height+", paint location: ", this.broadway_paint_location,"with infos=", infos);
 		if(!this.broadway_decoder) {
@@ -1221,13 +1221,13 @@ class XpraWindow {
 			this.offscreen_canvas_ctx.drawImage(this.offscreen_canvas, x, y, enc_width, enc_height, x, y, width, height);
 		}
 	}
-	
-	
+
+
 	_close_broadway() {
 		this.broadway_decoder = null;
 	}
-	
-	
+
+
 	/**
 	 * Updates the window image with new pixel data
 	 * we have received from the server.
@@ -1246,7 +1246,7 @@ class XpraWindow {
 		this.paint_queue.push(item);
 		this.may_paint_now();
 	}
-	
+
 	/**
 	 * Pick items from the paint_queue
 	 * if we're not already in the process of painting something.
@@ -1261,16 +1261,16 @@ class XpraWindow {
 			now = performance.now();
 		}
 	}
-	
+
 	paint_box(color, px, py, pw, ph) {
 		this.offscreen_canvas_ctx.strokeStyle = color;
 		this.offscreen_canvas_ctx.lineWidth = 2;
 		this.offscreen_canvas_ctx.strokeRect(px, py, pw, ph);
 	}
-	
+
 	do_paint(packet, decode_callback) {
 		const me = this;
-	
+
 		const x = packet[2],
 			y = packet[3],
 			width = packet[4],
@@ -1293,7 +1293,7 @@ class XpraWindow {
 		else {
 			this.debug("draw", "do_paint(", img_data.length, " bytes of", coding, " data ", width, "x", height, " at ", x, ",", y, ") focused=", this.focused);
 		}
-	
+
 		function painted(skip_box) {
 			me.paint_pending = 0;
 			if (!skip_box && me.debug_categories.includes("draw")) {
@@ -1302,13 +1302,13 @@ class XpraWindow {
 			}
 			decode_callback();
 		}
-	
+
 		function paint_error(e) {
 			me.error("error painting", coding, e);
 			me.paint_pending = 0;
 			decode_callback(""+e);
 		}
-	
+
 		function paint_bitmap() {
 			//the decode worker is giving us a Bitmap object ready to use:
 			me.offscreen_canvas_ctx.clearRect(x, y, img_data.width, img_data.height);
@@ -1318,7 +1318,7 @@ class XpraWindow {
 			//when decoding in the worker (bitmaps can only come from the decode worker)
 			me.may_paint_now();
 		}
-	
+
 		try {
 			if (coding=="void") {
 				painted(true);
@@ -1404,7 +1404,7 @@ class XpraWindow {
 			paint_error(e);
 		}
 	}
-	
+
 	/**
 	 * Close the window and free all resources
 	 */
