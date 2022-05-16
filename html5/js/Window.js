@@ -131,7 +131,6 @@ function XpraWindow(client, wid, x, y, w, h,
 }
 
 XpraWindow.prototype.add_window_decorations = function() {
-	const me = this;
 	const wid = this.wid;
 	jQuery(this.div).addClass("border");
 	// add a title bar to this window if we need to
@@ -149,19 +148,19 @@ XpraWindow.prototype.add_window_decorations = function() {
 		jQuery(this.div).draggable({ transform: true });
 	}
 	jQuery(this.div).draggable({ cancel: "canvas" });
-	jQuery("#head"+String(this.wid)).click(function(ev) {
-		if (!me.minimized) {
-			me.set_focus_cb(me);
+	jQuery("#head"+String(this.wid)).click((ev) => {
+		if (!this.minimized) {
+			this.set_focus_cb(this);
 		}
 	});
-	jQuery(this.div).on("dragstart",function(ev){
+	jQuery(this.div).on("dragstart", (ev) => {
 		client.release_buttons(ev, me);
-		me.set_focus_cb(me);
+		this.set_focus_cb(this);
 		client.mouse_grabbed = true;
 	});
-	jQuery(this.div).on("dragstop",function(ev,ui){
+	jQuery(this.div).on("dragstop", (ev, ui) => {
 		client.mouse_grabbed = false;
-		me.handle_moved(ui);
+		this.handle_moved(ui);
 	});
 	// Use transform if scaled
 	// This disables helper highlight, so we
@@ -171,43 +170,31 @@ XpraWindow.prototype.add_window_decorations = function() {
 	}
 	// attach resize handles
 	jQuery(this.div).resizable({ containment: 'parent', helper: "ui-resizable-helper", "handles": "n, e, s, w, ne, se, sw, nw" });
-	//jQuery(this.div).on("resize",jQuery.debounce(50, function(ev,ui) {
-	//  	me.handle_resized(ui);
+	//jQuery(this.div).on("resize",jQuery.debounce(50, (ev, ui) => {
+	//  	this.handle_resized(ui);
 	//}));
-	jQuery(this.div).on("resizestart",function(ev,ui){
+	jQuery(this.div).on("resizestart", (ev, ui) => {
 		client.do_window_mouse_click(ev, me, false);
 		client.mouse_grabbed = true;
 	});
-	jQuery(this.div).on("resizestop",function(ev,ui){
-		me.handle_resized(ui);
-		me.set_focus_cb(me);
+	jQuery(this.div).on("resizestop", (ev, ui) => {
+		this.handle_resized(ui);
+		this.set_focus_cb(this);
 		client.mouse_grabbed = false;
 		//workaround for the window going blank,
 		//just force a refresh:
-		setTimeout(function() {
-			me.client.request_refresh(me.wid);
-		}, 200);
-		setTimeout(function() {
-			me.client.request_refresh(me.wid);
-		}, 500);
+		setTimeout(() => this.client.request_refresh(wid), 200);
+		setTimeout(() => this.client.request_refresh(wid), 500);
 	});
 	this.d_header = '#head' + String(wid);
 	this.d_closebtn = '#close' + String(wid);
 	this.d_maximizebtn = '#maximize' + String(wid);
 	this.d_minimizebtn = '#minimize' + String(wid);
 	if (this.resizable) {
-		jQuery(this.d_header).dblclick(function() {
-			me.toggle_maximized();
-		});
-		jQuery(this.d_closebtn).click(function() {
-			me.window_closed_cb(me);
-		});
-		jQuery(this.d_maximizebtn).click(function() {
-			me.toggle_maximized();
-		});
-		jQuery(this.d_minimizebtn).click(function() {
-			me.toggle_minimized();
-		});
+		jQuery(this.d_header).dblclick(() => this.toggle_maximized());
+		jQuery(this.d_closebtn).click(() => this.window_closed_cb(this));
+		jQuery(this.d_maximizebtn).click(() => this.toggle_maximized());
+		jQuery(this.d_minimizebtn).click(() => this.toggle_minimized());
 	}
 	else {
 		jQuery(this.d_closebtn).hide();
@@ -218,18 +205,16 @@ XpraWindow.prototype.add_window_decorations = function() {
 	// adjust top offset
 	this.topoffset = this.topoffset + parseInt(jQuery(this.d_header).css('height'), 10);
 	// stop propagation if we're over the window:
-	jQuery(this.div).mousedown(function (e) {
-		e.stopPropagation();
-	});
+	jQuery(this.div).mousedown((e) => e.stopPropagation());
 	//bug 2418: if we stop 'mouseup' propagation,
 	//jQuery can't ungrab the window with Firefox
 	//jQuery(this.div).mouseup(function (e) {
 	//	e.stopPropagation();
 	//});
 	// assign callback to focus window if header is clicked.
-	jQuery(this.d_header).click(function(e) {
-		if (!me.minimized && $(e.target).parents('.windowbuttons').length === 0) {
-			me.client._window_set_focus(me);
+	jQuery(this.d_header).click((e) => {
+		if (!this.minimized && $(e.target).parents('.windowbuttons').length === 0) {
+			this.client._window_set_focus(this);
 		}
 	});
 }
@@ -291,55 +276,47 @@ XpraWindow.prototype.swap_buffers = function() {
 
 
 XpraWindow.prototype.register_canvas_mouse_events = function(canvas) {
-	const me = this;
 	// Hook up the events we want to receive:
-	jQuery(canvas).mousedown(function (e) {
-		me.on_mousedown(e);
-	});
-	jQuery(canvas).mouseup(function (e) {
-		me.on_mouseup(e);
-	});
-	jQuery(canvas).mousemove(function (e) {
-		me.on_mousemove(e);
-	});
+	jQuery(canvas).mousedown((e) => this.on_mousedown(e));
+	jQuery(canvas).mouseup((e) => this.on_mouseup(e));
+	jQuery(canvas).mousemove((e) => this.on_mousemove(e));
 }
 
 XpraWindow.prototype.register_canvas_pointer_events = function(canvas) {
 	if (!window.PointerEvent) {
 		return;
 	}
-	const me = this;
-	canvas.addEventListener("pointerdown", function(ev) {
-		me.debug("mouse", "pointerdown:", ev);
+	canvas.addEventListener("pointerdown", (ev) => {
+		this.debug("mouse", "pointerdown:", ev);
 		if (ev.pointerType=="touch") {
-			me.pointer_down = ev.pointerId;
-			me.pointer_last_x = ev.offsetX;
-			me.pointer_last_y = ev.offsetY;
+			this.pointer_down = ev.pointerId;
+			this.pointer_last_x = ev.offsetX;
+			this.pointer_last_y = ev.offsetY;
 		}
 	});
-	canvas.addEventListener("pointermove", function(ev) {
-		me.debug("mouse", "pointermove:", ev);
-		if (me.pointer_down==ev.pointerId) {
-			const dx = ev.offsetX-me.pointer_last_x;
-			const dy = ev.offsetY-me.pointer_last_y;
-			me.pointer_last_x = ev.offsetX;
-			me.pointer_last_y = ev.offsetY;
+	canvas.addEventListener("pointermove", (ev) => {
+		this.debug("mouse", "pointermove:", ev);
+		if (this.pointer_down==ev.pointerId) {
+			const dx = ev.offsetX-this.pointer_last_x;
+			const dy = ev.offsetY-this.pointer_last_y;
+			this.pointer_last_x = ev.offsetX;
+			this.pointer_last_y = ev.offsetY;
 			const mult = 20.0*(window.devicePixelRatio || 1);
 			ev.wheelDeltaX = Math.round(dx*mult);
 			ev.wheelDeltaY = Math.round(dy*mult);
-			me.on_mousescroll(ev);
+			this.on_mousescroll(ev);
 		}
 	});
-	canvas.addEventListener("pointerup", function(ev) {
-		me.debug("mouse", "pointerup:", ev);
-		me.pointer_down = -1;
+	canvas.addEventListener("pointerup", (ev) => {
+		this.debug("mouse", "pointerup:", ev);
+		this.pointer_down = -1;
 	});
-	canvas.addEventListener("pointercancel", function(ev) {
-		me.debug("mouse", "pointercancel:", ev);
-		me.pointer_down = -1;
+	canvas.addEventListener("pointercancel", (ev) => {
+		this.debug("mouse", "pointercancel:", ev);
+		this.pointer_down = -1;
 	});
-	canvas.addEventListener("pointerout", function(ev) {
-		me.debug("mouse", "pointerout:", ev);
+	canvas.addEventListener("pointerout", (ev) => {
+		this.debug("mouse", "pointerout:", ev);
 	});
 }
 
@@ -1213,15 +1190,14 @@ XpraWindow.prototype.draw = function() {
  * The following function inits the Broadway h264 decoder
  */
 XpraWindow.prototype._init_broadway = function(enc_width, enc_height, width, height) {
-	const me = this;
 	this.broadway_decoder = new Decoder({
 		"rgb": 	true,
 		"size": { "width" : enc_width, "height" : enc_height },
 	});
 	this.log("broadway decoder initialized");
 	this.broadway_paint_location = [0, 0];
-	this.broadway_decoder.onPictureDecoded = function(buffer, p_width, p_height, infos) {
-		me._broadway_paint(buffer, enc_width, enc_height, width, height, p_width, p_height, infos);
+	this.broadway_decoder.onPictureDecoded = (buffer, p_width, p_height, infos) => {
+		this._broadway_paint(buffer, enc_width, enc_height, width, height, p_width, p_height, infos);
 	};
 };
 
@@ -1281,6 +1257,12 @@ XpraWindow.prototype.may_paint_now = function paint() {
 	}
 };
 
+XpraWindow.prototype.paint_box = function(color, px, py, pw, ph) {
+	this.offscreen_canvas_ctx.strokeStyle = color;
+	this.offscreen_canvas_ctx.lineWidth = 2;
+	this.offscreen_canvas_ctx.strokeRect(px, py, pw, ph);
+}
+
 XpraWindow.prototype.do_paint = function paint(packet, decode_callback) {
 	const me = this;
 
@@ -1307,17 +1289,11 @@ XpraWindow.prototype.do_paint = function paint(packet, decode_callback) {
 		this.debug("draw", "do_paint(", img_data.length, " bytes of", coding, " data ", width, "x", height, " at ", x, ",", y, ") focused=", this.focused);
 	}
 
-	function paint_box(color, px, py, pw, ph) {
-		me.offscreen_canvas_ctx.strokeStyle = color;
-		me.offscreen_canvas_ctx.lineWidth = 2;
-		me.offscreen_canvas_ctx.strokeRect(px, py, pw, ph);
-	}
-
 	function painted(skip_box) {
 		me.paint_pending = 0;
 		if (!skip_box && me.debug_categories.includes("draw")) {
 			const color = DEFAULT_BOX_COLORS[coding] || "white";
-			paint_box(color, x, y, width, height);
+			this.paint_box(color, x, y, width, height);
 		}
 		decode_callback();
 	}
@@ -1361,20 +1337,20 @@ XpraWindow.prototype.do_paint = function paint(packet, decode_callback) {
 				return;
 			}
 			const j = new Image();
-			j.onload = function () {
+			j.onload = () => {
 				if (j.width==0 || j.height==0) {
 					paint_error("invalid image size: "+j.width+"x"+j.height);
 				}
 				else {
-					me.offscreen_canvas_ctx.clearRect(x, y, width, height);
-					me.offscreen_canvas_ctx.drawImage(j, x, y, width, height);
+					this.offscreen_canvas_ctx.clearRect(x, y, width, height);
+					this.offscreen_canvas_ctx.drawImage(j, x, y, width, height);
 					painted();
 				}
-				me.may_paint_now();
+				this.may_paint_now();
 			};
-			j.onerror = function () {
+			j.onerror = () => {
 				paint_error("failed to load "+coding+" into image tag");
-				me.may_paint_now();
+				this.may_paint_now();
 			};
             const paint_coding = coding.split("/")[0];   //ie: "png/P" -> "png"
 			j.src = "data:image/"+paint_coding+";base64," + Utilities.ArrayBufferToBase64(img_data);
@@ -1407,7 +1383,7 @@ XpraWindow.prototype.do_paint = function paint(packet, decode_callback) {
 					ydelta = scroll_data[5];
 				this.offscreen_canvas_ctx.drawImage(this.draw_canvas, sx, sy, sw, sh, sx+xdelta, sy+ydelta, sw, sh);
 				if (this.debug_categories.includes("draw")) {
-					paint_box("brown", sx+xdelta, sy+ydelta, sw, sh);
+					this.paint_box("brown", sx+xdelta, sy+ydelta, sw, sh);
 				}
 			}
 			painted(true);
