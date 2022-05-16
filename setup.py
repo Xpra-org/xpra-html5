@@ -303,7 +303,7 @@ def install_html5(root="/", install_dir="/usr/share/xpra/www/", config_dir="/etc
                                   "-o", dst,
                                   "--compress",
                                   ]
-                elif minifer=="hjsmin":
+                elif minifier=="hjsmin":
                     minify_cmd = ["hjsmin", "-i", fsrc, "-o", dst]
                 else:
                     assert minifier=="yuicompressor"
