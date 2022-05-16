@@ -4231,8 +4231,26 @@ XpraClient.prototype._process_send_file = function(packet, ctx) {
 		ctx.cerror("send-file: invalid data size, received", data.length, "bytes, expected", filesize);
 		return;
 	}
+	let digest = null;
+	for (let hash_fn of ["sha512", "sha384", "sha256", "sha224", "sha1"]) {
+		if (options[hash_fn]) {
+			try {
+				digest = forge.md[hash_fn].create();
+				break;
+			}
+			catch (e) {
+				this.error("Error: no", hash_fn, "checksum available:", e);
+			}
+		}
+	}
 	if (data.length==filesize) {
 		//got the whole file
+		if (digest) {
+			digest.update(Utilities.Uint8ToString(data));
+			ctx.log("digest.update(", data, ")");
+			ctx.log("digest update string:", Utilities.Uint8ToString(data));
+			ctx.verify_digest(digest, options[digest.algorithm]);
+		}
 		ctx._got_file(basefilename, data, printit, mimetype, options);
 		return;
 	}
@@ -4255,7 +4273,6 @@ XpraClient.prototype._process_send_file = function(packet, ctx) {
 		ctx._check_chunk_receiving(chunk_id, chunk);
 	}, CHUNK_TIMEOUT);
 	const openit = true;
-	const digest = "";		//not implemented yet
 	const chunk_state = [
 				Date.now(),
 				[], basefilename, mimetype,
@@ -4347,8 +4364,10 @@ XpraClient.prototype._process_send_file_chunk = function(packet, ctx) {
 	}
 	chunk_state[9] = written;
 	chunk_state[1].push(file_data);
-	//const digest = chunk_state[8];
-	//digest.update(file_data)
+	const digest = chunk_state[8];
+	if (digest) {
+		digest.update(Utilities.Uint8ToString(file_data));
+	}
 	ctx.send(["ack-file-chunk", chunk_id, true, "", chunk]);
 	if (has_more) {
 		progress(written);
@@ -4369,11 +4388,10 @@ XpraClient.prototype._process_send_file_chunk = function(packet, ctx) {
 		progress(-1, "file size mismatch");
 		return
 	}
-	/*expected_digest = options.strget("sha1")
-	if expected_digest and digest.hexdigest()!=expected_digest:
-		progress(-1, "checksum mismatch")
-		ctx.digest_mismatch(filename, digest, expected_digest, "sha1")
-		return*/
+	const options = chunk_state[7];
+	if (digest) {
+		ctx.verify_digest(digest, options[digest.algorithm]);
+	}
 	progress(written);
 	const start_time = chunk_state[0];
 	const elapsed = Date.now()-start_time;
@@ -4381,7 +4399,6 @@ XpraClient.prototype._process_send_file_chunk = function(packet, ctx) {
 	const filename = chunk_state[2];
 	const mimetype = chunk_state[3];
 	const printit = chunk_state[4];
-	const options = chunk_state[7];
 	//join all the data into a single typed array:
 	const data = new Uint8Array(filesize);
 	let start = 0;
@@ -4392,6 +4409,19 @@ XpraClient.prototype._process_send_file_chunk = function(packet, ctx) {
 	}
 	ctx._got_file(filename, data, mimetype, printit, mimetype, options);
 };
+
+
+XpraClient.prototype.verify_digest = function(digest, expected_value) {
+	const algo = digest.algorithm;
+	const value = digest.digest().data;
+	const hex_value = Utilities.convertToHex(value);
+	if (hex_value!=expected_value.toLowerCase()) {
+		this.error("Error verifying", algo, "file checksum");
+		this.error(" expected", expected_value, "but got", hex_value);
+		throw "invalid "+algo+" checksum";
+	}
+	this.log("verified", algo, "digest of file transfer");
+}
 
 
 XpraClient.prototype._got_file = function(basefilename, data, printit, mimetype, options) {
