@@ -303,6 +303,8 @@ def install_html5(root="/", install_dir="/usr/share/xpra/www/", config_dir="/etc
                                   "-o", dst,
                                   "--compress",
                                   ]
+                elif minifer=="hjsmin":
+                    minify_cmd = ["hjsmin", "-i", fsrc, "-o", dst]
                 else:
                     assert minifier=="yuicompressor"
                     try:
@@ -521,7 +523,7 @@ def main(args):
     def help():
         print("invalid number of arguments, usage:")
         print("%s sdist" % (args[0],))
-        print("%s install [ROOT] [INSTALL_DIR] [MINIFIER]" % (args[0],))
+        print("%s install [ROOT] [INSTALL_DIR] [CONFIG_DIR] [MINIFIER]" % (args[0],))
         print("%s deb" % (args[0],))
         print("%s rpm" % (args[0],))
         print("%s set-version VERSION" % (args[0],))
