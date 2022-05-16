@@ -36,7 +36,7 @@ function XpraClient(container) {
 	}
 	// assign callback for window resize event
 	if (window.jQuery) {
-		jQuery(window).resize(jQuery.debounce(250, (e) => this._screen_resized(e, me)));
+		jQuery(window).resize(jQuery.debounce(250, (e) => this._screen_resized(e)));
 	}
 
 	this.protocol = null;
@@ -588,11 +588,11 @@ XpraClient.prototype._route_packet = function(packet, ctx) {
 		ctx.cerror("no packet handler for ", packet_type);
 		ctx.clog(packet);
 	} else {
-		fn(packet, ctx);
+		fn.call(ctx, packet);
 	}
 };
 
-XpraClient.prototype._screen_resized = function(event, ctx) {
+XpraClient.prototype._screen_resized = function(event) {
 	// send the desktop_size packet so server knows we changed size
 	if (!this.connected) {
 		return;
@@ -604,10 +604,10 @@ XpraClient.prototype._screen_resized = function(event, ctx) {
 	this.desktop_height = this.container.clientHeight;
 	const newsize = [this.desktop_width, this.desktop_height];
 	const packet = ["desktop_size", newsize[0], newsize[1], this._get_screen_sizes()];
-	ctx.send(packet);
+	this.send(packet);
 	// call the screen_resized function on all open windows
-	for (const i in ctx.id_to_window) {
-		const iwin = ctx.id_to_window[i];
+	for (const i in this.id_to_window) {
+		const iwin = this.id_to_window[i];
 		iwin.screen_resized();
 
 		// Force fullscreen on a a given window name from the provided settings
@@ -681,7 +681,7 @@ XpraClient.prototype.init_keyboard = function() {
 				return e.stopPropagation() || e.preventDefault();
 			}
 		}
-		const r = this._keyb_onkeydown(e, this);
+		const r = this._keyb_onkeydown(e);
 		if (!r) {
 			e.preventDefault();
 		}
@@ -695,7 +695,7 @@ XpraClient.prototype.init_keyboard = function() {
 				return e.stopPropagation() || e.preventDefault();
 			}
 		}
-		const r = this._keyb_onkeyup(e, this);
+		const r = this._keyb_onkeyup(e);
 		if (!r) {
 			e.preventDefault();
 		}
@@ -1047,11 +1047,11 @@ XpraClient.prototype.do_keyb_process = function(pressed, event) {
 };
 
 
-XpraClient.prototype._keyb_onkeydown = function(event, ctx) {
-	return ctx._keyb_process(true, event);
+XpraClient.prototype._keyb_onkeydown = function(event) {
+	return this._keyb_process(true, event);
 };
-XpraClient.prototype._keyb_onkeyup = function(event, ctx) {
-	return ctx._keyb_process(false, event);
+XpraClient.prototype._keyb_onkeyup = function(event) {
+	return this._keyb_process(false, event);
 };
 
 XpraClient.prototype._get_keyboard_layout = function() {
@@ -2137,13 +2137,13 @@ XpraClient.prototype.on_open = function() {
 	//this hook can be overriden
 };
 
-XpraClient.prototype._process_open = function(packet, ctx) {
+XpraClient.prototype._process_open = function() {
 	// call the send_hello function
-	ctx.on_connection_progress("WebSocket connection established", "", 80);
+	this.on_connection_progress("WebSocket connection established", "", 80);
 	// wait timeout seconds for a hello, then bomb
-	ctx.schedule_hello_timer();
-	ctx._send_hello();
-	ctx.on_open();
+	this.schedule_hello_timer();
+	this._send_hello();
+	this.on_open();
 };
 
 XpraClient.prototype.schedule_hello_timer = function() {
@@ -2161,26 +2161,26 @@ XpraClient.prototype.cancel_hello_timer = function() {
 }
 
 
-XpraClient.prototype._process_error = function(packet, ctx) {
+XpraClient.prototype._process_error = function(packet) {
 	const code = parseInt(packet[2]);
-	let reconnect = ctx.reconnect || ctx.reconnect_attempt<ctx.reconnect_count;
+	let reconnect = this.reconnect || this.reconnect_attempt<this.reconnect_count;
 	if (reconnect && code>=0) {
 		if ([0, 1006, 1008, 1010, 1014, 1015].indexOf(code)>=0) {
 			// don't re-connect unless we had actually managed to connect
 			// (because these specific websocket error codes are likely permanent)
-			reconnect = ctx.connected;
+			reconnect = this.connected;
 		}
 	}
-	ctx.cerror("websocket error: ", packet[1], "code: ", code, "reason: ", ctx.disconnect_reason,
-				", connected: ", ctx.connected, ", reconnect: ", reconnect);
-	if (ctx.reconnect_in_progress) {
+	this.cerror("websocket error: ", packet[1], "code: ", code, "reason: ", this.disconnect_reason,
+				", connected: ", this.connected, ", reconnect: ", reconnect);
+	if (this.reconnect_in_progress) {
 		return;
 	}
-	ctx.packet_disconnect_reason(packet);
-	ctx.close_audio();
+	this.packet_disconnect_reason(packet);
+	this.close_audio();
 	if (!reconnect) {
 		// call the client's close callback
-		ctx.callback_close(ctx.disconnect_reason);
+		this.callback_close(this.disconnect_reason);
 	}
 };
 
@@ -2226,19 +2226,20 @@ XpraClient.prototype.do_reconnect = function() {
 	}, this.reconnect_delay);
 };
 
-XpraClient.prototype._process_close = function(packet, ctx) {
-	ctx.clog("websocket closed: ", packet[1], "reason: ", ctx.disconnect_reason, ", reconnect: ", ctx.reconnect, ", reconnect attempt: ", ctx.reconnect_attempt);
-	if (ctx.reconnect_in_progress) {
+XpraClient.prototype._process_close = function(packet) {
+	this.clog("websocket closed: ", packet[1], "reason: ", this.disconnect_reason,
+			", reconnect: ", this.reconnect, ", reconnect attempt: ", this.reconnect_attempt);
+	if (this.reconnect_in_progress) {
 		return;
 	}
-	ctx.packet_disconnect_reason(packet);
-	if (ctx.reconnect && ctx.reconnect_attempt<ctx.reconnect_count) {
-		ctx.emit_connection_lost();
-		ctx.reconnect_attempt++;
-		ctx.do_reconnect();
+	this.packet_disconnect_reason(packet);
+	if (this.reconnect && this.reconnect_attempt<this.reconnect_count) {
+		this.emit_connection_lost();
+		this.reconnect_attempt++;
+		this.do_reconnect();
 	}
 	else {
-		ctx.close();
+		this.close();
 	}
 };
 
@@ -2252,21 +2253,21 @@ XpraClient.prototype.close = function() {
 	this.callback_close(this.disconnect_reason);
 };
 
-XpraClient.prototype._process_disconnect = function(packet, ctx) {
-	ctx.debug("main", "disconnect reason:", packet[1]);
-	if (ctx.reconnect_in_progress) {
+XpraClient.prototype._process_disconnect = function(packet) {
+	this.debug("main", "disconnect reason:", packet[1]);
+	if (this.reconnect_in_progress) {
 		return;
 	}
 	// save the disconnect reason
-	ctx.packet_disconnect_reason(packet);
-	ctx.close();
+	this.packet_disconnect_reason(packet);
+	this.close();
 	// call the client's close callback
-	ctx.callback_close(ctx.disconnect_reason);
+	this.callback_close(this.disconnect_reason);
 };
 
-XpraClient.prototype._process_startup_complete = function(packet, ctx) {
-	ctx.log("startup complete");
-	ctx.emit_connection_established();
+XpraClient.prototype._process_startup_complete = function(packet) {
+	this.log("startup complete");
+	this.emit_connection_established();
 };
 
 XpraClient.prototype._connection_change = function(e) {
@@ -2278,24 +2279,24 @@ XpraClient.prototype._connection_change = function(e) {
 };
 
 
-XpraClient.prototype._process_hello = function(packet, ctx) {
+XpraClient.prototype._process_hello = function(packet) {
 	//show("process_hello("+packet+")");
-	ctx.cancel_hello_timer();
+	this.cancel_hello_timer();
 	const hello = packet[1];
-	ctx.clog("received hello capabilities", hello);
-	ctx.server_display = hello["display"] || "";
-	ctx.server_platform = hello["platform"] || "";
-	ctx.server_remote_logging = hello["remote-logging.multi-line"];
-	if(ctx.server_remote_logging && ctx.remote_logging) {
+	this.clog("received hello capabilities", hello);
+	this.server_display = hello["display"] || "";
+	this.server_platform = hello["platform"] || "";
+	this.server_remote_logging = hello["remote-logging.multi-line"];
+	if(this.server_remote_logging && this.remote_logging) {
 		//hook remote logging:
-		Utilities.log = function() { ctx.log.apply(ctx, arguments); };
-		Utilities.warn = function() { ctx.warn.apply(ctx, arguments); };
-		Utilities.error = function() { ctx.error.apply(ctx, arguments); };
-		Utilities.exc = function() { ctx.exc.apply(ctx, arguments); };
+		Utilities.log = () => this.log(arguments);
+		Utilities.warn = () => this.warn(arguments);
+		Utilities.error = () => this.error(arguments);
+		Utilities.exc = () => this.exc(arguments);
 	}
 	// check for server encryption caps update
-	if(ctx.encryption) {
-		ctx.cipher_out_caps = {};
+	if(this.encryption) {
+		this.cipher_out_caps = {};
 		const CIPHER_CAPS = [
 			"", ".mode", ".iv",
 			".key_salt", ".key_size", ".key_hash", ".key_stretch_iterations",
@@ -2307,9 +2308,9 @@ XpraClient.prototype._process_hello = function(packet, ctx) {
 			if ((typeof value) === 'object' && value.constructor===Uint8Array) {
 				value = String.fromCharCode.apply(null, value);
 			}
-			ctx.cipher_out_caps[cipher_key] = value;
+			this.cipher_out_caps[cipher_key] = value;
 		}
-		ctx.protocol.set_cipher_out(ctx.cipher_out_caps, ctx.encryption_key);
+		this.protocol.set_cipher_out(this.cipher_out_caps, this.encryption_key);
 	}
 	let PACKET_ENCODERS = ["bencode"];
 	if (rencode_ok) {
@@ -2318,17 +2319,17 @@ XpraClient.prototype._process_hello = function(packet, ctx) {
 	for (const i in PACKET_ENCODERS) {
 		const packet_encoder = PACKET_ENCODERS[i];
 		if (hello[packet_encoder]) {
-			ctx.packet_encoder = packet_encoder;
-			ctx.protocol.enable_packet_encoder(packet_encoder);
+			this.packet_encoder = packet_encoder;
+			this.protocol.enable_packet_encoder(packet_encoder);
 			Utilities.clog("packet encoder:", packet_encoder);
 			break;
 		}
 	}
 	//don't use offscreen or decode worker with 'rencodeplus':
-	if (ctx.decode_worker && ctx.packet_encoder!="rencodeplus") {
-		Utilities.clog("turning off decode worker for "+ctx.packet_encoder+" packet encoder");
-		ctx.decode_worker = null;
-		ctx.offscreen_api = false;
+	if (this.decode_worker && this.packet_encoder!="rencodeplus") {
+		Utilities.clog("turning off decode worker for "+this.packet_encoder+" packet encoder");
+		this.decode_worker = null;
+		this.offscreen_api = false;
 	}
 
 	// find the modifier to use for Num_Lock
@@ -2342,7 +2343,7 @@ XpraClient.prototype._process_hello = function(packet, ctx) {
 					for (const index in keys) {
 						const key=keys[index];
 						if (key=="Num_Lock") {
-							ctx.num_lock_modifier = modifier;
+							this.num_lock_modifier = modifier;
 						}
 					}
 				}
@@ -2358,17 +2359,17 @@ XpraClient.prototype._process_hello = function(packet, ctx) {
 			vno[i] = parseInt(vparts[i]);
 		}
 		if (vno[0]<=0 && vno[1]<10) {
-			ctx.callback_close("unsupported version: " + version);
-			ctx.close();
+			this.callback_close("unsupported version: " + version);
+			this.close();
 			return;
 		}
 	}
 	catch (e) {
-		ctx.callback_close("error parsing version number '" + version + "'");
-		ctx.close();
+		this.callback_close("error parsing version number '" + version + "'");
+		this.close();
 		return;
 	}
-	ctx.log("got hello: server version", version, "accepted our connection");
+	this.log("got hello: server version", version, "accepted our connection");
 	//figure out "alt" and "meta" keys:
 	if ("modifier_keycodes" in hello) {
 		const modifier_keycodes = hello["modifier_keycodes"];
@@ -2382,85 +2383,85 @@ XpraClient.prototype._process_hello = function(packet, ctx) {
 				//doesn't hurt to test both:
 				for (let j=0; j<key.length; j++) {
 					if ("Alt_L"==key[j])
-						ctx.alt_modifier = mod;
+						this.alt_modifier = mod;
 					else if ("Meta_L"==key[j])
-						ctx.meta_modifier = mod;
+						this.meta_modifier = mod;
 					else if ("ISO_Level3_Shift"==key[j] || "Mode_switch"==key[j])
-						ctx.altgr_modifier = mod;
+						this.altgr_modifier = mod;
 					else if ("Control_L"==key[j])
-						ctx.control_modifier = mod;
+						this.control_modifier = mod;
 				}
 			}
 		}
 	}
 	//show("alt="+alt_modifier+", meta="+meta_modifier);
 	// stuff that must be done after hello
-	if(ctx.audio_enabled) {
+	if(this.audio_enabled) {
 		if(!(hello["sound.send"])) {
-			ctx.error("server does not support speaker forwarding");
-			ctx.audio_enabled = false;
+			this.error("server does not support speaker forwarding");
+			this.audio_enabled = false;
 		}
 		else {
-			ctx.server_audio_codecs = hello["sound.encoders"];
-			if(!ctx.server_audio_codecs) {
-				ctx.error("audio codecs missing on the server");
-				ctx.audio_enabled = false;
+			this.server_audio_codecs = hello["sound.encoders"];
+			if(!this.server_audio_codecs) {
+				this.error("audio codecs missing on the server");
+				this.audio_enabled = false;
 			}
 			else {
-				ctx.log("audio codecs supported by the server:", ctx.server_audio_codecs);
-				if(!ctx.server_audio_codecs.includes(ctx.audio_codec)) {
-					ctx.warn("audio codec "+ctx.audio_codec+" is not supported by the server");
-					ctx.audio_codec = null;
+				this.log("audio codecs supported by the server:", this.server_audio_codecs);
+				if(!this.server_audio_codecs.includes(this.audio_codec)) {
+					this.warn("audio codec "+this.audio_codec+" is not supported by the server");
+					this.audio_codec = null;
 					//find the best one we can use:
 					for (let i = 0; i < MediaSourceConstants.PREFERRED_CODEC_ORDER.length; i++) {
 						const codec = MediaSourceConstants.PREFERRED_CODEC_ORDER[i];
-						if ((codec in ctx.audio_codecs) && (ctx.server_audio_codecs.indexOf(codec)>=0)){
-							if (ctx.mediasource_codecs[codec]) {
-								ctx.audio_framework = "mediasource";
+						if ((codec in this.audio_codecs) && (this.server_audio_codecs.indexOf(codec)>=0)){
+							if (this.mediasource_codecs[codec]) {
+								this.audio_framework = "mediasource";
 							}
 							else {
-								ctx.audio_framework = "aurora";
+								this.audio_framework = "aurora";
 							}
-							ctx.audio_codec = codec;
-							ctx.log("using", ctx.audio_framework, "audio codec", codec);
+							this.audio_codec = codec;
+							this.log("using", this.audio_framework, "audio codec", codec);
 							break;
 						}
 					}
-					if(!ctx.audio_codec) {
-						ctx.warn("audio codec: no matches found");
-						ctx.audio_enabled = false;
+					if(!this.audio_codec) {
+						this.warn("audio codec: no matches found");
+						this.audio_enabled = false;
 					}
 				}
 			}
 			//with Firefox, we have to wait for a user event..
-			if (ctx.audio_enabled && !Utilities.isFirefox()) {
-				ctx._sound_start_receiving();
+			if (this.audio_enabled && !Utilities.isFirefox()) {
+				this._sound_start_receiving();
 			}
 		}
 	}
 	if (SHOW_START_MENU) {
-		ctx.xdg_menu = hello["xdg-menu"];
-		if (ctx.xdg_menu) {
-			ctx.process_xdg_menu();
+		this.xdg_menu = hello["xdg-menu"];
+		if (this.xdg_menu) {
+			this.process_xdg_menu();
 		}
 	}
 
-	ctx.server_is_desktop = Boolean(hello["desktop"]);
-	ctx.server_is_shadow = Boolean(hello["shadow"]);
-	ctx.server_readonly = Boolean(hello["readonly"]);
-	if (ctx.server_is_desktop || ctx.server_is_shadow) {
+	this.server_is_desktop = Boolean(hello["desktop"]);
+	this.server_is_shadow = Boolean(hello["shadow"]);
+	this.server_readonly = Boolean(hello["readonly"]);
+	if (this.server_is_desktop || this.server_is_shadow) {
 		jQuery("body").addClass("desktop");
 	}
-	ctx.server_resize_exact = hello["resize_exact"] || false;
-	ctx.server_screen_sizes = hello["screen-sizes"] || [];
-	ctx.clog("server screen sizes:", ctx.server_screen_sizes);
+	this.server_resize_exact = hello["resize_exact"] || false;
+	this.server_screen_sizes = hello["screen-sizes"] || [];
+	this.clog("server screen sizes:", this.server_screen_sizes);
 
-	ctx.server_precise_wheel = hello["wheel.precise"] || false;
+	this.server_precise_wheel = hello["wheel.precise"] || false;
 
-	ctx.remote_open_files = Boolean(hello["open-files"]);
-	ctx.remote_file_transfer = Boolean(hello["file-transfer"]);
-	ctx.remote_printing = Boolean(hello["printing"]);
-	if (ctx.remote_printing && ctx.printing) {
+	this.remote_open_files = Boolean(hello["open-files"]);
+	this.remote_file_transfer = Boolean(hello["file-transfer"]);
+	this.remote_printing = Boolean(hello["printing"]);
+	if (this.remote_printing && this.printing) {
 		// send our printer definition
 		const printers = {
 			"HTML5 client": {
@@ -2469,38 +2470,35 @@ XpraClient.prototype._process_hello = function(packet, ctx) {
 				"mimetypes": ["application/pdf"]
 			}
 		};
-		ctx.send(["printers", printers]);
+		this.send(["printers", printers]);
 	}
-	ctx.server_connection_data = hello["connection-data"];
+	this.server_connection_data = hello["connection-data"];
 	if (navigator.hasOwnProperty("connection")) {
 		navigator.connection.onchange = function() {
-			ctx._connection_change();
+			this._connection_change();
 		};
-		ctx._connection_change();
+		this._connection_change();
 	}
 
 	// file transfer attributes:
-	ctx.remote_file_size_limit = hello["file-size-limit"] || 0;
-	ctx.remote_file_chunks = Math.max(0, Math.min(ctx.remote_file_size_limit*1024*1024, hello["file-chunks"] || 0));
+	this.remote_file_size_limit = hello["file-size-limit"] || 0;
+	this.remote_file_chunks = Math.max(0, Math.min(this.remote_file_size_limit*1024*1024, hello["file-chunks"] || 0));
 
 	// start sending our own pings
-	ctx._send_ping();
-	ctx.ping_timer = setInterval(function () {
-		ctx._send_ping();
-		return true;
-	}, ctx.PING_FREQUENCY);
-	ctx.reconnect_attempt = 0;
+	this._send_ping();
+	this.ping_timer = setInterval(this._send_ping, this.PING_FREQUENCY);
+	this.reconnect_attempt = 0;
 	// Drop start_new_session to avoid creating new displays
 	// on reconnect
-	ctx.start_new_session = null;
-	ctx.on_connection_progress("Session started", "", 100);
-	ctx.on_connect();
-	ctx.connected = true;
+	this.start_new_session = null;
+	this.on_connection_progress("Session started", "", 100);
+	this.on_connect();
+	this.connected = true;
 };
 
-XpraClient.prototype._process_encodings = function(packet, ctx) {
+XpraClient.prototype._process_encodings = function(packet) {
 	const caps = packet[1];
-	ctx.log("update encodings:", Object.keys(caps));
+	this.log("update encodings:", Object.keys(caps));
 };
 
 
@@ -2579,13 +2577,13 @@ XpraClient.prototype.process_xdg_menu = function() {
 };
 
 
-XpraClient.prototype._process_setting_change = function(packet, ctx) {
+XpraClient.prototype._process_setting_change = function(packet) {
 	const setting = packet[1],
 		value = packet[2];
 	if (setting=="xdg-menu" && SHOW_START_MENU) {
-		ctx.xdg_menu = value;
-		if (ctx.xdg_menu) {
-			ctx.process_xdg_menu();
+		this.xdg_menu = value;
+		if (this.xdg_menu) {
+			this.process_xdg_menu();
 			$('#startmenuentry').show();
 		}
 	}
@@ -2616,13 +2614,13 @@ XpraClient.prototype.on_connect = function() {
 	//this hook can be overriden
 };
 
-XpraClient.prototype._process_challenge = function(packet, ctx) {
-	if(ctx.encryption) {
+XpraClient.prototype._process_challenge = function(packet) {
+	if(this.encryption) {
 		if(packet.length >=3) {
-			ctx.cipher_out_caps = packet[2];
-			ctx.protocol.set_cipher_out(ctx.cipher_out_caps, ctx.encryption_key);
+			this.cipher_out_caps = packet[2];
+			this.protocol.set_cipher_out(this.cipher_out_caps, this.encryption_key);
 		} else {
-			ctx.callback_close("challenge does not contain encryption details to use for the response");
+			this.callback_close("challenge does not contain encryption details to use for the response");
 			return;
 		}
 	}
@@ -2630,32 +2628,32 @@ XpraClient.prototype._process_challenge = function(packet, ctx) {
 	const server_salt = Utilities.s(packet[1]);
 	const salt_digest = Utilities.s(packet[4]) || "xor";
 	const prompt = (Utilities.s(packet[5]) || "password").replace(/[^a-zA-Z0-9\.,:\+/]/gi, '');
-	ctx.clog("process challenge:", digest);
+	this.clog("process challenge:", digest);
 	function do_process_challenge(password) {
 		if (password==null) {
-			ctx.disconnect_reason = "password prompt cancelled";
-			ctx.close();
+			this.disconnect_reason = "password prompt cancelled";
+			this.close();
 			return;
 		}
 		const challenge_digest = digest.startsWith("keycloak") ? "xor" : digest;
-		ctx.do_process_challenge(challenge_digest, server_salt, salt_digest, password);
+		this.do_process_challenge(challenge_digest, server_salt, salt_digest, password);
 	}
-	if (ctx.passwords.length>0) {
-		const password = ctx.passwords.shift();
+	if (this.passwords.length>0) {
+		const password = this.passwords.shift();
 		do_process_challenge(password);
 		return;
 	}
-	if (digest.startsWith("keycloak") && ctx.keycloak_prompt_fn) {
-		ctx.cancel_hello_timer();
-		ctx.keycloak_prompt_fn(server_salt, do_process_challenge);
+	if (digest.startsWith("keycloak") && this.keycloak_prompt_fn) {
+		this.cancel_hello_timer();
+		this.keycloak_prompt_fn(server_salt, do_process_challenge);
 		return;
-	} else if (ctx.password_prompt_fn) {
+	} else if (this.password_prompt_fn) {
 		const address = ""+client.host+":"+client.port;
-		ctx.cancel_hello_timer();
-		ctx.password_prompt_fn("The server at "+address+" requires a "+prompt, do_process_challenge);
+		this.cancel_hello_timer();
+		this.password_prompt_fn("The server at "+address+" requires a "+prompt, do_process_challenge);
 		return;
 	}
-	ctx.callback_close("No password specified for authentication challenge");
+	this.callback_close("No password specified for authentication challenge");
 }
 
 XpraClient.prototype.do_process_challenge = function(digest, server_salt, salt_digest, password) {
@@ -2666,7 +2664,7 @@ XpraClient.prototype.do_process_challenge = function(digest, server_salt, salt_d
 		//don't use xor over unencrypted connections unless explicitly allowed:
 		if (digest == "xor") {
 			if((!this.ssl) && (!this.encryption) && (!this.insecure) && (this.host!="localhost") && (this.host!="127.0.0.1")) {
-				ctx.callback_close("server requested digest xor, cowardly refusing to use it without encryption with "+this.host);
+				this.callback_close("server requested digest xor, cowardly refusing to use it without encryption with "+this.host);
 				return;
 			}
 		}
@@ -2729,32 +2727,32 @@ XpraClient.prototype._send_ping = function() {
 	this.ping_grace_timer = setTimeout(() => this._check_server_echo(now_ms), wait);
 };
 
-XpraClient.prototype._process_ping = function(packet, ctx) {
+XpraClient.prototype._process_ping = function(packet) {
 	const echotime = packet[1];
-	ctx.last_ping_server_time = echotime;
+	this.last_ping_server_time = echotime;
 	if (packet.length>2) {
 		//prefer system time (packet[1] is monotonic)
-		ctx.last_ping_server_time = packet[2];
+		this.last_ping_server_time = packet[2];
 	}
 	let sid = "";
 	if (packet.length>=4) {
 		sid = packet[3];
 	}
-	ctx.last_ping_local_time = new Date().getTime();
+	this.last_ping_local_time = new Date().getTime();
 	const l1 = 0, l2=0, l3=0;
-	ctx.send(["ping_echo", echotime, l1, l2, l3, 0, sid]);
+	this.send(["ping_echo", echotime, l1, l2, l3, 0, sid]);
 };
 
-XpraClient.prototype._process_ping_echo = function(packet, ctx) {
-	ctx.last_ping_echoed_time = packet[1];
+XpraClient.prototype._process_ping_echo = function(packet) {
+	this.last_ping_echoed_time = packet[1];
 	const l1 = packet[2],
 		l2 = packet[3],
 		l3 = packet[4];
-	ctx.client_ping_latency = packet[5];
-	ctx.server_ping_latency = Math.ceil(performance.now())-ctx.last_ping_echoed_time;
-	ctx.server_load = [l1/1000.0, l2/1000.0, l3/1000.0];
+	this.client_ping_latency = packet[5];
+	this.server_ping_latency = Math.ceil(performance.now())-this.last_ping_echoed_time;
+	this.server_load = [l1/1000.0, l2/1000.0, l3/1000.0];
 	// make sure server goes OK immediately instead of waiting for next timeout
-	ctx._check_server_echo(0);
+	this._check_server_echo(0);
 };
 
 
@@ -2777,13 +2775,13 @@ XpraClient.prototype.send_info_request = function() {
 		this.info_request_pending = true;
 	}
 };
-XpraClient.prototype._process_info_response = function(packet, ctx) {
-	ctx.info_request_pending = false;
-	ctx.server_last_info = packet[1];
-	ctx.debug("network", "info-response:", ctx.server_last_info);
+XpraClient.prototype._process_info_response = function(packet) {
+	this.info_request_pending = false;
+	this.server_last_info = packet[1];
+	this.debug("network", "info-response:", this.server_last_info);
 	const event = document.createEvent("Event");
 	event.initEvent('info-response', true, true);
-	event.data = ctx.server_last_info;
+	event.data = this.server_last_info;
 	document.dispatchEvent(event);
 };
 XpraClient.prototype.stop_info_timer = function() {
@@ -2820,7 +2818,7 @@ XpraClient.prototype.position_float_menu = function() {
 	float_menu_element.offset({ top: top, left: left });
 }
 
-XpraClient.prototype._process_new_tray = function(packet, ctx) {
+XpraClient.prototype._process_new_tray = function(packet) {
 	const wid = packet[1];
 	//let w = packet[2];
 	//let h = packet[3];
@@ -2848,21 +2846,21 @@ XpraClient.prototype._process_new_tray = function(packet, ctx) {
 
 	mycanvas.width = w;
 	mycanvas.height = h;
-	ctx.id_to_window[wid] = new XpraWindow(ctx, mycanvas, wid, x, y, w, h,
+	this.id_to_window[wid] = new XpraWindow(this, mycanvas, wid, x, y, w, h,
 			metadata,
 			false,
 			true,
 			{},
-			ctx._tray_geometry_changed,
-			ctx._window_mouse_move,
-			ctx._window_mouse_down,
-			ctx._window_mouse_up,
-			ctx._window_mouse_scroll,
-			ctx._tray_set_focus,
-			ctx._tray_closed,
-			ctx.scale
+			this._tray_geometry_changed,
+			this._window_mouse_move,
+			this._window_mouse_down,
+			this._window_mouse_up,
+			this._window_mouse_scroll,
+			this._tray_set_focus,
+			this._tray_closed,
+			this.scale
 	);
-	ctx.send_tray_configure(wid);
+	this.send_tray_configure(wid);
 };
 XpraClient.prototype.send_tray_configure = function(wid) {
 	const div = jQuery("#" + String(wid));
@@ -3015,41 +3013,41 @@ XpraClient.prototype.send_configure_window = function(win, state, skip_geometry)
 	this.send(packet);
 };
 
-XpraClient.prototype._process_new_window = function(packet, ctx) {
-	ctx._new_window_common(packet, false);
+XpraClient.prototype._process_new_window = function(packet) {
+	this._new_window_common(packet, false);
 };
 
-XpraClient.prototype._process_new_override_redirect = function(packet, ctx) {
-	ctx._new_window_common(packet, true);
+XpraClient.prototype._process_new_override_redirect = function(packet) {
+	this._new_window_common(packet, true);
 };
 
-XpraClient.prototype._process_window_metadata = function(packet, ctx) {
+XpraClient.prototype._process_window_metadata = function(packet) {
 	const wid = packet[1],
 		metadata = packet[2],
-		win = ctx.id_to_window[wid];
+		win = this.id_to_window[wid];
 	if (win!=null) {
 		win.update_metadata(metadata);
 	}
 };
 
-XpraClient.prototype._process_initiate_moveresize = function(packet, ctx) {
+XpraClient.prototype._process_initiate_moveresize = function(packet) {
 	const wid = packet[1],
-		win = ctx.id_to_window[wid];
+		win = this.id_to_window[wid];
 	if (win!=null) {
 		const x_root = packet[2],
 			y_root = packet[3],
 			direction = packet[4],
 			button = packet[5],
 			source_indication = packet[6];
-		win.initiate_moveresize(ctx.mousedown_event, x_root, y_root, direction, button, source_indication);
+		win.initiate_moveresize(this.mousedown_event, x_root, y_root, direction, button, source_indication);
 	}
 };
 
-XpraClient.prototype._process_pointer_position = function(packet, ctx) {
+XpraClient.prototype._process_pointer_position = function(packet) {
 	const wid = packet[1];
 	let x = packet[2],
 		y = packet[3];
-	const win = ctx.id_to_window[wid];
+	const win = this.id_to_window[wid];
 	if (packet.length>=6) {
 		//we can use window relative coordinates:
 		if (win) {
@@ -3088,34 +3086,34 @@ XpraClient.prototype.on_last_window = function() {
 	//this hook can be overriden
 };
 
-XpraClient.prototype._process_lost_window = function(packet, ctx) {
+XpraClient.prototype._process_lost_window = function(packet) {
 	const wid = packet[1];
-	const win = ctx.id_to_window[wid];
+	const win = this.id_to_window[wid];
 	if(win && !win.override_redirect && win.metadata["window-type"]=="NORMAL"){
 		window.removeWindowListItem(wid);
 	}
 	try {
-		delete ctx.id_to_window[wid];
+		delete this.id_to_window[wid];
 	}
 	catch (e) {}
 	if (win!=null) {
 		win.destroy();
-		ctx.clog("lost window, was tray=", win.tray);
+		this.clog("lost window, was tray=", win.tray);
 		if (win.tray) {
 			//other trays may have moved:
-			ctx.reconfigure_all_trays();
+			this.reconfigure_all_trays();
 		}
 	}
-	ctx.clog("lost window", wid, ", remaining: ", Object.keys(ctx.id_to_window));
-	if (Object.keys(ctx.id_to_window).length==0) {
-		ctx.on_last_window();
+	this.clog("lost window", wid, ", remaining: ", Object.keys(this.id_to_window));
+	if (Object.keys(this.id_to_window).length==0) {
+		this.on_last_window();
 	}
 	else if (win && win.focused) {
 		//it had focus, find the next highest:
-		ctx.auto_focus();
+		this.auto_focus();
 	}
-	if (ctx.decode_worker) {
-		ctx.decode_worker.postMessage({'cmd': 'remove', 'wid' : wid});
+	if (this.decode_worker) {
+		this.decode_worker.postMessage({'cmd': 'remove', 'wid' : wid});
 	}
 }
 
@@ -3140,67 +3138,67 @@ XpraClient.prototype.auto_focus = function() {
 }
 
 
-XpraClient.prototype._process_raise_window = function(packet, ctx) {
+XpraClient.prototype._process_raise_window = function(packet) {
 	const wid = packet[1];
-	const win = ctx.id_to_window[wid];
+	const win = this.id_to_window[wid];
 	if (win!=null) {
-		ctx._window_set_focus(win);
+		this._window_set_focus(win);
 	}
 };
 
-XpraClient.prototype._process_window_resized = function(packet, ctx) {
+XpraClient.prototype._process_window_resized = function(packet) {
 	const wid = packet[1];
 	const width = packet[2];
 	const height = packet[3];
-	const win = ctx.id_to_window[wid];
+	const win = this.id_to_window[wid];
 	if (win!=null) {
 		win.resize(width, height);
 	}
 };
 
-XpraClient.prototype._process_window_move_resize = function(packet, ctx) {
+XpraClient.prototype._process_window_move_resize = function(packet) {
 	const wid = packet[1];
 	const x = packet[2];
 	const y = packet[3];
 	const width = packet[4];
 	const height = packet[5];
-	const win = ctx.id_to_window[wid];
+	const win = this.id_to_window[wid];
 	if (win!=null) {
 		win.move_resize(x, y, width, height);
 	}
 };
 
-XpraClient.prototype._process_configure_override_redirect = function(packet, ctx) {
+XpraClient.prototype._process_configure_override_redirect = function(packet) {
 	const wid = packet[1];
 	const x = packet[2];
 	const y = packet[3];
 	const width = packet[4];
 	const height = packet[5];
-	const win = ctx.id_to_window[wid];
+	const win = this.id_to_window[wid];
 	if (win!=null) {
 		win.move_resize(x, y, width, height);
 	}
 };
 
-XpraClient.prototype._process_desktop_size = function(packet, ctx) {
+XpraClient.prototype._process_desktop_size = function(packet) {
 	//root_w, root_h, max_w, max_h = packet[1:5]
 	//we don't use this yet,
 	//we could use this to clamp the windows to a certain area
 };
 
-XpraClient.prototype._process_bell = function(packet, ctx) {
+XpraClient.prototype._process_bell = function(packet) {
 	const percent = packet[3];
 	const pitch = packet[4];
 	const duration = packet[5];
-	if (ctx.audio_context!=null) {
-		const oscillator = ctx.audio_context.createOscillator();
-		const gainNode = ctx.audio_context.createGain();
+	if (this.audio_context!=null) {
+		const oscillator = this.audio_context.createOscillator();
+		const gainNode = this.audio_context.createGain();
 		oscillator.connect(gainNode);
-		gainNode.connect(ctx.audio_context.destination);
-		gainNode.gain.setValueAtTime(percent, ctx.audio_context.currentTime);
-		oscillator.frequency.setValueAtTime(pitch, ctx.audio_context.currentTime);
+		gainNode.connect(this.audio_context.destination);
+		gainNode.gain.setValueAtTime(percent, this.audio_context.currentTime);
+		oscillator.frequency.setValueAtTime(pitch, this.audio_context.currentTime);
 		oscillator.start();
-		setTimeout(function(){oscillator.stop();}, duration);
+		setTimeout(oscillator.stop, duration);
 	}
 	else {
 		const snd = new Audio("data:audio/wav;base64,//uQRAAAAWMSLwUIYAAsYkXgoQwAEaYLWfkWgAI0wWs/ItAAAGDgYtAgAyN+QWaAAihwMWm4G8QQRDiMcCBcH3Cc+CDv/7xA4Tvh9Rz/y8QADBwMWgQAZG/ILNAARQ4GLTcDeIIIhxGOBAuD7hOfBB3/94gcJ3w+o5/5eIAIAAAVwWgQAVQ2ORaIQwEMAJiDg95G4nQL7mQVWI6GwRcfsZAcsKkJvxgxEjzFUgfHoSQ9Qq7KNwqHwuB13MA4a1q/DmBrHgPcmjiGoh//EwC5nGPEmS4RcfkVKOhJf+WOgoxJclFz3kgn//dBA+ya1GhurNn8zb//9NNutNuhz31f////9vt///z+IdAEAAAK4LQIAKobHItEIYCGAExBwe8jcToF9zIKrEdDYIuP2MgOWFSE34wYiR5iqQPj0JIeoVdlG4VD4XA67mAcNa1fhzA1jwHuTRxDUQ//iYBczjHiTJcIuPyKlHQkv/LHQUYkuSi57yQT//uggfZNajQ3Vmz+Zt//+mm3Wm3Q576v////+32///5/EOgAAADVghQAAAAA//uQZAUAB1WI0PZugAAAAAoQwAAAEk3nRd2qAAAAACiDgAAAAAAABCqEEQRLCgwpBGMlJkIz8jKhGvj4k6jzRnqasNKIeoh5gI7BJaC1A1AoNBjJgbyApVS4IDlZgDU5WUAxEKDNmmALHzZp0Fkz1FMTmGFl1FMEyodIavcCAUHDWrKAIA4aa2oCgILEBupZgHvAhEBcZ6joQBxS76AgccrFlczBvKLC0QI2cBoCFvfTDAo7eoOQInqDPBtvrDEZBNYN5xwNwxQRfw8ZQ5wQVLvO8OYU+mHvFLlDh05Mdg7BT6YrRPpCBznMB2r//xKJjyyOh+cImr2/4doscwD6neZjuZR4AgAABYAAAABy1xcdQtxYBYYZdifkUDgzzXaXn98Z0oi9ILU5mBjFANmRwlVJ3/6jYDAmxaiDG3/6xjQQCCKkRb/6kg/wW+kSJ5//rLobkLSiKmqP/0ikJuDaSaSf/6JiLYLEYnW/+kXg1WRVJL/9EmQ1YZIsv/6Qzwy5qk7/+tEU0nkls3/zIUMPKNX/6yZLf+kFgAfgGyLFAUwY//uQZAUABcd5UiNPVXAAAApAAAAAE0VZQKw9ISAAACgAAAAAVQIygIElVrFkBS+Jhi+EAuu+lKAkYUEIsmEAEoMeDmCETMvfSHTGkF5RWH7kz/ESHWPAq/kcCRhqBtMdokPdM7vil7RG98A2sc7zO6ZvTdM7pmOUAZTnJW+NXxqmd41dqJ6mLTXxrPpnV8avaIf5SvL7pndPvPpndJR9Kuu8fePvuiuhorgWjp7Mf/PRjxcFCPDkW31srioCExivv9lcwKEaHsf/7ow2Fl1T/9RkXgEhYElAoCLFtMArxwivDJJ+bR1HTKJdlEoTELCIqgEwVGSQ+hIm0NbK8WXcTEI0UPoa2NbG4y2K00JEWbZavJXkYaqo9CRHS55FcZTjKEk3NKoCYUnSQ0rWxrZbFKbKIhOKPZe1cJKzZSaQrIyULHDZmV5K4xySsDRKWOruanGtjLJXFEmwaIbDLX0hIPBUQPVFVkQkDoUNfSoDgQGKPekoxeGzA4DUvnn4bxzcZrtJyipKfPNy5w+9lnXwgqsiyHNeSVpemw4bWb9psYeq//uQZBoABQt4yMVxYAIAAAkQoAAAHvYpL5m6AAgAACXDAAAAD59jblTirQe9upFsmZbpMudy7Lz1X1DYsxOOSWpfPqNX2WqktK0DMvuGwlbNj44TleLPQ+Gsfb+GOWOKJoIrWb3cIMeeON6lz2umTqMXV8Mj30yWPpjoSa9ujK8SyeJP5y5mOW1D6hvLepeveEAEDo0mgCRClOEgANv3B9a6fikgUSu/DmAMATrGx7nng5p5iimPNZsfQLYB2sDLIkzRKZOHGAaUyDcpFBSLG9MCQALgAIgQs2YunOszLSAyQYPVC2YdGGeHD2dTdJk1pAHGAWDjnkcLKFymS3RQZTInzySoBwMG0QueC3gMsCEYxUqlrcxK6k1LQQcsmyYeQPdC2YfuGPASCBkcVMQQqpVJshui1tkXQJQV0OXGAZMXSOEEBRirXbVRQW7ugq7IM7rPWSZyDlM3IuNEkxzCOJ0ny2ThNkyRai1b6ev//3dzNGzNb//4uAvHT5sURcZCFcuKLhOFs8mLAAEAt4UWAAIABAAAAAB4qbHo0tIjVkUU//uQZAwABfSFz3ZqQAAAAAngwAAAE1HjMp2qAAAAACZDgAAAD5UkTE1UgZEUExqYynN1qZvqIOREEFmBcJQkwdxiFtw0qEOkGYfRDifBui9MQg4QAHAqWtAWHoCxu1Yf4VfWLPIM2mHDFsbQEVGwyqQoQcwnfHeIkNt9YnkiaS1oizycqJrx4KOQjahZxWbcZgztj2c49nKmkId44S71j0c8eV9yDK6uPRzx5X18eDvjvQ6yKo9ZSS6l//8elePK/Lf//IInrOF/FvDoADYAGBMGb7FtErm5MXMlmPAJQVgWta7Zx2go+8xJ0UiCb8LHHdftWyLJE0QIAIsI+UbXu67dZMjmgDGCGl1H+vpF4NSDckSIkk7Vd+sxEhBQMRU8j/12UIRhzSaUdQ+rQU5kGeFxm+hb1oh6pWWmv3uvmReDl0UnvtapVaIzo1jZbf/pD6ElLqSX+rUmOQNpJFa/r+sa4e/pBlAABoAAAAA3CUgShLdGIxsY7AUABPRrgCABdDuQ5GC7DqPQCgbbJUAoRSUj+NIEig0YfyWUho1VBBBA//uQZB4ABZx5zfMakeAAAAmwAAAAF5F3P0w9GtAAACfAAAAAwLhMDmAYWMgVEG1U0FIGCBgXBXAtfMH10000EEEEEECUBYln03TTTdNBDZopopYvrTTdNa325mImNg3TTPV9q3pmY0xoO6bv3r00y+IDGid/9aaaZTGMuj9mpu9Mpio1dXrr5HERTZSmqU36A3CumzN/9Robv/Xx4v9ijkSRSNLQhAWumap82WRSBUqXStV/YcS+XVLnSS+WLDroqArFkMEsAS+eWmrUzrO0oEmE40RlMZ5+ODIkAyKAGUwZ3mVKmcamcJnMW26MRPgUw6j+LkhyHGVGYjSUUKNpuJUQoOIAyDvEyG8S5yfK6dhZc0Tx1KI/gviKL6qvvFs1+bWtaz58uUNnryq6kt5RzOCkPWlVqVX2a/EEBUdU1KrXLf40GoiiFXK///qpoiDXrOgqDR38JB0bw7SoL+ZB9o1RCkQjQ2CBYZKd/+VJxZRRZlqSkKiws0WFxUyCwsKiMy7hUVFhIaCrNQsKkTIsLivwKKigsj8XYlwt/WKi2N4d//uQRCSAAjURNIHpMZBGYiaQPSYyAAABLAAAAAAAACWAAAAApUF/Mg+0aohSIRobBAsMlO//Kk4soosy1JSFRYWaLC4qZBYWFRGZdwqKiwkNBVmoWFSJkWFxX4FFRQWR+LsS4W/rFRb/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////VEFHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAU291bmRib3kuZGUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMjAwNGh0dHA6Ly93d3cuc291bmRib3kuZGUAAAAAAAAAACU=");
@@ -3211,7 +3209,7 @@ XpraClient.prototype._process_bell = function(packet, ctx) {
 /**
  * Notifications
  */
-XpraClient.prototype._process_notify_show = function(packet, ctx) {
+XpraClient.prototype._process_notify_show = function(packet) {
 	//TODO: add UI switch to disable notifications
 	//unused:
 	//const dbus_id = packet[1];
@@ -3232,11 +3230,12 @@ XpraClient.prototype._process_notify_show = function(packet, ctx) {
 		window.closeNotification(nid);
 	}
 
+	const ctx = this;
 	function notify() {
 		let icon_url = "";
 		if (icon && icon[0]=="png") {
 			icon_url = "data:image/png;base64," + Utilities.ToBase64(icon[3]);
-			ctx.clog("notification icon_url=", icon_url);
+			this.clog("notification icon_url=", icon_url);
 		}
 		/*
 		const nactions = [];
@@ -3287,7 +3286,7 @@ XpraClient.prototype._process_notify_show = function(packet, ctx) {
 	ctx._new_ui_event();
 };
 
-XpraClient.prototype._process_notify_close = function(packet, ctx) {
+XpraClient.prototype._process_notify_close = function(packet) {
 	const nid = packet[1];
 	if(window.closeNotification) {
 		window.closeNotification(nid);
@@ -3298,26 +3297,22 @@ XpraClient.prototype._process_notify_close = function(packet, ctx) {
 /**
  * Cursors
  */
-XpraClient.prototype.reset_cursor = function(packet, ctx) {
-	for (const wid in ctx.id_to_window) {
-		const window = ctx.id_to_window[wid];
+XpraClient.prototype.reset_cursor = function() {
+	for (const wid in this.id_to_window) {
+		const window = this.id_to_window[wid];
 		window.reset_cursor();
 	}
 };
 
-XpraClient.prototype._process_cursor = function(packet, ctx) {
-	if (packet.length==2) {
-		ctx.reset_cursor(packet, ctx);
-		return;
-	}
+XpraClient.prototype._process_cursor = function(packet) {
 	if (packet.length<9) {
-		ctx.reset_cursor();
+		this.reset_cursor();
 		return;
 	}
 	//we require a png encoded cursor packet:
 	const encoding = packet[1];
 	if (encoding!="png") {
-		ctx.warn("invalid cursor encoding: "+encoding);
+		this.warn("invalid cursor encoding: "+encoding);
 		return;
 	}
 	const w = packet[4];
@@ -3325,24 +3320,24 @@ XpraClient.prototype._process_cursor = function(packet, ctx) {
 	const xhot = packet[6];
 	const yhot = packet[7];
 	const img_data = packet[9];
-	for (const wid in ctx.id_to_window) {
-		const window = ctx.id_to_window[wid];
+	for (const wid in this.id_to_window) {
+		const window = this.id_to_window[wid];
 		window.set_cursor(encoding, w, h, xhot, yhot, img_data);
 	}
 };
 
-XpraClient.prototype._process_window_icon = function(packet, ctx) {
+XpraClient.prototype._process_window_icon = function(packet) {
 	const wid = packet[1];
 	const w = packet[2];
 	const h = packet[3];
 	const encoding = packet[4];
 	const img_data = packet[5];
-	ctx.debug("main", "window-icon: ", encoding, " size ", w, "x", h);
-	const win = ctx.id_to_window[wid];
+	this.debug("main", "window-icon: ", encoding, " size ", w, "x", h);
+	const win = this.id_to_window[wid];
 	if (win) {
 		const src = win.update_icon(w, h, encoding, img_data);
 		//update favicon too:
-		if (wid==ctx.focus || ctx.server_is_desktop || ctx.server_is_shadow) {
+		if (wid==this.focus || this.server_is_desktop || this.server_is_shadow) {
 			jQuery("#favicon").attr("href", src);
 		}
 	}
@@ -3351,7 +3346,7 @@ XpraClient.prototype._process_window_icon = function(packet, ctx) {
 /**
  * Window Painting
  */
-XpraClient.prototype._process_draw = function(packet, ctx) {
+XpraClient.prototype._process_draw = function(packet) {
 	//ensure that the pixel data is in a byte array:
 	const coding = Utilities.s(packet[6]);
 	let img_data = packet[7];
@@ -3365,20 +3360,20 @@ XpraClient.prototype._process_draw = function(packet, ctx) {
 		}
 		raw_buffers.push(img_data.buffer);
 	}
-	if (ctx.decode_worker) {
-		ctx.decode_worker.postMessage({'cmd': 'decode', 'packet' : packet, 'start' : now}, raw_buffers);
+	if (this.decode_worker) {
+		this.decode_worker.postMessage({'cmd': 'decode', 'packet' : packet, 'start' : now}, raw_buffers);
 		//the worker draw event will call do_process_draw
 	}
 	else {
-		ctx.do_process_draw(packet, now);
+		this.do_process_draw(packet, now);
 	}
 }
 
-XpraClient.prototype._process_eos = function(packet, ctx) {
-	ctx.do_process_draw(packet, 0);
+XpraClient.prototype._process_eos = function(packet) {
+	this.do_process_draw(packet, 0);
 	const wid = packet[1];
-	if (ctx.decode_worker) {
-		ctx.decode_worker.postMessage({'cmd': 'eos', 'wid' : wid});
+	if (this.decode_worker) {
+		this.decode_worker.postMessage({'cmd': 'eos', 'wid' : wid});
 	}
 }
 
@@ -3752,36 +3747,36 @@ XpraClient.prototype._remove_audio_element = function() {
 	}
 };
 
-XpraClient.prototype._process_sound_data = function(packet, ctx) {
+XpraClient.prototype._process_sound_data = function(packet) {
 	try {
-		const codec = Utilities.s(packet[1]);
-		const buf = packet[2];
-		const options = packet[3];
-		const metadata = packet[4];
+		const codec = Utilities.s(packet[1]),
+				buf = packet[2],
+				options = packet[3],
+				metadata = packet[4];
 
-		if (codec!=ctx.audio_codec) {
-			ctx.error("invalid audio codec '"+codec+"' (expected "+ctx.audio_codec+"), stopping audio stream");
-			ctx.close_audio();
+		if (codec!=this.audio_codec) {
+			this.error("invalid audio codec '"+codec+"' (expected "+this.audio_codec+"), stopping audio stream");
+			this.close_audio();
 			return;
 		}
 
 		if (options["start-of-stream"] == 1) {
-			ctx._audio_start_stream();
+			this._audio_start_stream();
 		}
 
 		if (buf && buf.length>0) {
-			ctx.add_sound_data(codec, buf, metadata);
+			this.add_sound_data(codec, buf, metadata);
 		}
 
 		if (options["end-of-stream"] == 1) {
-			ctx.log("received end-of-stream from server");
-			ctx.close_audio();
+			this.log("received end-of-stream from server");
+			this.close_audio();
 		}
 	}
 	catch(e) {
-		ctx.on_audio_state_change("error", ""+e);
-		ctx.exc(e, "sound data error");
-		ctx.close_audio();
+		this.on_audio_state_change("error", ""+e);
+		this.exc(e, "sound data error");
+		this.close_audio();
 	}
 };
 
@@ -3969,8 +3964,8 @@ XpraClient.prototype.send_clipboard_token = function(data) {
 	this.send(packet);
 };
 
-XpraClient.prototype._process_clipboard_token = function(packet, ctx) {
-	if (!ctx.clipboard_enabled) {
+XpraClient.prototype._process_clipboard_token = function(packet) {
+	if (!this.clipboard_enabled) {
 		return;
 	}
 	const selection = packet[1];
@@ -3990,14 +3985,14 @@ XpraClient.prototype._process_clipboard_token = function(packet, ctx) {
 		wire_encoding = packet[6];
 		wire_data = packet[7];
 		//always keep track of the latest server buffer
-		ctx.clipboard_server_buffers[selection] = [target, dtype, dformat, wire_encoding, wire_data];
+		this.clipboard_server_buffers[selection] = [target, dtype, dformat, wire_encoding, wire_data];
 	}
 
-	const is_valid_target = target && ctx.clipboard_targets.includes(target);
-	ctx.debug("clipboard", "clipboard token received");
-	ctx.debug("clipboard", "targets=", targets);
-	ctx.debug("clipboard", "target=", target, "is valid:", is_valid_target);
-	ctx.debug("clipboard", "dtype=", dtype, "dformat=", dformat, "wire-encoding=", wire_encoding);
+	const is_valid_target = target && this.clipboard_targets.includes(target);
+	this.debug("clipboard", "clipboard token received");
+	this.debug("clipboard", "targets=", targets);
+	this.debug("clipboard", "target=", target, "is valid:", is_valid_target);
+	this.debug("clipboard", "dtype=", dtype, "dformat=", dformat, "wire-encoding=", wire_encoding);
 	// if we have navigator.clipboard support in the browser,
 	// we can just set the clipboard value here,
 	// otherwise we don't actually set anything
@@ -4012,138 +4007,131 @@ XpraClient.prototype._process_clipboard_token = function(packet, ctx) {
 				wire_data = Utilities.Uint8ToString(wire_data);
 			}
 			catch (e) { }
-			if (ctx.clipboard_buffer!=wire_data) {
-				ctx.clipboard_datatype = dtype;
-				ctx.clipboard_buffer = wire_data;
-				ctx.clipboard_pending = true;
+			if (this.clipboard_buffer!=wire_data) {
+				this.clipboard_datatype = dtype;
+				this.clipboard_buffer = wire_data;
+				this.clipboard_pending = true;
 				if (navigator.clipboard && navigator.clipboard.writeText) {
 					if (is_text) {
-						navigator.clipboard.writeText(wire_data).then(function() {
-							ctx.debug("clipboard", "writeText succeeded");
-							ctx.clipboard_pending = false;
-						}, function() {
-							ctx.debug("clipboard", "writeText failed");
-						});
+						navigator.clipboard.writeText(wire_data).then(() => {
+							this.debug("clipboard", "writeText succeeded");
+							this.clipboard_pending = false;
+						}, () => this.debug("clipboard", "writeText failed")
+						);
 					}
 				}
 			}
 		}
 		else if (CLIPBOARD_IMAGES && dtype=="image/png" && dformat==8 && wire_encoding=="bytes"
 				&& navigator.clipboard && navigator.clipboard.hasOwnProperty("write")) {
-			ctx.debug("clipboard", "png image received");
+			this.debug("clipboard", "png image received");
 			const blob = new Blob([wire_data], {type: dtype});
-			ctx.debug("clipboard", "created blob", blob);
+			this.debug("clipboard", "created blob", blob);
 			const item = new ClipboardItem({"image/png": blob});
-			ctx.debug("clipboard", "created ClipboardItem", item);
+			this.debug("clipboard", "created ClipboardItem", item);
 			const items = [item];
-			ctx.debug("clipboard", "created ClipboardItem list", items);
-			navigator.clipboard.write(items).then(function() {
-				ctx.debug("clipboard", "copied png image to clipboard");
-			},
-			function(err) {
-				ctx.debug("clipboard", "failed to set png image", err);
-			});
+			this.debug("clipboard", "created ClipboardItem list", items);
+			navigator.clipboard.write(items).then(
+				() => this.debug("clipboard", "copied png image to clipboard"),
+				(err) => this.debug("clipboard", "failed to set png image", err)
+				);
 		}
 	}
 };
 
-XpraClient.prototype._process_set_clipboard_enabled = function(packet, ctx) {
-	if (!ctx.clipboard_enabled) {
+XpraClient.prototype._process_set_clipboard_enabled = function(packet) {
+	if (!this.clipboard_enabled) {
 		return;
 	}
-	ctx.clipboard_enabled = packet[1];
-	ctx.log("server set clipboard state to "+packet[1]+" reason was: "+packet[2]);
+	this.clipboard_enabled = packet[1];
+	this.log("server set clipboard state to "+packet[1]+" reason was: "+packet[2]);
 };
 
-XpraClient.prototype._process_clipboard_request = function(packet, ctx) {
+XpraClient.prototype._process_clipboard_request = function(packet) {
 	// we shouldn't be handling clipboard requests
 	// unless we have support for navigator.clipboard:
 	const request_id = packet[1],
 		selection = packet[2];
 	//target = packet[3];
 
-	ctx.debug("clipboard", selection+" request");
+	this.debug("clipboard", selection+" request");
 
 	//we only handle CLIPBOARD requests,
 	//PRIMARY is used read-only
 	if (selection!="CLIPBOARD") {
-		ctx.send_clipboard_string(request_id, selection, "");
+		this.send_clipboard_string(request_id, selection, "");
 		return;
 	}
 
 	if (navigator.clipboard) {
 		if (navigator.clipboard.hasOwnProperty("read")) {
-			ctx.debug("clipboard", "request using read()");
-			navigator.clipboard.read().then(function(data) {
+			this.debug("clipboard", "request using read()");
+			navigator.clipboard.read().then((data) => {
 				let item = null;
 				let itemtype = null;
-				ctx.debug("clipboard", "request via read() data=", data);
+				this.debug("clipboard", "request via read() data=", data);
 				for (let i = 0; i < data.length; i++) {
 					item = data[i];
-					ctx.debug("clipboard", "item", i, "types:", item.types);
+					this.debug("clipboard", "item", i, "types:", item.types);
 					for (let j = 0; j < item.types.length; j++) {
 						itemtype = item.types[j];
 						if (itemtype == "text/plain") {
-							item.getType(itemtype).then(function(blob) {
+							item.getType(itemtype).then((blob) => {
 								const fileReader = new FileReader();
-								fileReader.onload = function(event) {
-									ctx.send_clipboard_string(request_id, selection, event.target.result);
-								};
+								fileReader.onload = (event) => this.send_clipboard_string(request_id, selection, event.target.result);
 								fileReader.readAsText(blob);
-							}, function(err) {
-								ctx.debug("clipboard", "getType('"+itemtype+"') failed", err);
+							}, (err) => {
+								this.debug("clipboard", "getType('"+itemtype+"') failed", err);
 								//send last server buffer instead:
-								ctx.resend_clipboard_server_buffer();
+								this.resend_clipboard_server_buffer();
 							});
 							return;
 						}
 						else if (itemtype == "image/png") {
-							item.getType(itemtype).then(function(blob) {
+							item.getType(itemtype).then((blob) => {
 								const fileReader = new FileReader();
-								fileReader.onload = function(event) {
-									ctx.send_clipboard_contents(request_id, selection, itemtype, 8, "bytes", event.target.result);
-								};
+								fileReader.onload = (event) => this.send_clipboard_contents(request_id, selection, itemtype, 8, "bytes", event.target.result);
 								fileReader.readAsText(blob);
-							}, function(err) {
-								ctx.debug("clipboard", "getType('"+itemtype+"') failed", err);
+							}, (err) => {
+								this.debug("clipboard", "getType('"+itemtype+"') failed", err);
 								//send last server buffer instead:
-								ctx.resend_clipboard_server_buffer(request_id, selection);
+								this.resend_clipboard_server_buffer(request_id, selection);
 							});
 							return;
 						}
 					}
 				}
-			}, function(err) {
-				ctx.debug("clipboard", "read() failed:", err);
+			}, (err) => {
+				this.debug("clipboard", "read() failed:", err);
 				//send last server buffer instead:
-				ctx.resend_clipboard_server_buffer(request_id, selection);
+				this.resend_clipboard_server_buffer(request_id, selection);
 			});
 			return;
 		}
 		else if (navigator.clipboard.hasOwnProperty("readText")) {
-			ctx.debug("clipboard", "clipboard request using readText()");
-			navigator.clipboard.readText().then(function(text) {
-				ctx.debug("clipboard", "clipboard request via readText() text=", text);
-				const primary_server_buffer = ctx.clipboard_server_buffers["PRIMARY"];
+			this.debug("clipboard", "clipboard request using readText()");
+			navigator.clipboard.readText().then((text) => {
+				this.debug("clipboard", "clipboard request via readText() text=", text);
+				const primary_server_buffer = this.clipboard_server_buffers["PRIMARY"];
 				if (primary_server_buffer && primary_server_buffer[2]==8 && primary_server_buffer[3]=="bytes" && text==primary_server_buffer[4]) {
 					//we have set the clipboard contents to the PRIMARY selection
 					//and the server is asking for the CLIPBOARD selection
 					//send it back the last value it gave us
-					ctx.debug("clipboard request: using backup value");
-					ctx.resend_clipboard_server_buffer(request_id, selection);
+					this.debug("clipboard request: using backup value");
+					this.resend_clipboard_server_buffer(request_id, selection);
 					return;
 				}
-				ctx.send_clipboard_string(request_id, selection, text);
-			}, function(err) {
-				ctx.debug("clipboard", "readText() failed:", err);
+				this.send_clipboard_string(request_id, selection, text);
+			}, (err) => {
+				this.debug("clipboard", "readText() failed:", err);
 				//send last server buffer instead:
-				ctx.resend_clipboard_server_buffer(request_id, selection);
+				this.resend_clipboard_server_buffer(request_id, selection);
 			});
 			return;
 		}
 	}
-	const clipboard_buffer = ctx.get_clipboard_buffer() || "";
-	ctx.send_clipboard_string(request_id, selection, clipboard_buffer, "UTF8_STRING");
+	const clipboard_buffer = this.get_clipboard_buffer() || "";
+	this.send_clipboard_string(request_id, selection, clipboard_buffer, "UTF8_STRING");
 };
 
 XpraClient.prototype.resend_clipboard_server_buffer = function(request_id, selection) {
@@ -4185,7 +4173,7 @@ XpraClient.prototype.send_clipboard_contents = function(request_id, selection, d
 /**
  * File transfers and printing
  */
-XpraClient.prototype._process_send_file = function(packet, ctx) {
+XpraClient.prototype._process_send_file = function(packet) {
 	const basefilename = Utilities.s(packet[1]);
 	const mimetype = Utilities.s(packet[2]);
 	const printit = packet[3];
@@ -4196,7 +4184,7 @@ XpraClient.prototype._process_send_file = function(packet, ctx) {
 
 	// check the data size for file
 	if (filesize<=0 || filesize>FILE_SIZE_LIMIT) {
-		ctx.cerror("send-file: invalid data size, received", data.length, "bytes, expected", filesize);
+		this.error("send-file: invalid data size, received", data.length, "bytes, expected", filesize);
 		return;
 	}
 	let digest = null;
@@ -4215,31 +4203,29 @@ XpraClient.prototype._process_send_file = function(packet, ctx) {
 		//got the whole file
 		if (digest) {
 			digest.update(Utilities.Uint8ToString(data));
-			ctx.log("digest.update(", data, ")");
-			ctx.log("digest update string:", Utilities.Uint8ToString(data));
-			ctx.verify_digest(digest, options[digest.algorithm]);
+			this.log("digest.update(", data, ")");
+			this.log("digest update string:", Utilities.Uint8ToString(data));
+			this.verify_digest(digest, options[digest.algorithm]);
 		}
-		ctx._got_file(basefilename, data, printit, mimetype, options);
+		this._got_file(basefilename, data, printit, mimetype, options);
 		return;
 	}
 	if (!send_id) {
-		ctx.cerror("send-file: partial file is missing send-id");
+		this.cerror("send-file: partial file is missing send-id");
 		return;
 	}
 	const chunk_id = Utilities.s(options["file-chunk-id"] || "");
 	if (!chunk_id) {
-		ctx.cerror("send-file: partial file is missing file-chunk-id");
+		this.cerror("send-file: partial file is missing file-chunk-id");
 		return;
 	}
 	const chunk = 0;
-	if (ctx.receive_chunks_in_progress.size>MAX_CONCURRENT_FILES) {
-		ctx.cancel_file(chunk_id, "too many concurrent files being downloaded", chunk);
+	if (this.receive_chunks_in_progress.size>MAX_CONCURRENT_FILES) {
+		this.cancel_file(chunk_id, "too many concurrent files being downloaded", chunk);
 		return;
 	}
 	//start receiving chunks:
-	const timer = setTimeout(function() {
-		ctx._check_chunk_receiving(chunk_id, chunk);
-	}, CHUNK_TIMEOUT);
+	const timer = setTimeout(() => this._check_chunk_receiving(chunk_id, chunk), CHUNK_TIMEOUT);
 	const openit = true;
 	const chunk_state = [
 				Date.now(),
@@ -4248,9 +4234,9 @@ XpraClient.prototype._process_send_file = function(packet, ctx) {
 				options, digest, 0, false, send_id,
 				timer, chunk,
 				];
-	ctx.receive_chunks_in_progress.set(chunk_id, chunk_state);
-	ctx.send(["ack-file-chunk", chunk_id, true, "", chunk]);
-	ctx.log("receiving chunks for", basefilename, "with transfer id", chunk_id);
+	this.receive_chunks_in_progress.set(chunk_id, chunk_state);
+	this.send(["ack-file-chunk", chunk_id, true, "", chunk]);
+	this.log("receiving chunks for", basefilename, "with transfer id", chunk_id);
 };
 
 XpraClient.prototype._check_chunk_receiving = function(chunk_id, chunk_no) {
@@ -4294,39 +4280,39 @@ XpraClient.prototype.cancel_file = function(chunk_id, message, chunk) {
 	this.send(["ack-file-chunk", chunk_id, false, message, chunk]);
 }
 
-XpraClient.prototype._process_send_file_chunk = function(packet, ctx) {
+XpraClient.prototype._process_send_file_chunk = function(packet) {
 	const	chunk_id = Utilities.s(packet[1]),
 			chunk = packet[2],
 			file_data = packet[3],
 			has_more = packet[4];
-	ctx.debug("main", "_process_send_file_chunk(", chunk_id, chunk, ""+file_data.length+" bytes", has_more, ")");
-	const chunk_state = ctx.receive_chunks_in_progress.get(chunk_id);
+	this.debug("main", "_process_send_file_chunk(", chunk_id, chunk, ""+file_data.length+" bytes", has_more, ")");
+	const chunk_state = this.receive_chunks_in_progress.get(chunk_id);
 	if (!chunk_state) {
-		ctx.cerror("Error: cannot find the file transfer id", chunk_id);
-		ctx.cancel_file(chunk_id, "file transfer id"+chunk_id+"not found", chunk);
+		this.error("Error: cannot find the file transfer id", chunk_id);
+		this.cancel_file(chunk_id, "file transfer id"+chunk_id+"not found", chunk);
 		return;
 	}
 	if (chunk_state[10]) {
-		ctx.debug("main", "got chunk for a cancelled file transfer, ignoring it");
+		this.debug("main", "got chunk for a cancelled file transfer, ignoring it");
 		return;
 	}
 	const filesize = chunk_state[6];
 	function progress(position, error) {
 		const start = chunk_state[0];
 		const send_id = chunk_state[-3];
-		ctx.transfer_progress_update(false, send_id, Date.now()-start, position, filesize, error);
+		this.transfer_progress_update(false, send_id, Date.now()-start, position, filesize, error);
 	}
 	if (chunk_state[13]+1!=chunk) {
-		ctx.cerror("Error: chunk number mismatch, expected", chunk_state[13]+1, "but got", chunk);
-		ctx.cancel_file(chunk_id, "chunk number mismatch", chunk);
-		ctx.file_progress(-1, "chunk no mismatch")
+		this.error("Error: chunk number mismatch, expected", chunk_state[13]+1, "but got", chunk);
+		this.cancel_file(chunk_id, "chunk number mismatch", chunk);
+		this.file_progress(-1, "chunk no mismatch")
 		return
 	}
 	//update chunk number:
 	chunk_state[13] = chunk;
 	const written = chunk_state[9] + file_data.length
 	if (written>filesize) {
-		ctx.cerror("Error: too much data received");
+		this.error("Error: too much data received");
 		progress(-1, "file size mismatch");
 		return
 	}
@@ -4336,7 +4322,7 @@ XpraClient.prototype._process_send_file_chunk = function(packet, ctx) {
 	if (digest) {
 		digest.update(Utilities.Uint8ToString(file_data));
 	}
-	ctx.send(["ack-file-chunk", chunk_id, true, "", chunk]);
+	this.send(["ack-file-chunk", chunk_id, true, "", chunk]);
 	if (has_more) {
 		progress(written);
 		const timer = chunk_state[12];
@@ -4344,26 +4330,24 @@ XpraClient.prototype._process_send_file_chunk = function(packet, ctx) {
 			clearTimeout(timer);
 		}
 		//remote end will send more after receiving the ack
-		chunk_state[-2] = setTimeout(() => {
-			ctx._check_chunk_receiving(chunk_id, chunk);
-		}, CHUNK_TIMEOUT);
+		chunk_state[-2] = setTimeout(() => this._check_chunk_receiving(chunk_id, chunk), CHUNK_TIMEOUT);
 		return;
 	}
-	ctx.receive_chunks_in_progress.delete(chunk_id);
+	this.receive_chunks_in_progress.delete(chunk_id);
 	//check file size and digest then process it:
 	if (written!=filesize) {
-		ctx.cerror("Error: expected a file of", filesize, "bytes, got", written);
+		this.cerror("Error: expected a file of", filesize, "bytes, got", written);
 		progress(-1, "file size mismatch");
 		return
 	}
 	const options = chunk_state[7];
 	if (digest) {
-		ctx.verify_digest(digest, options[digest.algorithm]);
+		this.verify_digest(digest, options[digest.algorithm]);
 	}
 	progress(written);
 	const start_time = chunk_state[0];
 	const elapsed = Date.now()-start_time;
-	ctx.clog(filesize, "bytes received in", chunk, "chunks, took", Math.round(elapsed*1000), "ms");
+	this.clog(filesize, "bytes received in", chunk, "chunks, took", Math.round(elapsed*1000), "ms");
 	const filename = chunk_state[2];
 	const mimetype = chunk_state[3];
 	const printit = chunk_state[4];
@@ -4375,7 +4359,7 @@ XpraClient.prototype._process_send_file_chunk = function(packet, ctx) {
 		data.set(chunks[i], start);
 		start += chunks[i].length;
 	}
-	ctx._got_file(filename, data, mimetype, printit, mimetype, options);
+	this._got_file(filename, data, mimetype, printit, mimetype, options);
 };
 
 
@@ -4400,7 +4384,7 @@ XpraClient.prototype._got_file = function(basefilename, data, printit, mimetype,
 			//h.update(file_data)
 			//l("digest: - expected", algo, h.hexdigest(), digest)
 			//if digest!=h.hexdigest():
-			//	ctx.digest_mismatch(filename, digest, h.hexdigest(), algo)
+			//	this.digest_mismatch(filename, digest, h.hexdigest(), algo)
 		}
 	}
 	check_digest("sha256")
@@ -4529,23 +4513,23 @@ XpraClient.prototype.cancel_sending = function(chunk_id) {
 	this.send_chunks_in_progress.delete(chunk_id);
 };
 
-XpraClient.prototype._process_ack_file_chunk = function(packet, ctx) {
+XpraClient.prototype._process_ack_file_chunk = function(packet) {
 	//the other end received our send-file or send-file-chunk,
 	//send some more file data
-	ctx.debug("main", "ack-file-chunk: ", packet);
+	this.debug("main", "ack-file-chunk: ", packet);
 	const	chunk_id = Utilities.s(packet[1]),
 			state = packet[2],
 			error_message = packet[3];
 	let chunk = packet[4];
 	if (!state) {
-		ctx.debug("main", "the remote end is cancelling the file transfer:")
-		ctx.debug("main", " %s", Utilities.s(error_message));
-		ctx.cancel_sending(chunk_id);
+		this.debug("main", "the remote end is cancelling the file transfer:")
+		this.debug("main", " %s", Utilities.s(error_message));
+		this.cancel_sending(chunk_id);
 		return;
 	}
-	const chunk_state = ctx.send_chunks_in_progress.get(chunk_id);
+	const chunk_state = this.send_chunks_in_progress.get(chunk_id);
 	if (!chunk_state) {
-		ctx.error("Error: cannot find the file transfer id '%r'", chunk_id);
+		this.error("Error: cannot find the file transfer id '%r'", chunk_id);
 		return;
 	}
 	if (chunk_state[4]!=chunk) {
@@ -4560,9 +4544,9 @@ XpraClient.prototype._process_ack_file_chunk = function(packet, ctx) {
 	if (!data) {
 		//all sent!
 		const elapsed = Date.now()-start_time;
-		ctx.log(chunk, "chunks of", chunk_size, "bytes sent in", Math.round(elapsed), "ms",
+		this.log(chunk, "chunks of", chunk_size, "bytes sent in", Math.round(elapsed), "ms",
 					8*chunk*chunk_size/elapsed, "bps");
-		ctx.cancel_sending(chunk_id);
+		this.cancel_sending(chunk_id);
 		return;
 	}
 	if (chunk_size<=0) {
@@ -4575,11 +4559,9 @@ XpraClient.prototype._process_ack_file_chunk = function(packet, ctx) {
 	if (timer) {
 		clearTimeout(timer);
 	}
-	timer = setTimeout(() => {
-		ctx._check_chunk_sending(chunk_id, chunk);
-	}, CHUNK_TIMEOUT);
-	ctx.send_chunks_in_progress.set(chunk_id, [start_time, data, chunk_size, timer, chunk]);
-	ctx.send(["send-file-chunk", chunk_id, chunk, cdata, data.length>0]);
+	timer = setTimeout(() => this._check_chunk_sending(chunk_id, chunk), CHUNK_TIMEOUT);
+	this.send_chunks_in_progress.set(chunk_id, [start_time, data, chunk_size, timer, chunk]);
+	this.send(["send-file-chunk", chunk_id, chunk, cdata, data.length>0]);
 }
 
 
@@ -4588,15 +4570,15 @@ XpraClient.prototype.start_command = function(name, command, ignore) {
 	this.send(packet);
 };
 
-XpraClient.prototype._process_open_url = function(packet, ctx) {
+XpraClient.prototype._process_open_url = function(packet) {
 	const url = packet[1];
 	//const send_id = packet[2];
-	if (!ctx.open_url) {
-		ctx.cwarn("Warning: received a request to open URL", url);
-		ctx.clog(" but opening of URLs is disabled");
+	if (!this.open_url) {
+		this.cwarn("Warning: received a request to open URL", url);
+		this.clog(" but opening of URLs is disabled");
 		return;
 	}
-	ctx.clog("opening url:", url);
+	this.clog("opening url:", url);
 	const new_window = window.open(url, '_blank');
 	if(!new_window || new_window.closed || typeof new_window.closed=='undefined')
 	{
