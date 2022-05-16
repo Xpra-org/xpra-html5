@@ -36,10 +36,7 @@ function XpraClient(container) {
 	}
 	// assign callback for window resize event
 	if (window.jQuery) {
-		const me = this;
-		jQuery(window).resize(jQuery.debounce(250, function (e) {
-			me._screen_resized(e, me);
-		}));
+		jQuery(window).resize(jQuery.debounce(250, (e) => this._screen_resized(e, me)));
 	}
 
 	this.protocol = null;
@@ -212,15 +209,9 @@ XpraClient.prototype.init_state = function() {
 
 	const me = this;
 	const screen_element = jQuery("#screen");
-	screen_element.mousedown(function (e) {
-		me.on_mousedown(e);
-	});
-	screen_element.mouseup(function (e) {
-		me.on_mouseup(e);
-	});
-	screen_element.mousemove(function (e) {
-		me.on_mousemove(e);
-	});
+	screen_element.mousedown((e) => this.on_mousedown(e));
+	screen_element.mouseup((e) => this.on_mouseup(e));
+	screen_element.mousemove((e) => this.on_mousemove(e));
 
 	const div = document.getElementById("screen");
 	function on_mousescroll(e) {
@@ -420,23 +411,22 @@ XpraClient.prototype.initialize_workers = function() {
 	}
 	this.clog("we have webworker support");
 	// spawn worker that checks for a websocket
-	const me = this;
 	const worker = new Worker('js/lib/wsworker_check.js');
-	worker.addEventListener('message', function(e) {
+	worker.addEventListener('message', (e) => {
 		const data = e.data;
 		switch (data['result']) {
 		case true:
 			// yey, we can use websocket in worker!
-			me.clog("we can use websocket in webworker");
-			me._do_connect(true);
+			this.clog("we can use websocket in webworker");
+			this._do_connect(true);
 			break;
 		case false:
-			me.clog("we can't use websocket in webworker, won't use webworkers");
-			me._do_connect(false);
+			this.clog("we can't use websocket in webworker, won't use webworkers");
+			this._do_connect(false);
 			break;
 		default:
-			me.clog("client got unknown message from worker");
-			me._do_connect(false);
+			this.clog("client got unknown message from worker");
+			this._do_connect(false);
 		}
 	}, false);
 	// ask the worker to check for websocket support, when we receive a reply
@@ -449,17 +439,17 @@ XpraClient.prototype.initialize_workers = function() {
 		return;
 	}
 	let decode_worker;
-	 if (this.offscreen_api) {
-		me.clog("using offscreen decode worker");
+	if (this.offscreen_api) {
+		this.clog("using offscreen decode worker");
 		decode_worker = new Worker('js/OffscreenDecodeWorker.js');
 	} else {
-		me.clog("using decode worker");
+		this.clog("using decode worker");
 		decode_worker = new Worker('js/DecodeWorker.js');
 	}
-	decode_worker.addEventListener('message', function(e) {
+	decode_worker.addEventListener('message', (e) => {
 		const data = e.data;
 		if (data['draw']) {
-			me.do_process_draw(data['draw'], data['start']);
+			this.do_process_draw(data['draw'], data['start']);
 			return;
 		}
 		if (data['error']) {
@@ -470,28 +460,28 @@ XpraClient.prototype.initialize_workers = function() {
 				height = packet[3],
 				coding = packet[6],
 				packet_sequence = packet[8];
-			me.clog("decode error on ", coding, "packet sequence", packet_sequence, ":", msg);
-			if (!me.offscreen_api) {
-				me.clog(" pixel data:", packet[7]);
+			this.clog("decode error on ", coding, "packet sequence", packet_sequence, ":", msg);
+			if (!this.offscreen_api) {
+				this.clog(" pixel data:", packet[7]);
 			}
-			me.do_send_damage_sequence(packet_sequence, wid, width, height, -1, msg);
+			this.do_send_damage_sequence(packet_sequence, wid, width, height, -1, msg);
 			return;
 		}
 		switch (data['result']) {
 		case true:
 			const formats = Array.from(data['formats']);
-			me.clog("we can decode using a worker:", decode_worker);
-			me.supported_encodings = formats;
-			me.clog("full list of supported encodings:", me.supported_encodings);
-			me.decode_worker = decode_worker;
+			this.clog("we can decode using a worker:", decode_worker);
+			this.supported_encodings = formats;
+			this.clog("full list of supported encodings:", this.supported_encodings);
+			this.decode_worker = decode_worker;
 			break;
 		case false:
-			me.clog("we can't decode using a worker: "+data['errors']);
-			me.decode_worker = false;
+			this.clog("we can't decode using a worker: "+data['errors']);
+			this.decode_worker = false;
 			break;
 		default:
-			me.clog("client got unknown message from the decode worker");
-			me.decode_worker = false;
+			this.clog("client got unknown message from the decode worker");
+			this.decode_worker = false;
 		}
 	}, false);
 	this.clog("decode worker will check:", this.check_encodings);
@@ -646,7 +636,6 @@ XpraClient.prototype._screen_resized = function(event, ctx) {
  * Keyboard
  */
 XpraClient.prototype.init_keyboard = function() {
-	const me = this;
 	this.query_keyboard_map();
 	// modifier keys:
 	this.num_lock_modifier = null;
@@ -658,7 +647,7 @@ XpraClient.prototype.init_keyboard = function() {
 
 	this.capture_keyboard = false;
 	// assign the key callbacks
-	document.addEventListener('keydown', function(e) {
+	document.addEventListener('keydown', (e) => {
 		const preview_el = $('#window_preview');
 
 		if (e.code === 'Escape') {
@@ -692,12 +681,12 @@ XpraClient.prototype.init_keyboard = function() {
 				return e.stopPropagation() || e.preventDefault();
 			}
 		}
-		const r = me._keyb_onkeydown(e, me);
+		const r = this._keyb_onkeydown(e, this);
 		if (!r) {
 			e.preventDefault();
 		}
 	});
-	document.addEventListener('keyup', function (e) {
+	document.addEventListener('keyup', (e) => {
 		if (e.code === 'Tab' || e.code.startsWith("Alt")) {
 			if ($('#window_preview').is(":visible")) {
 				if (e.code.startsWith("Alt")) {
@@ -706,7 +695,7 @@ XpraClient.prototype.init_keyboard = function() {
 				return e.stopPropagation() || e.preventDefault();
 			}
 		}
-		const r = me._keyb_onkeyup(e, me);
+		const r = this._keyb_onkeyup(e, this);
 		if (!r) {
 			e.preventDefault();
 		}
@@ -1042,11 +1031,11 @@ XpraClient.prototype.do_keyb_process = function(pressed, event) {
 			delay = this.clipboard_delayed_event_time-now;
 		}
 		const me = this;
-		setTimeout(function () {
-			while (me.key_packets.length>0) {
+		setTimeout(() => {
+			while (this.key_packets.length>0) {
 				var key_packet = me.key_packets.shift();
-				me.last_key_packet = key_packet;
-				me.send(key_packet);
+				this.last_key_packet = key_packet;
+				this.send(key_packet);
 			}
 		}, delay);
 	}
@@ -1192,10 +1181,7 @@ XpraClient.prototype._send_hello = function(counter) {
 			this.do_send_hello(null, null);
 		}
 		//try again later:
-		const me = this;
-		setTimeout(function() {
-			me._send_hello(counter+1);
-		}, 100);
+		setTimeout(() => this._send_hello(counter+1), 100);
 	}
 	else {
 		this.do_send_hello(null, null);
@@ -1585,7 +1571,7 @@ XpraClient.prototype.release_buttons = function(e, window) {
 		wid = window.wid,
 		pressed = false;
 	for (let button of this.buttons_pressed) {
-		me.send_button_action(wid, button, pressed, x, y, modifiers);
+		this.send_button_action(wid, button, pressed, x, y, modifiers);
 	}
 }
 
@@ -1629,10 +1615,9 @@ XpraClient.prototype.do_window_mouse_click = function(e, window, pressed) {
 	else if (button==5) {
 		button = 9;
 	}
-	const me = this;
-	setTimeout(function() {
-		me.clipboard_delayed_event_time = performance.now()+CLIPBOARD_EVENT_DELAY;
-		me.send_button_action(wid, button, pressed, x, y, modifiers);
+	setTimeout(() => {
+		this.clipboard_delayed_event_time = performance.now()+CLIPBOARD_EVENT_DELAY;
+		this.send_button_action(wid, button, pressed, x, y, modifiers);
 	}, send_delay);
 }
 
@@ -1750,8 +1735,7 @@ XpraClient.prototype.do_window_mouse_scroll = function(e, window) {
 };
 
 XpraClient.prototype.init_clipboard = function() {
-	const me = this;
-	window.addEventListener("paste", function (e) {
+	window.addEventListener("paste", (e) => {
 		let clipboardData = (e.originalEvent || e).clipboardData;
 		//IE: must use window.clipboardData because the event clipboardData is null!
 		if (!clipboardData) {
@@ -1759,7 +1743,7 @@ XpraClient.prototype.init_clipboard = function() {
 		}
 		if (clipboardData && clipboardData.files) {
 			const files = clipboardData.files;
-			me.clog("paste got", files.length, "files");
+			this.clog("paste got", files.length, "files");
 			for (let i = 0; i < files.length; i++) {
 				let file = files.item(i);
 					//lastModified: 1634740745068
@@ -1768,21 +1752,19 @@ XpraClient.prototype.init_clipboard = function() {
 					//size: 17698
 					//type: "image/png"
 					//webkitRelativePath: ""
-				me.send_file(file);
+				this.send_file(file);
 			}
 			e.preventDefault();
 			return;
 		}
 		let paste_data;
 		if (navigator.clipboard && navigator.clipboard.readText) {
-			navigator.clipboard.readText().then(function(text) {
-				me.cdebug("clipboard", "paste event, text=", text);
+			navigator.clipboard.readText().then((text) => {
+				this.cdebug("clipboard", "paste event, text=", text);
 				const paste_data = unescape(encodeURIComponent(text));
-				me.clipboard_buffer = paste_data;
-				me.send_clipboard_token(paste_data);
-			}, function(err) {
-				me.cdebug("clipboard", "paste event failed:", err);
-			});
+				this.clipboard_buffer = paste_data;
+				this.send_clipboard_token(paste_data);
+			}, (err) => this.cdebug("clipboard", "paste event failed:", err));
 		}
 		else {
 			let datatype = "text/plain";
@@ -1791,32 +1773,28 @@ XpraClient.prototype.init_clipboard = function() {
 			}
 			paste_data = unescape(encodeURIComponent(clipboardData.getData(datatype)));
 			cdebug("clipboard", "paste event, data=", paste_data);
-			me.clipboard_buffer = paste_data;
-			me.send_clipboard_token(paste_data);
+			this.clipboard_buffer = paste_data;
+			this.send_clipboard_token(paste_data);
 		}
 	});
-	window.addEventListener("copy", function (e) {
-		const clipboard_buffer = me.get_clipboard_buffer();
+	window.addEventListener("copy", (e) => {
+		const clipboard_buffer = this.get_clipboard_buffer();
 		const pasteboard = $("#pasteboard");
 		pasteboard.text(decodeURIComponent(escape(clipboard_buffer)));
 		pasteboard.select();
-		me.cdebug("clipboard", "copy event, clipboard buffer=", clipboard_buffer);
-		me.clipboard_pending = false;
+		this.cdebug("clipboard", "copy event, clipboard buffer=", clipboard_buffer);
+		this.clipboard_pending = false;
 	});
-	window.addEventListener("cut", function (e) {
-		const clipboard_buffer = me.get_clipboard_buffer();
+	window.addEventListener("cut", (e) => {
+		const clipboard_buffer = this.get_clipboard_buffer();
 		const pasteboard = $("#pasteboard");
 		pasteboard.text(decodeURIComponent(escape(clipboard_buffer)));
 		pasteboard.select();
-		me.cdebug("clipboard", "cut event, clipboard buffer=", clipboard_buffer);
-		me.clipboard_pending = false;
+		this.cdebug("clipboard", "cut event, clipboard buffer=", clipboard_buffer);
+		this.clipboard_pending = false;
 	});
-	$('#screen').on('click', function (e) {
-		me.may_set_clipboard();
-	});
-	$("#screen").keypress(function() {
-		me.may_set_clipboard();
-	});
+	$('#screen').on('click', (e) => this.may_set_clipboard());
+	$("#screen").keypress(() => this.may_set_clipboard());
 }
 
 XpraClient.prototype.may_set_clipboard = function(e) {
@@ -2170,10 +2148,9 @@ XpraClient.prototype._process_open = function(packet, ctx) {
 
 XpraClient.prototype.schedule_hello_timer = function() {
 	this.cancel_hello_timer();
-	const me = this;
-	this.hello_timer = setTimeout(function () {
-		me.disconnect_reason = "Did not receive hello before timeout reached, not an Xpra server?";
-		me.close();
+	this.hello_timer = setTimeout(() => {
+		this.disconnect_reason = "Did not receive hello before timeout reached, not an Xpra server?";
+		this.close();
 	}, this.HELLO_TIMEOUT);
 }
 XpraClient.prototype.cancel_hello_timer = function() {
@@ -2229,23 +2206,22 @@ XpraClient.prototype.packet_disconnect_reason = function(packet) {
 XpraClient.prototype.do_reconnect = function() {
 	//try again:
 	this.reconnect_in_progress = true;
-	const me = this;
 	const protocol = this.protocol;
-	setTimeout(function(){
+	setTimeout(() => {
 		try {
-			me.close_windows();
-			me.close_audio();
-			me.clear_timers();
-			me.init_state();
+			this.close_windows();
+			this.close_audio();
+			this.clear_timers();
+			this.init_state();
 			if (protocol) {
-				me.protocol = null;
+				this.protocol = null;
 				protocol.terminate();
 			}
-			me.emit_connection_lost();
-			me.connect();
+			this.emit_connection_lost();
+			this.connect();
 		}
 		finally {
-			me.reconnect_in_progress = false;
+			this.reconnect_in_progress = false;
 		}
 	}, this.reconnect_delay);
 };
@@ -2744,18 +2720,13 @@ XpraClient.prototype._send_ping = function() {
 	if (this.reconnect_in_progress || !this.connected) {
 		return;
 	}
-	const me = this;
 	const now_ms = Math.ceil(performance.now());
 	this.send(["ping", now_ms]);
 	// add timeout to wait for ping timout
-	this.ping_timeout_timer = setTimeout(function () {
-		me._check_echo_timeout(now_ms);
-	}, this.PING_TIMEOUT);
+	this.ping_timeout_timer = setTimeout(() => this._check_echo_timeout(now_ms), this.PING_TIMEOUT);
 	// add timeout to detect temporary ping miss for spinners
 	const wait = 2000;
-	this.ping_grace_timer = setTimeout(function () {
-		me._check_server_echo(now_ms);
-	}, wait);
+	this.ping_grace_timer = setTimeout(() => this._check_server_echo(now_ms), wait);
 };
 
 XpraClient.prototype._process_ping = function(packet, ctx) {
@@ -2792,10 +2763,9 @@ XpraClient.prototype._process_ping_echo = function(packet, ctx) {
  */
 XpraClient.prototype.start_info_timer = function() {
 	if (this.info_timer==null) {
-		const me = this;
-		this.info_timer = setInterval(function () {
-			if (me.info_timer!=null) {
-				me.send_info_request();
+		this.info_timer = setInterval(() => {
+			if (this.info_timer!=null) {
+				this.send_info_request();
 			}
 			return true;
 		}, this.INFO_FREQUENCY);
@@ -3441,8 +3411,7 @@ XpraClient.prototype.request_redraw = function(win) {
 	}
 	// schedule a screen refresh if one is not already due:
 	this.draw_pending = performance.now();
-	const me = this;
-	window.requestAnimationFrame(function() {me.draw_pending_list()});
+	window.requestAnimationFrame(() => {this.draw_pending_list()});
 };
 
 XpraClient.prototype.draw_pending_list = function() {
@@ -3502,13 +3471,13 @@ XpraClient.prototype.do_process_draw = function(packet, start) {
 		const flush = options["flush"] || 0;
 		let decode_time = Math.round(1000*performance.now() - 1000*start);
 		if (flush==0) {
-			me.request_redraw(win);
+			this.request_redraw(win);
 		}
 		if (error || start==0) {
-			me.request_redraw(win);
+			this.request_redraw(win);
 			decode_time = -1
 		}
-		me.debug("draw", "decode time for ", coding, " sequence ", packet_sequence, ": ", decode_time, ", flush=", flush);
+		this.debug("draw", "decode time for ", coding, " sequence ", packet_sequence, ": ", decode_time, ", flush=", flush);
 		send_damage_sequence(decode_time, error || "");
 	}
 	if (!win) {
@@ -3525,12 +3494,12 @@ XpraClient.prototype.do_process_draw = function(packet, start) {
 		win.paint(packet, decode_result);
 	}
 	catch(e) {
-		me.exc(e, "error painting", coding, "sequence no", packet_sequence);
+		this.exc(e, "error painting", coding, "sequence no", packet_sequence);
 		send_damage_sequence(-1, String(e));
 		//there may be other screen updates pending:
 		win.paint_pending = 0;
 		win.may_paint_now();
-		me.request_redraw(win);
+		this.request_redraw(win);
 	}
 };
 
@@ -3639,7 +3608,6 @@ XpraClient.prototype._sound_start_aurora = function() {
 
 XpraClient.prototype._sound_start_mediasource = function() {
 	const me = this;
-
 	function audio_error(event) {
 		if(!me.media_source) {
 			//already closed
@@ -3663,7 +3631,7 @@ XpraClient.prototype._sound_start_mediasource = function() {
 	if(this.debug) {
 		MediaSourceUtil.addMediaSourceEventDebugListeners(this.media_source, "audio");
 	}
-	this.media_source.addEventListener('error', 	function(e) {audio_error("audio source"); });
+	this.media_source.addEventListener('error', (e) => audio_error("audio source"));
 
 	//Create an <audio> element:
 	this.audio = document.createElement("audio");
@@ -3671,8 +3639,8 @@ XpraClient.prototype._sound_start_mediasource = function() {
 	if(this.debug) {
 		MediaSourceUtil.addMediaElementEventDebugListeners(this.audio, "audio");
 	}
-	this.audio.addEventListener('play', 			function() { me.clog("audio play!"); });
-	this.audio.addEventListener('error', 			function() { audio_error("audio"); });
+	this.audio.addEventListener('play', () => this.clog("audio play!"));
+	this.audio.addEventListener('error', () => audio_error("audio"));
 	document.body.appendChild(this.audio);
 
 	//attach the MediaSource to the <audio> element:
@@ -3681,38 +3649,38 @@ XpraClient.prototype._sound_start_mediasource = function() {
 	this.audio_buffers_count = 0;
 	this.audio_source_ready = false;
 	this.clog("audio waiting for source open event on", this.media_source);
-	this.media_source.addEventListener('sourceopen', function() {
-		me.log("audio media source open");
-		if (me.audio_source_ready) {
-			me.warn("ignoring: source already open");
+	this.media_source.addEventListener('sourceopen', () => {
+		this.log("audio media source open");
+		if (this.audio_source_ready) {
+			this.warn("ignoring: source already open");
 			return;
 		}
 		//ie: codec_string = "audio/mp3";
-		const codec_string = MediaSourceConstants.CODEC_STRING[me.audio_codec];
+		const codec_string = MediaSourceConstants.CODEC_STRING[this.audio_codec];
 		if(codec_string==null) {
-			me.error("invalid codec '"+me.audio_codec+"'");
-			me.close_audio();
+			this.error("invalid codec '"+this.audio_codec+"'");
+			this.close_audio();
 			return;
 		}
-		me.log("using audio codec string for "+me.audio_codec+": "+codec_string);
+		this.log("using audio codec string for "+this.audio_codec+": "+codec_string);
 
 		//Create a SourceBuffer:
 		let asb;
 		try {
-			asb = me.media_source.addSourceBuffer(codec_string);
+			asb = this.media_source.addSourceBuffer(codec_string);
 		} catch (e) {
-			me.exc(e, "audio setup error for", codec_string);
-			me.close_audio();
+			this.exc(e, "audio setup error for", codec_string);
+			this.close_audio();
 			return;
 		}
-		me.audio_source_buffer = asb;
+		this.audio_source_buffer = asb;
 		asb.mode = "sequence";
-		if (me.debug_categories.includes("audio")) {
+		if (this.debug_categories.includes("audio")) {
 			MediaSourceUtil.addSourceBufferEventDebugListeners(asb, "audio");
 		}
-		asb.addEventListener('error', 				function(e) { audio_error("audio buffer"); });
-		me.audio_source_ready = true;
-		me._send_sound_start();
+		asb.addEventListener('error', (e) => audio_error("audio buffer"));
+		this.audio_source_ready = true;
+		this._send_sound_start();
 	});
 };
 
@@ -3898,11 +3866,11 @@ XpraClient.prototype._audio_start_stream = function() {
 			this.close_audio();
 			return;
 		}
-		play.then(function(result) {
-			me.debug("audio", "stream playing", result);
-		}, function(err) {
-			me.on_audio_state_change("error", "stream failed:"+err);
-			me.close_audio();
+		play.then((result) => {
+			this.debug("audio", "stream playing", result);
+		}, (err) => {
+			this.on_audio_state_change("error", "stream failed:"+err);
+			this.close_audio();
 		});
 	}
 	else if (this.audio_framework=="http-stream") {
@@ -4491,13 +4459,13 @@ XpraClient.prototype.send_file = function(f) {
 	clog("send_file:", f.name, ", type:", f.type, ", size:", f.size);
 	const me = this;
 	const fileReader = new FileReader();
-	fileReader.onloadend = function (evt) {
+	fileReader.onloadend = (evt) => {
 		const u8a = new Uint8Array(evt.target.result);
 		var buf = u8a;
 		if (client.packet_encoder!="rencodeplus") {
 			buf = Utilities.Uint8ToString(u8a);
 		}
-		me.do_send_file(f.name, f.type, f.size, buf);
+		this.do_send_file(f.name, f.type, f.size, buf);
 	};
 	fileReader.readAsArrayBuffer(f);
 }
