@@ -17,75 +17,80 @@
  *  brotli_decode.js
  */
 
+"use strict";
 
-CONNECT_TIMEOUT = 15000;
+
+const CONNECT_TIMEOUT = 15000;
 
 /*
 A stub class to facilitate communication with the protocol when
 it is loaded in a worker
 */
-function XpraProtocolWorkerHost() {
-	this.worker = null;
-	this.packet_handler = null;
-	this.packet_ctx = null;
-}
+class XpraProtocolWorkerHost {
 
-XpraProtocolWorkerHost.prototype.open = function(uri) {
-	const me = this;
-	if (this.worker) {
-		//re-use the existing worker:
-		this.worker.postMessage({'c': 'o', 'u': uri});
-		return;
+	constructor() {
+		this.worker = null;
+		this.packet_handler = null;
+		this.packet_ctx = null;
 	}
-	this.worker = new Worker('js/Protocol.js');
-	this.worker.addEventListener('message', function(e) {
-		const data = e.data;
-		switch (data.c) {
-			case 'r':
-				me.worker.postMessage({'c': 'o', 'u': uri});
-				break;
-			case 'p':
-				if(me.packet_handler) {
-					me.packet_handler(data.p, me.packet_ctx);
-				}
-				break;
-			case 'l':
-				this.log(data.t);
-				break;
-		default:
-			this.error("got unknown command from worker");
-			this.error(e.data);
+	
+	open(uri) {
+		if (this.worker) {
+			//re-use the existing worker:
+			this.worker.postMessage({'c': 'o', 'u': uri});
+			return;
 		}
-	}, false);
-};
+		this.worker = new Worker('js/Protocol.js');
+		this.worker.addEventListener('message', (e) => {
+			const data = e.data;
+			switch (data.c) {
+				case 'r':
+					this.worker.postMessage({'c': 'o', 'u': uri});
+					break;
+				case 'p':
+					if (this.packet_handler) {
+						this.packet_handler(data.p, this.packet_ctx);
+					}
+					break;
+				case 'l':
+					this.log(data.t);
+					break;
+			default:
+				this.error("got unknown command from worker");
+				this.error(e.data);
+			}
+		}, false);
+	};
+	
+	close = function() {
+		this.worker.postMessage({'c': 'c'});
+	};
+	
+	terminate = function() {
+		this.worker.postMessage({'c': 't'});
+	};
+	
+	send = function(packet) {
+		this.worker.postMessage({'c': 's', 'p': packet});
+	};
+	
+	set_packet_handler = function(callback, ctx) {
+		this.packet_handler = callback;
+		this.packet_ctx = ctx;
+	};
+	
+	set_cipher_in = function(caps, key) {
+		this.worker.postMessage({'c': 'z', 'p': caps, 'k': key});
+	};
+	
+	set_cipher_out = function(caps, key) {
+		this.worker.postMessage({'c': 'x', 'p': caps, 'k': key});
+	};
+	
+	enable_packet_encoder = function(packet_encoder) {
+		this.worker.postMessage({'c': 'p', 'pe' : packet_encoder});
+	}
 
-XpraProtocolWorkerHost.prototype.close = function() {
-	this.worker.postMessage({'c': 'c'});
-};
-
-XpraProtocolWorkerHost.prototype.terminate = function() {
-	this.worker.postMessage({'c': 't'});
-};
-
-XpraProtocolWorkerHost.prototype.send = function(packet) {
-	this.worker.postMessage({'c': 's', 'p': packet});
-};
-
-XpraProtocolWorkerHost.prototype.set_packet_handler = function(callback, ctx) {
-	this.packet_handler = callback;
-	this.packet_ctx = ctx;
-};
-
-XpraProtocolWorkerHost.prototype.set_cipher_in = function(caps, key) {
-	this.worker.postMessage({'c': 'z', 'p': caps, 'k': key});
-};
-
-XpraProtocolWorkerHost.prototype.set_cipher_out = function(caps, key) {
-	this.worker.postMessage({'c': 'x', 'p': caps, 'k': key});
-};
-
-XpraProtocolWorkerHost.prototype.enable_packet_encoder = function(packet_encoder) {
-	this.worker.postMessage({'c': 'p', 'pe' : packet_encoder});
 }
 
 
