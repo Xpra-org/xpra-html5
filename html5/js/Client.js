@@ -722,7 +722,7 @@ XpraClient.prototype.query_keyboard_map = function() {
 	keyboard.getLayoutMap().then(keyboardLayoutMap => {
 		clog("got a keyboard layout map:", keyboardLayoutMap);
 		clog("keys:", Array.from(keyboardLayoutMap.keys()));
-		for (const [key, value] of keyboardLayoutMap.entries()) {
+		for ([key, value] of keyboardLayoutMap.entries()) {
 			cdebug("keyboard", key, "=", value);
 			this.keyboard_map[key] = value;
 		}
@@ -1959,14 +1959,11 @@ XpraClient.prototype._window_set_focus = function(win) {
 	if (default_settings !== undefined && default_settings.auto_fullscreen_desktop_class !== undefined && default_settings.auto_fullscreen_desktop_class.length > 0) {
 		var auto_fullscreen_desktop_class = default_settings.auto_fullscreen_desktop_class;
 		if (win.windowtype == "DESKTOP" && win.metadata['class-instance'].includes(auto_fullscreen_desktop_class)) {
-			var any_visible = false;
 			for (let i in client.id_to_window) {
 				const iwin = client.id_to_window[i];
-				if (iwin.wid == win.wid) continue;
-				any_visible ||= !iwin.minimized;
-			}
-			if (any_visible) {
-				return;
+				if (iwin.wid != win.wid && !iwin.minimized) {
+					return;
+				}
 			}
 		}
 	}
