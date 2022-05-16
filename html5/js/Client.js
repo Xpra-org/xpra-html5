@@ -722,7 +722,8 @@ XpraClient.prototype.query_keyboard_map = function() {
 	keyboard.getLayoutMap().then(keyboardLayoutMap => {
 		clog("got a keyboard layout map:", keyboardLayoutMap);
 		clog("keys:", Array.from(keyboardLayoutMap.keys()));
-		for ([key, value] of keyboardLayoutMap.entries()) {
+		for (const key of keyboardLayoutMap.keys()) {
+			const value = keyboardLayoutMap[key];
 			cdebug("keyboard", key, "=", value);
 			this.keyboard_map[key] = value;
 		}
