@@ -238,7 +238,7 @@ send() {
 	}
 }
 
-send_log = function(level, args) {
+send_log(level, args) {
 	if(this.remote_logging && this.server_remote_logging && this.connected) {
 		try {
 			const sargs = [];
@@ -720,9 +720,7 @@ query_keyboard_map() {
 		}
 	});
 	if (keyboard.addEventListener) {
-		keyboard.addEventListener("layoutchange", function() {
-			clog("keyboard layout has changed!");
-		});
+		keyboard.addEventListener("layoutchange", () => this.clog("keyboard layout has changed!"));
 	}
 }
 
@@ -1893,23 +1891,22 @@ read_clipboard_text() {
 	if (this.clipboard_enabled === false) {
 		return;
 	}
-	const client = this;
 	client.debug("clipboard", "read_clipboard_text()");
 	//warning: this can take a while,
 	//so we may send the click before the clipboard contents...
-	navigator.clipboard.readText().then(function(text) {
-		client.debug("clipboard", "paste event, text=", text);
+	navigator.clipboard.readText().then((text) => {
+		this.debug("clipboard", "paste event, text=", text);
 		const clipboard_buffer = unescape(encodeURIComponent(text));
-		if (clipboard_buffer!=client.clipboard_buffer) {
-			client.debug("clipboard", "clipboard contents have changed");
-			client.clipboard_buffer = clipboard_buffer;
-			client.send_clipboard_token(clipboard_buffer);
-			client.clipboard_delayed_event_time = performance.now()+CLIPBOARD_EVENT_DELAY;
+		if (clipboard_buffer!=this.clipboard_buffer) {
+			this.debug("clipboard", "clipboard contents have changed");
+			this.clipboard_buffer = clipboard_buffer;
+			this.send_clipboard_token(clipboard_buffer);
+			this.clipboard_delayed_event_time = performance.now()+CLIPBOARD_EVENT_DELAY;
 		}
-		client.clipboard_pending = false;
+		this.clipboard_pending = false;
 	}, function(err) {
-		client.debug("clipboard", "paste event failed:", err);
-		client.clipboard_pending = false;
+		this.debug("clipboard", "paste event failed:", err);
+		this.clipboard_pending = false;
 	});
 }
 
@@ -2005,10 +2002,10 @@ toggle_window_preview(init_cb) {
 		}
 	});
 
-	preview_element.on("afterChange", function(event, slick, currentSlide) {
+	preview_element.on("afterChange", (event, slick, currentSlide) => {
 		const wid = $(".slick-current .window-preview-item-container").data('wid');
-		if (!client.id_to_window[wid].minimized) {
-			client._window_set_focus(client.id_to_window[wid]);
+		if (!this.id_to_window[wid].minimized) {
+			this._window_set_focus(this.id_to_window[wid]);
 		}
 	});
 
@@ -2526,10 +2523,10 @@ process_xdg_menu() {
 		const ul = document.createElement("ul");
 
 		//TODO need to figure out how to do this properly
-		a.onmouseenter= function(){
+		a.onmouseenter = function(){
 			this.parentElement.childNodes[1].className="-visible";
 		};
-		a.onmouseleave= function(){
+		a.onmouseleave = function(){
 			this.parentElement.childNodes[1].className="";
 		};
 
@@ -2774,7 +2771,7 @@ send_info_request() {
 		this.info_request_pending = true;
 	}
 }
-_process_info_response = function(packet) {
+_process_info_response(packet) {
 	this.info_request_pending = false;
 	this.server_last_info = packet[1];
 	this.debug("network", "info-response:", this.server_last_info);
@@ -4369,19 +4366,6 @@ verify_digest(digest, expected_value) {
 }
 
 _got_file(basefilename, data, printit, mimetype, options) {
-	function check_digest(algo) {
-		const digest = options[algo];
-		if (digest) {
-			//h = libfn()
-			//h.update(file_data)
-			//l("digest: - expected", algo, h.hexdigest(), digest)
-			//if digest!=h.hexdigest():
-			//	this.digest_mismatch(filename, digest, h.hexdigest(), algo)
-		}
-	}
-	check_digest("sha256")
-	check_digest("sha1")
-	check_digest("md5")
 	if (printit) {
 		this.print_document(basefilename, data, mimetype);
 	}
