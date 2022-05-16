@@ -154,7 +154,7 @@ XpraWindow.prototype.add_window_decorations = function() {
 		}
 	});
 	jQuery(this.div).on("dragstart", (ev) => {
-		client.release_buttons(ev, me);
+		client.release_buttons(ev, this);
 		this.set_focus_cb(this);
 		client.mouse_grabbed = true;
 	});
@@ -174,7 +174,7 @@ XpraWindow.prototype.add_window_decorations = function() {
 	//  	this.handle_resized(ui);
 	//}));
 	jQuery(this.div).on("resizestart", (ev, ui) => {
-		client.do_window_mouse_click(ev, me, false);
+		client.do_window_mouse_click(ev, this, false);
 		client.mouse_grabbed = true;
 	});
 	jQuery(this.div).on("resizestop", (ev, ui) => {
