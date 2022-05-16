@@ -27,7 +27,9 @@ const MAX_CONCURRENT_FILES = 5;
 const CHUNK_TIMEOUT = 10*1000;
 
 
-function XpraClient(container) {
+class XpraClient	{
+
+constructor(container) {
 	// the container div is the "screen" on the HTML page where we
 	// are able to draw our windows in.
 	this.container = document.getElementById(container);
@@ -45,7 +47,7 @@ function XpraClient(container) {
 	this.init_state();
 }
 
-XpraClient.prototype.init_settings = function() {
+init_settings() {
 	//server:
 	this.host = null;
 	this.port = null;
@@ -97,9 +99,9 @@ XpraClient.prototype.init_settings = function() {
 	this.INFO_FREQUENCY = 1000;
 	this.uuid = Utilities.getHexUUID();
 	this.offscreen_api = DECODE_WORKER && XpraOffscreenWorker.isAvailable();
-};
+}
 
-XpraClient.prototype.init_state = function() {
+init_state() {
 	// state
 	this.connected = false;
 	this.desktop_width = 0;
@@ -227,16 +229,16 @@ XpraClient.prototype.init_state = function() {
 	else if (Utilities.isEventSupported("DOMMouseScroll")) {
 		div.addEventListener('DOMMouseScroll',	on_mousescroll, false); // for Firefox
 	}
-};
+}
 
-XpraClient.prototype.send = function() {
+send() {
 	this.debug("network", "sending a", arguments[0], "packet");
 	if (this.protocol) {
 		this.protocol.send.apply(this.protocol, arguments);
 	}
-};
+}
 
-XpraClient.prototype.send_log = function(level, args) {
+send_log = function(level, args) {
 	if(this.remote_logging && this.server_remote_logging && this.connected) {
 		try {
 			const sargs = [];
@@ -251,8 +253,8 @@ XpraClient.prototype.send_log = function(level, args) {
 			}
 		}
 	}
-};
-XpraClient.prototype.exc = function() {
+}
+exc() {
 	//first argument is the exception:
 	const exception = arguments[0];
 	let args = Array.from(arguments);
@@ -269,32 +271,32 @@ XpraClient.prototype.exc = function() {
 			//we tried our best
 		}
 	}
-};
-XpraClient.prototype.error = function() {
+}
+error() {
 	//logging.ERROR = 40
 	this.send_log(40, arguments);
 	this.cerror.apply(this, arguments);
-};
-XpraClient.prototype.cerror = function() {
+}
+cerror() {
 	Utilities.cerror.apply(Utilities, arguments);
-};
-XpraClient.prototype.warn = function() {
+}
+warn() {
 	//logging.WARN = 30
 	this.send_log(30, arguments);
 	this.cwarn.apply(this, arguments);
-};
-XpraClient.prototype.cwarn = function() {
+}
+cwarn(){
 	Utilities.cwarn.apply(Utilities, arguments);
-};
-XpraClient.prototype.log = function() {
+}
+log(){
 	//logging.INFO = 20
 	this.send_log(20, arguments);
 	this.clog.apply(this, arguments);
-};
-XpraClient.prototype.clog = function() {
+}
+clog(){
 	Utilities.clog.apply(Utilities, arguments);
-};
-XpraClient.prototype.debug = function() {
+}
+debug(){
 	const category = arguments[0];
 	let args = Array.from(arguments);
 	//args = args.splice(1);
@@ -305,13 +307,13 @@ XpraClient.prototype.debug = function() {
 		}
 		this.cdebug.apply(this, arguments);
 	}
-};
-XpraClient.prototype.cdebug = function() {
+}
+cdebug(){
 	Utilities.cdebug.apply(Utilities, arguments);
-};
+}
 
 
-XpraClient.prototype.init = function(ignore_blacklist) {
+init(ignore_blacklist) {
 	this.on_connection_progress("Initializing", "", 20);
 	this.init_audio(ignore_blacklist);
 	this.init_packet_handlers();
@@ -322,10 +324,10 @@ XpraClient.prototype.init = function(ignore_blacklist) {
 		this.container.style.transform = "scale("+1/this.scale+")";
 		this.container.style.transformOrigin = "top left";
 	}
-};
+}
 
 
-XpraClient.prototype.init_packet_handlers = function() {
+init_packet_handlers(){
 	// the client holds a list of packet handlers
 	this.packet_handlers = {
 		'open': this._process_open,
@@ -368,21 +370,21 @@ XpraClient.prototype.init_packet_handlers = function() {
 		'setting-change': this._process_setting_change,
 		'pointer-position': this._process_pointer_position,
 	};
-};
+}
 
-XpraClient.prototype.on_connection_progress = function(state, details, progress) {
+on_connection_progress(state, details, progress) {
 	//can be overriden
 	this.clog(state, details);
-};
+}
 
-XpraClient.prototype.callback_close = function(reason) {
+callback_close(reason) {
 	if (reason === undefined) {
 		reason = "unknown reason";
 	}
 	this.clog("connection closed: "+reason);
-};
+}
 
-XpraClient.prototype.connect = function() {
+connect() {
 	let details = this.host + ":" + this.port + this.path;
 	if (this.ssl) {
 		details += " with ssl";
@@ -397,7 +399,7 @@ XpraClient.prototype.connect = function() {
 	this.initialize_workers();
 }
 
-XpraClient.prototype.initialize_workers = function() {
+initialize_workers() {
 	const safe_encodings = ["jpeg", "png", "png/P", "png/L", "rgb", "rgb32", "rgb24", "scroll", "void"];
 	// detect websocket in webworker support and degrade gracefully
 	if (!window.Worker) {
@@ -486,18 +488,18 @@ XpraClient.prototype.initialize_workers = function() {
 	}, false);
 	this.clog("decode worker will check:", this.check_encodings);
 	decode_worker.postMessage({'cmd': 'check', 'encodings' : this.check_encodings});
-};
+}
 
-XpraClient.prototype._do_connect = function(with_worker) {
+_do_connect(with_worker) {
 	if(with_worker && !(XPRA_CLIENT_FORCE_NO_WORKER)) {
 		this.protocol = new XpraProtocolWorkerHost();
 	} else {
 		this.protocol = new XpraProtocol();
 	}
 	this.open_protocol();
-};
+}
 
-XpraClient.prototype.open_protocol = function() {
+open_protocol() {
 	// set protocol to deliver packets to our packet router
 	this.protocol.set_packet_handler(this._route_packet, this);
 	// make uri
@@ -512,17 +514,17 @@ XpraClient.prototype.open_protocol = function() {
 	this.uri = uri;
 	this.on_connection_progress("Opening WebSocket connection", uri, 50);
 	this.protocol.open(uri);
-};
+}
 
-XpraClient.prototype.close = function() {
+close() {
 	this.clog("client closed");
 	this.close_windows();
 	this.clear_timers();
 	this.close_audio();
 	this.close_protocol();
-};
+}
 
-XpraClient.prototype.request_refresh = function(wid) {
+request_refresh(wid) {
 	this.send([
 		"buffer-refresh", wid, 0, 100,
 		{
@@ -531,32 +533,32 @@ XpraClient.prototype.request_refresh = function(wid) {
 		},
 		{},	//no client_properties
 		]);
-};
+}
 
-XpraClient.prototype.redraw_windows = function() {
+redraw_windows() {
 	for (const i in this.id_to_window) {
 		const iwin = this.id_to_window[i];
 		this.request_redraw(iwin);
 	}
-};
+}
 
-XpraClient.prototype.close_windows = function() {
+close_windows() {
 	for (const i in this.id_to_window) {
 		const iwin = this.id_to_window[i];
 		window.removeWindowListItem(i);
 		iwin.destroy();
 	}
-};
+}
 
-XpraClient.prototype.close_protocol = function() {
+close_protocol() {
 	this.connected = false;
 	if (this.protocol) {
 		this.protocol.close();
 		this.protocol = null;
 	}
-};
+}
 
-XpraClient.prototype.clear_timers = function() {
+clear_timers() {
 	this.stop_info_timer();
 	this.cancel_hello_timer();
 	if (this.ping_timer) {
@@ -571,15 +573,15 @@ XpraClient.prototype.clear_timers = function() {
 		clearTimeout(this.ping_grace_timer);
 		this.ping_grace_timer = null;
 	}
-};
+}
 
-XpraClient.prototype.set_encoding = function(encoding) {
+set_encoding(encoding) {
 	// add an encoding to our hello.encodings list
 	this.clog("encoding:", encoding);
 	this.encoding = encoding;
-};
+}
 
-XpraClient.prototype._route_packet = function(packet, ctx) {
+_route_packet(packet, ctx) {
 	// ctx refers to `this` because we came through a callback
 	const packet_type = Utilities.s(packet[0]);
 	ctx.debug("network", "received a", packet_type, "packet");
@@ -590,9 +592,9 @@ XpraClient.prototype._route_packet = function(packet, ctx) {
 	} else {
 		fn.call(ctx, packet);
 	}
-};
+}
 
-XpraClient.prototype._screen_resized = function(event) {
+_screen_resized(event) {
 	// send the desktop_size packet so server knows we changed size
 	if (!this.connected) {
 		return;
@@ -630,12 +632,12 @@ XpraClient.prototype._screen_resized = function(event) {
 	}
 	// Re-position floating toolbar menu
 	this.position_float_menu();
-};
+}
 
 /**
  * Keyboard
  */
-XpraClient.prototype.init_keyboard = function() {
+init_keyboard(){
 	this.query_keyboard_map();
 	// modifier keys:
 	this.num_lock_modifier = null;
@@ -700,9 +702,9 @@ XpraClient.prototype.init_keyboard = function() {
 			e.preventDefault();
 		}
 	});
-};
+}
 
-XpraClient.prototype.query_keyboard_map = function() {
+query_keyboard_map() {
 	var keyboard = navigator.keyboard;
 	this.keyboard_map = {};
 	if (!navigator.keyboard) {
@@ -722,9 +724,9 @@ XpraClient.prototype.query_keyboard_map = function() {
 			clog("keyboard layout has changed!");
 		});
 	}
-};
+}
 
-XpraClient.prototype._keyb_get_modifiers = function(event) {
+_keyb_get_modifiers(event) {
 	/**
 	 * Returns the modifiers set for the current event.
 	 * We get the list of modifiers using "get_event_modifiers"
@@ -733,9 +735,9 @@ XpraClient.prototype._keyb_get_modifiers = function(event) {
 	//convert generic modifiers "meta" and "alt" into their x11 name:
 	const modifiers = get_event_modifiers(event);
 	return this.translate_modifiers(modifiers);
-};
+}
 
-XpraClient.prototype.translate_modifiers = function(modifiers) {
+translate_modifiers(modifiers) {
 	/**
 	 * We translate "alt" and "meta" into their keymap name.
 	 * (usually "mod1")
@@ -788,10 +790,10 @@ XpraClient.prototype.translate_modifiers = function(modifiers) {
 	}
 	//this.clog("altgr_state=", this.altgr_state, ", altgr_modifier=", this.altgr_modifier, ", modifiers=", new_modifiers);
 	return new_modifiers;
-};
+}
 
 
-XpraClient.prototype._check_browser_language = function(key_layout) {
+_check_browser_language(key_layout) {
 	/**
 	 * This function may send the new detected keyboard layout.
 	 * (ignoring the keyboard_layout preference)
@@ -834,15 +836,15 @@ XpraClient.prototype._check_browser_language = function(key_layout) {
 		//check again after 100ms minimum
 		this.browser_language_change_embargo_time = now + 100;
 	}
-};
+}
 
 
-XpraClient.prototype._keyb_process = function(pressed, event) {
+_keyb_process(pressed, event) {
 	// MSIE hack
 	return this.do_keyb_process(pressed, event || window.event);
 }
 
-XpraClient.prototype.do_keyb_process = function(pressed, event) {
+do_keyb_process(pressed, event) {
 	if (this.server_readonly) {
 		return true;
 	}
@@ -1044,24 +1046,24 @@ XpraClient.prototype.do_keyb_process = function(pressed, event) {
 		allow_default = true;
 	}
 	return allow_default;
-};
+}
 
 
-XpraClient.prototype._keyb_onkeydown = function(event) {
+_keyb_onkeydown(event) {
 	return this._keyb_process(true, event);
-};
-XpraClient.prototype._keyb_onkeyup = function(event) {
+}
+_keyb_onkeyup(event) {
 	return this._keyb_process(false, event);
-};
+}
 
-XpraClient.prototype._get_keyboard_layout = function() {
+_get_keyboard_layout() {
 	this.debug("keyboard", "_get_keyboard_layout() keyboard_layout=", this.keyboard_layout);
 	if (this.keyboard_layout)
 		return this.keyboard_layout;
 	return Utilities.getKeyboardLayout();
-};
+}
 
-XpraClient.prototype._get_keycodes = function() {
+_get_keycodes() {
 	//keycodes.append((nn(keyval), nn(name), nn(keycode), nn(group), nn(level)))
 	const keycodes = [];
 	let kc;
@@ -1071,13 +1073,13 @@ XpraClient.prototype._get_keycodes = function() {
 	}
 	//show("keycodes="+keycodes.toSource());
 	return keycodes;
-};
+}
 
-XpraClient.prototype._get_desktop_size = function() {
+_get_desktop_size() {
 	return [this.desktop_width, this.desktop_height];
-};
+}
 
-XpraClient.prototype._get_DPI = function() {
+_get_DPI() {
 	"use strict";
 	const dpi_div = document.getElementById("dpi");
 	if (dpi_div != undefined) {
@@ -1090,9 +1092,9 @@ XpraClient.prototype._get_DPI = function() {
 		return (screen.systemXDPI + screen.systemYDPI) / 2;
 	//default:
 	return 96;
-};
+}
 
-XpraClient.prototype._get_screen_sizes = function() {
+_get_screen_sizes() {
 	const dpi = this._get_DPI();
 	const screen_size = [this.container.clientWidth, this.container.clientHeight];
 	const wmm = Math.round(screen_size[0]*25.4/dpi);
@@ -1105,19 +1107,19 @@ XpraClient.prototype._get_screen_sizes = function() {
 			];
 	//just a single screen:
 	return [screen];
-};
+}
 
 
-XpraClient.prototype._update_capabilities = function(appendobj) {
+_update_capabilities(appendobj) {
 	for (const attr in appendobj) {
 		this.capabilities[attr] = appendobj[attr];
 	}
-};
+}
 
 /**
  * Ping
  */
-XpraClient.prototype._check_server_echo = function(ping_sent_time) {
+_check_server_echo(ping_sent_time) {
 	const last = this.server_ok;
 	this.server_ok = this.last_ping_echoed_time >= ping_sent_time;
 	//this.clog("check_server_echo", this.server_ok, "last", last, "last_time", this.last_ping_echoed_time, "this_this", ping_sent_time);
@@ -1132,9 +1134,9 @@ XpraClient.prototype._check_server_echo = function(ping_sent_time) {
 			iwin.set_spinner(this.server_ok);
 		}
 	}
-};
+}
 
-XpraClient.prototype._check_echo_timeout = function(ping_time) {
+_check_echo_timeout(ping_time) {
 	if (this.reconnect_in_progress) {
 		return;
 	}
@@ -1149,26 +1151,26 @@ XpraClient.prototype._check_echo_timeout = function(ping_time) {
 			this.callback_close("server ping timeout, waited "+ this.PING_TIMEOUT +"ms without a response");
 		}
 	}
-};
+}
 
 
-XpraClient.prototype._emit_event = function(event_type) {
+_emit_event(event_type) {
 	const event = document.createEvent("Event");
 	event.initEvent(event_type, true, true);
 	document.dispatchEvent(event);
-};
-XpraClient.prototype.emit_connection_lost = function(event_type) {
+}
+emit_connection_lost(event_type) {
 	this._emit_event("connection-lost");
-};
-XpraClient.prototype.emit_connection_established = function(event_type) {
+}
+emit_connection_established(event_type) {
 	this._emit_event("connection-established");
-};
+}
 
 
 /**
  * Hello
  */
-XpraClient.prototype._send_hello = function(counter) {
+_send_hello(counter) {
 	if (this.decode_worker==null) {
 		counter = (counter || 0);
 		if (counter==0) {
@@ -1188,7 +1190,7 @@ XpraClient.prototype._send_hello = function(counter) {
 	}
 }
 
-XpraClient.prototype.do_send_hello = function(challenge_response, client_salt) {
+do_send_hello(challenge_response, client_salt) {
 	// make the base hello
 	this._make_hello_base();
 	// handle a challenge if we need to
@@ -1224,9 +1226,9 @@ XpraClient.prototype.do_send_hello = function(challenge_response, client_salt) {
 	}
 	// send the packet
 	this.send(["hello", this.capabilities]);
-};
+}
 
-XpraClient.prototype._make_hello_base = function() {
+_make_hello_base() {
 	this.capabilities = {};
 	const digests = ["hmac", "hmac+md5", "xor", "keycloak"];
 	if (typeof forge!=='undefined') {
@@ -1343,9 +1345,9 @@ XpraClient.prototype._make_hello_base = function() {
 	if(this.start_new_session) {
 		this._update_capabilities({"start-new-session" : this.start_new_session});
 	}
-};
+}
 
-XpraClient.prototype._make_hello = function() {
+_make_hello() {
 	let selections;
 	if (navigator.clipboard && navigator.clipboard.readText && navigator.clipboard.writeText) {
 		//we don't need the primary contents,
@@ -1464,24 +1466,24 @@ XpraClient.prototype._make_hello = function() {
 		"file-size-limit"			: 4*1024,
 		"flush"						: true,
 	});
-};
+}
 
 
-XpraClient.prototype.on_first_ui_event = function() {
+on_first_ui_event(){
 	//this hook can be overriden
-};
+}
 
-XpraClient.prototype._new_ui_event = function() {
+_new_ui_event(){
 	if (this.ui_events==0) {
 		this.on_first_ui_event();
 	}
 	this.ui_events++;
-};
+}
 
 /**
  * Mouse handlers
  */
-XpraClient.prototype.getMouse = function(e) {
+getMouse(e) {
 	// get mouse position take into account scroll
 	let mx = e.clientX + jQuery(document).scrollLeft();
 	let my = e.clientY + jQuery(document).scrollTop();
@@ -1515,29 +1517,29 @@ XpraClient.prototype.getMouse = function(e) {
 
 	// We return a simple javascript object (a hash) with x and y defined
 	return {x: mx, y: my, button: mbutton};
-};
+}
 
-XpraClient.prototype.on_mousemove = function(e) {
+on_mousemove(e) {
 	this.do_window_mouse_move(e, null);
-};
+}
 
-XpraClient.prototype.on_mousedown = function(e) {
+on_mousedown(e) {
 	this.do_window_mouse_click(e, null, true);
-};
+}
 
-XpraClient.prototype.on_mouseup = function(e) {
+on_mouseup(e) {
 	this.do_window_mouse_click(e, null, false);
-};
+}
 
-XpraClient.prototype.on_mousescroll = function(e) {
+on_mousescroll(e) {
 	this.do_window_mouse_scroll(e, null);
-};
+}
 
 
-XpraClient.prototype._window_mouse_move = function(ctx, e, window) {
+_window_mouse_move(ctx, e, window) {
 	ctx.do_window_mouse_move(e, window);
-};
-XpraClient.prototype.do_window_mouse_move = function(e, window) {
+}
+do_window_mouse_move(e, window) {
 	if (this.server_readonly || this.mouse_grabbed || !this.connected) {
 		return;
 	}
@@ -1551,19 +1553,19 @@ XpraClient.prototype.do_window_mouse_move = function(e, window) {
 		wid = window.wid;
 	}
 	this.send(["pointer-position", wid, [x, y], modifiers, buttons]);
-};
+}
 
-XpraClient.prototype._window_mouse_down = function(ctx, e, window) {
+_window_mouse_down(ctx, e, window) {
 	ctx.mousedown_event = e;
 	ctx.do_window_mouse_click(e, window, true);
-};
+}
 
-XpraClient.prototype._window_mouse_up = function(ctx, e, window) {
+_window_mouse_up(ctx, e, window) {
 	//this.mousedown_event = null;
 	ctx.do_window_mouse_click(e, window, false);
-};
+}
 
-XpraClient.prototype.release_buttons = function(e, window) {
+release_buttons(e, window) {
 	const mouse = this.getMouse(e),
 		x = Math.round(mouse.x),
 		y = Math.round(mouse.y),
@@ -1575,7 +1577,7 @@ XpraClient.prototype.release_buttons = function(e, window) {
 	}
 }
 
-XpraClient.prototype.do_window_mouse_click = function(e, window, pressed) {
+do_window_mouse_click(e, window, pressed) {
 	if (this.server_readonly || this.mouse_grabbed || !this.connected) {
 		return;
 	}
@@ -1621,7 +1623,7 @@ XpraClient.prototype.do_window_mouse_click = function(e, window, pressed) {
 	}, send_delay);
 }
 
-XpraClient.prototype.send_button_action = function(wid, button, pressed, x, y, modifiers) {
+send_button_action(wid, button, pressed, x, y, modifiers) {
 	const buttons = [];
 	if (pressed) {
 		this.buttons_pressed.add(button);
@@ -1630,10 +1632,10 @@ XpraClient.prototype.send_button_action = function(wid, button, pressed, x, y, m
 		this.buttons_pressed.delete(button);
 	}
 	this.send(["button-action", wid, button, pressed, [x, y], modifiers, buttons]);
-};
+}
 
 // Source: https://deepmikoto.com/coding/1--javascript-detect-mouse-wheel-direction
-XpraClient.prototype.detect_vertical_scroll_direction = function(e, window) {
+detect_vertical_scroll_direction(e, window) {
 	if ( !e ) {
 		//IE? In any case, detection won't work:
 		return 0;
@@ -1654,13 +1656,13 @@ XpraClient.prototype.detect_vertical_scroll_direction = function(e, window) {
 		return 1;
 	}
 	return 0;
-};
+}
 
-XpraClient.prototype._window_mouse_scroll = function(ctx, e, window) {
+_window_mouse_scroll(ctx, e, window) {
 	ctx.do_window_mouse_scroll(e, window);
-};
+}
 
-XpraClient.prototype.do_window_mouse_scroll = function(e, window) {
+do_window_mouse_scroll(e, window) {
 	if (this.server_readonly || this.mouse_grabbed || !this.connected) {
 		return;
 	}
@@ -1732,9 +1734,9 @@ XpraClient.prototype.do_window_mouse_scroll = function(e, window) {
 	//store left overs:
 	this.wheel_delta_x = (this.wheel_delta_x>=0) ? wx : -wx;
 	this.wheel_delta_y = (this.wheel_delta_y>=0) ? wy : -wy;
-};
+}
 
-XpraClient.prototype.init_clipboard = function() {
+init_clipboard() {
 	window.addEventListener("paste", (e) => {
 		let clipboardData = (e.originalEvent || e).clipboardData;
 		//IE: must use window.clipboardData because the event clipboardData is null!
@@ -1797,7 +1799,7 @@ XpraClient.prototype.init_clipboard = function() {
 	$("#screen").keypress(() => this.may_set_clipboard());
 }
 
-XpraClient.prototype.may_set_clipboard = function(e) {
+may_set_clipboard(e) {
 	this.cdebug("clipboard", "pending=", this.clipboard_pending, "buffer=", this.clipboard_buffer);
 	if (!this.clipboard_pending) {
 		return;
@@ -1843,7 +1845,7 @@ XpraClient.prototype.may_set_clipboard = function(e) {
 }
 
 
-XpraClient.prototype._poll_clipboard = function(e) {
+_poll_clipboard(e) {
 	if (this.clipboard_enabled === false) {
 		return;
 	}
@@ -1885,9 +1887,9 @@ XpraClient.prototype._poll_clipboard = function(e) {
 	this.send_clipboard_token(clipboard_buffer);
 	this.clipboard_delayed_event_time = performance.now()+CLIPBOARD_EVENT_DELAY;
 	return true;
-};
+}
 
-XpraClient.prototype.read_clipboard_text = function() {
+read_clipboard_text() {
 	if (this.clipboard_enabled === false) {
 		return;
 	}
@@ -1915,7 +1917,7 @@ XpraClient.prototype.read_clipboard_text = function() {
 /**
  * Focus
  */
-XpraClient.prototype._window_set_focus = function(win) {
+_window_set_focus(win) {
 	const client = win.client;
 	if (win==null || client.server_readonly || !client.connected) {
 		return;
@@ -1976,12 +1978,12 @@ XpraClient.prototype._window_set_focus = function(win) {
 		iwin.update_zindex();
 	}
 	//client._set_favicon(wid);
-};
+}
 
 /*
  * detect DESKTOP-type window from settings
  */
-XpraClient.prototype.is_window_desktop = function(win) {
+is_window_desktop(win) {
 	if (default_settings !== undefined && default_settings.auto_fullscreen_desktop_class !== undefined && default_settings.auto_fullscreen_desktop_class.length > 0) {
 		var auto_fullscreen_desktop_class = default_settings.auto_fullscreen_desktop_class;
 		if (win.windowtype == "DESKTOP" && win.metadata['class-instance'].includes(auto_fullscreen_desktop_class)) {
@@ -1994,7 +1996,7 @@ XpraClient.prototype.is_window_desktop = function(win) {
 /*
  * Show/Hide the window preview list
  */
-XpraClient.prototype.toggle_window_preview = function(init_cb) {
+toggle_window_preview(init_cb) {
 	const preview_element = $('#window_preview');
 
 	preview_element.on('init', (e, slick) => {
@@ -2110,7 +2112,7 @@ XpraClient.prototype.toggle_window_preview = function(init_cb) {
 /*
  * Handle closing of window list if clickout outside of area.
  */
-XpraClient.prototype._handle_window_list_blur = function(e) {
+_handle_window_list_blur(e) {
 	if ($('#window_preview').is(":visible")) {
 		if (e.target.id === "window_preview") {
 			return;
@@ -2133,27 +2135,27 @@ XpraClient.prototype._handle_window_list_blur = function(e) {
  * packet processing functions start here
  */
 
-XpraClient.prototype.on_open = function() {
+on_open() {
 	//this hook can be overriden
-};
+}
 
-XpraClient.prototype._process_open = function() {
+_process_open() {
 	// call the send_hello function
 	this.on_connection_progress("WebSocket connection established", "", 80);
 	// wait timeout seconds for a hello, then bomb
 	this.schedule_hello_timer();
 	this._send_hello();
 	this.on_open();
-};
+}
 
-XpraClient.prototype.schedule_hello_timer = function() {
+schedule_hello_timer() {
 	this.cancel_hello_timer();
 	this.hello_timer = setTimeout(() => {
 		this.disconnect_reason = "Did not receive hello before timeout reached, not an Xpra server?";
 		this.close();
 	}, this.HELLO_TIMEOUT);
 }
-XpraClient.prototype.cancel_hello_timer = function() {
+cancel_hello_timer() {
 	if (this.hello_timer) {
 		clearTimeout(this.hello_timer);
 		this.hello_timer = null;
@@ -2161,7 +2163,7 @@ XpraClient.prototype.cancel_hello_timer = function() {
 }
 
 
-XpraClient.prototype._process_error = function(packet) {
+_process_error(packet) {
 	const code = parseInt(packet[2]);
 	let reconnect = this.reconnect || this.reconnect_attempt<this.reconnect_count;
 	if (reconnect && code>=0) {
@@ -2182,10 +2184,10 @@ XpraClient.prototype._process_error = function(packet) {
 		// call the client's close callback
 		this.callback_close(this.disconnect_reason);
 	}
-};
+}
 
 
-XpraClient.prototype.packet_disconnect_reason = function(packet) {
+packet_disconnect_reason(packet) {
 	if (!this.disconnect_reason && packet[1]) {
 		const code = packet[2];
 		if (!this.connected && [0, 1006, 1008, 1010, 1014, 1015].indexOf(code)>=0) {
@@ -2203,7 +2205,7 @@ XpraClient.prototype.packet_disconnect_reason = function(packet) {
 }
 
 
-XpraClient.prototype.do_reconnect = function() {
+do_reconnect() {
 	//try again:
 	this.reconnect_in_progress = true;
 	const protocol = this.protocol;
@@ -2224,9 +2226,9 @@ XpraClient.prototype.do_reconnect = function() {
 			this.reconnect_in_progress = false;
 		}
 	}, this.reconnect_delay);
-};
+}
 
-XpraClient.prototype._process_close = function(packet) {
+_process_close(packet) {
 	this.clog("websocket closed: ", packet[1], "reason: ", this.disconnect_reason,
 			", reconnect: ", this.reconnect, ", reconnect attempt: ", this.reconnect_attempt);
 	if (this.reconnect_in_progress) {
@@ -2241,9 +2243,9 @@ XpraClient.prototype._process_close = function(packet) {
 	else {
 		this.close();
 	}
-};
+}
 
-XpraClient.prototype.close = function() {
+close() {
 	this.emit_connection_lost();
 	this.close_windows();
 	this.close_audio();
@@ -2251,9 +2253,9 @@ XpraClient.prototype.close = function() {
 	this.close_protocol();
 	// call the client's close callback
 	this.callback_close(this.disconnect_reason);
-};
+}
 
-XpraClient.prototype._process_disconnect = function(packet) {
+_process_disconnect(packet) {
 	this.debug("main", "disconnect reason:", packet[1]);
 	if (this.reconnect_in_progress) {
 		return;
@@ -2263,23 +2265,23 @@ XpraClient.prototype._process_disconnect = function(packet) {
 	this.close();
 	// call the client's close callback
 	this.callback_close(this.disconnect_reason);
-};
+}
 
-XpraClient.prototype._process_startup_complete = function(packet) {
+_process_startup_complete(packet) {
 	this.log("startup complete");
 	this.emit_connection_established();
-};
+}
 
-XpraClient.prototype._connection_change = function(e) {
+_connection_change(e) {
 	const ci = Utilities.getConnectionInfo();
 	this.clog("connection status - change event=", e, ", connection info=", ci, "tell server:", this.server_connection_data);
 	if (ci && this.server_connection_data) {
 		this.send(["connection-data", ci]);
 	}
-};
+}
 
 
-XpraClient.prototype._process_hello = function(packet) {
+_process_hello(packet) {
 	//show("process_hello("+packet+")");
 	this.cancel_hello_timer();
 	const hello = packet[1];
@@ -2474,9 +2476,7 @@ XpraClient.prototype._process_hello = function(packet) {
 	}
 	this.server_connection_data = hello["connection-data"];
 	if (navigator.hasOwnProperty("connection")) {
-		navigator.connection.onchange = function() {
-			this._connection_change();
-		};
+		navigator.connection.onchange = this._connection_change;
 		this._connection_change();
 	}
 
@@ -2494,15 +2494,15 @@ XpraClient.prototype._process_hello = function(packet) {
 	this.on_connection_progress("Session started", "", 100);
 	this.on_connect();
 	this.connected = true;
-};
+}
 
-XpraClient.prototype._process_encodings = function(packet) {
+_process_encodings(packet) {
 	const caps = packet[1];
 	this.log("update encodings:", Object.keys(caps));
-};
+}
 
 
-XpraClient.prototype.process_xdg_menu = function() {
+process_xdg_menu() {
 	this.log("received xdg start menu data");
 	let key;
 	//remove current menu:
@@ -2574,10 +2574,10 @@ XpraClient.prototype.process_xdg_menu = function() {
 		li.appendChild(ul);
 		startmenu.appendChild(li);
 	}
-};
+}
 
 
-XpraClient.prototype._process_setting_change = function(packet) {
+_process_setting_change(packet) {
 	const setting = packet[1],
 		value = packet[2];
 	if (setting=="xdg-menu" && SHOW_START_MENU) {
@@ -2587,9 +2587,9 @@ XpraClient.prototype._process_setting_change = function(packet) {
 			$('#startmenuentry').show();
 		}
 	}
-};
+}
 
-XpraClient.prototype.xdg_image = function(icon_data, icon_type) {
+xdg_image(icon_data, icon_type) {
 	const img = new Image();
 	if (typeof icon_data !== 'undefined'){
 		if (typeof icon_data === 'string') {
@@ -2606,15 +2606,15 @@ XpraClient.prototype.xdg_image = function(icon_data, icon_type) {
 	img.height = 24;
 	img.width = 24;
 	return img;
-};
+}
 
 
 
-XpraClient.prototype.on_connect = function() {
+on_connect(){
 	//this hook can be overriden
-};
+}
 
-XpraClient.prototype._process_challenge = function(packet) {
+_process_challenge(packet) {
 	if(this.encryption) {
 		if(packet.length >=3) {
 			this.cipher_out_caps = packet[2];
@@ -2656,7 +2656,7 @@ XpraClient.prototype._process_challenge = function(packet) {
 	this.callback_close("No password specified for authentication challenge");
 }
 
-XpraClient.prototype.do_process_challenge = function(digest, server_salt, salt_digest, password) {
+do_process_challenge(digest, server_salt, salt_digest, password) {
 	this.schedule_hello_timer();
 	let client_salt = null;
 	let l = server_salt.length;
@@ -2692,9 +2692,9 @@ XpraClient.prototype.do_process_challenge = function(digest, server_salt, salt_d
 	else {
 		this.callback_close("server requested an unsupported digest " + digest);
 	}
-};
+}
 
-XpraClient.prototype._gendigest = function(digest, password, salt) {
+_gendigest(digest, password, salt) {
 	if (digest.startsWith("hmac")) {
 		let hash = "md5";
 		if (digest.indexOf("+")>0) {
@@ -2711,10 +2711,10 @@ XpraClient.prototype._gendigest = function(digest, password, salt) {
 	} else {
 		return null;
 	}
-};
+}
 
 
-XpraClient.prototype._send_ping = function() {
+_send_ping() {
 	if (this.reconnect_in_progress || !this.connected) {
 		return;
 	}
@@ -2725,9 +2725,9 @@ XpraClient.prototype._send_ping = function() {
 	// add timeout to detect temporary ping miss for spinners
 	const wait = 2000;
 	this.ping_grace_timer = setTimeout(() => this._check_server_echo(now_ms), wait);
-};
+}
 
-XpraClient.prototype._process_ping = function(packet) {
+_process_ping(packet) {
 	const echotime = packet[1];
 	this.last_ping_server_time = echotime;
 	if (packet.length>2) {
@@ -2741,9 +2741,9 @@ XpraClient.prototype._process_ping = function(packet) {
 	this.last_ping_local_time = new Date().getTime();
 	const l1 = 0, l2=0, l3=0;
 	this.send(["ping_echo", echotime, l1, l2, l3, 0, sid]);
-};
+}
 
-XpraClient.prototype._process_ping_echo = function(packet) {
+_process_ping_echo(packet) {
 	this.last_ping_echoed_time = packet[1];
 	const l1 = packet[2],
 		l2 = packet[3],
@@ -2753,29 +2753,28 @@ XpraClient.prototype._process_ping_echo = function(packet) {
 	this.server_load = [l1/1000.0, l2/1000.0, l3/1000.0];
 	// make sure server goes OK immediately instead of waiting for next timeout
 	this._check_server_echo(0);
-};
+}
 
 
 /**
  * Info
  */
-XpraClient.prototype.start_info_timer = function() {
+start_info_timer() {
 	if (this.info_timer==null) {
 		this.info_timer = setInterval(() => {
 			if (this.info_timer!=null) {
 				this.send_info_request();
 			}
-			return true;
 		}, this.INFO_FREQUENCY);
 	}
-};
-XpraClient.prototype.send_info_request = function() {
+}
+send_info_request() {
 	if (!this.info_request_pending) {
 		this.send(["info-request", [this.uuid], [], []]);
 		this.info_request_pending = true;
 	}
-};
-XpraClient.prototype._process_info_response = function(packet) {
+}
+_process_info_response = function(packet) {
 	this.info_request_pending = false;
 	this.server_last_info = packet[1];
 	this.debug("network", "info-response:", this.server_last_info);
@@ -2783,21 +2782,21 @@ XpraClient.prototype._process_info_response = function(packet) {
 	event.initEvent('info-response', true, true);
 	event.data = this.server_last_info;
 	document.dispatchEvent(event);
-};
-XpraClient.prototype.stop_info_timer = function() {
+}
+stop_info_timer() {
 	if (this.info_timer) {
 		clearTimeout(this.info_timer);
 		this.info_timer = null;
 		this.info_request_pending = false;
 	}
-};
+}
 
 
 /**
  * System Tray forwarding
  */
 
-XpraClient.prototype.position_float_menu = function() {
+position_float_menu() {
 	const float_menu_element = $('#float_menu');
 	var toolbar_width = float_menu_element.width();
 	var left = float_menu_element.offset().left || 0;
@@ -2818,7 +2817,7 @@ XpraClient.prototype.position_float_menu = function() {
 	float_menu_element.offset({ top: top, left: left });
 }
 
-XpraClient.prototype._process_new_tray = function(packet) {
+_process_new_tray(packet) {
 	const wid = packet[1];
 	//let w = packet[2];
 	//let h = packet[3];
@@ -2861,8 +2860,8 @@ XpraClient.prototype._process_new_tray = function(packet) {
 			this.scale
 	);
 	this.send_tray_configure(wid);
-};
-XpraClient.prototype.send_tray_configure = function(wid) {
+}
+send_tray_configure(wid) {
 	const div = jQuery("#" + String(wid));
 	const x = Math.round(div.offset().left);
 	const y = Math.round(div.offset().top);
@@ -2870,18 +2869,18 @@ XpraClient.prototype.send_tray_configure = function(wid) {
 		h = float_menu_item_size;
 	this.clog("tray", wid, "position:", x, y);
 	this.send(["configure-window", Number(wid), x, y, w, h, {}]);
-};
-XpraClient.prototype._tray_geometry_changed = function(win) {
+}
+_tray_geometry_changed(win) {
 	win.client.debug("tray", "tray geometry changed (ignored)");
-};
-XpraClient.prototype._tray_set_focus = function(win) {
+}
+_tray_set_focus(win) {
 	win.client.debug("tray", "tray set focus (ignored)");
-};
-XpraClient.prototype._tray_closed = function(win) {
+}
+_tray_closed(win) {
 	win.client.debug("tray", "tray closed (ignored)");
-};
+}
 
-XpraClient.prototype.reconfigure_all_trays = function() {
+reconfigure_all_trays() {
 	const float_menu = document.getElementById("float_menu");
 	float_menu_width = (float_menu_item_size*4) + float_menu_padding;
 	for (const twid in this.id_to_window) {
@@ -2897,10 +2896,10 @@ XpraClient.prototype.reconfigure_all_trays = function() {
 		float_menu.style.width = float_menu_width;
 		this.position_float_menu();
 	}
-};
+}
 
 
-XpraClient.prototype.suspend = function() {
+suspend() {
 	const window_ids = Object.keys(client.id_to_window).map(Number);
 	this.send(["suspend", true, window_ids]);
 	for (const i in this.id_to_window) {
@@ -2909,7 +2908,7 @@ XpraClient.prototype.suspend = function() {
 	}
 }
 
-XpraClient.prototype.resume = function() {
+resume() {
 	const window_ids = Object.keys(client.id_to_window).map(Number);
 	for (const i in this.id_to_window) {
 		let iwin = this.id_to_window[i];
@@ -2924,7 +2923,7 @@ XpraClient.prototype.resume = function() {
 /**
  * Windows
  */
-XpraClient.prototype._new_window = function(wid, x, y, w, h, metadata, override_redirect, client_properties) {
+_new_window(wid, x, y, w, h, metadata, override_redirect, client_properties) {
 	// each window needs their own DIV that contains a canvas
 	const mydiv = document.createElement("div");
 	mydiv.id = String(wid);
@@ -2956,9 +2955,9 @@ XpraClient.prototype._new_window = function(wid, x, y, w, h, metadata, override_
 		this.send(["map-window", wid, geom.x, geom.y, geom.w, geom.h, win.client_properties]);
 		this._window_set_focus(win);
 	}
-};
+}
 
-XpraClient.prototype._new_window_common = function(packet, override_redirect) {
+_new_window_common(packet, override_redirect) {
 	const wid = packet[1];
 	let x = packet[2];
 	let y = packet[3];
@@ -2994,43 +2993,43 @@ XpraClient.prototype._new_window_common = function(packet, override_redirect) {
 	}
 	this._new_window(wid, x, y, w, h, metadata, override_redirect, client_properties);
 	this._new_ui_event();
-};
+}
 
-XpraClient.prototype._window_closed = function(win) {
+_window_closed(win) {
 	win.client.send(["close-window", win.wid]);
-};
+}
 
-XpraClient.prototype._window_geometry_changed = function(win) {
+_window_geometry_changed(win) {
 	// window callbacks are called from the XpraWindow function context
 	// so use win.client instead of `this` to refer to the client
 	win.client.send_configure_window(win, {}, false);
-};
+}
 
-XpraClient.prototype.send_configure_window = function(win, state, skip_geometry) {
+send_configure_window(win, state, skip_geometry) {
 	const geom = win.get_internal_geometry();
 	const wid = win.wid;
 	let packet = ["configure-window", wid, geom.x, geom.y, geom.w, geom.h, win.client_properties, 0, state, skip_geometry];
 	this.send(packet);
-};
+}
 
-XpraClient.prototype._process_new_window = function(packet) {
+_process_new_window(packet) {
 	this._new_window_common(packet, false);
-};
+}
 
-XpraClient.prototype._process_new_override_redirect = function(packet) {
+_process_new_override_redirect(packet) {
 	this._new_window_common(packet, true);
-};
+}
 
-XpraClient.prototype._process_window_metadata = function(packet) {
+_process_window_metadata(packet) {
 	const wid = packet[1],
 		metadata = packet[2],
 		win = this.id_to_window[wid];
 	if (win!=null) {
 		win.update_metadata(metadata);
 	}
-};
+}
 
-XpraClient.prototype._process_initiate_moveresize = function(packet) {
+_process_initiate_moveresize(packet) {
 	const wid = packet[1],
 		win = this.id_to_window[wid];
 	if (win!=null) {
@@ -3041,9 +3040,9 @@ XpraClient.prototype._process_initiate_moveresize = function(packet) {
 			source_indication = packet[6];
 		win.initiate_moveresize(this.mousedown_event, x_root, y_root, direction, button, source_indication);
 	}
-};
+}
 
-XpraClient.prototype._process_pointer_position = function(packet) {
+_process_pointer_position(packet) {
 	const wid = packet[1];
 	let x = packet[2],
 		y = packet[3];
@@ -3080,13 +3079,13 @@ XpraClient.prototype._process_pointer_position = function(packet) {
 	style.left = x+"px";
 	style.top = y+"px";
 	style.display = "inline";
-};
+}
 
-XpraClient.prototype.on_last_window = function() {
+on_last_window() {
 	//this hook can be overriden
-};
+}
 
-XpraClient.prototype._process_lost_window = function(packet) {
+_process_lost_window(packet) {
 	const wid = packet[1];
 	const win = this.id_to_window[wid];
 	if(win && !win.override_redirect && win.metadata["window-type"]=="NORMAL"){
@@ -3118,7 +3117,7 @@ XpraClient.prototype._process_lost_window = function(packet) {
 }
 
 
-XpraClient.prototype.auto_focus = function() {
+auto_focus() {
 	let highest_window = null;
 	let highest_stacking = -1;
 	for (const i in this.id_to_window) {
@@ -3138,15 +3137,15 @@ XpraClient.prototype.auto_focus = function() {
 }
 
 
-XpraClient.prototype._process_raise_window = function(packet) {
+_process_raise_window(packet) {
 	const wid = packet[1];
 	const win = this.id_to_window[wid];
 	if (win!=null) {
 		this._window_set_focus(win);
 	}
-};
+}
 
-XpraClient.prototype._process_window_resized = function(packet) {
+_process_window_resized(packet) {
 	const wid = packet[1];
 	const width = packet[2];
 	const height = packet[3];
@@ -3154,9 +3153,9 @@ XpraClient.prototype._process_window_resized = function(packet) {
 	if (win!=null) {
 		win.resize(width, height);
 	}
-};
+}
 
-XpraClient.prototype._process_window_move_resize = function(packet) {
+_process_window_move_resize(packet) {
 	const wid = packet[1];
 	const x = packet[2];
 	const y = packet[3];
@@ -3166,9 +3165,9 @@ XpraClient.prototype._process_window_move_resize = function(packet) {
 	if (win!=null) {
 		win.move_resize(x, y, width, height);
 	}
-};
+}
 
-XpraClient.prototype._process_configure_override_redirect = function(packet) {
+_process_configure_override_redirect(packet) {
 	const wid = packet[1];
 	const x = packet[2];
 	const y = packet[3];
@@ -3178,15 +3177,15 @@ XpraClient.prototype._process_configure_override_redirect = function(packet) {
 	if (win!=null) {
 		win.move_resize(x, y, width, height);
 	}
-};
+}
 
-XpraClient.prototype._process_desktop_size = function(packet) {
+_process_desktop_size(packet) {
 	//root_w, root_h, max_w, max_h = packet[1:5]
 	//we don't use this yet,
 	//we could use this to clamp the windows to a certain area
-};
+}
 
-XpraClient.prototype._process_bell = function(packet) {
+_process_bell(packet) {
 	const percent = packet[3];
 	const pitch = packet[4];
 	const duration = packet[5];
@@ -3204,12 +3203,12 @@ XpraClient.prototype._process_bell = function(packet) {
 		const snd = new Audio("data:audio/wav;base64,//uQRAAAAWMSLwUIYAAsYkXgoQwAEaYLWfkWgAI0wWs/ItAAAGDgYtAgAyN+QWaAAihwMWm4G8QQRDiMcCBcH3Cc+CDv/7xA4Tvh9Rz/y8QADBwMWgQAZG/ILNAARQ4GLTcDeIIIhxGOBAuD7hOfBB3/94gcJ3w+o5/5eIAIAAAVwWgQAVQ2ORaIQwEMAJiDg95G4nQL7mQVWI6GwRcfsZAcsKkJvxgxEjzFUgfHoSQ9Qq7KNwqHwuB13MA4a1q/DmBrHgPcmjiGoh//EwC5nGPEmS4RcfkVKOhJf+WOgoxJclFz3kgn//dBA+ya1GhurNn8zb//9NNutNuhz31f////9vt///z+IdAEAAAK4LQIAKobHItEIYCGAExBwe8jcToF9zIKrEdDYIuP2MgOWFSE34wYiR5iqQPj0JIeoVdlG4VD4XA67mAcNa1fhzA1jwHuTRxDUQ//iYBczjHiTJcIuPyKlHQkv/LHQUYkuSi57yQT//uggfZNajQ3Vmz+Zt//+mm3Wm3Q576v////+32///5/EOgAAADVghQAAAAA//uQZAUAB1WI0PZugAAAAAoQwAAAEk3nRd2qAAAAACiDgAAAAAAABCqEEQRLCgwpBGMlJkIz8jKhGvj4k6jzRnqasNKIeoh5gI7BJaC1A1AoNBjJgbyApVS4IDlZgDU5WUAxEKDNmmALHzZp0Fkz1FMTmGFl1FMEyodIavcCAUHDWrKAIA4aa2oCgILEBupZgHvAhEBcZ6joQBxS76AgccrFlczBvKLC0QI2cBoCFvfTDAo7eoOQInqDPBtvrDEZBNYN5xwNwxQRfw8ZQ5wQVLvO8OYU+mHvFLlDh05Mdg7BT6YrRPpCBznMB2r//xKJjyyOh+cImr2/4doscwD6neZjuZR4AgAABYAAAABy1xcdQtxYBYYZdifkUDgzzXaXn98Z0oi9ILU5mBjFANmRwlVJ3/6jYDAmxaiDG3/6xjQQCCKkRb/6kg/wW+kSJ5//rLobkLSiKmqP/0ikJuDaSaSf/6JiLYLEYnW/+kXg1WRVJL/9EmQ1YZIsv/6Qzwy5qk7/+tEU0nkls3/zIUMPKNX/6yZLf+kFgAfgGyLFAUwY//uQZAUABcd5UiNPVXAAAApAAAAAE0VZQKw9ISAAACgAAAAAVQIygIElVrFkBS+Jhi+EAuu+lKAkYUEIsmEAEoMeDmCETMvfSHTGkF5RWH7kz/ESHWPAq/kcCRhqBtMdokPdM7vil7RG98A2sc7zO6ZvTdM7pmOUAZTnJW+NXxqmd41dqJ6mLTXxrPpnV8avaIf5SvL7pndPvPpndJR9Kuu8fePvuiuhorgWjp7Mf/PRjxcFCPDkW31srioCExivv9lcwKEaHsf/7ow2Fl1T/9RkXgEhYElAoCLFtMArxwivDJJ+bR1HTKJdlEoTELCIqgEwVGSQ+hIm0NbK8WXcTEI0UPoa2NbG4y2K00JEWbZavJXkYaqo9CRHS55FcZTjKEk3NKoCYUnSQ0rWxrZbFKbKIhOKPZe1cJKzZSaQrIyULHDZmV5K4xySsDRKWOruanGtjLJXFEmwaIbDLX0hIPBUQPVFVkQkDoUNfSoDgQGKPekoxeGzA4DUvnn4bxzcZrtJyipKfPNy5w+9lnXwgqsiyHNeSVpemw4bWb9psYeq//uQZBoABQt4yMVxYAIAAAkQoAAAHvYpL5m6AAgAACXDAAAAD59jblTirQe9upFsmZbpMudy7Lz1X1DYsxOOSWpfPqNX2WqktK0DMvuGwlbNj44TleLPQ+Gsfb+GOWOKJoIrWb3cIMeeON6lz2umTqMXV8Mj30yWPpjoSa9ujK8SyeJP5y5mOW1D6hvLepeveEAEDo0mgCRClOEgANv3B9a6fikgUSu/DmAMATrGx7nng5p5iimPNZsfQLYB2sDLIkzRKZOHGAaUyDcpFBSLG9MCQALgAIgQs2YunOszLSAyQYPVC2YdGGeHD2dTdJk1pAHGAWDjnkcLKFymS3RQZTInzySoBwMG0QueC3gMsCEYxUqlrcxK6k1LQQcsmyYeQPdC2YfuGPASCBkcVMQQqpVJshui1tkXQJQV0OXGAZMXSOEEBRirXbVRQW7ugq7IM7rPWSZyDlM3IuNEkxzCOJ0ny2ThNkyRai1b6ev//3dzNGzNb//4uAvHT5sURcZCFcuKLhOFs8mLAAEAt4UWAAIABAAAAAB4qbHo0tIjVkUU//uQZAwABfSFz3ZqQAAAAAngwAAAE1HjMp2qAAAAACZDgAAAD5UkTE1UgZEUExqYynN1qZvqIOREEFmBcJQkwdxiFtw0qEOkGYfRDifBui9MQg4QAHAqWtAWHoCxu1Yf4VfWLPIM2mHDFsbQEVGwyqQoQcwnfHeIkNt9YnkiaS1oizycqJrx4KOQjahZxWbcZgztj2c49nKmkId44S71j0c8eV9yDK6uPRzx5X18eDvjvQ6yKo9ZSS6l//8elePK/Lf//IInrOF/FvDoADYAGBMGb7FtErm5MXMlmPAJQVgWta7Zx2go+8xJ0UiCb8LHHdftWyLJE0QIAIsI+UbXu67dZMjmgDGCGl1H+vpF4NSDckSIkk7Vd+sxEhBQMRU8j/12UIRhzSaUdQ+rQU5kGeFxm+hb1oh6pWWmv3uvmReDl0UnvtapVaIzo1jZbf/pD6ElLqSX+rUmOQNpJFa/r+sa4e/pBlAABoAAAAA3CUgShLdGIxsY7AUABPRrgCABdDuQ5GC7DqPQCgbbJUAoRSUj+NIEig0YfyWUho1VBBBA//uQZB4ABZx5zfMakeAAAAmwAAAAF5F3P0w9GtAAACfAAAAAwLhMDmAYWMgVEG1U0FIGCBgXBXAtfMH10000EEEEEECUBYln03TTTdNBDZopopYvrTTdNa325mImNg3TTPV9q3pmY0xoO6bv3r00y+IDGid/9aaaZTGMuj9mpu9Mpio1dXrr5HERTZSmqU36A3CumzN/9Robv/Xx4v9ijkSRSNLQhAWumap82WRSBUqXStV/YcS+XVLnSS+WLDroqArFkMEsAS+eWmrUzrO0oEmE40RlMZ5+ODIkAyKAGUwZ3mVKmcamcJnMW26MRPgUw6j+LkhyHGVGYjSUUKNpuJUQoOIAyDvEyG8S5yfK6dhZc0Tx1KI/gviKL6qvvFs1+bWtaz58uUNnryq6kt5RzOCkPWlVqVX2a/EEBUdU1KrXLf40GoiiFXK///qpoiDXrOgqDR38JB0bw7SoL+ZB9o1RCkQjQ2CBYZKd/+VJxZRRZlqSkKiws0WFxUyCwsKiMy7hUVFhIaCrNQsKkTIsLivwKKigsj8XYlwt/WKi2N4d//uQRCSAAjURNIHpMZBGYiaQPSYyAAABLAAAAAAAACWAAAAApUF/Mg+0aohSIRobBAsMlO//Kk4soosy1JSFRYWaLC4qZBYWFRGZdwqKiwkNBVmoWFSJkWFxX4FFRQWR+LsS4W/rFRb/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////VEFHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAU291bmRib3kuZGUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMjAwNGh0dHA6Ly93d3cuc291bmRib3kuZGUAAAAAAAAAACU=");
 		snd.play();
 	}
-};
+}
 
 /**
  * Notifications
  */
-XpraClient.prototype._process_notify_show = function(packet) {
+_process_notify_show(packet) {
 	//TODO: add UI switch to disable notifications
 	//unused:
 	//const dbus_id = packet[1];
@@ -3249,13 +3248,9 @@ XpraClient.prototype._process_notify_show = function(packet) {
 			}
 		}*/
 		const notification = new Notification(summary, { body: body, icon: icon_url });
-		notification.onclose = function() {
-			const reason = 2;	//closed by the user - best guess...
-			ctx.send(["notification-close", nid, reason, ""]);
-		};
-		notification.onclick = function() {
-			ctx.log("user clicked on notification", nid);
-		};
+		const reason = 2;	//closed by the user - best guess...
+		notification.onclose = () => ctx.send(["notification-close", nid, reason, ""]);
+		notification.onclick = () => ctx.log("user clicked on notification", nid);
 	}
 
 	if ("Notification" in window && actions.length==0) {
@@ -3284,27 +3279,27 @@ XpraClient.prototype._process_notify_show = function(packet) {
 				});
 	}
 	ctx._new_ui_event();
-};
+}
 
-XpraClient.prototype._process_notify_close = function(packet) {
+_process_notify_close(packet) {
 	const nid = packet[1];
 	if(window.closeNotification) {
 		window.closeNotification(nid);
 	}
-};
+}
 
 
 /**
  * Cursors
  */
-XpraClient.prototype.reset_cursor = function() {
+reset_cursor() {
 	for (const wid in this.id_to_window) {
 		const window = this.id_to_window[wid];
 		window.reset_cursor();
 	}
-};
+}
 
-XpraClient.prototype._process_cursor = function(packet) {
+_process_cursor(packet) {
 	if (packet.length<9) {
 		this.reset_cursor();
 		return;
@@ -3324,9 +3319,9 @@ XpraClient.prototype._process_cursor = function(packet) {
 		const window = this.id_to_window[wid];
 		window.set_cursor(encoding, w, h, xhot, yhot, img_data);
 	}
-};
+}
 
-XpraClient.prototype._process_window_icon = function(packet) {
+_process_window_icon(packet) {
 	const wid = packet[1];
 	const w = packet[2];
 	const h = packet[3];
@@ -3341,12 +3336,12 @@ XpraClient.prototype._process_window_icon = function(packet) {
 			jQuery("#favicon").attr("href", src);
 		}
 	}
-};
+}
 
 /**
  * Window Painting
  */
-XpraClient.prototype._process_draw = function(packet) {
+_process_draw(packet) {
 	//ensure that the pixel data is in a byte array:
 	const coding = Utilities.s(packet[6]);
 	let img_data = packet[7];
@@ -3369,7 +3364,7 @@ XpraClient.prototype._process_draw = function(packet) {
 	}
 }
 
-XpraClient.prototype._process_eos = function(packet) {
+_process_eos(packet) {
 	this.do_process_draw(packet, 0);
 	const wid = packet[1];
 	if (this.decode_worker) {
@@ -3378,8 +3373,7 @@ XpraClient.prototype._process_eos = function(packet) {
 }
 
 
-XpraClient.prototype.request_redraw = function(win) {
-
+request_redraw(win) {
 	if (document.hidden) {
 		this.debug("draw", "not redrawing, document.hidden=", document.hidden);
 		return;
@@ -3407,9 +3401,9 @@ XpraClient.prototype.request_redraw = function(win) {
 	// schedule a screen refresh if one is not already due:
 	this.draw_pending = performance.now();
 	window.requestAnimationFrame(() => {this.draw_pending_list()});
-};
+}
 
-XpraClient.prototype.draw_pending_list = function() {
+draw_pending_list() {
 	this.debug("draw", "animation frame:", this.pending_redraw.length,
 		"windows to paint, processing delay", performance.now()-this.draw_pending, "ms");
 	this.draw_pending = 0;
@@ -3421,7 +3415,7 @@ XpraClient.prototype.draw_pending_list = function() {
 }
 
 
-XpraClient.prototype.do_send_damage_sequence = function(packet_sequence, wid, width, height, decode_time, message) {
+do_send_damage_sequence(packet_sequence, wid, width, height, decode_time, message) {
 	const protocol = this.protocol;
 	if (!protocol) {
 		return;
@@ -3433,7 +3427,7 @@ XpraClient.prototype.do_send_damage_sequence = function(packet_sequence, wid, wi
 	protocol.send(packet);
 }
 
-XpraClient.prototype.do_process_draw = function(packet, start) {
+do_process_draw(packet, start) {
 	if(!packet){
 		//no valid draw packet, likely handle errors for that here
 		return;
@@ -3496,13 +3490,13 @@ XpraClient.prototype.do_process_draw = function(packet, start) {
 		win.may_paint_now();
 		this.request_redraw(win);
 	}
-};
+}
 
 
 /**
  * Audio
  */
-XpraClient.prototype.init_audio = function(ignore_audio_blacklist) {
+init_audio(ignore_audio_blacklist) {
 	this.debug("audio", "init_audio() enabled=", this.audio_enabled, ", mediasource enabled=", this.audio_mediasource_enabled, ", aurora enabled=", this.audio_aurora_enabled);
 	if(this.audio_mediasource_enabled) {
 		this.mediasource_codecs = MediaSourceUtil.getMediaSourceAudioCodecs(ignore_audio_blacklist);
@@ -3557,9 +3551,9 @@ XpraClient.prototype.init_audio = function(ignore_audio_blacklist) {
 		this.log("using "+this.audio_framework+" audio codec: "+this.audio_codec);
 	}
 	this.log("audio codecs: ", Object.keys(this.audio_codecs));
-};
+}
 
-XpraClient.prototype._sound_start_receiving = function() {
+_sound_start_receiving() {
 	if (!this.audio_framework || !this.audio_codec) {
 		//choose a codec + framework to use
 		const codecs_supported = MediaSourceUtil.get_supported_codecs(this.audio_mediasource_enabled,
@@ -3587,21 +3581,21 @@ XpraClient.prototype._sound_start_receiving = function() {
 	catch(e) {
 		this.exc(e, "error starting audio player");
 	}
-};
+}
 
 
-XpraClient.prototype._send_sound_start = function() {
+_send_sound_start() {
 	this.log("audio: requesting "+this.audio_codec+" stream from the server");
 	this.send(["sound-control", "start", this.audio_codec]);
-};
+}
 
 
-XpraClient.prototype._sound_start_aurora = function() {
+_sound_start_aurora() {
 	this.audio_aurora_ctx = AV.Player.fromXpraSource();
 	this._send_sound_start();
-};
+}
 
-XpraClient.prototype._sound_start_mediasource = function() {
+_sound_start_mediasource() {
 	const me = this;
 	function audio_error(event) {
 		if(!me.media_source) {
@@ -3677,14 +3671,14 @@ XpraClient.prototype._sound_start_mediasource = function() {
 		this.audio_source_ready = true;
 		this._send_sound_start();
 	});
-};
+}
 
-XpraClient.prototype._send_sound_stop = function() {
+_send_sound_stop() {
 	this.log("audio: stopping stream");
 	this.send(["sound-control", "stop"]);
-};
+}
 
-XpraClient.prototype.close_audio = function() {
+close_audio() {
 	if (this.connected) {
 		this._send_sound_stop();
 	}
@@ -3695,9 +3689,9 @@ XpraClient.prototype.close_audio = function() {
 		this._close_audio_aurora();
 	}
 	this.on_audio_state_change("stopped", "closed");
-};
+}
 
-XpraClient.prototype._close_audio_aurora = function() {
+_close_audio_aurora() {
 	if(this.audio_aurora_ctx) {
 		if (this.audio_aurora_ctx.context) {
 			try {
@@ -3709,9 +3703,9 @@ XpraClient.prototype._close_audio_aurora = function() {
 		}
 		this.audio_aurora_ctx = null;
 	}
-};
+}
 
-XpraClient.prototype._close_audio_mediasource = function() {
+_close_audio_mediasource() {
 	this.log("close_audio_mediasource: audio_source_buffer="+this.audio_source_buffer+", media_source="+this.media_source+", audio="+this.audio);
 	this.audio_source_ready = false;
 	if(this.audio) {
@@ -3731,9 +3725,9 @@ XpraClient.prototype._close_audio_mediasource = function() {
 		}
 		this._remove_audio_element();
 	}
-};
+}
 
-XpraClient.prototype._remove_audio_element = function() {
+_remove_audio_element() {
 	if (this.audio!=null) {
 		this.audio.src = "";
 		this.audio.load();
@@ -3745,9 +3739,9 @@ XpraClient.prototype._remove_audio_element = function() {
 		}
 		this.audio = null;
 	}
-};
+}
 
-XpraClient.prototype._process_sound_data = function(packet) {
+_process_sound_data(packet) {
 	try {
 		const codec = Utilities.s(packet[1]),
 				buf = packet[2],
@@ -3778,15 +3772,15 @@ XpraClient.prototype._process_sound_data = function(packet) {
 		this.exc(e, "sound data error");
 		this.close_audio();
 	}
-};
+}
 
-XpraClient.prototype.on_audio_state_change = function(newstate, details) {
+on_audio_state_change(newstate, details) {
 	this.debug("on_audio_state_change:", newstate, details);
 	this.audio_state = newstate;
 	//can be overriden
-};
+}
 
-XpraClient.prototype.add_sound_data = function(codec, buf, metadata) {
+add_sound_data(codec, buf, metadata) {
 	let MIN_START_BUFFERS = 4;
 	const MAX_BUFFERS = 250;
 	const CONCAT = true;
@@ -3844,9 +3838,9 @@ XpraClient.prototype.add_sound_data = function(codec, buf, metadata) {
 		}
 		this.audio_buffers = [];
 	}
-};
+}
 
-XpraClient.prototype._audio_start_stream = function() {
+_audio_start_stream() {
 	this.debug("audio", "audio start of "+this.audio_framework+" "+this.audio_codec+" stream");
 	if (this.audio_state=="playing" || this.audio_state=="waiting") {
 		//nothing to do: ready to play
@@ -3878,9 +3872,9 @@ XpraClient.prototype._audio_start_stream = function() {
 		this.on_audio_state_change("error", "unknown framework "+this.audio_framework);
 		this.close_audio();
 	}
-};
+}
 
-XpraClient.prototype._audio_ready = function() {
+_audio_ready() {
 	if (this.audio_framework=="mediasource") {
 		//check media source buffer state:
 		if (this.audio) {
@@ -3893,9 +3887,9 @@ XpraClient.prototype._audio_ready = function() {
 	else {
 		return (this.audio_aurora_ctx!=null);
 	}
-};
+}
 
-XpraClient.prototype.push_audio_buffer = function(buf) {
+push_audio_buffer(buf) {
 	if (this.audio_framework=="mediasource") {
 		this.audio_source_buffer.appendBuffer(buf);
 		const b = this.audio_source_buffer.buffered;
@@ -3929,20 +3923,20 @@ XpraClient.prototype.push_audio_buffer = function(buf) {
 							//"events=", this.audio_aurora_ctx.asset.source.events);
 	}
 	this.on_audio_state_change("playing", "");
-};
+}
 
 
 /**
  * Clipboard
  */
-XpraClient.prototype.get_clipboard_buffer = function() {
+get_clipboard_buffer() {
 	return this.clipboard_buffer;
-};
-XpraClient.prototype.get_clipboard_datatype = function() {
+}
+get_clipboard_datatype() {
 	return this.clipboard_datatype;
-};
+}
 
-XpraClient.prototype.send_clipboard_token = function(data) {
+send_clipboard_token(data) {
 	if (!this.clipboard_enabled || !this.connected) {
 		return;
 	}
@@ -3962,9 +3956,9 @@ XpraClient.prototype.send_clipboard_token = function(data) {
 			claim, greedy, synchronous];
 	}
 	this.send(packet);
-};
+}
 
-XpraClient.prototype._process_clipboard_token = function(packet) {
+_process_clipboard_token(packet) {
 	if (!this.clipboard_enabled) {
 		return;
 	}
@@ -4037,17 +4031,17 @@ XpraClient.prototype._process_clipboard_token = function(packet) {
 				);
 		}
 	}
-};
+}
 
-XpraClient.prototype._process_set_clipboard_enabled = function(packet) {
+_process_set_clipboard_enabled(packet) {
 	if (!this.clipboard_enabled) {
 		return;
 	}
 	this.clipboard_enabled = packet[1];
 	this.log("server set clipboard state to "+packet[1]+" reason was: "+packet[2]);
-};
+}
 
-XpraClient.prototype._process_clipboard_request = function(packet) {
+_process_clipboard_request(packet) {
 	// we shouldn't be handling clipboard requests
 	// unless we have support for navigator.clipboard:
 	const request_id = packet[1],
@@ -4132,9 +4126,9 @@ XpraClient.prototype._process_clipboard_request = function(packet) {
 	}
 	const clipboard_buffer = this.get_clipboard_buffer() || "";
 	this.send_clipboard_string(request_id, selection, clipboard_buffer, "UTF8_STRING");
-};
+}
 
-XpraClient.prototype.resend_clipboard_server_buffer = function(request_id, selection) {
+resend_clipboard_server_buffer(request_id, selection) {
 	const server_buffer = this.clipboard_server_buffers["CLIPBOARD"];
 	this.debug("clipboard", "resend_clipboard_server_buffer:", server_buffer);
 	if (!server_buffer) {
@@ -4147,9 +4141,9 @@ XpraClient.prototype.resend_clipboard_server_buffer = function(request_id, selec
 	const wire_encoding = server_buffer[3];
 	const wire_data = server_buffer[4];
 	this.send_clipboard_contents(request_id, selection, dtype, dformat, wire_encoding, wire_data);
-};
+}
 
-XpraClient.prototype.send_clipboard_string = function(request_id, selection, clipboard_buffer, datatype) {
+send_clipboard_string(request_id, selection, clipboard_buffer, datatype) {
 	let packet;
 	if (clipboard_buffer == "") {
 		packet = ["clipboard-contents-none", request_id, selection];
@@ -4158,9 +4152,9 @@ XpraClient.prototype.send_clipboard_string = function(request_id, selection, cli
 	}
 	this.debug("clipboard", "send_clipboard_string: packet=", packet);
 	this.send(packet);
-};
+}
 
-XpraClient.prototype.send_clipboard_contents = function(request_id, selection, datatype, dformat, encoding, clipboard_buffer) {
+send_clipboard_contents(request_id, selection, datatype, dformat, encoding, clipboard_buffer) {
 	let packet;
 	if (clipboard_buffer == "") {
 		packet = ["clipboard-contents-none", request_id, selection];
@@ -4168,12 +4162,12 @@ XpraClient.prototype.send_clipboard_contents = function(request_id, selection, d
 		packet = ["clipboard-contents", request_id, selection, datatype, dformat || 8, encoding || "bytes", clipboard_buffer];
 	}
 	this.send(packet);
-};
+}
 
 /**
  * File transfers and printing
  */
-XpraClient.prototype._process_send_file = function(packet) {
+_process_send_file(packet) {
 	const basefilename = Utilities.s(packet[1]);
 	const mimetype = Utilities.s(packet[2]);
 	const printit = packet[3];
@@ -4237,9 +4231,9 @@ XpraClient.prototype._process_send_file = function(packet) {
 	this.receive_chunks_in_progress.set(chunk_id, chunk_state);
 	this.send(["ack-file-chunk", chunk_id, true, "", chunk]);
 	this.log("receiving chunks for", basefilename, "with transfer id", chunk_id);
-};
+}
 
-XpraClient.prototype._check_chunk_receiving = function(chunk_id, chunk_no) {
+_check_chunk_receiving(chunk_id, chunk_no) {
 	const chunk_state = this.receive_chunks_in_progress.get(chunk_id);
 	this.debug("main", "check_chunk_receiving(", chunk_id, ",", chunk_no, ") chunk_state=", chunk_state);
 	if (!chunk_state) {
@@ -4254,13 +4248,13 @@ XpraClient.prototype._check_chunk_receiving = function(chunk_id, chunk_no) {
 		this.cerror("Error: chunked file transfer", chunk_id, "timed out");
 		this.receive_chunks_in_progress.delete(chunk_id);
 	}
-};
+}
 
-XpraClient.prototype.transfer_progress_update = function(send, transfer_id, elapsed, position, total, error) {
+transfer_progress_update(send, transfer_id, elapsed, position, total, error) {
 	//this.clog("progress:", Math.round(position*100/total));
 }
 
-XpraClient.prototype.cancel_file = function(chunk_id, message, chunk) {
+cancel_file(chunk_id, message, chunk) {
 	const chunk_state = this.receive_chunks_in_progress.get(chunk_id);
 	if (chunk_state) {
 		//mark it as cancelled:
@@ -4280,7 +4274,7 @@ XpraClient.prototype.cancel_file = function(chunk_id, message, chunk) {
 	this.send(["ack-file-chunk", chunk_id, false, message, chunk]);
 }
 
-XpraClient.prototype._process_send_file_chunk = function(packet) {
+_process_send_file_chunk(packet) {
 	const	chunk_id = Utilities.s(packet[1]),
 			chunk = packet[2],
 			file_data = packet[3],
@@ -4360,10 +4354,9 @@ XpraClient.prototype._process_send_file_chunk = function(packet) {
 		start += chunks[i].length;
 	}
 	this._got_file(filename, data, mimetype, printit, mimetype, options);
-};
+}
 
-
-XpraClient.prototype.verify_digest = function(digest, expected_value) {
+verify_digest(digest, expected_value) {
 	const algo = digest.algorithm;
 	const value = digest.digest().data;
 	const hex_value = Utilities.convertToHex(value);
@@ -4375,8 +4368,7 @@ XpraClient.prototype.verify_digest = function(digest, expected_value) {
 	this.log("verified", algo, "digest of file transfer");
 }
 
-
-XpraClient.prototype._got_file = function(basefilename, data, printit, mimetype, options) {
+_got_file(basefilename, data, printit, mimetype, options) {
 	function check_digest(algo) {
 		const digest = options[algo];
 		if (digest) {
@@ -4396,10 +4388,9 @@ XpraClient.prototype._got_file = function(basefilename, data, printit, mimetype,
 	else {
 		this.save_file(basefilename, data, mimetype);
 	}
-};
+}
 
-
-XpraClient.prototype.save_file = function(filename, data, mimetype) {
+save_file(filename, data, mimetype) {
 	if (!this.file_transfer || !this.remote_file_transfer) {
 		this.warn("Received file-transfer data but this is not enabled!");
 		return;
@@ -4409,9 +4400,9 @@ XpraClient.prototype.save_file = function(filename, data, mimetype) {
 	}
 	this.log("saving "+data.length+" bytes of "+mimetype+" data to filename "+filename);
 	Utilities.saveFile(filename, data, {type : mimetype});
-};
+}
 
-XpraClient.prototype.print_document = function(filename, data, mimetype) {
+print_document(filename, data, mimetype) {
 	if (!this.printing || !this.remote_printing) {
 		this.warn("Received data to print but printing is not enabled!");
 		return;
@@ -4431,15 +4422,15 @@ XpraClient.prototype.print_document = function(filename, data, mimetype) {
 	else {
 		win.print();
 	}
-};
+}
 
-
-XpraClient.prototype.send_all_files = function(files) {
+send_all_files(files) {
 	for (let i = 0, f; f = files[i]; i++) {
 		this.send_file(f);
 	}
 }
-XpraClient.prototype.send_file = function(f) {
+
+send_file(f) {
 	clog("send_file:", f.name, ", type:", f.type, ", size:", f.size);
 	const me = this;
 	const fileReader = new FileReader();
@@ -4453,7 +4444,8 @@ XpraClient.prototype.send_file = function(f) {
 	};
 	fileReader.readAsArrayBuffer(f);
 }
-XpraClient.prototype.do_send_file = function(filename, mimetype, size, buffer) {
+
+do_send_file(filename, mimetype, size, buffer) {
 	if (!this.file_transfer || !this.remote_file_transfer) {
 		this.warn("cannot send file: file transfers are disabled!");
 		return;
@@ -4483,9 +4475,9 @@ XpraClient.prototype.do_send_file = function(filename, mimetype, size, buffer) {
 	}
 	const packet = ["send-file", filename, mimetype, false, this.remote_open_files, size, cdata, options];
 	this.send(packet);
-};
+}
 
-XpraClient.prototype._check_chunk_sending = function(chunk_id, chunk_no) {
+_check_chunk_sending(chunk_id, chunk_no) {
 	const chunk_state = this.send_chunks_in_progress.get(chunk_id);
 	this.debug("main", "chunk id", chunk_id, "chunk_no", chunk_no, "found chunk_state", new Boolean(chunk_state));
 	if (!chunk_state) {
@@ -4497,9 +4489,9 @@ XpraClient.prototype._check_chunk_sending = function(chunk_id, chunk_no) {
 		this.error(" on chunk", chunk_no)
 		this.cancel_sending(chunk_id)
 	}
-};
+}
 
-XpraClient.prototype.cancel_sending = function(chunk_id) {
+cancel_sending(chunk_id) {
 	const chunk_state = this.send_chunks_in_progress.get(chunk_id);
 	this.debug("main", "cancel_sending", chunk_id, "chunk state found:", new Boolean(chunk_state));
 	if (!chunk_state) {
@@ -4511,9 +4503,9 @@ XpraClient.prototype.cancel_sending = function(chunk_id) {
 		clearTimeout(timer);
 	}
 	this.send_chunks_in_progress.delete(chunk_id);
-};
+}
 
-XpraClient.prototype._process_ack_file_chunk = function(packet) {
+_process_ack_file_chunk(packet) {
 	//the other end received our send-file or send-file-chunk,
 	//send some more file data
 	this.debug("main", "ack-file-chunk: ", packet);
@@ -4565,12 +4557,12 @@ XpraClient.prototype._process_ack_file_chunk = function(packet) {
 }
 
 
-XpraClient.prototype.start_command = function(name, command, ignore) {
+start_command(name, command, ignore) {
 	const packet = ["start-command", name, command, ignore];
 	this.send(packet);
-};
+}
 
-XpraClient.prototype._process_open_url = function(packet) {
+_process_open_url(packet) {
 	const url = packet[1];
 	//const send_id = packet[2];
 	if (!this.open_url) {
@@ -4588,4 +4580,6 @@ XpraClient.prototype._process_open_url = function(packet) {
 		const timeout = 10;
 		window.doNotification("", 0, summary, body, timeout, null, null, null, null, null);
 	}
-};
+}
+
+}
