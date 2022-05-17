@@ -3461,7 +3461,7 @@ class XpraClient	{
 			}
 			if (error || start==0) {
 				this.request_redraw(win);
-				decode_time = -1
+				decode_time = -1;
 			}
 			this.debug("draw", "decode time for ", coding, " sequence ", packet_sequence, ": ", decode_time, ", flush=", flush);
 			send_damage_sequence(decode_time, error || "");
@@ -4196,7 +4196,9 @@ class XpraClient	{
 				digest.update(Utilities.Uint8ToString(data));
 				this.log("digest.update(", data, ")");
 				this.log("digest update string:", Utilities.Uint8ToString(data));
-				this.verify_digest(digest, options[digest.algorithm]);
+				if (!this.verify_digest(digest, options[digest.algorithm])) {
+					return;
+				}
 			}
 			this._got_file(basefilename, data, printit, mimetype, options);
 			return;
@@ -4241,7 +4243,7 @@ class XpraClient	{
 			return;
 		}
 		chunk_state[12] = 0		//this timer has been used
-		if (chunk_state[-1]==0) {
+		if (chunk_state[13]==0) {
 			this.cerror("Error: chunked file transfer", chunk_id, "timed out");
 			this.receive_chunks_in_progress.delete(chunk_id);
 		}
@@ -4288,10 +4290,11 @@ class XpraClient	{
 			return;
 		}
 		const filesize = chunk_state[6];
+		const transfer_progress_update = this.transfer_progress_update;
 		function progress(position, error) {
 			const start = chunk_state[0];
 			const send_id = chunk_state[-3];
-			this.transfer_progress_update(false, send_id, Date.now()-start, position, filesize, error);
+			transfer_progress_update(false, send_id, Date.now()-start, position, filesize, error);
 		}
 		if (chunk_state[13]+1!=chunk) {
 			this.error("Error: chunk number mismatch, expected", chunk_state[13]+1, "but got", chunk);
@@ -4304,6 +4307,7 @@ class XpraClient	{
 		const written = chunk_state[9] + file_data.length
 		if (written>filesize) {
 			this.error("Error: too much data received");
+			this.cancel_file(chunk_id, "file size mismatch");
 			progress(-1, "file size mismatch");
 			return
 		}
@@ -4328,12 +4332,15 @@ class XpraClient	{
 		//check file size and digest then process it:
 		if (written!=filesize) {
 			this.cerror("Error: expected a file of", filesize, "bytes, got", written);
+			this.cancel_file(chunk_id, "file size mismatch");
 			progress(-1, "file size mismatch");
-			return
+			return;
 		}
 		const options = chunk_state[7];
-		if (digest) {
-			this.verify_digest(digest, options[digest.algorithm]);
+		if (digest && !this.verify_digest(digest, options[digest.algorithm])) {
+			this.cancel_file(chunk_id, "checksum mismatch");
+			progress(-1, "checksum mismatch");
+			return;
 		}
 		progress(written);
 		const start_time = chunk_state[0];
@@ -4360,9 +4367,10 @@ class XpraClient	{
 		if (hex_value!=expected_value.toLowerCase()) {
 			this.error("Error verifying", algo, "file checksum");
 			this.error(" expected", expected_value, "but got", hex_value);
-			throw "invalid "+algo+" checksum";
+			return false;
 		}
 		this.log("verified", algo, "digest of file transfer");
+		return true;
 	}
 
 	_got_file(basefilename, data, printit, mimetype, options) {
