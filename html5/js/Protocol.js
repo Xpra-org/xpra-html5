@@ -188,7 +188,7 @@ class XpraProtocol {
 			}
 			handle(['open']);
 		};
-		this.websocket.onclose = () => handle(['close', me.close_event_str(event)]);
+		this.websocket.onclose = (event) => handle(['close', me.close_event_str(event)]);
 		this.websocket.onerror = (event) => handle(['error', me.close_event_str(event), event.code || 0]);
 		this.websocket.onmessage = function (e) {
 			// push arraybuffer values onto the end
