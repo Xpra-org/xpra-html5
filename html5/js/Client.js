@@ -4218,11 +4218,26 @@ class XpraClient	{
 			return;
 		}
 		//start receiving chunks:
+		let writer = null;
+		try {
+			//try to use a stream saver:
+			this.debug("main", "streamSaver=", streamSaver);
+			streamSaver.mitm = "../mitm.html";
+			const fileStream = streamSaver.createWriteStream(basefilename, {
+				size: filesize,
+				});
+			writer = fileStream.getWriter();
+			this.debug("main", "stream writer=", writer);
+		}
+		catch (e) {
+			writer = [];
+			this.error("cannot use streamSaver:", e);
+		}
 		const timer = setTimeout(() => this._check_chunk_receiving(chunk_id, chunk), CHUNK_TIMEOUT);
 		const openit = true;
 		const chunk_state = [
 					Date.now(),
-					[], basefilename, mimetype,
+					writer, basefilename, mimetype,
 					printit, openit, filesize,
 					options, digest, 0, false, send_id,
 					timer, chunk,
@@ -4259,7 +4274,11 @@ class XpraClient	{
 			//mark it as cancelled:
 			chunk_state[10] = true;
 			//free the buffers
-			chunk_state[1] = [];
+			const writer = chunk_state[1];
+			if (writer.abort) {
+				writer.abort();
+			}
+			chunk_state[1] = null;
 			//stop the timer
 			const timer = chunk_state[12];
 			if (timer) {
@@ -4312,7 +4331,15 @@ class XpraClient	{
 			return
 		}
 		chunk_state[9] = written;
-		chunk_state[1].push(file_data);
+		const writer = chunk_state[1];
+		if (writer.write) {
+			//this is a file stream writer:
+			writer.write(file_data);
+		}
+		else {
+			//just a plain array:
+			writer.push(file_data);
+		}
 		const digest = chunk_state[8];
 		if (digest) {
 			digest.update(Utilities.Uint8ToString(file_data));
@@ -4352,12 +4379,17 @@ class XpraClient	{
 		//join all the data into a single typed array:
 		const data = new Uint8Array(filesize);
 		let start = 0;
-		const chunks = chunk_state[1];
-		for (let i=0; i<chunks.length; ++i) {
-			data.set(chunks[i], start);
-			start += chunks[i].length;
+		if (writer.close) {
+			writer.close();
 		}
-		this._got_file(filename, data, mimetype, printit, mimetype, options);
+		else {
+			const chunks = chunk_state[1];
+			for (let i=0; i<chunks.length; ++i) {
+				data.set(chunks[i], start);
+				start += chunks[i].length;
+			}
+			this._got_file(filename, data, mimetype, printit, mimetype, options);
+		}
 	}
 
 	verify_digest(digest, expected_value) {
