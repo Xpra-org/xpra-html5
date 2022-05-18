@@ -223,22 +223,6 @@ const Utilities = {
 		return layout;
 	},
 
-	getAudioContextClass : function() {
-		return window.AudioContext || window.webkitAudioContext || window.audioContext;
-	},
-
-	getAudioContext : function() {
-		if (Utilities.audio_context) {
-			return Utilities.audio_context;
-		}
-		const acc = Utilities.getAudioContextClass();
-		if(!acc) {
-			return null;
-		}
-		Utilities.audio_context = new acc();
-		return Utilities.audio_context;
-	},
-
 	isMacOS : function() {
 		return navigator.platform.includes('Mac');
 	},

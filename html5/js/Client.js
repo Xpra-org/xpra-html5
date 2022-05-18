@@ -124,7 +124,7 @@ class XpraClient	{
 		this.audio_framework = null;
 		this.audio_aurora_ctx = null;
 		this.audio_codec = null;
-		this.audio_context = Utilities.getAudioContext();
+		this.audio_context = new AudioContext();
 		this.audio_state = null;
 		this.aurora_codecs = {};
 		this.mediasource_codecs = {};
