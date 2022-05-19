@@ -516,14 +516,6 @@ class XpraClient	{
 		this.protocol.open(uri);
 	}
 
-	close() {
-		this.clog("client closed");
-		this.close_windows();
-		this.clear_timers();
-		this.close_audio();
-		this.close_protocol();
-	}
-
 	request_refresh(wid) {
 		this.send([
 			"buffer-refresh", wid, 0, 100,
@@ -4319,7 +4311,7 @@ class XpraClient	{
 			this.error("Error: chunk number mismatch, expected", chunk_state[13]+1, "but got", chunk);
 			this.cancel_file(chunk_id, "chunk number mismatch", chunk);
 			this.file_progress(-1, "chunk no mismatch")
-			return
+			return;
 		}
 		//update chunk number:
 		chunk_state[13] = chunk;
@@ -4328,7 +4320,7 @@ class XpraClient	{
 			this.error("Error: too much data received");
 			this.cancel_file(chunk_id, "file size mismatch");
 			progress(-1, "file size mismatch");
-			return
+			return;
 		}
 		chunk_state[9] = written;
 		const writer = chunk_state[1];
