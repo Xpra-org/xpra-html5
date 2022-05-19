@@ -249,7 +249,7 @@ function rencode_bool(v) {
 	}
 }
 
-function encode_none() {
+function rencode_none() {
 	return new Uint8Array([RENCODE.CHR_NONE]);
 }
 
