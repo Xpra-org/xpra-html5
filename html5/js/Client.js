@@ -4262,11 +4262,6 @@ class XpraClient	{
 		}
 	}
 
-	transfer_progress_update(send, transfer_id, elapsed, position, total, error) {
-		//this.clog("progress:", Math.round(position*100/total));
-	}
-
-
 	cancel_all_files(reason="closing") {
 		this.clog("cancel_all_files(", reason, ") will cancel:", Array.from(this.receive_chunks_in_progress.keys()));
 		for (let chunk_id of this.receive_chunks_in_progress.keys()) {
@@ -4319,39 +4314,45 @@ class XpraClient	{
 			return;
 		}
 		const filesize = chunk_state[6];
-		const transfer_progress_update = this.transfer_progress_update;
-		function progress(position, error) {
-			const start = chunk_state[0];
-			const send_id = chunk_state[-3];
-			transfer_progress_update(false, send_id, Date.now()-start, position, filesize, error);
-		}
 		if (chunk_state[13]+1!=chunk) {
-			this.error("Error: chunk number mismatch, expected", chunk_state[13]+1, "but got", chunk);
-			this.cancel_file(chunk_id, "chunk number mismatch", chunk);
-			this.file_progress(-1, "chunk no mismatch")
+			this.cancel_file(chunk_id, "chunk number mismatch, expected "+(chunk_state[13]+1)+" but got "+chunk);
 			return;
 		}
 		//update chunk number:
 		chunk_state[13] = chunk;
 		const written = chunk_state[9] + file_data.length
 		if (written>filesize) {
-			this.error("Error: too much data received");
-			this.cancel_file(chunk_id, "file size mismatch");
-			progress(-1, "file size mismatch");
+			this.cancel_file(chunk_id, "too much data received");
 			return;
 		}
-		chunk_state[9] = written;
 		const writer = chunk_state[1];
 		if (writer.write) {
 			//this is a file stream writer:
 			try {
-				writer.write(file_data);
+				const p = writer.write(file_data);
+				//depending on the implementation,
+				//this may be a promise:
+				if (p) {
+					p.then(() => {
+						chunk_state[9] = written;
+						this.file_chunk_written(packet);
+					}, (err) => {
+						let msg = "cannot write file data, download cancelled?";
+						if (err) {
+							this.clog("write failed:", err);
+							msg = "cannot write file data: "+err+", download cancelled?";
+						}
+						this.cancel_file(chunk_id, msg);
+					});
+					//we will continue when the promise resolves, see above
+					return;
+				}
+				this.clog("write(..)=", p);
 			}
 			catch (e) {
 				const msg = "cannot write file data - download cancelled?";
-				this.error("Error: "+msg);
+				this.error(e);
 				this.cancel_file(chunk_id, msg);
-				progress(-1, msg);
 				return;
 			}
 		}
@@ -4359,36 +4360,42 @@ class XpraClient	{
 			//just a plain array:
 			writer.push(file_data);
 		}
-		const digest = chunk_state[8];
+		chunk_state[9] = written;
+		this.file_chunk_written(packet);
+	}
+
+	file_chunk_written(packet) {
+		const	chunk_id = Utilities.s(packet[1]),
+				chunk = packet[2],
+				file_data = packet[3],
+				has_more = packet[4];
+		const chunk_state = this.receive_chunks_in_progress.get(chunk_id),
+			digest = chunk_state[8],
+			written = chunk_state[9];
 		if (digest) {
 			digest.update(Utilities.Uint8ToString(file_data));
 		}
 		this.send(["ack-file-chunk", chunk_id, true, "", chunk]);
 		if (has_more) {
-			progress(written);
 			const timer = chunk_state[12];
 			if (timer) {
 				clearTimeout(timer);
 			}
 			//remote end will send more after receiving the ack
-			chunk_state[-2] = setTimeout(() => this._check_chunk_receiving(chunk_id, chunk), CHUNK_TIMEOUT);
+			chunk_state[12] = setTimeout(() => this._check_chunk_receiving(chunk_id, chunk), CHUNK_TIMEOUT);
 			return;
 		}
 		this.receive_chunks_in_progress.delete(chunk_id);
 		//check file size and digest then process it:
 		if (written!=filesize) {
-			this.cerror("Error: expected a file of", filesize, "bytes, got", written);
-			this.cancel_file(chunk_id, "file size mismatch");
-			progress(-1, "file size mismatch");
+			this.cancel_file(chunk_id, "file size mismatch: expected a file of "+filesize+" bytes but got "+written);
 			return;
 		}
 		const options = chunk_state[7];
 		if (digest && !this.verify_digest(digest, options[digest.algorithm])) {
-			this.cancel_file(chunk_id, "checksum mismatch");
-			progress(-1, "checksum mismatch");
+			this.cancel_file(chunk_id, ""+digest.algorithm+" checksum mismatch");
 			return;
 		}
-		progress(written);
 		const start_time = chunk_state[0];
 		const elapsed = Date.now()-start_time;
 		this.clog(filesize, "bytes received in", chunk, "chunks, took", Math.round(elapsed*1000), "ms");
