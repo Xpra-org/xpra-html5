@@ -2618,7 +2618,10 @@ class XpraClient	{
 		const salt_digest = Utilities.s(packet[4]) || "xor";
 		const prompt = (Utilities.s(packet[5]) || "password").replace(/[^a-zA-Z0-9\.,:\+/]/gi, '');
 		this.clog("process challenge:", digest);
-		function do_process_challenge(password) {
+		function call_do_process_challenge(password) {
+			if (!this || !this.connected) {
+				return;
+			}
 			if (password==null) {
 				this.disconnect_reason = "password prompt cancelled";
 				this.close();
@@ -2629,17 +2632,17 @@ class XpraClient	{
 		}
 		if (this.passwords.length>0) {
 			const password = this.passwords.shift();
-			do_process_challenge(password);
+			call_do_process_challenge(password);
 			return;
 		}
 		if (digest.startsWith("keycloak") && this.keycloak_prompt_fn) {
 			this.cancel_hello_timer();
-			this.keycloak_prompt_fn(server_salt, do_process_challenge);
+			this.keycloak_prompt_fn(server_salt, call_do_process_challenge);
 			return;
 		} else if (this.password_prompt_fn) {
 			const address = ""+client.host+":"+client.port;
 			this.cancel_hello_timer();
-			this.password_prompt_fn("The server at "+address+" requires a "+prompt, do_process_challenge);
+			this.password_prompt_fn("The server at "+address+" requires a "+prompt, call_do_process_challenge);
 			return;
 		}
 		this.callback_close("No password specified for authentication challenge");
