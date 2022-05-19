@@ -4370,6 +4370,8 @@ class XpraClient	{
 				file_data = packet[3],
 				has_more = packet[4];
 		const chunk_state = this.receive_chunks_in_progress.get(chunk_id),
+			writer = chunk_state[1],
+			filesize = chunk_state[6],
 			digest = chunk_state[8],
 			written = chunk_state[9];
 		if (digest) {
