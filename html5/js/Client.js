@@ -2234,7 +2234,10 @@ class XpraClient	{
 		}
 	}
 
+
 	close() {
+		this.clog("client closed");
+		this.cancel_all_files();
 		this.emit_connection_lost();
 		this.close_windows();
 		this.close_audio();
@@ -4263,6 +4266,18 @@ class XpraClient	{
 		//this.clog("progress:", Math.round(position*100/total));
 	}
 
+
+	cancel_all_files(reason="closing") {
+		this.clog("cancel_all_files(", reason, ") will cancel:", Array.from(this.receive_chunks_in_progress.keys()));
+		for (let chunk_id of this.receive_chunks_in_progress.keys()) {
+			this.cancel_file(chunk_id, reason);
+		}
+	}
+
+	active_file_transfers() {
+		return this.receive_chunks_in_progress.size;
+	}
+
 	cancel_file(chunk_id, message, chunk) {
 		const chunk_state = this.receive_chunks_in_progress.get(chunk_id);
 		if (chunk_state) {
@@ -4329,7 +4344,16 @@ class XpraClient	{
 		const writer = chunk_state[1];
 		if (writer.write) {
 			//this is a file stream writer:
-			writer.write(file_data);
+			try {
+				writer.write(file_data);
+			}
+			catch (e) {
+				const msg = "cannot write file data - download cancelled?";
+				this.error("Error: "+msg);
+				this.cancel_file(chunk_id, msg);
+				progress(-1, msg);
+				return;
+			}
 		}
 		else {
 			//just a plain array:

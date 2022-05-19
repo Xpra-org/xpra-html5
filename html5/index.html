@@ -1249,8 +1249,22 @@
 				const touchaction = getparam("touchaction") || "scroll";
 				touchaction_scroll = touchaction == "scroll";
 				set_touchaction();
-				
+
 				client = init_client();
+				addEventListener("unload", () => {
+					clog("onunload()");
+					client.close();
+				}, {capture: true});
+
+				addEventListener("beforeunload", () => {
+					const aft = client.active_file_transfers();
+					clog("beforeunload(", event, ") active_file_transfers()=", aft);
+					if (aft>0) {
+						//This text is now ignored by all browsers...
+						event.returnValue = "There are file transfers in progress.\nAre you sure you want to leave?";
+					}
+					return event.returnValue;
+				}, {capture: true});
 				client.on_connect = function() {
 					init_float_menu();
 					enable_clipboard_autofocus();
