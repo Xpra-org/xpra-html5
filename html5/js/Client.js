@@ -4219,13 +4219,13 @@ class XpraClient	{
 		let writer = null;
 		try {
 			//try to use a stream saver:
-			this.debug("main", "streamSaver=", streamSaver);
+			this.debug("file", "streamSaver=", streamSaver);
 			streamSaver.mitm = "../mitm.html";
 			const fileStream = streamSaver.createWriteStream(basefilename, {
 				size: filesize,
 				});
 			writer = fileStream.getWriter();
-			this.debug("main", "stream writer=", writer);
+			this.debug("file", "stream writer=", writer);
 		}
 		catch (e) {
 			writer = [];
@@ -4247,7 +4247,7 @@ class XpraClient	{
 
 	_check_chunk_receiving(chunk_id, chunk_no) {
 		const chunk_state = this.receive_chunks_in_progress.get(chunk_id);
-		this.debug("main", "check_chunk_receiving(", chunk_id, ",", chunk_no, ") chunk_state=", chunk_state);
+		this.debug("file", "check_chunk_receiving(", chunk_id, ",", chunk_no, ") chunk_state=", chunk_state);
 		if (!chunk_state) {
 			return;
 		}
@@ -4307,7 +4307,7 @@ class XpraClient	{
 				chunk = packet[2],
 				file_data = packet[3],
 				has_more = packet[4];
-		this.debug("main", "_process_send_file_chunk(", chunk_id, chunk, ""+file_data.length+" bytes", has_more, ")");
+		this.debug("file", "_process_send_file_chunk(", chunk_id, chunk, ""+file_data.length+" bytes", has_more, ")");
 		const chunk_state = this.receive_chunks_in_progress.get(chunk_id);
 		if (!chunk_state) {
 			this.error("Error: cannot find the file transfer id", chunk_id);
@@ -4315,7 +4315,7 @@ class XpraClient	{
 			return;
 		}
 		if (chunk_state[10]) {
-			this.debug("main", "got chunk for a cancelled file transfer, ignoring it");
+			this.debug("file", "got chunk for a cancelled file transfer, ignoring it");
 			return;
 		}
 		const filesize = chunk_state[6];
@@ -4510,11 +4510,11 @@ class XpraClient	{
 			const chunk_state = [Date.now(), buffer, chunk_size, timer, 0];
 			this.send_chunks_in_progress.set(chunk_id, chunk_state);
 			cdata = ""
-			this.debug("main", "using chunks, sending initial file-chunk-id=", chunk_id, ", for chunk size", chunk_size);
+			this.debug("file", "using chunks, sending initial file-chunk-id=", chunk_id, ", for chunk size", chunk_size);
 		}
 		else {
 			//send everything now:
-			this.debug("main", "sending full file:", size, "bytes, chunk size", chunk_size);
+			this.debug("file", "sending full file:", size, "bytes, chunk size", chunk_size);
 		}
 		const packet = ["send-file", filename, mimetype, false, this.remote_open_files, size, cdata, options];
 		this.send(packet);
@@ -4522,7 +4522,7 @@ class XpraClient	{
 
 	_check_chunk_sending(chunk_id, chunk_no) {
 		const chunk_state = this.send_chunks_in_progress.get(chunk_id);
-		this.debug("main", "chunk id", chunk_id, "chunk_no", chunk_no, "found chunk_state", new Boolean(chunk_state));
+		this.debug("file", "chunk id", chunk_id, "chunk_no", chunk_no, "found chunk_state", new Boolean(chunk_state));
 		if (!chunk_state) {
 			return;
 		}
@@ -4536,7 +4536,7 @@ class XpraClient	{
 
 	cancel_sending(chunk_id) {
 		const chunk_state = this.send_chunks_in_progress.get(chunk_id);
-		this.debug("main", "cancel_sending", chunk_id, "chunk state found:", new Boolean(chunk_state));
+		this.debug("file", "cancel_sending", chunk_id, "chunk state found:", new Boolean(chunk_state));
 		if (!chunk_state) {
 			return;
 		}
@@ -4551,14 +4551,14 @@ class XpraClient	{
 	_process_ack_file_chunk(packet) {
 		//the other end received our send-file or send-file-chunk,
 		//send some more file data
-		this.debug("main", "ack-file-chunk: ", packet);
+		this.debug("file", "ack-file-chunk: ", packet);
 		const	chunk_id = Utilities.s(packet[1]),
 				state = packet[2],
 				error_message = packet[3];
 		let chunk = packet[4];
 		if (!state) {
-			this.debug("main", "the remote end is cancelling the file transfer:")
-			this.debug("main", " %s", Utilities.s(error_message));
+			this.debug("file", "the remote end is cancelling the file transfer:")
+			this.debug("file", " %s", Utilities.s(error_message));
 			this.cancel_sending(chunk_id);
 			return;
 		}
