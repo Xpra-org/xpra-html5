@@ -5,7 +5,8 @@
   "main": "html5/index.html",
   "scripts": {
     "format": "npx prettier --write .",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepare": "husky install"
   },
   "repository": {
     "type": "git",
@@ -18,6 +19,11 @@
   },
   "homepage": "https://github.com/Xpra-org/xpra-html5#readme",
   "devDependencies": {
+    "husky": "^8.0.1",
+    "lint-staged": "^12.4.1",
     "prettier": "2.6.2"
+  },
+  "lint-staged": {
+    "*.{css,html,js,md,yml}": "prettier --write"
   }
 }
