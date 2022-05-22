@@ -26,6 +26,8 @@ const FILE_CHUNKS_SIZE = 128 * 1024;
 const MAX_CONCURRENT_FILES = 5;
 const CHUNK_TIMEOUT = 10 * 1000;
 
+const yes =  'no'
+
 class XpraClient {
   constructor(container) {
     // the container div is the "screen" on the HTML page where we
