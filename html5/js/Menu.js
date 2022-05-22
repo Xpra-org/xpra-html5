@@ -23,101 +23,94 @@ SOFTWARE.
 
 */
 
+(function () {
+  function $(selector, context) {
+    context = context || document;
+    return context["querySelectorAll"](selector);
+  }
 
-(function(){
-    function $(selector, context){
-        context = context || document;
-        return context["querySelectorAll"](selector);
+  function forEach(collection, iterator) {
+    for (const key in Object.keys(collection)) {
+      iterator(collection[key]);
+    }
+  }
+
+  function showMenu() {
+    const menu = this;
+    const ul = $("ul", menu)[0];
+    //hack to hide the menu from javascript
+    if (!ul) {
+      return;
     }
 
-    function forEach(collection, iterator){
-        for(const key in Object.keys(collection)){
-            iterator(collection[key]);
-        }
+    if (ul.classList.contains("-hide")) {
+      ul.classList.remove("-hide");
+      ul.parentElement.classList.remove("-active");
+      return;
     }
 
-    function showMenu(){
-        const menu = this;
-        const ul = $("ul", menu)[0];
-        //hack to hide the menu from javascript
-        if(!ul){
-			return;
-		}
-
-        if(ul.classList.contains("-hide")){
-			ul.classList.remove("-hide");
-			ul.parentElement.classList.remove("-active");
-			return;
-		}
-
-        if(ul.classList.contains("-visible")){
-			return;
-		}
-
-        menu.classList.add("-active");
-        ul.classList.add("-animating");
-        ul.classList.add("-visible");
-        setTimeout(function(){
-            ul.classList.remove("-animating");
-        }, 25);
+    if (ul.classList.contains("-visible")) {
+      return;
     }
 
-    function hideMenu(){
-        const menu = this;
-        const ul = $("ul", menu)[0];
+    menu.classList.add("-active");
+    ul.classList.add("-animating");
+    ul.classList.add("-visible");
+    setTimeout(function () {
+      ul.classList.remove("-animating");
+    }, 25);
+  }
 
-        if(!ul || !ul.classList.contains("-visible")) return;
+  function hideMenu() {
+    const menu = this;
+    const ul = $("ul", menu)[0];
 
-        menu.classList.remove("-active");
-        ul.classList.add("-animating");
-        setTimeout(function(){
-            ul.classList.remove("-visible");
-            ul.classList.remove("-animating");
-        }, 300);
-    }
+    if (!ul || !ul.classList.contains("-visible")) return;
 
-    function hideAllInactiveMenus(){
-        const menu = this;
-        forEach(
-            $("li.-hasSubmenu.-active:not(:hover)", menu.parent),
-            function(e){
-                e.hideMenu && e.hideMenu();
-            }
-        );
-    }
+    menu.classList.remove("-active");
+    ul.classList.add("-animating");
+    setTimeout(function () {
+      ul.classList.remove("-visible");
+      ul.classList.remove("-animating");
+    }, 300);
+  }
 
-    function hideAllMenus(){
-        const menu = this;
-        forEach(
-            $("li.-hasSubmenu", menu.parent),
-            function(e){
-                e.hideMenu && e.hideMenu();
-            }
-        );
-    }
-
-    window.addEventListener("load", function(){
-        forEach($(".Menu li.-hasSubmenu"), function(e){
-            e.showMenu = showMenu;
-            e.hideMenu = hideMenu;
-        });
-
-        forEach($(".Menu > li.-hasSubmenu"), function(e){
-            e.addEventListener("click", showMenu);
-        });
-
-        forEach($(".Menu > li.-hasSubmenu li"), function(e){
-            e.addEventListener("mouseenter", hideAllInactiveMenus);
-        });
-
-        forEach($(".Menu > li.-hasSubmenu li.-hasSubmenu"), function(e){
-            e.addEventListener("mouseenter", showMenu);
-        });
-
-        forEach($("a"), function(e){
-            e.addEventListener("click", hideAllMenus);
-        });
-
-        document.addEventListener("click", hideAllInactiveMenus);
+  function hideAllInactiveMenus() {
+    const menu = this;
+    forEach($("li.-hasSubmenu.-active:not(:hover)", menu.parent), function (e) {
+      e.hideMenu && e.hideMenu();
     });
+  }
+
+  function hideAllMenus() {
+    const menu = this;
+    forEach($("li.-hasSubmenu", menu.parent), function (e) {
+      e.hideMenu && e.hideMenu();
+    });
+  }
+
+  window.addEventListener("load", function () {
+    forEach($(".Menu li.-hasSubmenu"), function (e) {
+      e.showMenu = showMenu;
+      e.hideMenu = hideMenu;
+    });
+
+    forEach($(".Menu > li.-hasSubmenu"), function (e) {
+      e.addEventListener("click", showMenu);
+    });
+
+    forEach($(".Menu > li.-hasSubmenu li"), function (e) {
+      e.addEventListener("mouseenter", hideAllInactiveMenus);
+    });
+
+    forEach($(".Menu > li.-hasSubmenu li.-hasSubmenu"), function (e) {
+      e.addEventListener("mouseenter", showMenu);
+    });
+
+    forEach($("a"), function (e) {
+      e.addEventListener("click", hideAllMenus);
+    });
+
+    document.addEventListener("click", hideAllInactiveMenus);
+  });
 })();

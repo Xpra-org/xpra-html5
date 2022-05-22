@@ -8,65 +8,63 @@
 // - HC support (better search algorithm)
 // - Tests/benchmarking
 
-
 /********************************************************************************/
-util = {}
+util = {};
 
 // Simple hash function, from: http://burtleburtle.net/bob/hash/integer.html.
 // Chosen because it doesn't use multiply and achieves full avalanche.
 util.hashU32 = function hashU32(a) {
-    a = a | 0;
-    a = a + 2127912214 + (a << 12) | 0;
-    a = a ^ -949894596 ^ a >>> 19;
-    a = a + 374761393 + (a << 5) | 0;
-    a = a + -744332180 ^ a << 9;
-    a = a + -42973499 + (a << 3) | 0;
-    return a ^ -1252372727 ^ a >>> 16 | 0;
-}
+  a = a | 0;
+  a = (a + 2127912214 + (a << 12)) | 0;
+  a = a ^ -949894596 ^ (a >>> 19);
+  a = (a + 374761393 + (a << 5)) | 0;
+  a = (a + -744332180) ^ (a << 9);
+  a = (a + -42973499 + (a << 3)) | 0;
+  return (a ^ -1252372727 ^ (a >>> 16)) | 0;
+};
 
 // Reads a 64-bit little-endian integer from an array.
 util.readU64 = function readU64(b, n) {
-    var x = 0;
-    x |= b[n++] << 0;
-    x |= b[n++] << 8;
-    x |= b[n++] << 16;
-    x |= b[n++] << 24;
-    x |= b[n++] << 32;
-    x |= b[n++] << 40;
-    x |= b[n++] << 48;
-    x |= b[n++] << 56;
-    return x;
-}
+  var x = 0;
+  x |= b[n++] << 0;
+  x |= b[n++] << 8;
+  x |= b[n++] << 16;
+  x |= b[n++] << 24;
+  x |= b[n++] << 32;
+  x |= b[n++] << 40;
+  x |= b[n++] << 48;
+  x |= b[n++] << 56;
+  return x;
+};
 
 // Reads a 32-bit little-endian integer from an array.
 util.readU32 = function readU32(b, n) {
-    var x = 0;
-    x |= b[n++] << 0;
-    x |= b[n++] << 8;
-    x |= b[n++] << 16;
-    x |= b[n++] << 24;
-    return x;
-}
+  var x = 0;
+  x |= b[n++] << 0;
+  x |= b[n++] << 8;
+  x |= b[n++] << 16;
+  x |= b[n++] << 24;
+  return x;
+};
 
 // Writes a 32-bit little-endian integer from an array.
 util.writeU32 = function writeU32(b, n, x) {
-    b[n++] = (x >> 0) & 0xff;
-    b[n++] = (x >> 8) & 0xff;
-    b[n++] = (x >> 16) & 0xff;
-    b[n++] = (x >> 24) & 0xff;
-}
+  b[n++] = (x >> 0) & 0xff;
+  b[n++] = (x >> 8) & 0xff;
+  b[n++] = (x >> 16) & 0xff;
+  b[n++] = (x >> 24) & 0xff;
+};
 
 // Multiplies two numbers using 32-bit integer multiplication.
 // Algorithm from Emscripten.
 util.imul = function imul(a, b) {
-    var ah = a >>> 16;
-    var al = a & 65535;
-    var bh = b >>> 16;
-    var bl = b & 65535;
+  var ah = a >>> 16;
+  var al = a & 65535;
+  var bh = b >>> 16;
+  var bl = b & 65535;
 
-    return al * bl + (ah * bl + al * bh << 16) | 0;
+  return (al * bl + ((ah * bl + al * bh) << 16)) | 0;
 };
-
 
 /********************************************************************************/
 // xxh32.js - implementation of xxhash32 in plain JavaScript
@@ -81,62 +79,57 @@ var prime5 = 0x165667b1;
 // Utility functions/primitives
 // --
 
-function rotl32 (x, r) {
+function rotl32(x, r) {
   x = x | 0;
   r = r | 0;
 
-  return x >>> (32 - r | 0) | x << r | 0;
+  return (x >>> ((32 - r) | 0)) | (x << r) | 0;
 }
 
-function rotmul32 (h, r, m) {
+function rotmul32(h, r, m) {
   h = h | 0;
   r = r | 0;
   m = m | 0;
 
-  return util.imul(h >>> (32 - r | 0) | h << r, m) | 0;
+  return util.imul((h >>> ((32 - r) | 0)) | (h << r), m) | 0;
 }
 
-function shiftxor32 (h, s) {
+function shiftxor32(h, s) {
   h = h | 0;
   s = s | 0;
 
-  return h >>> s ^ h | 0;
+  return ((h >>> s) ^ h) | 0;
 }
 
 // Implementation
 // --
 
-function xxhapply (h, src, m0, s, m1) {
+function xxhapply(h, src, m0, s, m1) {
   return rotmul32(util.imul(src, m0) + h, s, m1);
 }
 
-function xxh1 (h, src, index) {
-  return rotmul32((h + util.imul(src[index], prime5)), 11, prime1);
+function xxh1(h, src, index) {
+  return rotmul32(h + util.imul(src[index], prime5), 11, prime1);
 }
 
-function xxh4 (h, src, index) {
+function xxh4(h, src, index) {
   return xxhapply(h, util.readU32(src, index), prime3, 17, prime4);
 }
 
-function xxh16 (h, src, index) {
+function xxh16(h, src, index) {
   return [
     xxhapply(h[0], util.readU32(src, index + 0), prime2, 13, prime1),
     xxhapply(h[1], util.readU32(src, index + 4), prime2, 13, prime1),
     xxhapply(h[2], util.readU32(src, index + 8), prime2, 13, prime1),
-    xxhapply(h[3], util.readU32(src, index + 12), prime2, 13, prime1)
+    xxhapply(h[3], util.readU32(src, index + 12), prime2, 13, prime1),
   ];
 }
 
-function xxh32 (seed, src, index, len) {
+function xxh32(seed, src, index, len) {
   var h, l;
   l = len;
   if (len >= 16) {
-    h = [
-      seed + prime1 + prime2,
-      seed + prime2,
-      seed,
-      seed - prime1
-    ];
+    h = [seed + prime1 + prime2, seed + prime2, seed, seed - prime1];
 
     while (len >= 16) {
       h = xxh16(h, src, index);
@@ -145,7 +138,12 @@ function xxh32 (seed, src, index, len) {
       len -= 16;
     }
 
-    h = rotl32(h[0], 1) + rotl32(h[1], 7) + rotl32(h[2], 12) + rotl32(h[3], 18) + l;
+    h =
+      rotl32(h[0], 1) +
+      rotl32(h[1], 7) +
+      rotl32(h[2], 12) +
+      rotl32(h[3], 18) +
+      l;
   } else {
     h = (seed + prime5 + len) >>> 0;
   }
@@ -164,14 +162,16 @@ function xxh32 (seed, src, index, len) {
     len--;
   }
 
-  h = shiftxor32(util.imul(shiftxor32(util.imul(shiftxor32(h, 15), prime2), 13), prime3), 16);
+  h = shiftxor32(
+    util.imul(shiftxor32(util.imul(shiftxor32(h, 15), prime2), 13), prime3),
+    16
+  );
 
   return h >>> 0;
 }
 
-xxhash = {}
+xxhash = {};
 xxhash.hash = xxh32;
-
 
 /********************************************************************************/
 lz4 = {};
@@ -196,7 +196,7 @@ var blockBuf = makeBuffer(5 << 20);
 var hashTable = makeHashTable();
 
 // Frame constants.
-var magicNum = 0x184D2204;
+var magicNum = 0x184d2204;
 
 // Frame descriptor flags.
 var fdContentChksum = 0x4;
@@ -204,7 +204,7 @@ var fdContentSize = 0x8;
 var fdBlockChksum = 0x10;
 // var fdBlockIndep = 0x20;
 var fdVersion = 0x40;
-var fdVersionMask = 0xC0;
+var fdVersionMask = 0xc0;
 
 // Block sizes.
 var bsUncompressed = 0x80000000;
@@ -215,14 +215,14 @@ var bsMap = {
   4: 0x10000,
   5: 0x40000,
   6: 0x100000,
-  7: 0x400000
+  7: 0x400000,
 };
 
 // Utility functions/primitives
 // --
 
 // Makes our hashtable. On older browsers, may return a plain array.
-function makeHashTable () {
+function makeHashTable() {
   try {
     return new Uint32Array(hashSize);
   } catch (error) {
@@ -237,14 +237,14 @@ function makeHashTable () {
 }
 
 // Clear hashtable.
-function clearHashTable (table) {
+function clearHashTable(table) {
   for (var i = 0; i < hashSize; i++) {
     hashTable[i] = 0;
   }
 }
 
 // Makes a byte buffer. On older browsers, may return a plain array.
-function makeBuffer (size) {
+function makeBuffer(size) {
   try {
     return new Uint8Array(size);
   } catch (error) {
@@ -258,7 +258,7 @@ function makeBuffer (size) {
   }
 }
 
-function sliceArray (array, start, end) {
+function sliceArray(array, start, end) {
   if (typeof array.buffer !== undefined) {
     if (Uint8Array.prototype.slice) {
       return array.slice(start, end);
@@ -268,15 +268,15 @@ function sliceArray (array, start, end) {
 
       // Calculate start.
       start = start | 0;
-      start = (start < 0) ? Math.max(len + start, 0) : Math.min(start, len);
+      start = start < 0 ? Math.max(len + start, 0) : Math.min(start, len);
 
       // Calculate end.
-      end = (end === undefined) ? len : end | 0;
-      end = (end < 0) ? Math.max(len + end, 0) : Math.min(end, len);
+      end = end === undefined ? len : end | 0;
+      end = end < 0 ? Math.max(len + end, 0) : Math.min(end, len);
 
       // Copy into new array.
       var arraySlice = new Uint8Array(end - start);
-      for (var i = start, n = 0; i < end;) {
+      for (var i = start, n = 0; i < end; ) {
         arraySlice[n++] = array[i++];
       }
 
@@ -292,17 +292,17 @@ function sliceArray (array, start, end) {
 // --
 
 // Calculates an upper bound for lz4 compression.
-lz4.compressBound = function compressBound (n) {
-  return (n + (n / 255) + 16) | 0;
+lz4.compressBound = function compressBound(n) {
+  return (n + n / 255 + 16) | 0;
 };
 
 // Calculates an upper bound for lz4 decompression, by reading the data.
-lz4.decompressBound = function decompressBound (src) {
+lz4.decompressBound = function decompressBound(src) {
   var sIndex = 0;
 
   // Read magic number
   if (util.readU32(src, sIndex) !== magicNum) {
-    throw new Error('invalid magic number');
+    throw new Error("invalid magic number");
   }
 
   sIndex += 4;
@@ -312,7 +312,9 @@ lz4.decompressBound = function decompressBound (src) {
 
   // Check version
   if ((descriptor & fdVersionMask) !== fdVersion) {
-    throw new Error('incompatible descriptor version ' + (descriptor & fdVersionMask));
+    throw new Error(
+      "incompatible descriptor version " + (descriptor & fdVersionMask)
+    );
   }
 
   // Read flags
@@ -323,7 +325,7 @@ lz4.decompressBound = function decompressBound (src) {
   var bsIdx = (src[sIndex++] >> bsShift) & bsMask;
 
   if (bsMap[bsIdx] === undefined) {
-    throw new Error('invalid block size ' + bsIdx);
+    throw new Error("invalid block size " + bsIdx);
   }
 
   var maxBlockSize = bsMap[bsIdx];
@@ -365,7 +367,13 @@ lz4.decompressBound = function decompressBound (src) {
 lz4.makeBuffer = makeBuffer;
 
 // Decompresses a block of Lz4.
-lz4.decompressBlock = function decompressBlock (src, dst, sIndex, sLength, dIndex) {
+lz4.decompressBlock = function decompressBlock(
+  src,
+  dst,
+  sIndex,
+  sLength,
+  dIndex
+) {
   var mLength, mOffset, sEnd, n, i;
   var hasCopyWithin = dst.copyWithin !== undefined && dst.fill !== undefined;
 
@@ -377,7 +385,7 @@ lz4.decompressBlock = function decompressBlock (src, dst, sIndex, sLength, dInde
     var token = src[sIndex++];
 
     // Copy literals.
-    var literalCount = (token >> 4);
+    var literalCount = token >> 4;
     if (literalCount > 0) {
       // Parse length.
       if (literalCount === 0xf) {
@@ -390,7 +398,7 @@ lz4.decompressBlock = function decompressBlock (src, dst, sIndex, sLength, dInde
       }
 
       // Copy literals
-      for (n = sIndex + literalCount; sIndex < n;) {
+      for (n = sIndex + literalCount; sIndex < n; ) {
         dst[dIndex++] = src[sIndex++];
       }
     }
@@ -400,7 +408,7 @@ lz4.decompressBlock = function decompressBlock (src, dst, sIndex, sLength, dInde
     }
 
     // Copy match.
-    mLength = (token & 0xf);
+    mLength = token & 0xf;
 
     // Parse offset.
     mOffset = src[sIndex++] | (src[sIndex++] << 8);
@@ -429,7 +437,7 @@ lz4.decompressBlock = function decompressBlock (src, dst, sIndex, sLength, dInde
       dst.copyWithin(dIndex, dIndex - mOffset, dIndex - mOffset + mLength);
       dIndex += mLength;
     } else {
-      for (i = dIndex - mOffset, n = i + mLength; i < n;) {
+      for (i = dIndex - mOffset, n = i + mLength; i < n; ) {
         dst[dIndex++] = dst[i++] | 0;
       }
     }
@@ -439,7 +447,13 @@ lz4.decompressBlock = function decompressBlock (src, dst, sIndex, sLength, dInde
 };
 
 // Compresses a block with Lz4.
-lz4.compressBlock = function compressBlock (src, dst, sIndex, sLength, hashTable) {
+lz4.compressBlock = function compressBlock(
+  src,
+  dst,
+  sIndex,
+  sLength,
+  hashTable
+) {
   var mIndex, mAnchor, mLength, mOffset, mStep;
   var literalCount, dIndex, sEnd, n;
 
@@ -458,7 +472,7 @@ lz4.compressBlock = function compressBlock (src, dst, sIndex, sLength, hashTable
       var hash = util.hashU32(seq) >>> 0;
 
       // Crush hash to 16 bits.
-      hash = ((hash >> 16) ^ hash) >>> 0 & 0xffff;
+      hash = (((hash >> 16) ^ hash) >>> 0) & 0xffff;
 
       // Look for a match in the hashtable. NOTE: remove one; see below.
       mIndex = hashTable[hash] - 1;
@@ -467,7 +481,11 @@ lz4.compressBlock = function compressBlock (src, dst, sIndex, sLength, hashTable
       hashTable[hash] = sIndex + 1;
 
       // Determine if there is a match (within range.)
-      if (mIndex < 0 || ((sIndex - mIndex) >>> 16) > 0 || util.readU32(src, mIndex) !== seq) {
+      if (
+        mIndex < 0 ||
+        (sIndex - mIndex) >>> 16 > 0 ||
+        util.readU32(src, mIndex) !== seq
+      ) {
         mStep = searchMatchCount++ >> skipTrigger;
         sIndex += mStep;
         continue;
@@ -512,7 +530,7 @@ lz4.compressBlock = function compressBlock (src, dst, sIndex, sLength, hashTable
 
       // Write offset.
       dst[dIndex++] = mOffset;
-      dst[dIndex++] = (mOffset >> 8);
+      dst[dIndex++] = mOffset >> 8;
 
       // Write match length.
       if (mLength >= mlMask) {
@@ -536,13 +554,13 @@ lz4.compressBlock = function compressBlock (src, dst, sIndex, sLength, hashTable
   // Write literal token+count.
   literalCount = sEnd - mAnchor;
   if (literalCount >= runMask) {
-    dst[dIndex++] = (runMask << mlBits);
+    dst[dIndex++] = runMask << mlBits;
     for (n = literalCount - runMask; n >= 0xff; n -= 0xff) {
       dst[dIndex++] = 0xff;
     }
     dst[dIndex++] = n;
   } else {
-    dst[dIndex++] = (literalCount << mlBits);
+    dst[dIndex++] = literalCount << mlBits;
   }
 
   // Write literals.
@@ -555,14 +573,14 @@ lz4.compressBlock = function compressBlock (src, dst, sIndex, sLength, hashTable
 };
 
 // Decompresses a frame of Lz4 data.
-lz4.decompressFrame = function decompressFrame (src, dst) {
+lz4.decompressFrame = function decompressFrame(src, dst) {
   var useBlockSum, useContentSum, useContentSize, descriptor;
   var sIndex = 0;
   var dIndex = 0;
 
   // Read magic number
   if (util.readU32(src, sIndex) !== magicNum) {
-    throw new Error('invalid magic number');
+    throw new Error("invalid magic number");
   }
 
   sIndex += 4;
@@ -572,7 +590,7 @@ lz4.decompressFrame = function decompressFrame (src, dst) {
 
   // Check version
   if ((descriptor & fdVersionMask) !== fdVersion) {
-    throw new Error('incompatible descriptor version');
+    throw new Error("incompatible descriptor version");
   }
 
   // Read flags
@@ -584,7 +602,7 @@ lz4.decompressFrame = function decompressFrame (src, dst) {
   var bsIdx = (src[sIndex++] >> bsShift) & bsMask;
 
   if (bsMap[bsIdx] === undefined) {
-    throw new Error('invalid block size');
+    throw new Error("invalid block size");
   }
 
   if (useContentSize) {
@@ -635,7 +653,7 @@ lz4.decompressFrame = function decompressFrame (src, dst) {
 };
 
 // Compresses data to an Lz4 frame.
-lz4.compressFrame = function compressFrame (src, dst) {
+lz4.compressFrame = function compressFrame(src, dst) {
   var dIndex = 0;
 
   // Write magic number.
@@ -670,7 +688,7 @@ lz4.compressFrame = function compressFrame (src, dst) {
       util.writeU32(dst, dIndex, 0x80000000 | blockSize);
       dIndex += 4;
 
-      for (var z = sIndex + blockSize; sIndex < z;) {
+      for (var z = sIndex + blockSize; sIndex < z; ) {
         dst[dIndex++] = src[sIndex++];
       }
 
@@ -680,7 +698,7 @@ lz4.compressFrame = function compressFrame (src, dst) {
       util.writeU32(dst, dIndex, compSize);
       dIndex += 4;
 
-      for (var j = 0; j < compSize;) {
+      for (var j = 0; j < compSize; ) {
         dst[dIndex++] = blockBuf[j++];
       }
 
@@ -699,7 +717,7 @@ lz4.compressFrame = function compressFrame (src, dst) {
 // Decompresses a buffer containing an Lz4 frame. maxSize is optional; if not
 // provided, a maximum size will be determined by examining the data. The
 // buffer returned will always be perfectly-sized.
-lz4.decompress = function decompress (src, maxSize) {
+lz4.decompress = function decompress(src, maxSize) {
   var dst, size;
 
   if (maxSize === undefined) {
@@ -718,7 +736,7 @@ lz4.decompress = function decompress (src, maxSize) {
 // Compresses a buffer to an Lz4 frame. maxSize is optional; if not provided,
 // a buffer will be created based on the theoretical worst output size for a
 // given input size. The buffer returned will always be perfectly-sized.
-lz4.compress = function compress (src, maxSize) {
+lz4.compress = function compress(src, maxSize) {
   var dst, size;
 
   if (maxSize === undefined) {
@@ -735,18 +753,17 @@ lz4.compress = function compress (src, maxSize) {
   return dst;
 };
 
-
 /********************************************************************************/
 //convenience function added for xpra:
-lz4.decode = function(data) {
-	const length = data[0] | (data[1] << 8) | (data[2] << 16) | (data[3] << 24);
-	if (length<=0) {
-		throw "invalid length: "+length;
-	}
-	if (length>1024*1024*1024) {
-		throw "length too long: "+length;
-	}
-	const inflated = new Uint8Array(length);
-	lz4.decompressBlock(data, inflated, 4, length, 0);
-	return inflated;
-}
+lz4.decode = function (data) {
+  const length = data[0] | (data[1] << 8) | (data[2] << 16) | (data[3] << 24);
+  if (length <= 0) {
+    throw "invalid length: " + length;
+  }
+  if (length > 1024 * 1024 * 1024) {
+    throw "length too long: " + length;
+  }
+  const inflated = new Uint8Array(length);
+  lz4.decompressBlock(data, inflated, 4, length, 0);
+  return inflated;
+};

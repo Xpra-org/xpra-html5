@@ -1,4 +1,3 @@
-
 name: HTML5
 
 on: [push, pull_request]
@@ -24,7 +23,7 @@ jobs:
             "$HOME/inst-direct/usr/share/xpra/www/" \
             "$HOME/inst-direct/etc/xpra/html5-client"
       - name: List Direct
-        run:  ls -lR "$HOME/inst-direct"
+        run: ls -lR "$HOME/inst-direct"
 
       - name: Install DESTDIR
         run: |
