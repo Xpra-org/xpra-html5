@@ -4,6 +4,7 @@
   "description": "HTML5 client for Xpra",
   "main": "html5/index.html",
   "scripts": {
+    "check_formatting": "npx prettier --check .",
     "format": "npx prettier --write .",
     "test": "echo \"Error: no test specified\" && exit 1",
     "prepare": "husky install"
