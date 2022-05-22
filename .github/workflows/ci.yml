@@ -1,5 +1,5 @@
 
-name: HTML5
+name: CI
 
 on: [push, pull_request]
 
@@ -8,7 +8,8 @@ defaults:
     shell: bash
 
 jobs:
-  install_nix_native:
+
+  test_installation_methods:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
