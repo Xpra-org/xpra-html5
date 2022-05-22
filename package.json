@@ -4,6 +4,7 @@
   "description": "HTML5 client for Xpra",
   "main": "html5/index.html",
   "scripts": {
+    "format": "npx prettier --write .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -15,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/Xpra-org/xpra-html5/issues"
   },
-  "homepage": "https://github.com/Xpra-org/xpra-html5#readme"
+  "homepage": "https://github.com/Xpra-org/xpra-html5#readme",
+  "devDependencies": {
+    "prettier": "2.6.2"
+  }
 }
