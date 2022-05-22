@@ -1,0 +1,29 @@
+{
+  "name": "xpra-html5",
+  "version": "5.0.0",
+  "description": "HTML5 client for Xpra",
+  "main": "html5/index.html",
+  "scripts": {
+    "format": "npx prettier --write .",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepare": "husky install"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Xpra-org/xpra-html5.git"
+  },
+  "author": "",
+  "license": "MPL-2.0",
+  "bugs": {
+    "url": "https://github.com/Xpra-org/xpra-html5/issues"
+  },
+  "homepage": "https://github.com/Xpra-org/xpra-html5#readme",
+  "devDependencies": {
+    "husky": "^8.0.1",
+    "lint-staged": "^12.4.1",
+    "prettier": "2.6.2"
+  },
+  "lint-staged": {
+    "*.{css,html,js,md,yml}": "prettier --write"
+  }
+}

@@ -13,18 +13,23 @@
  */
 
 const XpraOffscreenWorker = {
-    isAvailable: function () {
-        if (XpraImageDecoderLoader.hasNativeDecoder() && XpraVideoDecoderLoader.hasNativeDecoder && typeof OffscreenCanvas !== "undefined") {
-            //we also need the direct constructor:
-            try {
-                new OffscreenCanvas(256, 256);
-                return true;
-            }
-            catch (e) {
-                console.warn("unable to instantiate an offscreen canvas:", e);
-            }
-        }
-        console.warn("Offscreen decoding is not available. Please consider using Google Chrome 94+ in a secure (SSL or localhost) context for better performance.");
-        return false;
+  isAvailable: function () {
+    if (
+      XpraImageDecoderLoader.hasNativeDecoder() &&
+      XpraVideoDecoderLoader.hasNativeDecoder &&
+      typeof OffscreenCanvas !== "undefined"
+    ) {
+      //we also need the direct constructor:
+      try {
+        new OffscreenCanvas(256, 256);
+        return true;
+      } catch (e) {
+        console.warn("unable to instantiate an offscreen canvas:", e);
+      }
     }
-}
+    console.warn(
+      "Offscreen decoding is not available. Please consider using Google Chrome 94+ in a secure (SSL or localhost) context for better performance."
+    );
+    return false;
+  },
+};

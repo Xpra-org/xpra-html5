@@ -1,4 +1,3 @@
-
 name: HTML5
 
 on: [push, pull_request]
@@ -8,6 +7,17 @@ defaults:
     shell: bash
 
 jobs:
+  check_formatting:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install Nix
+        uses: cachix/install-nix-action@v17
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+      - name: Check formatting
+        run: nix-shell --command 'npm run format'
+
   install_nix_native:
     runs-on: ubuntu-latest
     steps:
@@ -24,7 +34,7 @@ jobs:
             "$HOME/inst-direct/usr/share/xpra/www/" \
             "$HOME/inst-direct/etc/xpra/html5-client"
       - name: List Direct
-        run:  ls -lR "$HOME/inst-direct"
+        run: ls -lR "$HOME/inst-direct"
 
       - name: Install DESTDIR
         run: |
