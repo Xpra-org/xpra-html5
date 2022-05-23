@@ -9,3 +9,6 @@
 /install
 /dist
 /MANIFEST
+
+# third-party libraries:
+/node_modules
