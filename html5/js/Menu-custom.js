@@ -23,6 +23,9 @@ SOFTWARE.
 
 */
 
+const MENU_CONTENT_LEFT_CLASS_NAME = "menu-content-left";
+const MENU_CONTENT_RIGHT_CLASS_NAME = "menu-content-right";
+
 function addWindowListItem(wid, title) {
   const li = document.createElement("li");
   li.className = "windowlist-li";
@@ -39,7 +42,7 @@ function addWindowListItem(wid, title) {
   };
   a.onclick = function (e) {
     // Skip handling minimize, maximize, close events.
-    if ($(e.target).hasClass("menu-content-right")) return;
+    if ($(e.target).hasClass(MENU_CONTENT_RIGHT_CLASS_NAME)) return;
     if (client.id_to_window[wid].minimized) {
       client.id_to_window[wid].toggle_minimized();
     } else {
@@ -58,13 +61,13 @@ function addWindowListItem(wid, title) {
   const img = new Image();
   img.id = "windowlistitemicon" + wid;
   img.src = "favicon.png";
-  img.className = "menu-content-left";
+  img.className = MENU_CONTENT_LEFT_CLASS_NAME;
   divLeft.appendChild(img);
 
   const titleDiv = document.createElement("div");
   titleDiv.appendChild(document.createTextNode(title));
   titleDiv.id = "windowlistitemtitle" + wid;
-  titleDiv.className = "menu-content-left";
+  titleDiv.className = MENU_CONTENT_LEFT_CLASS_NAME;
   divLeft.appendChild(titleDiv);
 
   const divRight = document.createElement("div");
@@ -74,7 +77,7 @@ function addWindowListItem(wid, title) {
   img2.id = "windowlistitemclose" + wid;
   img2.src = "icons/close.png";
   img2.title = "Close";
-  img2.className = "menu-content-right";
+  img2.className = MENU_CONTENT_RIGHT_CLASS_NAME;
   img2.onclick = function (e) {
     client._window_closed(client.id_to_window[wid]);
     e.stopPropagation();
@@ -89,7 +92,7 @@ function addWindowListItem(wid, title) {
     e.stopPropagation();
     hideWindowList();
   };
-  img3.className = "menu-content-right";
+  img3.className = MENU_CONTENT_RIGHT_CLASS_NAME;
   const img4 = new Image();
   img4.id = "windowlistitemmin" + wid;
   img4.src = "icons/minimize.png";
@@ -99,7 +102,7 @@ function addWindowListItem(wid, title) {
     e.stopPropagation();
     hideWindowList();
   };
-  img4.className = "menu-content-right";
+  img4.className = MENU_CONTENT_RIGHT_CLASS_NAME;
 
   divRight.appendChild(img2);
   divRight.appendChild(img3);

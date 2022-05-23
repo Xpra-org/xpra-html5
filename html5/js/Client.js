@@ -26,6 +26,16 @@ const FILE_CHUNKS_SIZE = 128 * 1024;
 const MAX_CONCURRENT_FILES = 5;
 const CHUNK_TIMEOUT = 10 * 1000;
 
+const ACK_FILE_CHUNK = "ack-file-chunk";
+const BUTTON_ACTION = "button-action";
+const CLASS_INSTANCE = "class-instance";
+const FLOAT_MENU_SELECTOR = "#float_menu";
+const PASTEBOARD_SELECTOR = "#pasteboard";
+const TEXT_PLAIN = "text/plain";
+const UTF8_STRING = "UTF8_STRING";
+const WINDOW_PREVIEW_SELECTOR = "#window_preview";
+const WINDOW_TYPE = "window-type";
+
 class XpraClient {
   constructor(container) {
     // the container div is the "screen" on the HTML page where we
@@ -184,7 +194,7 @@ class XpraClient {
     this.clipboard_buffer = "";
     this.clipboard_server_buffers = {};
     this.clipboard_pending = false;
-    this.clipboard_targets = ["UTF8_STRING", "TEXT", "STRING", "text/plain"];
+    this.clipboard_targets = [UTF8_STRING, "TEXT", "STRING", TEXT_PLAIN];
     if (
       CLIPBOARD_IMAGES &&
       navigator.clipboard &&
@@ -392,7 +402,7 @@ class XpraClient {
       "set-clipboard-enabled": this._process_set_clipboard_enabled,
       "clipboard-request": this._process_clipboard_request,
       "send-file": this._process_send_file,
-      "ack-file-chunk": this._process_ack_file_chunk,
+      [ACK_FILE_CHUNK]: this._process_ack_file_chunk,
       "send-file-chunk": this._process_send_file_chunk,
       "open-url": this._process_open_url,
       "setting-change": this._process_setting_change,
@@ -729,7 +739,7 @@ class XpraClient {
     this.capture_keyboard = false;
     // assign the key callbacks
     document.addEventListener("keydown", (e) => {
-      const preview_el = $("#window_preview");
+      const preview_el = $(WINDOW_PREVIEW_SELECTOR);
 
       if (e.code === "Escape") {
         if (preview_el.is(":visible")) {
@@ -771,7 +781,7 @@ class XpraClient {
     });
     document.addEventListener("keyup", (e) => {
       if (e.code === "Tab" || e.code.startsWith("Alt")) {
-        if ($("#window_preview").is(":visible")) {
+        if ($(WINDOW_PREVIEW_SELECTOR).is(":visible")) {
           if (e.code.startsWith("Alt")) {
             client.toggle_window_preview();
           }
@@ -1546,9 +1556,9 @@ class XpraClient {
         "below",
         "title",
         "size-hints",
-        "class-instance",
+        CLASS_INSTANCE,
         "transient-for",
-        "window-type",
+        WINDOW_TYPE,
         "has-alpha",
         "decorations",
         "override-redirect",
@@ -1754,8 +1764,8 @@ class XpraClient {
     }
     // Skip processing if clicked on float menu
     if (
-      $(e.target).attr("id") === "float_menu" ||
-      $(e.target).parents("#float_menu").length > 0
+      $(e.target).attr("id") === FLOAT_MENU_SELECTOR.slice(1) ||
+      $(e.target).parents(FLOAT_MENU_SELECTOR).length > 0
     ) {
       this.debug("clicked on float_menu, skipping event handler", e);
       return;
@@ -1805,7 +1815,7 @@ class XpraClient {
       this.buttons_pressed.delete(button);
     }
     this.send([
-      "button-action",
+      BUTTON_ACTION,
       wid,
       button,
       pressed,
@@ -1919,45 +1929,13 @@ class XpraClient {
     const btn_y = this.wheel_delta_y >= 0 ? 5 : 4;
     while (wx >= 120) {
       wx -= 120;
-      this.send([
-        "button-action",
-        wid,
-        btn_x,
-        true,
-        [x, y],
-        modifiers,
-        buttons,
-      ]);
-      this.send([
-        "button-action",
-        wid,
-        btn_x,
-        false,
-        [x, y],
-        modifiers,
-        buttons,
-      ]);
+      this.send([BUTTON_ACTION, wid, btn_x, true, [x, y], modifiers, buttons]);
+      this.send([BUTTON_ACTION, wid, btn_x, false, [x, y], modifiers, buttons]);
     }
     while (wy >= 120) {
       wy -= 120;
-      this.send([
-        "button-action",
-        wid,
-        btn_y,
-        true,
-        [x, y],
-        modifiers,
-        buttons,
-      ]);
-      this.send([
-        "button-action",
-        wid,
-        btn_y,
-        false,
-        [x, y],
-        modifiers,
-        buttons,
-      ]);
+      this.send([BUTTON_ACTION, wid, btn_y, true, [x, y], modifiers, buttons]);
+      this.send([BUTTON_ACTION, wid, btn_y, false, [x, y], modifiers, buttons]);
     }
     //store left overs:
     this.wheel_delta_x = this.wheel_delta_x >= 0 ? wx : -wx;
@@ -1995,7 +1973,7 @@ class XpraClient {
           (err) => this.cdebug("clipboard", "paste event failed:", err)
         );
       } else {
-        let datatype = "text/plain";
+        let datatype = TEXT_PLAIN;
         if (Utilities.isIE()) {
           datatype = "Text";
         }
@@ -2009,7 +1987,7 @@ class XpraClient {
     });
     window.addEventListener("copy", (e) => {
       const clipboard_buffer = this.get_clipboard_buffer();
-      const pasteboard = $("#pasteboard");
+      const pasteboard = $(PASTEBOARD_SELECTOR);
       pasteboard.text(decodeURIComponent(escape(clipboard_buffer)));
       pasteboard.select();
       this.cdebug(
@@ -2021,7 +1999,7 @@ class XpraClient {
     });
     window.addEventListener("cut", (e) => {
       const clipboard_buffer = this.get_clipboard_buffer();
-      const pasteboard = $("#pasteboard");
+      const pasteboard = $(PASTEBOARD_SELECTOR);
       pasteboard.text(decodeURIComponent(escape(clipboard_buffer)));
       pasteboard.select();
       this.cdebug(
@@ -2057,7 +2035,7 @@ class XpraClient {
       //maybe just abort here instead?
       clipboard_buffer = "";
     }
-    const pasteboard = $("#pasteboard");
+    const pasteboard = $(PASTEBOARD_SELECTOR);
     pasteboard.text(clipboard_buffer);
     pasteboard.select();
     this.cdebug(
@@ -2112,7 +2090,7 @@ class XpraClient {
       return false;
     }
     //fallback code for legacy mode:
-    let datatype = "text/plain";
+    let datatype = TEXT_PLAIN;
     let clipboardData = (e.originalEvent || e).clipboardData;
     //IE: must use window.clipboardData because the event clipboardData is null!
     if (!clipboardData) {
@@ -2200,7 +2178,7 @@ class XpraClient {
         default_settings.auto_fullscreen_desktop_class;
       if (
         win.windowtype == "DESKTOP" &&
-        win.metadata["class-instance"].includes(auto_fullscreen_desktop_class)
+        win.metadata[CLASS_INSTANCE].includes(auto_fullscreen_desktop_class)
       ) {
         for (let i in this.id_to_window) {
           const iwin = this.id_to_window[i];
@@ -2253,7 +2231,7 @@ class XpraClient {
         default_settings.auto_fullscreen_desktop_class;
       if (
         win.windowtype == "DESKTOP" &&
-        win.metadata["class-instance"].includes(auto_fullscreen_desktop_class)
+        win.metadata[CLASS_INSTANCE].includes(auto_fullscreen_desktop_class)
       ) {
         return true;
       }
@@ -2265,7 +2243,7 @@ class XpraClient {
    * Show/Hide the window preview list
    */
   toggle_window_preview(init_cb) {
-    const preview_element = $("#window_preview");
+    const preview_element = $(WINDOW_PREVIEW_SELECTOR);
 
     preview_element.on("init", (e, slick) => {
       if (init_cb) {
@@ -2385,18 +2363,18 @@ class XpraClient {
    * Handle closing of window list if clickout outside of area.
    */
   _handle_window_list_blur(e) {
-    if ($("#window_preview").is(":visible")) {
-      if (e.target.id === "window_preview") {
+    if ($(WINDOW_PREVIEW_SELECTOR).is(":visible")) {
+      if (e.target.id === WINDOW_PREVIEW_SELECTOR.slice(1)) {
         return;
       }
-      if ($(e.target).parents("#window_preview").length > 0) {
+      if ($(e.target).parents(WINDOW_PREVIEW_SELECTOR).length > 0) {
         return;
       }
       if ($(e.target).hasClass("window-list-button")) {
         return;
       }
       if (
-        $(e.target).parents("#float_menu").length > 0 &&
+        $(e.target).parents(FLOAT_MENU_SELECTOR).length > 0 &&
         $(e.target).parent().has("#open_windows_list")
       ) {
         return;
@@ -3152,7 +3130,7 @@ class XpraClient {
    */
 
   position_float_menu() {
-    const float_menu_element = $("#float_menu");
+    const float_menu_element = $(FLOAT_MENU_SELECTOR);
     var toolbar_width = float_menu_element.width();
     var left = float_menu_element.offset().left || 0;
     var top = float_menu_element.offset().top || 0;
@@ -3178,8 +3156,8 @@ class XpraClient {
     mydiv.appendChild(mycanvas);
 
     const float_tray = document.getElementById("float_tray");
-    const float_menu = document.getElementById("float_menu");
-    const float_menu_element = $("#float_menu");
+    const float_menu = document.querySelector(FLOAT_MENU_SELECTOR);
+    const float_menu_element = $(FLOAT_MENU_SELECTOR);
     float_menu_element.children().show();
     //increase size for tray icon
     const new_width =
@@ -3231,7 +3209,7 @@ class XpraClient {
   }
 
   reconfigure_all_trays() {
-    const float_menu = document.getElementById("float_menu");
+    const float_menu = document.querySelector(FLOAT_MENU_SELECTOR);
     float_menu_width = float_menu_item_size * 4 + float_menu_padding;
     for (const twid in this.id_to_window) {
       const twin = this.id_to_window[twid];
@@ -3242,7 +3220,7 @@ class XpraClient {
     }
 
     // only set if float_menu is visible
-    if ($("#float_menu").width() > 0) {
+    if ($(FLOAT_MENU_SELECTOR).width() > 0) {
       float_menu.style.width = float_menu_width;
       this.position_float_menu();
     }
@@ -3299,7 +3277,7 @@ class XpraClient {
       (window) => this.send(["close-window", window.wid]),
       this.scale
     );
-    if (win && !override_redirect && win.metadata["window-type"] == "NORMAL") {
+    if (win && !override_redirect && win.metadata[WINDOW_TYPE] == "NORMAL") {
       const trimmedTitle = Utilities.trimString(win.title, 30);
       window.addWindowListItem(wid, trimmedTitle);
     }
@@ -3476,7 +3454,7 @@ class XpraClient {
     if (
       win &&
       !win.override_redirect &&
-      win.metadata["window-type"] == "NORMAL"
+      win.metadata[WINDOW_TYPE] == "NORMAL"
     ) {
       window.removeWindowListItem(wid);
     }
@@ -4475,9 +4453,9 @@ class XpraClient {
       packet = [
         "clipboard-token",
         "CLIPBOARD",
-        ["UTF8_STRING", "text/plain"],
-        "UTF8_STRING",
-        "UTF8_STRING",
+        [UTF8_STRING, TEXT_PLAIN],
+        UTF8_STRING,
+        UTF8_STRING,
         8,
         "bytes",
         data,
@@ -4638,7 +4616,7 @@ class XpraClient {
               this.debug("clipboard", "item", i, "types:", item.types);
               for (let j = 0; j < item.types.length; j++) {
                 itemtype = item.types[j];
-                if (itemtype == "text/plain") {
+                if (itemtype == TEXT_PLAIN) {
                   item.getType(itemtype).then(
                     (blob) => {
                       const fileReader = new FileReader();
@@ -4741,7 +4719,7 @@ class XpraClient {
       request_id,
       selection,
       clipboard_buffer,
-      "UTF8_STRING"
+      UTF8_STRING
     );
   }
 
@@ -4749,7 +4727,7 @@ class XpraClient {
     const server_buffer = this.clipboard_server_buffers["CLIPBOARD"];
     this.debug("clipboard", "resend_clipboard_server_buffer:", server_buffer);
     if (!server_buffer) {
-      this.send_clipboard_string(request_id, selection, "", "UTF8_STRING");
+      this.send_clipboard_string(request_id, selection, "", UTF8_STRING);
       return;
     }
     const target = server_buffer[0];
@@ -4776,7 +4754,7 @@ class XpraClient {
         "clipboard-contents",
         request_id,
         selection,
-        datatype || "UTF8_STRING",
+        datatype || UTF8_STRING,
         8,
         "bytes",
         clipboard_buffer,
@@ -4912,7 +4890,7 @@ class XpraClient {
       chunk,
     ];
     this.receive_chunks_in_progress.set(chunk_id, chunk_state);
-    this.send(["ack-file-chunk", chunk_id, true, "", chunk]);
+    this.send([ACK_FILE_CHUNK, chunk_id, true, "", chunk]);
     this.log(
       "receiving chunks for",
       basefilename,
@@ -4983,7 +4961,7 @@ class XpraClient {
       //so in-flight packets won't cause errors
       setTimeout(() => this.receive_chunks_in_progress.delete(chunk_id), 20000);
     }
-    this.send(["ack-file-chunk", chunk_id, false, message, chunk]);
+    this.send([ACK_FILE_CHUNK, chunk_id, false, message, chunk]);
   }
 
   _process_send_file_chunk(packet) {
@@ -5089,7 +5067,7 @@ class XpraClient {
     if (digest) {
       digest.update(Utilities.Uint8ToString(file_data));
     }
-    this.send(["ack-file-chunk", chunk_id, true, "", chunk]);
+    this.send([ACK_FILE_CHUNK, chunk_id, true, "", chunk]);
     if (has_more) {
       const timer = chunk_state[12];
       if (timer) {

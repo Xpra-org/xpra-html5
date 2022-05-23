@@ -10,6 +10,8 @@
 $(function () {
   window.notification_timers = {};
 
+  const NOTIFICATION_SELECTOR = ".notifications";
+
   window.doNotification = function (
     type,
     nid,
@@ -54,7 +56,7 @@ $(function () {
         '<div class="dismiss">&#215;</div>' +
         "</div>"
     );
-    const notifications_elements = $(".notifications");
+    const notifications_elements = $(NOTIFICATION_SELECTOR);
     notifications_elements.prepend(a);
     if (actions) {
       const notification_buttons = $(
@@ -167,7 +169,7 @@ $(function () {
   window.closeNotification = function (nid) {
     window.cancelNotificationTimer(nid);
     const nID = "notification" + nid;
-    $(".notifications")
+    $(NOTIFICATION_SELECTOR)
       .find("#" + nID)
       .find(".dismiss")
       .trigger("click");
@@ -175,11 +177,11 @@ $(function () {
 
   window.clearNotifications = function () {
     window.cancelNotificationTimers();
-    $(".notifications").find(".dismiss").trigger("click");
+    $(NOTIFICATION_SELECTOR).find(".dismiss").trigger("click");
   };
 
   window.removeNotifications = function () {
     window.cancelNotificationTimers();
-    $(".notifications").empty();
+    $(NOTIFICATION_SELECTOR).empty();
   };
 });
