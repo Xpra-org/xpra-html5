@@ -127,7 +127,6 @@ $(function () {
   });
   float_menu.on("dragstart", function (ev, ui) {
     client.mouse_grabbed = true;
-    //set_focus_cb(0);
   });
   float_menu.on("dragstop", function (ev, ui) {
     client.mouse_grabbed = false;

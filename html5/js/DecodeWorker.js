@@ -28,9 +28,7 @@ function decode_draw_packet(packet, start) {
     height = packet[5],
     coding = packet[6],
     packet_sequence = packet[8];
-  //console.log("decode worker sequence "+packet_sequence+": start="+start);
   function send_back(raw_buffers) {
-    //console.log("send_back: wid_hold=", wid_hold);
     const wid_hold = on_hold.get(wid);
     if (wid_hold) {
       //find the highest sequence number which is still lower than this packet
@@ -66,7 +64,6 @@ function decode_draw_packet(packet, start) {
       wid_hold = new Map();
       on_hold.set(wid, wid_hold);
     }
-    //console.log("holding=", packet_sequence);
     wid_hold.set(packet_sequence, []);
     return wid_hold;
   }
@@ -79,7 +76,6 @@ function decode_draw_packet(packet, start) {
     }
     //release any packets held back by this image:
     const held = wid_hold.get(packet_sequence);
-    //console.log("release held=", held);
     if (!held) {
       //could have been cancelled by EOS
       return;
@@ -91,7 +87,6 @@ function decode_draw_packet(packet, start) {
       do_send_back(held_packet, held_raw_buffers);
     }
     wid_hold.delete(packet_sequence);
-    //console.log("wid_hold=", wid_hold, "on_hold=", on_hold);
     if (wid_hold.size == 0 && on_hold.has(wid)) {
       //this was the last held sequence for this window
       on_hold.delete(wid);
@@ -196,7 +191,6 @@ function decode_draw_packet(packet, start) {
         close_broadway();
         decoder = null;
       }
-      //console.log("decoder=", decoder);
       if (!decoder) {
         decoder = new Decoder({
           rgb: true,
@@ -207,7 +201,6 @@ function decode_draw_packet(packet, start) {
       }
       let count = 0;
       decoder.onPictureDecoded = function (buffer, p_width, p_height, infos) {
-        //console.log("broadway frame: enc size=", enc_width, enc_height, ", decode size=", p_width, p_height);
         count++;
         //forward it as rgb32:
         send_rgb32_back(buffer, p_width, p_height, bitmap_options);

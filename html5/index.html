@@ -557,7 +557,6 @@
           const info = e.data;
           $("#endpoint").html(client.uri);
           $("#server_display").html(client.server_display);
-          //$("#server_hostname").html(info["hostname"] || "");
           $("#server_platform").html(client.server_platform);
           if (client.server_load == null) {
             $("#server_load").html("n/a");
@@ -574,9 +573,6 @@
             s += ":" + ("0" + ss).slice(-2); //left pad with "0"
             return s;
           }
-          //this one shows bogus values!?:
-          //var elapsed = (new Date()).getTime()-info["server.start_time"];
-          //$("#session_started").html(toHHMMSS(elapsed));
           const elapsed = new Date().getTime() - client.client_start_time;
           $("#session_connected").html(toHHMMSS(elapsed));
           if (client.server_ping_latency >= 0)
@@ -900,11 +896,11 @@
         client.scroll_reverse_y = scroll_reverse_y;
         client.vrefresh = vrefresh;
         client.scale = scale;
-        //example overrides:
-        //client.HELLO_TIMEOUT = 3600000;
-        //client.PING_TIMEOUT = 60000;
-        //client.PING_GRACE = 30000;
-        //client.PING_FREQUENCY = 15000;
+        // example overrides:
+        //   `client.HELLO_TIMEOUT = 3600000;`
+        //   `client.PING_TIMEOUT = 60000;`
+        //   `client.PING_GRACE = 30000;`
+        //   `client.PING_FREQUENCY = 15000;`
 
         if (debug) {
           //example of client event hooks:
@@ -1042,7 +1038,6 @@
                 ssl: ssl,
                 path: path,
                 encryption: encryption,
-                //"key"				: key,
                 encoding: encoding,
                 bandwidth_limit: bandwidth_limit,
                 keyboard_layout: keyboard_layout,
