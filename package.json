@@ -23,6 +23,7 @@
     "eslint": "^8.16.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^4.0.0",
+    "eslint-plugin-sonarjs": "^0.13.0",
     "husky": "^8.0.1",
     "lint-staged": "^12.4.1",
     "prettier": "2.6.2"
@@ -37,6 +38,7 @@
     },
     "extends": [
       "eslint:recommended",
+      "plugin:sonarjs/recommended",
       "plugin:prettier/recommended"
     ],
     "ignorePatterns": [
@@ -54,7 +56,8 @@
         }
       ],
       "no-undef": "warn",
-      "no-unused-vars": "warn"
+      "no-unused-vars": "warn",
+      "sonarjs/cognitive-complexity": "warn"
     }
   },
   "prettier": {}
