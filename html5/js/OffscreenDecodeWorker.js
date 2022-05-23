@@ -508,13 +508,14 @@ onmessage = function (e) {
   const data = e.data;
   let wd = null;
   switch (data.cmd) {
-    case "check":
+    case "check": {
       // We do not check. We are here because we support native decoding.
       // TODO: Reconsider this. It might be a good thing to do some testing, just for sanity??
       const encodings = Array.from(data.encodings);
       const common = encodings.filter((value) => all_encodings.includes(value));
       self.postMessage({ result: true, formats: common });
       break;
+    }
     case "eos":
       wd = offscreen_canvas.get(data.wid);
       if (wd) {
@@ -528,7 +529,7 @@ onmessage = function (e) {
         offscreen_canvas.delete(data.wid);
       }
       break;
-    case "decode":
+    case "decode": {
       const packet = data.packet;
       const wid = packet[1];
       wd = offscreen_canvas.get(wid);
@@ -544,6 +545,7 @@ onmessage = function (e) {
         );
       }
       break;
+    }
     case "redraw":
       wd = offscreen_canvas.get(data.wid);
       if (wd) {
