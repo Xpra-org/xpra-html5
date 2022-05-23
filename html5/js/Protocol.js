@@ -683,13 +683,13 @@ if (
   // we create a custom packet handler which posts packet as a message
   protocol.set_packet_handler((packet) => {
     let raw_buffer = [];
-    if (packet[0] === "draw" && packet[7].hasOwnProperty("buffer")) {
+    if (packet[0] === "draw" && {}.hasOwnProperty.call(packet[7], "buffer")) {
       //zero-copy the draw buffer
       raw_buffer = packet[7].buffer;
       packet[7] = null;
     } else if (
       packet[0] === "send-file-chunk" &&
-      packet[3].hasOwnProperty("buffer")
+      {}.hasOwnProperty.call(packet[3], "buffer")
     ) {
       //zero-copy the file data buffer
       raw_buffer = packet[3].buffer;

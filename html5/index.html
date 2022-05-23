@@ -1353,10 +1353,10 @@
 
       function toggle_fullscreen() {
         const f_el =
-          document.hasOwnProperty("requestFullScreen") ||
-          document.hasOwnProperty("webkitRequestFullScreen") ||
-          document.hasOwnProperty("mozRequestFullScreen") ||
-          document.hasOwnProperty("msRequestFullscreen");
+          {}.hasOwnProperty.call(document, "requestFullScreen") ||
+          {}.hasOwnProperty.call(document, "webkitRequestFullScreen") ||
+          {}.hasOwnProperty.call(document, "mozRequestFullScreen") ||
+          {}.hasOwnProperty.call(document, "msRequestFullscreen");
         if (!f_el) {
           const elem = document.getElementById("fullscreen_button");
           var is_fullscreen =
@@ -1411,9 +1411,11 @@
               document.exitFullscreen();
             } else if (document.webkitExitFullscreen) {
               document.webkitExitFullscreen();
-            } else if (document.hasOwnProperty("mozCancelFullScreen")) {
+            } else if (
+              {}.hasOwnProperty.call((document, "mozCancelFullScreen"))
+            ) {
               document.mozCancelFullScreen();
-            } else if (document.hasOwnProperty("msExitFullscreen")) {
+            } else if ({}.hasOwnProperty.call((document, "msExitFullscreen"))) {
               document.msExitFullscreen();
             }
 

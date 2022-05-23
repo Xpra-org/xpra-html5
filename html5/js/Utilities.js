@@ -138,7 +138,7 @@ const Utilities = {
       return navigator.oscpu;
     }
     //ie:
-    if (navigator.hasOwnProperty("cpuClass")) {
+    if ({}.hasOwnProperty.call((navigator, "cpuClass"))) {
       return navigator.cpuClass;
     }
     return "unknown";
@@ -260,7 +260,7 @@ const Utilities = {
     return navigator.userAgent.includes("Edge");
   },
   isChrome: function () {
-    const isChromium = window.hasOwnProperty("chrome"),
+    const isChromium = {}.hasOwnProperty.call(window, "chrome"),
       winNav = window.navigator,
       vendorName = winNav.vendor,
       isOpera = winNav.userAgent.includes("OPR"),
@@ -289,7 +289,7 @@ const Utilities = {
 
   is_64bit: function () {
     let _to_check = [];
-    if (window.navigator.hasOwnProperty("cpuClass"))
+    if ({}.hasOwnProperty.call((window.navigator, "cpuClass")))
       _to_check.push((window.navigator.cpuClass + "").toLowerCase());
     if (window.navigator.platform)
       _to_check.push((window.navigator.platform + "").toLowerCase());
@@ -641,7 +641,7 @@ const Utilities = {
   },
 
   getConnectionInfo: function () {
-    if (!navigator.hasOwnProperty("connection")) {
+    if ({}.hasOwnProperty.call((!navigator, "connection"))) {
       return {};
     }
     const c = navigator.connection;
@@ -649,7 +649,7 @@ const Utilities = {
     if (c.type) {
       i["type"] = c.type;
     }
-    if (c.hasOwnProperty("effectiveType")) {
+    if ({}.hasOwnProperty.call((c, "effectiveType"))) {
       i["effective-type"] = c.effectiveType;
     }
     if (
@@ -661,7 +661,7 @@ const Utilities = {
       i["downlink"] = Math.round(c.downlink * 1000 * 1000);
     }
     if (
-      c.hasOwnProperty("downlinkMax") &&
+      {}.hasOwnProperty.call(c, "downlinkMax") &&
       !isNaN(c.downlinkMax) &&
       !isNaN(c.downlinkMax) &&
       c.downlinkMax > 0 &&
