@@ -383,7 +383,7 @@ onmessage = function (e) {
       };
       const errors = [];
       const formats = [];
-      function done(format) {
+      const done = (format) => {
         delete CHECKS[format];
         if (Object.keys(CHECKS).length == 0) {
           if (errors.length == 0) {
@@ -392,15 +392,15 @@ onmessage = function (e) {
             self.postMessage({ result: false, errors: errors });
           }
         }
-      }
-      function success(format) {
+      };
+      const success = (format) => {
         //only enable this format if the client requested it:
         if (encodings.includes(format)) {
           formats.push(format);
         }
         done(format);
-      }
-      function failure(format, message) {
+      };
+      const failure = (format, message) => {
         //only record an error if the client actually asked us to verify this format
         if (encodings.indexOf(format) >= 0) {
           errors.push(message);
@@ -413,7 +413,7 @@ onmessage = function (e) {
           console.info("decode worker failure on '" + format + "': " + message);
         }
         done(format);
-      }
+      };
       for (var format in CHECKS) {
         var image_bytes = CHECKS[format];
         check_image_decode(format, image_bytes, success, failure);
