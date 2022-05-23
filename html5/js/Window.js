@@ -1220,11 +1220,7 @@ class XpraWindow {
         }
         img_data = uint;
       }
-      src =
-        "data:image/" +
-        encoding +
-        ";base64," +
-        Utilities.ArrayBufferToBase64(img_data);
+      src = this.construct_base64_image_url(encoding, img_data);
     }
     jQuery("#windowicon" + String(this.wid)).attr("src", src);
     jQuery("#windowlistitemicon" + String(this.wid)).attr("src", src);
@@ -1246,10 +1242,8 @@ class XpraWindow {
     if (typeof img_data === "string") {
       array = Utilities.StringToUint8(img_data);
     }
-    const b64 = Utilities.ArrayBufferToBase64(array);
     const window_element = jQuery("#" + String(this.wid));
-    const cursor_url = "data:image/" + encoding + ";base64," + b64;
-    //j.src = "data:image/"+coding+";base64," + Utilities.ArrayBufferToBase64(img_data);
+    const cursor_url = this.construct_base64_image_url(encoding, array);
     function set_cursor_url(url, x, y) {
       const url_str = "url('" + url + "')";
       window_element.css("cursor", url_str + ", default");
@@ -1560,11 +1554,7 @@ class XpraWindow {
           this.may_paint_now();
         };
         const paint_coding = coding.split("/")[0]; //ie: "png/P" -> "png"
-        j.src =
-          "data:image/" +
-          paint_coding +
-          ";base64," +
-          Utilities.ArrayBufferToBase64(img_data);
+        j.src = this.construct_base64_image_url(paint_coding, img_data);
       } else if (coding == "h264") {
         const frame = options["frame"] || 0;
         if (frame == 0) {
@@ -1615,6 +1605,11 @@ class XpraWindow {
       this.exc(e, "error painting", coding, "sequence no", packet_sequence);
       paint_error(e);
     }
+  }
+
+  construct_base64_image_url(encoding, imageDataArrayBuffer) {
+    const imageDataBase64 = Utilities.ArrayBufferToBase64(imageDataArrayBuffer);
+    return `data:image/${encoding};base64,${imageDataBase64}`;
   }
 
   /**
