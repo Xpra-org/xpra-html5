@@ -561,7 +561,7 @@ const Utilities = {
 		}
 		let value = getParameter(prop);
 		try {
-			if (value === undefined && typeof(sessionStorage) !== undefined) {
+			if (value === undefined && typeof(sessionStorage) !== "undefined") {
 				value = sessionStorage.getItem(prop);
 			}
 		}
