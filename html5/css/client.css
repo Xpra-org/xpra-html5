@@ -1,477 +1,539 @@
-html, body {
-	height: 100%;
-	width: 100%;
-	padding: 0;
-	margin: 0;
-	overflow: hidden;
-	background-color: #021d3a;
-	background-image: url(../background.png);
-	background-position: center center;
-	background-repeat: no-repeat;
-	background-size: cover;
+html,
+body {
+  height: 100%;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+  background-color: #021d3a;
+  background-image: url(../background.png);
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: cover;
 }
 
 div.window canvas {
-	touch-action: none;
-	border-radius: 0 0 3px 3px;
+  touch-action: none;
+  border-radius: 0 0 3px 3px;
 }
 
 body.desktop {
-	background-color: #555;
+  background-color: #555;
 }
 
 div#top_bar {
-	background-color: #444;
-	width: 100%;
-	height: 48px;
+  background-color: #444;
+  width: 100%;
+  height: 48px;
 }
 div#top_bar img {
-	width: 48px;
-	height: 48px;
+  width: 48px;
+  height: 48px;
 }
 
 div#connect_form {
-	display: none;
+  display: none;
 }
 div#disconnect_form {
-	display: none;
+  display: none;
 }
 .overlay {
-	background-color: black;
-	position: fixed;
-	top: 0; right: 0; bottom: 0; left: 0;
-	opacity: 0.5;
-	z-index: 10;
-	text-align: center;
-	padding-top: 3em;
+  background-color: black;
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  opacity: 0.5;
+  z-index: 10;
+  text-align: center;
+  padding-top: 3em;
 }
 #progress-label {
-	font-size: 1.4em;
-	color: white;
-	line-height: 2em;
-	height: 2em;
+  font-size: 1.4em;
+  color: white;
+  line-height: 2em;
+  height: 2em;
 }
 #progress-details {
-	font-size: 1.2em;
-	color: white;
-	line-height: 1.5em;
-	height: 1.5em;
+  font-size: 1.2em;
+  color: white;
+  line-height: 1.5em;
+  height: 1.5em;
 }
 #progress-bar {
-	height: 2em;
+  height: 2em;
 }
 canvas {
-	border: none;
-	padding: 0;
-	margin: 0;
+  border: none;
+  padding: 0;
+  margin: 0;
 }
 #pasteboard {
-	position: fixed;
-	top: -40px;
-	width: 100px;
-	height: 30px;
-	left: 1px;
+  position: fixed;
+  top: -40px;
+  width: 100px;
+  height: 30px;
+  left: 1px;
 }
 .undecorated {
-	position: absolute;
-	padding: 0;
-	overflow: hidden;
+  position: absolute;
+  padding: 0;
+  overflow: hidden;
 }
 .window {
-	border: 1px;
-	position: absolute;
-	padding: 0;
-	overflow: hidden; /* required for radius clip */
+  border: 1px;
+  position: absolute;
+  padding: 0;
+  overflow: hidden; /* required for radius clip */
 }
 .window.override-redirect {
 }
 .window.tray {
-	position: relative;
-	float: left;
+  position: relative;
+  float: left;
 }
 .window.desktop {
-	box-shadow: none;
+  box-shadow: none;
 }
 
 .window-NORMAL {
 }
 
 .window.border {
-	border-color : grey;
-	border-width : 1px;
-	border-style : solid;
-	box-shadow : 0px 10px 25px rgba(0, 0, 0, 0.5);
-	border-radius: 6px 6px 3px 3px;
+  border-color: grey;
+  border-width: 1px;
+  border-style: solid;
+  box-shadow: 0px 10px 25px rgba(0, 0, 0, 0.5);
+  border-radius: 6px 6px 3px 3px;
 }
 
 .windowicon {
-	display: inline-block;
-	position: absolute;
-	width: 30px;
-	height: 30px;
-	left: 0px;
-	top: 0px;
-	overflow: hidden;
-	cursor: default;
-	background-color: transparent;
+  display: inline-block;
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  left: 0px;
+  top: 0px;
+  overflow: hidden;
+  cursor: default;
+  background-color: transparent;
 }
 .windowtitle {
-	font-family: Arial, Helvetica, sans-serif;
-	display: inline-block;
-	float: left;
-	position: absolute;
-	top: 0px;
-	left: 0px;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	padding: 5px;
-	padding-right: 48px;
-	white-space: nowrap;
-	cursor: default;
+  font-family: Arial, Helvetica, sans-serif;
+  display: inline-block;
+  float: left;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 5px;
+  padding-right: 48px;
+  white-space: nowrap;
+  cursor: default;
 }
 .windowbuttons {
-	display: inline-block;
-	position: absolute;
-	z-index: 1;
-	top: 0px;
-	right: 0px;
-	padding-right: 5px;
-	cursor: pointer;
-	padding-top: 7px;
-	background-color: transparent;
+  display: inline-block;
+  position: absolute;
+  z-index: 1;
+  top: 0px;
+  right: 0px;
+  padding-right: 5px;
+  cursor: pointer;
+  padding-top: 7px;
+  background-color: transparent;
 }
 .above {
-	z-index: 10000;
+  z-index: 10000;
 }
 .below {
-	z-index: 0;
+  z-index: 0;
 }
 div.windowinfocus {
-	z-index: 5000;
+  z-index: 5000;
 }
 .windowhead {
-	height: 30px;
-	color: #000000;
-	background-color: #A0A0A0;
-	border-bottom: 1px solid #C0C0C0;
+  height: 30px;
+  color: #000000;
+  background-color: #a0a0a0;
+  border-bottom: 1px solid #c0c0c0;
 }
 div.windowinfocus div.windowhead {
-	background-color: #ffffff;
+  background-color: #ffffff;
 }
 
 .modal {
-	z-index: 20000;
+  z-index: 20000;
 }
 .spinneroverlay {
-	width: 100%;
-	height: 100%;
-	display: none;
-	background-color: black;
-	opacity: 0.5;
-	position: absolute;
+  width: 100%;
+  height: 100%;
+  display: none;
+  background-color: black;
+  opacity: 0.5;
+  position: absolute;
 }
 .spinnermiddle {
-	display: table-cell;
-	vertical-align: middle;
+  display: table-cell;
+  vertical-align: middle;
 }
 .ui-resizable-helper {
-	border: 2px dotted #00F;
-	z-index: 30000 !important;
+  border: 2px dotted #00f;
+  z-index: 30000 !important;
 }
-.ui-resizable-handle { position: absolute;font-size: 0.1px; display: block; }
-.ui-resizable-disabled .ui-resizable-handle, .ui-resizable-autohide .ui-resizable-handle { display: none; }
-.ui-resizable-n { cursor: n-resize; height: 7px; width: 100%; top: -5px; left: 0; }
-.ui-resizable-s { cursor: s-resize; height: 7px; width: 100%; bottom: -5px; left: 0; }
-.ui-resizable-e { cursor: e-resize; width: 7px; right: -5px; top: 0; height: 100%; }
-.ui-resizable-w { cursor: w-resize; width: 7px; left: -5px; top: 0; height: 100%; }
-.ui-resizable-se { cursor: se-resize; width: 12px; height: 12px; right: 1px; bottom: 1px; }
-.ui-resizable-sw { cursor: sw-resize; width: 9px; height: 9px; left: -5px; bottom: -5px; }
-.ui-resizable-nw { cursor: nw-resize; width: 9px; height: 9px; left: -5px; top: -5px; }
-.ui-resizable-ne { cursor: ne-resize; width: 9px; height: 9px; right: -5px; top: -5px;}
-
+.ui-resizable-handle {
+  position: absolute;
+  font-size: 0.1px;
+  display: block;
+}
+.ui-resizable-disabled .ui-resizable-handle,
+.ui-resizable-autohide .ui-resizable-handle {
+  display: none;
+}
+.ui-resizable-n {
+  cursor: n-resize;
+  height: 7px;
+  width: 100%;
+  top: -5px;
+  left: 0;
+}
+.ui-resizable-s {
+  cursor: s-resize;
+  height: 7px;
+  width: 100%;
+  bottom: -5px;
+  left: 0;
+}
+.ui-resizable-e {
+  cursor: e-resize;
+  width: 7px;
+  right: -5px;
+  top: 0;
+  height: 100%;
+}
+.ui-resizable-w {
+  cursor: w-resize;
+  width: 7px;
+  left: -5px;
+  top: 0;
+  height: 100%;
+}
+.ui-resizable-se {
+  cursor: se-resize;
+  width: 12px;
+  height: 12px;
+  right: 1px;
+  bottom: 1px;
+}
+.ui-resizable-sw {
+  cursor: sw-resize;
+  width: 9px;
+  height: 9px;
+  left: -5px;
+  bottom: -5px;
+}
+.ui-resizable-nw {
+  cursor: nw-resize;
+  width: 9px;
+  height: 9px;
+  left: -5px;
+  top: -5px;
+}
+.ui-resizable-ne {
+  cursor: ne-resize;
+  width: 9px;
+  height: 9px;
+  right: -5px;
+  top: -5px;
+}
 
 .notifications {
-	position: absolute;
-	left: auto;
-	right: 0;
-	top: 96px;
-	bottom: auto;
-	width: 600px;
-	height: auto;
-	z-index: 10001;
-	transition: height 0.5s, opacity 0.5s, top 0.5s, box-shadow 0.5s, bottom 0.5s;
-	overflow: hidden;
-	padding: 40px;
-	visibility: hidden;
+  position: absolute;
+  left: auto;
+  right: 0;
+  top: 96px;
+  bottom: auto;
+  width: 600px;
+  height: auto;
+  z-index: 10001;
+  transition: height 0.5s, opacity 0.5s, top 0.5s, box-shadow 0.5s, bottom 0.5s;
+  overflow: hidden;
+  padding: 40px;
+  visibility: hidden;
 }
 .notifications .alert {
-	visibility: visible;
+  visibility: visible;
 }
 .notification_icon {
-	max-width: 128px;
-	max-height: 128px;
-	float: left;
-	padding: .4rem;
-	padding-left: 1rem;
+  max-width: 128px;
+  max-height: 128px;
+  float: left;
+  padding: 0.4rem;
+  padding-left: 1rem;
 }
 .notification_buttons {
-	clear: both;
-	margin: 10px 0px 0px auto;
-	font-weight: 500;
-	font-size: 1.2rem;
-	height: 2em;
+  clear: both;
+  margin: 10px 0px 0px auto;
+  font-weight: 500;
+  font-size: 1.2rem;
+  height: 2em;
 }
 .notification_button {
-	cursor: pointer;
-	float: right;
-	margin: 5px;
-	padding: 5px;
-	border: 1px solid black;
-	border-radius: 5px;
-	background-color: #f8f8f8;
-	color: #000;
+  cursor: pointer;
+  float: right;
+  margin: 5px;
+  padding: 5px;
+  border: 1px solid black;
+  border-radius: 5px;
+  background-color: #f8f8f8;
+  color: #000;
 }
 .notification_button:hover {
-	background-color: #000;
-	color: #ffffff;
+  background-color: #000;
+  color: #ffffff;
 }
 @media screen and (max-width: 600px) {
-	.notifications {
-		bottom: 0;
-		box-shadow: none;
-		padding-top: 5rem;
-	}
+  .notifications {
+    bottom: 0;
+    box-shadow: none;
+    padding-top: 5rem;
+  }
 }
 @media screen {
-	.notifications .alert {
-		box-shadow: 0 1rem 2rem rgba(21, 36, 48, 0.75);
-		background-color: white;
-		overflow: visible;
-		border-radius: 8px;
-		text-align: center;
-		padding: .5rem;
-		opacity: 40;
-		margin-top: -10rem;
-		position: relative;
-		transform: translateY(10rem);
-		transition: left 0.5s, margin 0.5s, opacity 0.5s, transform 0.5s;
-	}
+  .notifications .alert {
+    box-shadow: 0 1rem 2rem rgba(21, 36, 48, 0.75);
+    background-color: white;
+    overflow: visible;
+    border-radius: 8px;
+    text-align: center;
+    padding: 0.5rem;
+    opacity: 40;
+    margin-top: -10rem;
+    position: relative;
+    transform: translateY(10rem);
+    transition: left 0.5s, margin 0.5s, opacity 0.5s, transform 0.5s;
+  }
 }
 @media screen and (max-width: 600px) {
-	.notifications .alert {
-		opacity: 0;
-		margin-top: 0;
-		transform: translateY(0);
-	}
+  .notifications .alert {
+    opacity: 0;
+    margin-top: 0;
+    transform: translateY(0);
+  }
 }
 .notifications .alert span {
-	display: block;
-	padding: 0;
-	margin: 0 3rem;
-	font-weight: 300;
-	font-size: .9rem;
-	text-overflow: ellipsis;
-	line-height: 1rem;
-	max-height: 5rem;
+  display: block;
+  padding: 0;
+  margin: 0 3rem;
+  font-weight: 300;
+  font-size: 0.9rem;
+  text-overflow: ellipsis;
+  line-height: 1rem;
+  max-height: 5rem;
 }
-.notifications .alert span.title{
-	margin: 1rem;
-	font-weight: 600;
-	font-size: 1.3rem;
-	line-height: 1.3rem;
+.notifications .alert span.title {
+  margin: 1rem;
+  font-weight: 600;
+  font-size: 1.3rem;
+  line-height: 1.3rem;
 }
-.notifications .alert span.message{
-	text-align: left;
+.notifications .alert span.message {
+  text-align: left;
 }
 .notifications .alert span a {
-	text-decoration: none;
+  text-decoration: none;
 }
 .notifications .alert .dismiss {
-	width: 2rem;
-	position: absolute;
-	right: 1rem;
-	top: 1em;
-	transform: scale(1, 1) translateY(-50%);
-	font-size: 2rem;
-	transition: margin 0.5s, opacity 0.5s, transform 0.5s;
-	text-align: center;
-	cursor: pointer;
-	color: inherit;
-	font-weight: 300;
-	transform-origin: center center;
+  width: 2rem;
+  position: absolute;
+  right: 1rem;
+  top: 1em;
+  transform: scale(1, 1) translateY(-50%);
+  font-size: 2rem;
+  transition: margin 0.5s, opacity 0.5s, transform 0.5s;
+  text-align: center;
+  cursor: pointer;
+  color: inherit;
+  font-weight: 300;
+  transform-origin: center center;
 }
 
-#about, #sessioninfo, #bugreport {
-	font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-	background-color: #eee;
-	border: 2px solid #ddd;
-	display: none;
-	z-index: 1000000;
-	margin: auto;
-	text-align: center;
-	padding: 20px;
+#about,
+#sessioninfo,
+#bugreport {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  background-color: #eee;
+  border: 2px solid #ddd;
+  display: none;
+  z-index: 1000000;
+  margin: auto;
+  text-align: center;
+  padding: 20px;
 }
-#about, #sessioninfo, #bugreport {
-	position: fixed;
-	margin: auto;
-	width: 640px;
-	height: 280px;
-	top: 50%;
-	left: 50%;
-	margin-left: -320px;
-	margin-top: -140px;
+#about,
+#sessioninfo,
+#bugreport {
+  position: fixed;
+  margin: auto;
+  width: 640px;
+  height: 280px;
+  top: 50%;
+  left: 50%;
+  margin-left: -320px;
+  margin-top: -140px;
 }
 #bugreport {
-	text-align: left;
+  text-align: left;
 }
 
 #shadow_pointer {
-	width : 32px;
-	height: 32px;
-	position: absolute;
-	top: 0;
-	left: 0;
-	border: 1px;
-	z-index: 100000;
-	display: none;
+  width: 32px;
+  height: 32px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  border: 1px;
+  z-index: 100000;
+  display: none;
 }
 
 table#sessiondata {
-	width: 90%;
+  width: 90%;
 }
 table#sessiondata th {
-	text-align: left;
+  text-align: left;
 }
 table#sessiondata td {
-	text-align: right;
+  text-align: right;
 }
 
 #upload {
-	display: none;
+  display: none;
 }
 
 .action-icons {
-	position: relative;
-	float: left;
+  position: relative;
+  float: left;
 }
 .action-events {
-	position: relative;
-	float: left;
+  position: relative;
+  float: left;
 }
 #action-link {
-	display: none;
-	color: #99f;
+  display: none;
+  color: #99f;
 }
 
 .clock_block {
-	position: relative;
-	float: left;
-	padding-left: 100px;
+  position: relative;
+  float: left;
+  padding-left: 100px;
 }
 #clock_text {
-	font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-	color: #fff;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  color: #fff;
 }
 
 .audio {
-	float: right;
-	padding-right: 10px;
+  float: right;
+  padding-right: 10px;
 }
 
 .simple-keyboard {
-	z-index: 100000;
+  z-index: 100000;
 }
 
 #login-overlay {
-	position: fixed;
-	display: none;
-	width: 100%;
-	height: 100%;
-	top: 0;
-	left: 0;
-	right: 0;
-	bottom: 0;
-	background-color: rgba(0, 0, 0, 0.7);
-	z-index: 20;
-	cursor: pointer;
+  position: fixed;
+  display: none;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  z-index: 20;
+  cursor: pointer;
 }
 #login-box {
-	height: 320px;
-	width: 480px;
-	margin: auto;
-	margin-top: 20px;
-	position: relative;
-	z-index: 3;
-	background: #D8D8D8;
-	border-radius: 20px;
-	padding: 20px;
+  height: 320px;
+  width: 480px;
+  margin: auto;
+  margin-top: 20px;
+  position: relative;
+  z-index: 3;
+  background: #d8d8d8;
+  border-radius: 20px;
+  padding: 20px;
 }
 #login-innerbox {
-	margin: auto;
-	height: 100%;
-	z-index: 3;
-	background: #E8E8E8;
-	border-radius: 20px;
-	text-align: center;
+  margin: auto;
+  height: 100%;
+  z-index: 3;
+  background: #e8e8e8;
+  border-radius: 20px;
+  text-align: center;
 }
 #login-header {
-	font-size: 2em;
-	clear: both;
-	display: inline-block;
-	margin: 0.5em;
+  font-size: 2em;
+  clear: both;
+  display: inline-block;
+  margin: 0.5em;
 }
 #login-innerbox input {
-	font-size: 1.5em;
-	clear: both;
-	display: inline-block;
-	margin: 0.5em;
-	padding: 2px;
-	border: 2px solid #101010;
-	border-radius: 4px;
+  font-size: 1.5em;
+  clear: both;
+  display: inline-block;
+  margin: 0.5em;
+  padding: 2px;
+  border: 2px solid #101010;
+  border-radius: 4px;
 }
 #password-box {
-	background: url("../icons/authentication.png") no-repeat;
-	margin-left: 2em;
-	margin-right: 2em;
+  background: url("../icons/authentication.png") no-repeat;
+  margin-left: 2em;
+  margin-right: 2em;
 }
 #login-buttons {
-	margin: 2em;
+  margin: 2em;
 }
 .login-button {
-	margin: 1em;
-	padding: 10px 32px;
-	font-size: 18px;
-	line-height: 1.3333333;
-	border-radius: 6px;
-	color: #fff;
-	background-color: #5cb85c;
-	border-color: #4cae4c;
-	display: inline-block;
-	text-align: center;
-	white-space: nowrap;
-	vertical-align: middle;
-	touch-action: manipulation;
-	cursor: pointer;
-	user-select: none;
-	background-image: none;
-	border: 1px solid transparent;
-	border-radius: 4px;
+  margin: 1em;
+  padding: 10px 32px;
+  font-size: 18px;
+  line-height: 1.3333333;
+  border-radius: 6px;
+  color: #fff;
+  background-color: #5cb85c;
+  border-color: #4cae4c;
+  display: inline-block;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+  touch-action: manipulation;
+  cursor: pointer;
+  user-select: none;
+  background-image: none;
+  border: 1px solid transparent;
+  border-radius: 4px;
 }
 
 @media screen {
-	.notifications .alert.visible {
-		margin-top: 0;
-		opacity: 1;
-		transform: translateY(0);
-	}
-	.notifications .alert.hidden {
-		overflow: hidden;
-		margin-top: -2.125rem;
-		z-index: -1;
-	}
+  .notifications .alert.visible {
+    margin-top: 0;
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .notifications .alert.hidden {
+    overflow: hidden;
+    margin-top: -2.125rem;
+    z-index: -1;
+  }
 }
 @media screen and (max-width: 600px) {
-	.notifications .alert.hidden {
-		transform: translateY(0) translateX(-10rem);
-	}
+  .notifications .alert.hidden {
+    transform: translateY(0) translateX(-10rem);
+  }
 }

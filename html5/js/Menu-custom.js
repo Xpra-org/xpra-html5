@@ -23,105 +23,115 @@ SOFTWARE.
 
 */
 
-function addWindowListItem(wid, title){
-	const li = document.createElement("li");
-	li.className="windowlist-li";
-	li.id = "windowlistitem"+wid;
+function addWindowListItem(wid, title) {
+  const li = document.createElement("li");
+  li.className = "windowlist-li";
+  li.id = "windowlistitem" + wid;
 
-	const a = document.createElement("a");
+  const a = document.createElement("a");
 
-	a.id = "windowlistitemlink"+wid;
+  a.id = "windowlistitemlink" + wid;
 
-	a.onmouseover=function(e){
-		if (e.ctrlKey) {
-			client._window_set_focus(client.id_to_window[wid]);
-		}
-	};
-	a.onclick=function(e){
-		// Skip handling minimize, maximize, close events.
-		if ($(e.target).hasClass("menu-content-right")) return;
-		if (client.id_to_window[wid].minimized) {
-			client.id_to_window[wid].toggle_minimized();
-		} else {
-			client._window_set_focus(client.id_to_window[wid]);
-		}
-		this.parentElement.parentElement.className="-hide";
-	};
+  a.onmouseover = function (e) {
+    if (e.ctrlKey) {
+      client._window_set_focus(client.id_to_window[wid]);
+    }
+  };
+  a.onclick = function (e) {
+    // Skip handling minimize, maximize, close events.
+    if ($(e.target).hasClass("menu-content-right")) return;
+    if (client.id_to_window[wid].minimized) {
+      client.id_to_window[wid].toggle_minimized();
+    } else {
+      client._window_set_focus(client.id_to_window[wid]);
+    }
+    this.parentElement.parentElement.className = "-hide";
+  };
 
-	function hideWindowList() {
-		document.getElementById('open_windows_list').className="";
-	}
+  function hideWindowList() {
+    document.getElementById("open_windows_list").className = "";
+  }
 
-	const divLeft = document.createElement("div");
-	divLeft.id="windowlistdivleft"+wid;
-	divLeft.className="menu-divleft";
-	const img = new Image();
-	img.id = "windowlistitemicon"+wid;
-	img.src="favicon.png";
-	img.className="menu-content-left";
-	divLeft.appendChild(img);
+  const divLeft = document.createElement("div");
+  divLeft.id = "windowlistdivleft" + wid;
+  divLeft.className = "menu-divleft";
+  const img = new Image();
+  img.id = "windowlistitemicon" + wid;
+  img.src = "favicon.png";
+  img.className = "menu-content-left";
+  divLeft.appendChild(img);
 
-	const titleDiv = document.createElement("div");
-	titleDiv.appendChild(document.createTextNode(title));
-	titleDiv.id = "windowlistitemtitle"+wid;
-	titleDiv.className="menu-content-left";
-	divLeft.appendChild(titleDiv);
+  const titleDiv = document.createElement("div");
+  titleDiv.appendChild(document.createTextNode(title));
+  titleDiv.id = "windowlistitemtitle" + wid;
+  titleDiv.className = "menu-content-left";
+  divLeft.appendChild(titleDiv);
 
-	const divRight = document.createElement("div");
-	divRight.className="menu-divright";
+  const divRight = document.createElement("div");
+  divRight.className = "menu-divright";
 
-	const img2 = new Image();
-	img2.id = "windowlistitemclose"+wid;
-	img2.src="icons/close.png";
-	img2.title="Close";
-	img2.className="menu-content-right";
-	img2.onclick=function(e){ client._window_closed(client.id_to_window[wid]); e.stopPropagation(); hideWindowList(); };
-	const img3 = new Image();
-	img3.id = "windowlistitemmax"+wid;
-	img3.src="icons/maximize.png";
-	img3.title="Maximize";
-	img3.onclick=function(e){ client.id_to_window[wid].toggle_maximized(); e.stopPropagation(); hideWindowList(); };
-	img3.className="menu-content-right";
-	const img4 = new Image();
-	img4.id = "windowlistitemmin"+wid;
-	img4.src="icons/minimize.png";
-	img4.title="Minimize";
-	img4.onclick=function(e){ client.id_to_window[wid].toggle_minimized(); e.stopPropagation(); hideWindowList(); };
-	img4.className="menu-content-right";
+  const img2 = new Image();
+  img2.id = "windowlistitemclose" + wid;
+  img2.src = "icons/close.png";
+  img2.title = "Close";
+  img2.className = "menu-content-right";
+  img2.onclick = function (e) {
+    client._window_closed(client.id_to_window[wid]);
+    e.stopPropagation();
+    hideWindowList();
+  };
+  const img3 = new Image();
+  img3.id = "windowlistitemmax" + wid;
+  img3.src = "icons/maximize.png";
+  img3.title = "Maximize";
+  img3.onclick = function (e) {
+    client.id_to_window[wid].toggle_maximized();
+    e.stopPropagation();
+    hideWindowList();
+  };
+  img3.className = "menu-content-right";
+  const img4 = new Image();
+  img4.id = "windowlistitemmin" + wid;
+  img4.src = "icons/minimize.png";
+  img4.title = "Minimize";
+  img4.onclick = function (e) {
+    client.id_to_window[wid].toggle_minimized();
+    e.stopPropagation();
+    hideWindowList();
+  };
+  img4.className = "menu-content-right";
 
-	divRight.appendChild(img2);
-	divRight.appendChild(img3);
-	divRight.appendChild(img4);
-	a.appendChild(divLeft);
-	a.appendChild(divRight);
-	li.appendChild(a);
+  divRight.appendChild(img2);
+  divRight.appendChild(img3);
+  divRight.appendChild(img4);
+  a.appendChild(divLeft);
+  a.appendChild(divRight);
+  li.appendChild(a);
 
-	document.getElementById("open_windows_list").appendChild(li);
+  document.getElementById("open_windows_list").appendChild(li);
 }
 
-function removeWindowListItem(itemId){
-	const element = document.getElementById("windowlistitem" + itemId);
-	if(element && element.parentNode){
-		element.parentNode.removeChild(element);
-	}
+function removeWindowListItem(itemId) {
+  const element = document.getElementById("windowlistitem" + itemId);
+  if (element && element.parentNode) {
+    element.parentNode.removeChild(element);
+  }
 }
 
-$(function() {
-	const float_menu = $("#float_menu");
-	float_menu.draggable({
-		cancel: '.noDrag',
-		containment: 'window',
-		scroll: false
-	});
-	float_menu.on("dragstart",function(ev,ui){
-		client.mouse_grabbed = true;
-		//set_focus_cb(0);
-	});
-	float_menu.on("dragstop",function(ev,ui){
-		client.mouse_grabbed = false;
-		client.toolbar_position="custom";
-		client.reconfigure_all_trays();
-	});
-
+$(function () {
+  const float_menu = $("#float_menu");
+  float_menu.draggable({
+    cancel: ".noDrag",
+    containment: "window",
+    scroll: false,
+  });
+  float_menu.on("dragstart", function (ev, ui) {
+    client.mouse_grabbed = true;
+    //set_focus_cb(0);
+  });
+  float_menu.on("dragstop", function (ev, ui) {
+    client.mouse_grabbed = false;
+    client.toolbar_position = "custom";
+    client.reconfigure_all_trays();
+  });
 });
-
