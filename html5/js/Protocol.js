@@ -224,7 +224,7 @@ class XpraProtocol {
   }
 
   process_receive_queue() {
-    while (this.websocket && this.do_process_receive_queue()) {}
+    while (this.websocket && this.do_process_receive_queue());
   }
 
   error() {
