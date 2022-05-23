@@ -740,13 +740,9 @@ class XpraClient {
     // assign the key callbacks
     document.addEventListener("keydown", (e) => {
       const preview_el = $(WINDOW_PREVIEW_SELECTOR);
-
-      if (e.code === "Escape") {
-        if (preview_el.is(":visible")) {
-          client.toggle_window_preview();
-
-          return e.stopPropagation() || e.preventDefault();
-        }
+      if (e.code === "Escape" && preview_el.is(":visible")) {
+        client.toggle_window_preview();
+        return e.stopPropagation() || e.preventDefault();
       }
       if (e.code === "Tab") {
         if (preview_el.is(":visible")) {
@@ -780,13 +776,14 @@ class XpraClient {
       }
     });
     document.addEventListener("keyup", (e) => {
-      if (e.code === "Tab" || e.code.startsWith("Alt")) {
-        if ($(WINDOW_PREVIEW_SELECTOR).is(":visible")) {
-          if (e.code.startsWith("Alt")) {
-            client.toggle_window_preview();
-          }
-          return e.stopPropagation() || e.preventDefault();
+      if (
+        (e.code === "Tab" || e.code.startsWith("Alt")) &&
+        $(WINDOW_PREVIEW_SELECTOR).is(":visible")
+      ) {
+        if (e.code.startsWith("Alt")) {
+          client.toggle_window_preview();
         }
+        return e.stopPropagation() || e.preventDefault();
       }
       const r = this._keyb_onkeyup(e);
       if (!r) {
@@ -1240,9 +1237,12 @@ class XpraClient {
   _get_DPI() {
     "use strict";
     const dpi_div = document.getElementById("dpi");
-    if (dpi_div != undefined) {
-      if (dpi_div.offsetWidth > 0 && dpi_div.offsetHeight > 0)
-        return Math.round((dpi_div.offsetWidth + dpi_div.offsetHeight) / 2.0);
+    if (
+      dpi_div != undefined &&
+      dpi_div.offsetWidth > 0 &&
+      dpi_div.offsetHeight > 0
+    ) {
+      return Math.round((dpi_div.offsetWidth + dpi_div.offsetHeight) / 2.0);
     }
     //alternative:
     if ("deviceXDPI" in screen)
@@ -2420,12 +2420,14 @@ class XpraClient {
     const code = parseInt(packet[2]);
     let reconnect =
       this.reconnect || this.reconnect_attempt < this.reconnect_count;
-    if (reconnect && code >= 0) {
-      if ([0, 1006, 1008, 1010, 1014, 1015].indexOf(code) >= 0) {
-        // don't re-connect unless we had actually managed to connect
-        // (because these specific websocket error codes are likely permanent)
-        reconnect = this.connected;
-      }
+    if (
+      reconnect &&
+      code >= 0 &&
+      [0, 1006, 1008, 1010, 1014, 1015].indexOf(code) >= 0
+    ) {
+      // don't re-connect unless we had actually managed to connect
+      // (because these specific websocket error codes are likely permanent)
+      reconnect = this.connected;
     }
     this.cerror(
       "websocket error: ",
@@ -2980,20 +2982,19 @@ class XpraClient {
     let l = server_salt.length;
     if (salt_digest == "xor") {
       //don't use xor over unencrypted connections unless explicitly allowed:
-      if (digest == "xor") {
-        if (
-          !this.ssl &&
-          !this.encryption &&
-          !this.insecure &&
-          this.host != "localhost" &&
-          this.host != "127.0.0.1"
-        ) {
-          this.callback_close(
-            "server requested digest xor, cowardly refusing to use it without encryption with " +
-              this.host
-          );
-          return;
-        }
+      if (
+        digest == "xor" &&
+        !this.ssl &&
+        !this.encryption &&
+        !this.insecure &&
+        this.host != "localhost" &&
+        this.host != "127.0.0.1"
+      ) {
+        this.callback_close(
+          "server requested digest xor, cowardly refusing to use it without encryption with " +
+            this.host
+        );
+        return;
       }
       if (l < 16 || l > 256) {
         this.callback_close("invalid server salt length for xor digest:" + l);
@@ -3410,12 +3411,10 @@ class XpraClient {
     let x = packet[2],
       y = packet[3];
     const win = this.id_to_window[wid];
-    if (packet.length >= 6) {
-      //we can use window relative coordinates:
-      if (win) {
-        x = win.x + packet[4];
-        y = win.y + packet[5];
-      }
+    //we can use window relative coordinates:
+    if (packet.length >= 6 && win) {
+      x = win.x + packet[4];
+      y = win.y + packet[5];
     }
     const shadow_pointer = document.getElementById("shadow_pointer");
     const style = shadow_pointer.style;
@@ -4543,16 +4542,14 @@ class XpraClient {
           this.clipboard_datatype = dtype;
           this.clipboard_buffer = wire_data;
           this.clipboard_pending = true;
-          if (navigator.clipboard && navigator.clipboard.writeText) {
-            if (is_text) {
-              navigator.clipboard.writeText(wire_data).then(
-                () => {
-                  this.debug("clipboard", "writeText succeeded");
-                  this.clipboard_pending = false;
-                },
-                () => this.debug("clipboard", "writeText failed")
-              );
-            }
+          if (navigator.clipboard && navigator.clipboard.writeText && is_text) {
+            navigator.clipboard.writeText(wire_data).then(
+              () => {
+                this.debug("clipboard", "writeText succeeded");
+                this.clipboard_pending = false;
+              },
+              () => this.debug("clipboard", "writeText failed")
+            );
           }
         }
       } else if (
