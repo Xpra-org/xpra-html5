@@ -534,7 +534,7 @@ class XpraClient {
           return;
         }
         switch (data["result"]) {
-          case true:
+          case true: {
             const formats = Array.from(data["formats"]);
             this.clog("we can decode using a worker:", decode_worker);
             this.supported_encodings = formats;
@@ -544,6 +544,7 @@ class XpraClient {
             );
             this.decode_worker = decode_worker;
             break;
+          }
           case false:
             this.clog("we can't decode using a worker: " + data["errors"]);
             this.decode_worker = false;

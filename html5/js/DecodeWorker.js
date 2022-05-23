@@ -277,7 +277,7 @@ function check_image_decode(format, image_bytes, success_cb, fail_cb) {
 onmessage = function (e) {
   const data = e.data;
   switch (data.cmd) {
-    case "check":
+    case "check": {
       const encodings = data.encodings;
       if (console) {
         console.info("decode worker checking: ", encodings);
@@ -419,6 +419,7 @@ onmessage = function (e) {
         check_image_decode(format, image_bytes, success, failure);
       }
       break;
+    }
     case "eos":
       decode_eos(data.wid);
       break;
