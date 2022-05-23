@@ -522,6 +522,7 @@ onmessage = function (e) {
             if (wd) {
                 wd.redraw();
             }
+            break;
         case 'canvas':
             console.log("canvas transfer for window", data.wid, ": ", data.canvas, data.debug);
             if (data.canvas) {
