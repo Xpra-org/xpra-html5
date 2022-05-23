@@ -5,8 +5,8 @@
   "main": "html5/index.html",
   "scripts": {
     "check_formatting": "npx prettier --check .",
-    "format": "npx prettier --write .",
-    "lint": "npx eslint .",
+    "format": "prettier --write .",
+    "lint": "eslint .",
     "test": "echo \"Error: no test specified\" && exit 1",
     "prepare": "husky install"
   },
