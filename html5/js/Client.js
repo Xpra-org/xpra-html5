@@ -2292,10 +2292,7 @@ class XpraClient {
     // Sort windows by stacking order.;
     var windows_sorted = Object.values(client.id_to_window).filter((win) => {
       // skip DESKTOP type windows.
-      if (client.is_window_desktop(win)) {
-        return false;
-      }
-      return true;
+      return !client.is_window_desktop(win);
     });
 
     if (windows_sorted.length === 0) {
@@ -4542,7 +4539,7 @@ class XpraClient {
           this.clipboard_datatype = dtype;
           this.clipboard_buffer = wire_data;
           this.clipboard_pending = true;
-          if (navigator.clipboard && navigator.clipboard.writeText && is_text) {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(wire_data).then(
               () => {
                 this.debug("clipboard", "writeText succeeded");

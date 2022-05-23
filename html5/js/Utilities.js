@@ -611,12 +611,7 @@ const Utilities = {
     if ({}.hasOwnProperty.call((c, "effectiveType"))) {
       i["effective-type"] = c.effectiveType;
     }
-    if (
-      !isNaN(c.downlink) &&
-      !isNaN(c.downlink) &&
-      c.downlink > 0 &&
-      isFinite(c.downlink)
-    ) {
+    if (!isNaN(c.downlink) && c.downlink > 0 && isFinite(c.downlink)) {
       i["downlink"] = Math.round(c.downlink * 1000 * 1000);
     }
     if (
