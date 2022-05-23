@@ -15,58 +15,18 @@ const Utilities = {
   LOCAL_MODIFICATIONS: 3,
   BRANCH: "master",
 
-  exc: function () {
-    if (console) {
-      console.error.apply(console, arguments);
-    }
-  },
-  error: function () {
-    if (console) {
-      console.error.apply(console, arguments);
-    }
-  },
-  warn: function () {
-    if (console) {
-      console.log.apply(console, arguments);
-    }
-  },
-  log: function () {
-    if (console) {
-      console.log.apply(console, arguments);
-    }
-  },
-  debug: function () {
-    if (console) {
-      console.debug.apply(console, arguments);
-    }
-  },
+  exc: console_error_safe,
+  error: console_error_safe,
+  warn: console_log_safe,
+  log: console_log_safe,
+  debug: console_debug_safe,
 
   //these versions should not be redirected:
-  cexc: function () {
-    if (console) {
-      console.error.apply(console, arguments);
-    }
-  },
-  cerror: function () {
-    if (console) {
-      console.error.apply(console, arguments);
-    }
-  },
-  cwarn: function () {
-    if (console) {
-      console.log.apply(console, arguments);
-    }
-  },
-  clog: function () {
-    if (console) {
-      console.log.apply(console, arguments);
-    }
-  },
-  cdebug: function () {
-    if (console) {
-      console.debug.apply(console, arguments);
-    }
-  },
+  cexc: console_error_safe,
+  cerror: console_error_safe,
+  cwarn: console_log_safe,
+  clog: console_log_safe,
+  cdebug: console_debug_safe,
 
   stristrue: function (v, default_value) {
     if (v === null) {
@@ -788,3 +748,15 @@ const LANGUAGE_TO_LAYOUT = {
   //"zh-SG": ??
   //"zu": ??
 };
+
+function console_debug_safe() {
+  if (console) console.debug.apply(console, arguments);
+}
+
+function console_error_safe() {
+  if (console) console.error.apply(console, arguments);
+}
+
+function console_log_safe() {
+  if (console) console.log.apply(console, arguments);
+}
