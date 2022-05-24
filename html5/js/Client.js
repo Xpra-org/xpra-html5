@@ -3523,27 +3523,13 @@ class XpraClient {
   }
 
   _process_window_move_resize(packet) {
-    const wid = packet[1];
-    const x = packet[2];
-    const y = packet[3];
-    const width = packet[4];
-    const height = packet[5];
-    const win = this.id_to_window[wid];
-    if (win != null) {
-      win.move_resize(x, y, width, height);
-    }
+    const [, wid, x, y, width, height] = packet;
+    this.id_to_window[wid]?.move_resize(x, y, width, height);
   }
 
   _process_configure_override_redirect(packet) {
-    const wid = packet[1];
-    const x = packet[2];
-    const y = packet[3];
-    const width = packet[4];
-    const height = packet[5];
-    const win = this.id_to_window[wid];
-    if (win != null) {
-      win.move_resize(x, y, width, height);
-    }
+    const [, wid, x, y, width, height] = packet;
+    this.id_to_window[wid]?.move_resize(x, y, width, height);
   }
 
   _process_desktop_size(packet) {
