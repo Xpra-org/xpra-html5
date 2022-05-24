@@ -11,7 +11,7 @@ const broadway_decoders = {};
 function close_broadway(wid) {
   try {
     delete broadway_decoders[wid];
-  } catch (e) {
+  } catch {
     //not much we can do
   }
 }
@@ -87,7 +87,7 @@ function decode_draw_packet(packet, start) {
       do_send_back(held_packet, held_raw_buffers);
     }
     wid_hold.delete(packet_sequence);
-    if (wid_hold.size == 0 && on_hold.has(wid)) {
+    if (wid_hold.size === 0 && on_hold.has(wid)) {
       //this was the last held sequence for this window
       on_hold.delete(wid);
     }
@@ -107,7 +107,7 @@ function decode_draw_packet(packet, start) {
         send_back([bitmap]);
         release();
       },
-      function (e) {
+      function (error) {
         decode_error(
           "failed to create " +
             actual_width +
@@ -162,7 +162,7 @@ function decode_draw_packet(packet, start) {
           send_back([bitmap]);
           release();
         },
-        function (e) {
+        function (error) {
           decode_error(
             "failed to create image bitmap from " +
               coding +
@@ -171,7 +171,7 @@ function decode_draw_packet(packet, start) {
               ", data=" +
               data +
               ": " +
-              e
+              error
           );
           release();
         }
@@ -217,9 +217,9 @@ function decode_draw_packet(packet, start) {
       //pass-through:
       send_back([]);
     }
-  } catch (e) {
+  } catch (error) {
     decode_error(
-      "error processing " + coding + " packet " + packet_sequence + ": " + e
+      "error processing " + coding + " packet " + packet_sequence + ": " + error
     );
   }
 }
@@ -227,7 +227,7 @@ function decode_draw_packet(packet, start) {
 function check_image_decode(format, image_bytes, success_cb, fail_cb) {
   if (console) {
     console.info(
-      "checking ",
+      "checking",
       format,
       " with test image: " + image_bytes.length + " bytes"
     );
@@ -257,13 +257,13 @@ function check_image_decode(format, image_bytes, success_cb, fail_cb) {
         clearTimeout(timer);
         success_cb(format);
       },
-      function (e) {
+      function (error) {
         clearTimeout(timer);
-        fail_cb(format, "" + e);
+        fail_cb(format, "" + error);
       }
     );
-  } catch (e) {
-    fail_cb(format, "" + e);
+  } catch (error) {
+    fail_cb(format, "" + error);
   }
 }
 
@@ -273,7 +273,7 @@ onmessage = function (e) {
     case "check": {
       const encodings = data.encodings;
       if (console) {
-        console.info("decode worker checking: ", encodings);
+        console.info("decode worker checking:", encodings);
       }
       const CHECKS = {
         png: [
@@ -378,8 +378,8 @@ onmessage = function (e) {
       const formats = ["rgb24", "rgb32"];
       const done = (format) => {
         delete CHECKS[format];
-        if (Object.keys(CHECKS).length == 0) {
-          if (errors.length == 0) {
+        if (Object.keys(CHECKS).length === 0) {
+          if (errors.length === 0) {
             self.postMessage({ result: true, formats: formats });
           } else {
             self.postMessage({ result: false, errors: errors });
@@ -395,7 +395,7 @@ onmessage = function (e) {
       };
       const failure = (format, message) => {
         //only record an error if the client actually asked us to verify this format
-        if (encodings.indexOf(format) >= 0) {
+        if (encodings.includes(format)) {
           errors.push(message);
           if (console.warn) {
             console.warn(

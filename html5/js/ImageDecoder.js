@@ -24,7 +24,7 @@ class XpraImageDecoder {
   constructor() {
     this.on_frame_decoded = null;
     this.on_frame_error = (packet, error) => {
-      console.error("ImageDecoder error on packet ", packet, ": ", error);
+      console.error("ImageDecoder error on packet", packet, ":", error);
     };
   }
 
@@ -47,7 +47,7 @@ class XpraImageDecoder {
           packet[7] = bitmap;
           this.on_frame_decoded(packet);
         })
-        .catch((e) => this.on_frame_error(packet, e));
+        .catch((error) => this.on_frame_error(packet, error));
     } else {
       const paint_coding = coding.split("/")[0]; //ie: "png/P" -> "png"
       const decoder = new ImageDecoder({
@@ -62,7 +62,7 @@ class XpraImageDecoder {
           decoder.close();
           this.on_frame_decoded(packet);
         })
-        .catch((e) => this.on_frame_error(packet, e));
+        .catch((error) => this.on_frame_error(packet, error));
     }
   };
 }

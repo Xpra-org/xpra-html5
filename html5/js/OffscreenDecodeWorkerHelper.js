@@ -23,8 +23,8 @@ const XpraOffscreenWorker = {
       try {
         new OffscreenCanvas(256, 256);
         return true;
-      } catch (e) {
-        console.warn("unable to instantiate an offscreen canvas:", e);
+      } catch (error) {
+        console.warn("unable to instantiate an offscreen canvas:", error);
       }
     }
     console.warn(

@@ -36,7 +36,12 @@ const image_coding = [
   "avif",
 ];
 const video_coding = ["h264"];
-const all_encodings = ["void", "scroll"].concat(image_coding, video_coding);
+const all_encodings = new Set([
+  "void",
+  "scroll",
+  ...image_coding,
+  ...video_coding,
+]);
 
 const vsync = false;
 
@@ -165,7 +170,7 @@ class WindowDecoder {
       this.flush_seqs.push(packet_sequence);
     }
     //decide if we want to decode it immediately:
-    if (this.flush_seqs.length == 0 || packet_sequence <= this.flush_seqs[0]) {
+    if (this.flush_seqs.length === 0 || packet_sequence <= this.flush_seqs[0]) {
       this.decode_packet(packet);
       return;
     }
@@ -174,7 +179,7 @@ class WindowDecoder {
   }
 
   may_decode_more() {
-    if (this.flush_seqs.length == 0) {
+    if (this.flush_seqs.length === 0) {
       //anything pending is for a flush sequence that we have not received yet,
       //so we can paint them all now:
       this.process_all(0);
@@ -186,13 +191,13 @@ class WindowDecoder {
     this.process_all(flush_seq);
     //if there are any packets waiting to be processed or decoded for this flush sequence no,
     //then we have to stop there and wait to be called again:
-    const processing_wait = Array.from(this.pending_processing.keys()).filter(
+    const processing_wait = [...this.pending_processing.keys()].filter(
       (x) => x <= flush_seq
     );
     if (processing_wait.length > 0) {
       return;
     }
-    const decode_wait = Array.from(this.pending_decode.keys()).filter(
+    const decode_wait = [...this.pending_decode.keys()].filter(
       (x) => x <= flush_seq
     );
     if (decode_wait.length > 0) {
@@ -205,9 +210,7 @@ class WindowDecoder {
   process_all(max_seq) {
     //process packets up to max_seq,
     //in ascending order:
-    const seqs = Array.from(this.pending_processing.keys()).sort(
-      (a, b) => a - b
-    );
+    const seqs = [...this.pending_processing.keys()].sort((a, b) => a - b);
     for (let seq of seqs) {
       if (max_seq > 0 && seq > max_seq) {
         continue;
@@ -240,8 +243,8 @@ class WindowDecoder {
       } else {
         this.decode_error(packet, "unsupported encoding: '" + coding + "'");
       }
-    } catch (e) {
-      this.decode_error(packet, "" + e);
+    } catch (error) {
+      this.decode_error(packet, "" + error);
     }
   }
 
@@ -290,12 +293,12 @@ class WindowDecoder {
       this.snapshot_buffer = null;
 
       //are there any packets still waiting to be decoded?
-      if (this.flush_seqs.length == 0) {
+      if (this.flush_seqs.length === 0) {
         return;
       }
       //for the current flush sequence?
       const flush_seq = this.flush_seqs[0];
-      const decode_wait = Array.from(this.pending_decode.keys()).filter(
+      const decode_wait = [...this.pending_decode.keys()].filter(
         (x) => x <= flush_seq
       );
       if (decode_wait.length > 0) {
@@ -308,25 +311,23 @@ class WindowDecoder {
       this.cancel_snapshot_timer();
 
       this.schedule_show_frame();
-    } catch (e) {
-      console.error("error handling decoded packet:", e);
-      this.decode_error(packet, e);
+    } catch (error) {
+      console.error("error handling decoded packet:", error);
+      this.decode_error(packet, error);
     }
   }
 
   schedule_show_frame() {
     //move to the next frame at the next vsync:
-    if (vsync) {
-      this.animation_request = requestAnimationFrame((t) => {
-        this.animation_request = 0;
-        this.next_frame();
-      });
-    } else {
-      this.animation_request = setTimeout(() => {
-        this.animation_request = 0;
-        this.next_frame();
-      }, 16);
-    }
+    this.animation_request = vsync
+      ? requestAnimationFrame((t) => {
+          this.animation_request = 0;
+          this.next_frame();
+        })
+      : setTimeout(() => {
+          this.animation_request = 0;
+          this.next_frame();
+        }, 16);
   }
 
   next_frame() {
@@ -351,7 +352,7 @@ class WindowDecoder {
 
   send_decode_ok(packet, start) {
     //copy the packet so we can zero out the data:
-    const clone = Array.from(packet);
+    const clone = [...packet];
     const options = clone[10] || {};
     const decode_time = Math.round(1000 * (performance.now() - start));
     options["decode_time"] = Math.max(0, decode_time);
@@ -511,8 +512,8 @@ onmessage = function (e) {
     case "check": {
       // We do not check. We are here because we support native decoding.
       // TODO: Reconsider this. It might be a good thing to do some testing, just for sanity??
-      const encodings = Array.from(data.encodings);
-      const common = encodings.filter((value) => all_encodings.includes(value));
+      const encodings = [...data.encodings];
+      const common = encodings.filter((value) => all_encodings.has(value));
       self.postMessage({ result: true, formats: common });
       break;
     }
@@ -541,7 +542,7 @@ onmessage = function (e) {
           "no window decoder found for wid " +
             wid +
             ", only:" +
-            Array.from(offscreen_canvas.keys()).join(",")
+            [...offscreen_canvas.keys()].join(",")
         );
       }
       break;
@@ -556,7 +557,7 @@ onmessage = function (e) {
       console.log(
         "canvas transfer for window",
         data.wid,
-        ": ",
+        ":",
         data.canvas,
         data.debug
       );

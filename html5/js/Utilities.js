@@ -32,9 +32,8 @@ const Utilities = {
     if (v === null) {
       return default_value;
     }
-    return (
-      ["true", "on", "1", "yes", "enabled"].indexOf(String(v).toLowerCase()) !==
-      -1
+    return ["true", "on", "1", "yes", "enabled"].includes(
+      String(v).toLowerCase()
     );
   },
 
@@ -45,7 +44,10 @@ const Utilities = {
       if (i == 8 || i == 13 || i == 18 || i == 23) {
         s[i] = "-";
       } else {
-        s[i] = hexDigits.substr(Math.floor(Math.random() * 0x10), 1);
+        s[i] = hexDigits.slice(
+          Math.floor(Math.random() * 0x10),
+          Math.floor(Math.random() * 0x10) + 1
+        );
       }
     }
     return s.join("");
@@ -58,7 +60,7 @@ const Utilities = {
       while (s.length < len) {
         s += Utilities.getHexUUID();
       }
-      return s.substr(0, len);
+      return s.slice(0, Math.max(0, len));
     }
     const u = new Uint8Array(len);
     crypto.getRandomValues(u);
@@ -80,7 +82,7 @@ const Utilities = {
 
   trimString: function (str, trimLength) {
     return str.length > trimLength
-      ? str.substring(0, trimLength - 3) + "..."
+      ? str.slice(0, Math.max(0, trimLength - 3)) + "..."
       : str;
   },
 
@@ -98,7 +100,7 @@ const Utilities = {
       return navigator.oscpu;
     }
     //ie:
-    if ({}.hasOwnProperty.call((navigator, "cpuClass"))) {
+    if (Object.prototype.hasOwnProperty.call((navigator, "cpuClass"))) {
       return navigator.cpuClass;
     }
     return "unknown";
@@ -150,7 +152,7 @@ const Utilities = {
     if (Array.isArray(nav.languages)) {
       for (let i = 0; i < nav.languages.length; i++) {
         language = nav.languages[i];
-        if (language && language.length) {
+        if (language && language.length > 0) {
           return language;
         }
       }
@@ -159,7 +161,7 @@ const Utilities = {
     for (let i = 0; i < browserLanguagePropertyKeys.length; i++) {
       const prop = browserLanguagePropertyKeys[i];
       language = nav[prop];
-      if (language && language.length) {
+      if (language && language.length > 0) {
         return language;
       }
     }
@@ -169,7 +171,7 @@ const Utilities = {
   getKeyboardLayout: function () {
     let v = Utilities.getFirstBrowserLanguage();
     Utilities.debug("getFirstBrowserLanguage()=", v);
-    if (v == null) {
+    if (v == undefined) {
       return "us";
     }
     let layout = LANGUAGE_TO_LAYOUT[v];
@@ -219,7 +221,7 @@ const Utilities = {
     return navigator.userAgent.includes("Edge");
   },
   isChrome: function () {
-    const isChromium = {}.hasOwnProperty.call(window, "chrome"),
+    const isChromium = Object.prototype.hasOwnProperty.call(window, "chrome"),
       winNav = window.navigator,
       vendorName = winNav.vendor,
       isOpera = winNav.userAgent.includes("OPR"),
@@ -248,7 +250,7 @@ const Utilities = {
 
   is_64bit: function () {
     let _to_check = [];
-    if ({}.hasOwnProperty.call((window.navigator, "cpuClass")))
+    if (Object.prototype.hasOwnProperty.call((window.navigator, "cpuClass")))
       _to_check.push((window.navigator.cpuClass + "").toLowerCase());
     if (window.navigator.platform)
       _to_check.push((window.navigator.platform + "").toLowerCase());
@@ -270,7 +272,7 @@ const Utilities = {
     ];
     for (let _c = 0; _c < _to_check.length; _c++) {
       for (let _i = 0; _i < _64bits_signatures.length; _i++) {
-        if (_to_check[_c].indexOf(_64bits_signatures[_i].toLowerCase()) != -1) {
+        if (_to_check[_c].includes(_64bits_signatures[_i].toLowerCase())) {
           return true;
         }
       }
@@ -279,7 +281,7 @@ const Utilities = {
   },
 
   isMobile: function () {
-    return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    return /iphone|ipad|ipod|android/i.test(navigator.userAgent);
   },
 
   getSimpleUserAgentString: function () {
@@ -401,7 +403,7 @@ const Utilities = {
   saveFile: function (filename, data, mimetype) {
     const a = document.createElement("a");
     a.setAttribute("style", "display: none");
-    document.body.appendChild(a);
+    document.body.append(a);
     const blob = new Blob([data], mimetype);
     const url = window.URL.createObjectURL(blob);
     if (navigator.msSaveOrOpenBlob) {
@@ -423,7 +425,7 @@ const Utilities = {
   },
 
   Uint8ToString: function (u8a) {
-    const CHUNK_SZ = 0x8000;
+    const CHUNK_SZ = 0x80_00;
     const c = [];
     for (let i = 0; i < u8a.length; i += CHUNK_SZ) {
       c.push(String.fromCharCode.apply(null, u8a.subarray(i, i + CHUNK_SZ)));
@@ -443,7 +445,7 @@ const Utilities = {
     // apply in chunks of 10400 to avoid call stack overflow
     // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/apply
     let s = "";
-    const skip = 10400;
+    const skip = 10_400;
     if (uintArray.subarray) {
       for (let i = 0, len = uintArray.length; i < len; i += skip) {
         s += String.fromCharCode.apply(
@@ -465,7 +467,7 @@ const Utilities = {
   ToBase64: function (v) {
     try {
       return window.btoa(v);
-    } catch (e) {
+    } catch {
       return ArrayBufferToBase64(v);
     }
   },
@@ -473,7 +475,7 @@ const Utilities = {
   convertDataURIToBinary: function (dataURI) {
     const BASE64_MARKER = ";base64,";
     const base64Index = dataURI.indexOf(BASE64_MARKER) + BASE64_MARKER.length;
-    const base64 = dataURI.substring(base64Index);
+    const base64 = dataURI.slice(Math.max(0, base64Index));
     const raw = window.atob(base64);
     const rawLength = raw.length;
     const array = new Uint8Array(new ArrayBuffer(rawLength));
@@ -486,16 +488,16 @@ const Utilities = {
 
   parseINIString: function (data) {
     const regex = {
-      section: /^\s*\[\s*([^\]]*)\s*\]\s*$/,
+      section: /^\s*\[\s*([^\]]*)\s*]\s*$/,
       param: /^\s*([^=]+?)\s*=\s*(.*?)\s*$/,
-      comment: /^\s*[;#].*$/,
+      comment: /^\s*[#;].*$/,
     };
     const value = {};
-    const lines = data.split(/[\r\n]+/);
+    const lines = data.split(/[\n\r]+/);
     let section = null;
-    lines.forEach(function (line) {
+    for (const line of lines) {
       if (regex.comment.test(line)) {
-        return;
+        continue;
       } else if (regex.param.test(line)) {
         const match = line.match(regex.param);
         if (section) {
@@ -507,10 +509,10 @@ const Utilities = {
         const match = line.match(regex.section);
         value[match[1]] = {};
         section = match[1];
-      } else if (line.length == 0 && section) {
+      } else if (line.length === 0 && section) {
         section = null;
       }
-    });
+    }
     return value;
   },
 
@@ -525,15 +527,15 @@ const Utilities = {
     if (!headerStr) {
       return headers;
     }
-    const headerPairs = headerStr.split("\u000d\u000a");
+    const headerPairs = headerStr.split("\u000D\u000A");
     for (let i = 0; i < headerPairs.length; i++) {
       const headerPair = headerPairs[i];
       // Can't use split() here because it does the wrong thing
       // if the header value has the string ": " in it.
-      const index = headerPair.indexOf("\u003a\u0020");
+      const index = headerPair.indexOf("\u003A\u0020");
       if (index > 0) {
-        const key = headerPair.substring(0, index);
-        const val = headerPair.substring(index + 2);
+        const key = headerPair.slice(0, Math.max(0, index));
+        const val = headerPair.slice(Math.max(0, index + 2));
         headers[key] = val;
       }
     }
@@ -558,7 +560,7 @@ const Utilities = {
       getParameter = function (key) {
         if (!window.location.queryStringParams)
           window.location.queryStringParams = Utilities.parseParams(
-            window.location.search.substring(1)
+            window.location.search.slice(1)
           );
         return window.location.queryStringParams[key];
       };
@@ -568,7 +570,7 @@ const Utilities = {
       if (value === undefined && typeof sessionStorage !== "undefined") {
         value = sessionStorage.getItem(prop);
       }
-    } catch (e) {
+    } catch {
       value = null;
     }
     return value;
@@ -579,9 +581,8 @@ const Utilities = {
     if (v === null) {
       return default_value;
     }
-    return (
-      ["true", "on", "1", "yes", "enabled"].indexOf(String(v).toLowerCase()) !==
-      -1
+    return ["true", "on", "1", "yes", "enabled"].includes(
+      String(v).toLowerCase()
     );
   },
 
@@ -594,7 +595,7 @@ const Utilities = {
       sessionStorage.setItem(key, "store-whatever");
       sessionStorage.removeItem(key);
       return true;
-    } catch (e) {
+    } catch {
       return false;
     }
   },
@@ -608,14 +609,14 @@ const Utilities = {
     if (c.type) {
       i["type"] = c.type;
     }
-    if ({}.hasOwnProperty.call((c, "effectiveType"))) {
+    if (Object.prototype.hasOwnProperty.call((c, "effectiveType"))) {
       i["effective-type"] = c.effectiveType;
     }
     if (!isNaN(c.downlink) && c.downlink > 0 && isFinite(c.downlink)) {
       i["downlink"] = Math.round(c.downlink * 1000 * 1000);
     }
     if (
-      {}.hasOwnProperty.call(c, "downlinkMax") &&
+      Object.prototype.hasOwnProperty.call(c, "downlinkMax") &&
       !isNaN(c.downlinkMax) &&
       !isNaN(c.downlinkMax) &&
       c.downlinkMax > 0 &&

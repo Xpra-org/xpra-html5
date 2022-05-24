@@ -180,14 +180,14 @@ const MediaSourceUtil = {
           }
         }
         codecs_supported[codec_option] = codec_string;
-      } catch (e) {
+      } catch (error) {
         Utilities.error(
           "audio error probing codec '" +
             codec_string +
             "' / '" +
             codec_string +
             "': " +
-            e
+            error
         );
         codecs_failed[codec_option] = codec_string;
       }
@@ -233,7 +233,7 @@ const MediaSourceUtil = {
       let msg = "" + source_type + " source " + event;
       try {
         msg += ": " + media_source.readyState;
-      } catch (e) {
+      } catch {
         //don't care
       }
       console.debug(msg);

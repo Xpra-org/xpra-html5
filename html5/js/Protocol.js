@@ -19,7 +19,7 @@
 
 "use strict";
 
-const CONNECT_TIMEOUT = 15000;
+const CONNECT_TIMEOUT = 15_000;
 
 /*
 A stub class to facilitate communication with the protocol when
@@ -137,16 +137,15 @@ class XpraProtocol {
     let msg = "";
     if (event.code) {
       try {
-        if (typeof code_mappings[event.code] !== "undefined") {
-          msg += "'" + code_mappings[event.code] + "' (" + event.code + ")";
-        } else {
-          msg += "" + event.code;
-        }
+        msg +=
+          typeof code_mappings[event.code] !== "undefined"
+            ? "'" + code_mappings[event.code] + "' (" + event.code + ")"
+            : "" + event.code;
         if (event.reason) {
           msg += ": '" + event.reason + "'";
         }
-      } catch (e) {
-        this.error("cannot parse websocket event:", e);
+      } catch (error) {
+        this.error("cannot parse websocket event:", error);
         msg = "unknown reason";
       }
     } else {
@@ -174,20 +173,21 @@ class XpraProtocol {
     // connect the socket
     try {
       this.websocket = new WebSocket(uri, "binary");
-    } catch (e) {
-      handle(["error", "" + e, 0]);
+    } catch (error) {
+      handle(["error", "" + error, 0]);
       return;
     }
     this.websocket.binaryType = "arraybuffer";
-    this.websocket.onopen = function () {
+    this.websocket.addEventListener("open", function () {
       if (me.verify_connected_timer) {
         clearTimeout(me.verify_connected_timer);
         me.verify_connected_timer = 0;
       }
       handle(["open"]);
-    };
-    this.websocket.onclose = (event) =>
-      handle(["close", me.close_event_str(event)]);
+    });
+    this.websocket.addEventListener("close", (event) =>
+      handle(["close", me.close_event_str(event)])
+    );
     this.websocket.onerror = (event) =>
       handle(["error", me.close_event_str(event), event.code || 0]);
     this.websocket.onmessage = function (e) {
@@ -263,11 +263,7 @@ class XpraProtocol {
           var hex = "";
           for (var p = 0; p < this.header.length; p++) {
             let v = this.header[p].toString(16);
-            if (v.length < 2) {
-              hex += "0" + v;
-            } else {
-              hex += v;
-            }
+            hex += v.length < 2 ? "0" + v : v;
           }
           msg += ": 0x" + hex;
         }
@@ -311,7 +307,7 @@ class XpraProtocol {
     }
     let packet_size = 0;
     for (i = 0; i < 4; i++) {
-      packet_size = packet_size * 0x100;
+      packet_size = packet_size * 0x1_00;
       packet_size += this.header[4 + i];
     }
 
@@ -420,9 +416,9 @@ class XpraProtocol {
           packet[index] = this.raw_packets[index];
         }
         this.raw_packets = {};
-      } catch (e) {
+      } catch (error) {
         //FIXME: maybe we should error out and disconnect here?
-        this.error("error decoding packet", e);
+        this.error("error decoding packet", error);
         this.error("packet=" + packet);
         this.raw_packets = [];
         return this.rQ.length > 0;
@@ -459,9 +455,9 @@ class XpraProtocol {
         } else {
           this.packet_handler(packet);
         }
-      } catch (e) {
+      } catch (error) {
         //FIXME: maybe we should error out and disconnect here?
-        this.error("error processing packet " + packet[0] + ": " + e);
+        this.error("error processing packet " + packet[0] + ": " + error);
       }
     }
     return this.rQ.length > 0;
@@ -472,7 +468,7 @@ class XpraProtocol {
   }
 
   process_send_queue() {
-    while (this.sQ.length !== 0 && this.websocket) {
+    while (this.sQ.length > 0 && this.websocket) {
       const packet = this.sQ.shift();
       if (!packet) {
         return;
@@ -492,10 +488,10 @@ class XpraProtocol {
         } else {
           throw "invalid packet encoder: " + this.packet_encoder;
         }
-      } catch (e) {
+      } catch (error) {
         this.error("Error: failed to encode packet:", packet);
         this.error(" with packet encoder", this.packet_encoder);
-        this.error(e);
+        this.error(error);
         continue;
       }
       const payload_size = bdata.length;
@@ -509,7 +505,7 @@ class XpraProtocol {
         if (typeof bdata === "string") {
           input_data = bdata;
         } else {
-          const CHUNK_SZ = 0x8000;
+          const CHUNK_SZ = 0x80_00;
           const c = [];
           for (let i = 0; i < bdata.length; i += CHUNK_SZ) {
             c.push(
@@ -556,7 +552,7 @@ class XpraProtocol {
   }
 
   process_message_queue() {
-    while (this.mQ.length !== 0) {
+    while (this.mQ.length > 0) {
       const packet = this.mQ.shift();
 
       if (!packet) {
@@ -616,7 +612,7 @@ class XpraProtocol {
     }
     const DEFAULT_KEYSIZE = 32;
     const key_size = caps["cipher.key_size"] || DEFAULT_KEYSIZE;
-    if ([32, 24, 16].indexOf(key_size) < 0) {
+    if (![32, 24, 16].includes(key_size)) {
       throw "invalid key size '" + key_size + "'";
     }
     const key_stretch = caps["cipher.key_stretch"] || "PBKDF2";
@@ -639,7 +635,7 @@ class XpraProtocol {
     let block_size = 0;
     if (mode == "CBC") {
       block_size = 32;
-    } else if (["CFB", "CTR"].indexOf(mode) < 0) {
+    } else if (!["CFB", "CTR"].includes(mode)) {
       throw "unsupported AES mode '" + mode + "'";
     }
     // start the cipher
@@ -678,13 +674,16 @@ if (
   // we create a custom packet handler which posts packet as a message
   protocol.set_packet_handler((packet) => {
     let raw_buffer = [];
-    if (packet[0] === "draw" && {}.hasOwnProperty.call(packet[7], "buffer")) {
+    if (
+      packet[0] === "draw" &&
+      Object.prototype.hasOwnProperty.call(packet[7], "buffer")
+    ) {
       //zero-copy the draw buffer
       raw_buffer = packet[7].buffer;
       packet[7] = null;
     } else if (
       packet[0] === "send-file-chunk" &&
-      {}.hasOwnProperty.call(packet[3], "buffer")
+      Object.prototype.hasOwnProperty.call(packet[3], "buffer")
     ) {
       //zero-copy the file data buffer
       raw_buffer = packet[3].buffer;

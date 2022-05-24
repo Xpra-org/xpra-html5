@@ -35,12 +35,12 @@ function addWindowListItem(wid, title) {
 
   a.id = "windowlistitemlink" + wid;
 
-  a.onmouseover = function (e) {
+  a.addEventListener("mouseover", function (e) {
     if (e.ctrlKey) {
       client._window_set_focus(client.id_to_window[wid]);
     }
-  };
-  a.onclick = function (e) {
+  });
+  a.addEventListener("click", function (e) {
     // Skip handling minimize, maximize, close events.
     if ($(e.target).hasClass(MENU_CONTENT_RIGHT_CLASS_NAME)) return;
     if (client.id_to_window[wid].minimized) {
@@ -49,10 +49,10 @@ function addWindowListItem(wid, title) {
       client._window_set_focus(client.id_to_window[wid]);
     }
     this.parentElement.parentElement.className = "-hide";
-  };
+  });
 
   function hideWindowList() {
-    document.getElementById("open_windows_list").className = "";
+    document.querySelector("#open_windows_list").className = "";
   }
 
   const divLeft = document.createElement("div");
@@ -62,13 +62,13 @@ function addWindowListItem(wid, title) {
   img.id = "windowlistitemicon" + wid;
   img.src = "favicon.png";
   img.className = MENU_CONTENT_LEFT_CLASS_NAME;
-  divLeft.appendChild(img);
+  divLeft.append(img);
 
   const titleDiv = document.createElement("div");
-  titleDiv.appendChild(document.createTextNode(title));
+  titleDiv.append(document.createTextNode(title));
   titleDiv.id = "windowlistitemtitle" + wid;
   titleDiv.className = MENU_CONTENT_LEFT_CLASS_NAME;
-  divLeft.appendChild(titleDiv);
+  divLeft.append(titleDiv);
 
   const divRight = document.createElement("div");
   divRight.className = "menu-divright";
@@ -78,46 +78,46 @@ function addWindowListItem(wid, title) {
   img2.src = "icons/close.png";
   img2.title = "Close";
   img2.className = MENU_CONTENT_RIGHT_CLASS_NAME;
-  img2.onclick = function (e) {
+  img2.addEventListener("click", function (e) {
     client._window_closed(client.id_to_window[wid]);
     e.stopPropagation();
     hideWindowList();
-  };
+  });
   const img3 = new Image();
   img3.id = "windowlistitemmax" + wid;
   img3.src = "icons/maximize.png";
   img3.title = "Maximize";
-  img3.onclick = function (e) {
+  img3.addEventListener("click", function (e) {
     client.id_to_window[wid].toggle_maximized();
     e.stopPropagation();
     hideWindowList();
-  };
+  });
   img3.className = MENU_CONTENT_RIGHT_CLASS_NAME;
   const img4 = new Image();
   img4.id = "windowlistitemmin" + wid;
   img4.src = "icons/minimize.png";
   img4.title = "Minimize";
-  img4.onclick = function (e) {
+  img4.addEventListener("click", function (e) {
     client.id_to_window[wid].toggle_minimized();
     e.stopPropagation();
     hideWindowList();
-  };
+  });
   img4.className = MENU_CONTENT_RIGHT_CLASS_NAME;
 
-  divRight.appendChild(img2);
-  divRight.appendChild(img3);
-  divRight.appendChild(img4);
-  a.appendChild(divLeft);
-  a.appendChild(divRight);
-  li.appendChild(a);
+  divRight.append(img2);
+  divRight.append(img3);
+  divRight.append(img4);
+  a.append(divLeft);
+  a.append(divRight);
+  li.append(a);
 
-  document.getElementById("open_windows_list").appendChild(li);
+  document.querySelector("#open_windows_list").append(li);
 }
 
 function removeWindowListItem(itemId) {
   const element = document.getElementById("windowlistitem" + itemId);
   if (element && element.parentNode) {
-    element.parentNode.removeChild(element);
+    element.remove();
   }
 }
 

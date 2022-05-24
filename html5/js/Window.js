@@ -102,10 +102,19 @@ class XpraWindow {
     this.icon = null;
 
     // get offsets
-    this.leftoffset = parseInt(jQuery(this.div).css("border-left-width"), 10);
-    this.rightoffset = parseInt(jQuery(this.div).css("border-right-width"), 10);
-    this.topoffset = parseInt(jQuery(this.div).css("border-top-width"), 10);
-    this.bottomoffset = parseInt(
+    this.leftoffset = Number.parseInt(
+      jQuery(this.div).css("border-left-width"),
+      10
+    );
+    this.rightoffset = Number.parseInt(
+      jQuery(this.div).css("border-right-width"),
+      10
+    );
+    this.topoffset = Number.parseInt(
+      jQuery(this.div).css("border-top-width"),
+      10
+    );
+    this.bottomoffset = Number.parseInt(
       jQuery(this.div).css("border-bottom-width"),
       10
     );
@@ -247,7 +256,7 @@ class XpraWindow {
     }
     // adjust top offset
     this.topoffset =
-      this.topoffset + parseInt(jQuery(this.d_header).css("height"), 10);
+      this.topoffset + Number.parseInt(jQuery(this.d_header).css("height"), 10);
     // stop propagation if we're over the window:
     jQuery(this.div).mousedown((e) => e.stopPropagation());
     //bug 2418: if we stop 'mouseup' propagation,
@@ -345,7 +354,7 @@ class XpraWindow {
         const dy = ev.offsetY - this.pointer_last_y;
         this.pointer_last_x = ev.offsetX;
         this.pointer_last_y = ev.offsetY;
-        const mult = 20.0 * (window.devicePixelRatio || 1);
+        const mult = 20 * (window.devicePixelRatio || 1);
         ev.wheelDeltaX = Math.round(dx * mult);
         ev.wheelDeltaY = Math.round(dy * mult);
         this.on_mousescroll(ev);
@@ -396,7 +405,7 @@ class XpraWindow {
       this.x = Math.min(oldx, ww - min_visible);
     }
     if (oldy <= this.topoffset && oldy <= min_visible) {
-      this.y = parseInt(this.topoffset);
+      this.y = Number.parseInt(this.topoffset);
     } else if (oldy >= wh - min_visible) {
       this.y = Math.min(oldy, wh - min_visible);
     }
@@ -543,7 +552,7 @@ class XpraWindow {
       this.client.server_is_desktop ||
       this.client.server_is_shadow
     ) {
-      z = 30000;
+      z = 30_000;
     } else if (
       this.windowtype == "DROPDOWN" ||
       this.windowtype == "TOOLTIP" ||
@@ -551,9 +560,9 @@ class XpraWindow {
       this.windowtype == "MENU" ||
       this.windowtype == "COMBO"
     ) {
-      z = 20000;
+      z = 20_000;
     } else if (this.windowtype == "UTILITY" || this.windowtype == "DIALOG") {
-      z = 15000;
+      z = 15_000;
     }
     const above = this.metadata["above"];
     if (above) {
@@ -597,11 +606,11 @@ class XpraWindow {
       if (this.client.packet_encoder != "rencodeplus") {
         try {
           title = decodeURIComponent(escape(title));
-        } catch (e) {
+        } catch (error) {
           this.log(
             "unable to decode title string '" + title + "' received from ",
             this.client.protocol.packet_encoder,
-            ": " + e
+            ": " + error
           );
         }
       }
@@ -628,11 +637,7 @@ class XpraWindow {
     }
     if ("opacity" in metadata) {
       let opacity = metadata["opacity"];
-      if (opacity < 0) {
-        opacity = 1.0;
-      } else {
-        opacity = opacity / 0x100000000;
-      }
+      opacity = opacity < 0 ? 1 : opacity / 0x1_00_00_00_00;
       jQuery(this.div).css("opacity", "" + opacity);
     }
     if ("iconic" in metadata) {
@@ -674,7 +679,7 @@ class XpraWindow {
       if (wm_class) {
         //add new wm-class:
         for (let i = 0; i < wm_class.length; i++) {
-          const tclass = Utilities.s(wm_class[i]).replace(/[^0-9a-zA-Z]/g, "");
+          const tclass = Utilities.s(wm_class[i]).replace(/[^\dA-Za-z]/g, "");
           if (tclass && !jQuery(this.div).hasClass(tclass)) {
             jQuery(this.div).addClass("wmclass-" + tclass);
           }
@@ -772,7 +777,7 @@ class XpraWindow {
    * Restores the saved geometry (if it exists).
    */
   restore_geometry() {
-    if (this.saved_geometry == null) {
+    if (this.saved_geometry == undefined) {
       return;
     }
     this.x = this.saved_geometry["x"];
@@ -888,14 +893,18 @@ class XpraWindow {
   }
 
   _set_decorated(decorated) {
-    this.topoffset = parseInt(jQuery(this.div).css("border-top-width"), 10);
+    this.topoffset = Number.parseInt(
+      jQuery(this.div).css("border-top-width"),
+      10
+    );
     if (decorated) {
       jQuery("#head" + this.wid).show();
       jQuery(this.div).removeClass("undecorated");
       jQuery(this.div).addClass("window");
       if (this.d_header) {
         this.topoffset =
-          this.topoffset + parseInt(jQuery(this.d_header).css("height"), 10);
+          this.topoffset +
+          Number.parseInt(jQuery(this.d_header).css("height"), 10);
         this.debug(
           "geometry",
           "_set_decorated(",
@@ -1002,7 +1011,7 @@ class XpraWindow {
       //note: when this window is created,
       // it may not have been added to the client's list yet
       const ids = Object.keys(this.client.id_to_window);
-      if (ids.length == 0 || ids[0] == this.wid) {
+      if (ids.length === 0 || ids[0] == this.wid) {
         //single window, recenter it:
         this.recenter();
       }
@@ -1055,7 +1064,7 @@ class XpraWindow {
       newh = maxh;
       this.log("resizing to exact size:", neww, newh);
     } else {
-      if (this.client.server_screen_sizes.length == 0) {
+      if (this.client.server_screen_sizes.length === 0) {
         this.recenter();
         return;
       }
@@ -1258,7 +1267,7 @@ class XpraWindow {
     if (zoom != 1 && !Utilities.isMacOS()) {
       //scale it:
       const tmp_img = new Image();
-      tmp_img.onload = () => {
+      tmp_img.addEventListener("load", () => {
         const canvas = document.createElement("canvas");
         const ctx = canvas.getContext("2d");
         ctx.imageSmoothingEnabled = false;
@@ -1271,7 +1280,7 @@ class XpraWindow {
           Math.round(xhot * window.devicePixelRatio),
           Math.round(yhot * window.devicePixelRatio)
         );
-      };
+      });
       tmp_img.src = cursor_url;
     } else {
       set_cursor_url(cursor_url, xhot, yhot);
@@ -1398,7 +1407,7 @@ class XpraWindow {
       //no need to synchronize paint packets here
       //the decode worker ensures that we get the packets
       //in the correct order, ready to update the canvas
-      this.do_paint.apply(this, arguments);
+      Reflect.apply(this.do_paint, this, arguments);
       return;
     }
     //process all paint request in order using the paint_queue:
@@ -1539,7 +1548,7 @@ class XpraWindow {
           return;
         }
         const j = new Image();
-        j.onload = () => {
+        j.addEventListener("load", () => {
           if (j.width == 0 || j.height == 0) {
             paint_error("invalid image size: " + j.width + "x" + j.height);
           } else {
@@ -1548,7 +1557,7 @@ class XpraWindow {
             painted();
           }
           this.may_paint_now();
-        };
+        });
         j.onerror = () => {
           paint_error("failed to load " + coding + " into image tag");
           this.may_paint_now();
@@ -1600,10 +1609,10 @@ class XpraWindow {
       } else {
         paint_error("unsupported encoding");
       }
-    } catch (e) {
+    } catch (error) {
       const packet_sequence = packet[8];
-      this.exc(e, "error painting", coding, "sequence no", packet_sequence);
-      paint_error(e);
+      this.exc(error, "error painting", coding, "sequence no", packet_sequence);
+      paint_error(error);
     }
   }
 

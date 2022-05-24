@@ -31,7 +31,7 @@ class XpraVideoDecoder {
     this.frame_threshold = 250;
     this.on_frame_decoded = {}; //callback
     this.on_frame_error = (packet, error) => {
-      console.error("VideoDecoder error on packet ", packet, ": ", error);
+      console.error("VideoDecoder error on packet", packet, ":", error);
     };
   }
 
@@ -53,7 +53,7 @@ class XpraVideoDecoder {
   }
 
   _on_decoded_frame(videoFrame) {
-    if (this.decoder_queue.length == 0) {
+    if (this.decoder_queue.length === 0) {
       videoFrame.close();
       return;
     }
