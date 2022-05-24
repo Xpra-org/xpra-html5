@@ -24,6 +24,7 @@
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-sonarjs": "^0.13.0",
+    "eslint-plugin-unicorn": "^42.0.0",
     "husky": "^8.0.1",
     "lint-staged": "^12.4.1",
     "prettier": "2.6.2"
@@ -39,6 +40,7 @@
     "extends": [
       "eslint:recommended",
       "plugin:sonarjs/recommended",
+      "plugin:unicorn/recommended",
       "plugin:prettier/recommended"
     ],
     "ignorePatterns": [
@@ -48,6 +50,7 @@
     "parserOptions": {
       "ecmaVersion": "latest"
     },
+    "plugins": ["unicorn"],
     "rules": {
       "no-empty": [
         "error",
