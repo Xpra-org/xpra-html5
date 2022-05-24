@@ -22,6 +22,7 @@
   "devDependencies": {
     "eslint": "^8.16.0",
     "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-github": "^4.3.6",
     "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-sonarjs": "^0.13.0",
     "eslint-plugin-unicorn": "^42.0.0",
@@ -39,6 +40,7 @@
     },
     "extends": [
       "eslint:recommended",
+      "plugin:github/recommended",
       "plugin:sonarjs/recommended",
       "plugin:unicorn/recommended",
       "plugin:prettier/recommended"
@@ -50,8 +52,9 @@
     "parserOptions": {
       "ecmaVersion": "latest"
     },
-    "plugins": ["unicorn"],
+    "plugins": ["github", "unicorn"],
     "rules": {
+      "filenames/match-regex": "off",
       "no-empty": [
         "error",
         {
