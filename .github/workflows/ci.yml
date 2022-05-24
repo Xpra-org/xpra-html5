@@ -7,17 +7,6 @@ defaults:
     shell: bash
 
 jobs:
-  check_formatting:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Install Nix
-        uses: cachix/install-nix-action@v17
-        with:
-          nix_path: nixpkgs=channel:nixos-unstable
-      - name: Check formatting
-        run: nix-shell --command 'npm install && npm run check_formatting'
-
   check_linting:
     runs-on: ubuntu-latest
     steps:
