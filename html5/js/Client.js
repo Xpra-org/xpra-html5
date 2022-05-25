@@ -3917,17 +3917,18 @@ class XpraClient {
         message
       );
     }
+    const client = this;
     function decode_result(error) {
       const flush = options["flush"] || 0;
       let decode_time = Math.round(1000 * performance.now() - 1000 * start);
       if (flush == 0) {
-        this.request_redraw(win);
+        client.request_redraw(win);
       }
       if (error || start == 0) {
         this.request_redraw(win);
         decode_time = -1;
       }
-      this.debug(
+      client.debug(
         "draw",
         "decode time for ",
         coding,
