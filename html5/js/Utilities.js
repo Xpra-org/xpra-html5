@@ -555,7 +555,7 @@ const Utilities = {
     let e;
     const a = /\+/g; // Regex for replacing addition symbol with a space
     const r = /([^&=]+)=?([^&]*)/g;
-    const d = function (s) {
+    const d = (s) => {
       return decodeURIComponent(s.replace(a, " "));
     };
     while ((e = r.exec(q))) parameters[d(e[1])] = d(e[2]);
