@@ -54,15 +54,26 @@
     },
     "plugins": ["github", "unicorn"],
     "rules": {
+      "camelcase": "warn",
+      "eqeqeq": "warn",
       "filenames/match-regex": "off",
+      "github/no-then": "warn",
+      "i18n-text/no-en": "warn",
+      "no-console": "warn",
       "no-empty": [
         "error",
         {
           "allowEmptyCatch": true
         }
       ],
+      "no-invalid-this": "warn",
+      "no-shadow": "warn",
+      "no-throw-literal": "warn",
       "no-undef": "warn",
       "no-unused-vars": "warn",
+      "prefer-const": "warn",
+      "prefer-rest-params": "warn",
+      "prefer-spread": "warn",
       "sonarjs/cognitive-complexity": "warn",
       "unicorn/filename-case": [
         "error",
