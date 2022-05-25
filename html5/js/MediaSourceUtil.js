@@ -3,7 +3,6 @@
  * Licensed under MPL 2.0
  *
  */
-"use strict";
 
 const MediaSourceConstants = {
   CODEC_DESCRIPTION: {

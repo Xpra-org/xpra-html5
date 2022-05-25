@@ -13,8 +13,6 @@
  *	Keycodes.js
  */
 
-"use strict";
-
 const XPRA_CLIENT_FORCE_NO_WORKER = false;
 const CLIPBOARD_IMAGES = true;
 const CLIPBOARD_EVENT_DELAY = 100;
@@ -1235,7 +1233,6 @@ class XpraClient {
   }
 
   _get_DPI() {
-    "use strict";
     const dpi_div = document.querySelector("#dpi");
     if (
       dpi_div != undefined &&

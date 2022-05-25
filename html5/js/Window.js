@@ -12,8 +12,6 @@
  *   jQueryUI
  */
 
-"use strict";
-
 const TASKBAR_HEIGHT = 0;
 
 function dummy() {}

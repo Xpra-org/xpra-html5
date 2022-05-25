@@ -6,7 +6,6 @@
  * http://www.mozilla.org/MPL/2.0/
  *
  */
-"use strict";
 
 /*
  * Worker for offscreen decoding and painting.

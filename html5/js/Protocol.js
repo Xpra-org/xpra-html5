@@ -17,8 +17,6 @@
  *  brotli_decode.js
  */
 
-"use strict";
-
 const CONNECT_TIMEOUT = 15_000;
 
 /*

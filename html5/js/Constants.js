@@ -6,8 +6,6 @@
  *
  */
 
-"use strict";
-
 const DEFAULT_BOX_COLORS = {
   png: "yellow",
   h264: "blue",

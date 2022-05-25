@@ -7,8 +7,6 @@
  *
  */
 
-"use strict";
-
 const Utilities = {
   VERSION: "6.0",
   REVISION: 1285,
