@@ -124,6 +124,7 @@ const MediaSourceUtil = {
     if (AV && AV.Decoder && AV.Decoder.find) {
       for (const codec_option in MediaSourceConstants.AURORA_CODECS) {
         const codec_string = MediaSourceConstants.AURORA_CODECS[codec_option];
+        // eslint-disable-next-line unicorn/no-array-callback-reference
         const decoder = AV.Decoder.find(codec_string);
         if (decoder) {
           codecs_supported[codec_option] = codec_string;

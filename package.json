@@ -67,7 +67,15 @@
           "case": "pascalCase"
         }
       ],
-      "unicorn/no-for-loop": "off"
+      "unicorn/no-for-loop": "off",
+      "unicorn/no-null": "warn",
+      "unicorn/no-this-assignment": "warn",
+      "unicorn/number-literal-case": "warn",
+      "unicorn/prefer-add-event-listener": "warn",
+      "unicorn/prefer-code-point": "warn",
+      "unicorn/prefer-dom-node-text-content": "warn",
+      "unicorn/prefer-number-properties": "warn",
+      "unicorn/prevent-abbreviations": "warn"
     }
   },
   "prettier": {}
