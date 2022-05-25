@@ -16,8 +16,7 @@
 
 const TASKBAR_HEIGHT = 0;
 
-function dummy() {
-}
+function dummy() {}
 
 /**
  * This is the class representing a window we draw on the canvas.

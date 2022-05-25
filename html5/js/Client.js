@@ -3422,7 +3422,10 @@ class XpraClient {
       direction = packet[4],
       button = packet[5],
       source_indication = packet[6];
-    this.log("initiate moveresize on", win, "mousedown_event=", this.mousedown_event);
+    this.log("initiate moveresize on",
+      win,
+      "mousedown_event=",
+      this.mousedown_event);
     win.initiate_moveresize(
       this.mousedown_event,
       x_root,
