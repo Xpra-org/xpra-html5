@@ -1713,11 +1713,8 @@ class XpraClient {
     return { x: mx, y: my, button: mbutton };
   }
 
-  on_mousemove(e) {
-    this.do_window_mouse_move(e, null);
-  }
-
   on_mousedown(e) {
+    this.mousedown_event = e;
     this.do_window_mouse_click(e, null, true);
   }
 
@@ -1725,14 +1722,7 @@ class XpraClient {
     this.do_window_mouse_click(e, null, false);
   }
 
-  on_mousescroll(e) {
-    this.do_window_mouse_scroll(e, null);
-  }
-
-  _window_mouse_move(ctx, e, window) {
-    ctx.do_window_mouse_move(e, window);
-  }
-  do_window_mouse_move(e, window) {
+  on_mousemove(e, window) {
     if (this.server_readonly || this.mouse_grabbed || !this.connected) {
       return;
     }
@@ -1746,16 +1736,6 @@ class XpraClient {
       wid = window.wid;
     }
     this.send(["pointer-position", wid, [x, y], modifiers, buttons]);
-  }
-
-  _window_mouse_down(ctx, e, window) {
-    ctx.mousedown_event = e;
-    ctx.do_window_mouse_click(e, window, true);
-  }
-
-  _window_mouse_up(ctx, e, window) {
-    //this.mousedown_event = null;
-    ctx.do_window_mouse_click(e, window, false);
   }
 
   release_buttons(e, window) {
@@ -1863,11 +1843,7 @@ class XpraClient {
     return 0;
   }
 
-  _window_mouse_scroll(ctx, e, window) {
-    ctx.do_window_mouse_scroll(e, window);
-  }
-
-  do_window_mouse_scroll(e, window) {
+  on_mousescroll(e, window) {
     if (this.server_readonly || this.mouse_grabbed || !this.connected) {
       return;
     }
@@ -2203,8 +2179,7 @@ class XpraClient {
    * Focus
    */
   _window_set_focus(win) {
-    const client = win.client;
-    if (win == null || client.server_readonly || !client.connected) {
+    if (win == null || this.server_readonly || !this.connected) {
       return;
     }
     // don't send focus packet for override_redirect windows!
@@ -2216,7 +2191,7 @@ class XpraClient {
       win.toggle_minimized();
     }
     const wid = win.wid;
-    if (client.focus == wid) {
+    if (this.focus == wid) {
       return;
     }
 
@@ -2233,8 +2208,8 @@ class XpraClient {
         win.windowtype == "DESKTOP" &&
         win.metadata["class-instance"].includes(auto_fullscreen_desktop_class)
       ) {
-        for (let i in client.id_to_window) {
-          const iwin = client.id_to_window[i];
+        for (let i in this.id_to_window) {
+          const iwin = this.id_to_window[i];
           if (iwin.wid != win.wid && !iwin.minimized) {
             return;
           }
@@ -2242,28 +2217,28 @@ class XpraClient {
       }
     }
 
-    const top_stacking_layer = Object.keys(client.id_to_window).length;
+    const top_stacking_layer = Object.keys(this.id_to_window).length;
     const old_stacking_layer = win.stacking_layer;
-    const had_focus = client.focus;
-    client.focus = wid;
-    client.topwindow = wid;
-    client.send(["focus", wid, []]);
+    const had_focus = this.focus;
+    this.focus = wid;
+    this.topwindow = wid;
+    this.send(["focus", wid, []]);
     //set the focused flag on the window specified,
     //adjust stacking order:
     let iwin = null;
-    for (const i in client.id_to_window) {
-      iwin = client.id_to_window[i];
+    for (const i in this.id_to_window) {
+      iwin = this.id_to_window[i];
       iwin.focused = iwin.wid == wid;
       if (iwin.focused) {
         iwin.stacking_layer = top_stacking_layer;
-        client.send_configure_window(iwin, { focused: true }, true);
+        this.send_configure_window(iwin, { focused: true }, true);
       } else {
         //move it down to fill the gap:
         if (iwin.stacking_layer > old_stacking_layer) {
           iwin.stacking_layer--;
         }
         if (had_focus == i) {
-          client.send_configure_window(iwin, { focused: false }, true);
+          this.send_configure_window(iwin, { focused: false }, true);
         }
       }
       iwin.updateFocus();
@@ -3244,13 +3219,14 @@ class XpraClient {
       false,
       true,
       {},
-      this._tray_geometry_changed,
-      this._window_mouse_move,
-      this._window_mouse_down,
-      this._window_mouse_up,
-      this._window_mouse_scroll,
-      this._tray_set_focus,
-      this._tray_closed,
+      //TODO: send new tray geometry to the server using send_tray_configure
+      () => this.debug("tray", "tray geometry changed (ignored)"),
+      (event, window) => this.on_mousemove(event, window),
+      (event, window) => this.on_mousedown(event, window),
+      (event, window) => this.on_mouseup(event, window),
+      (event, window) => this.on_mousescroll(event, window),
+      () => this.debug("tray", "tray set focus (ignored)"),
+      () => this.debug("tray", "tray closed (ignored)"),
       this.scale
     );
     this.send_tray_configure(wid);
@@ -3263,15 +3239,6 @@ class XpraClient {
       h = float_menu_item_size;
     this.clog("tray", wid, "position:", x, y);
     this.send(["configure-window", Number(wid), x, y, w, h, {}]);
-  }
-  _tray_geometry_changed(win) {
-    win.client.debug("tray", "tray geometry changed (ignored)");
-  }
-  _tray_set_focus(win) {
-    win.client.debug("tray", "tray set focus (ignored)");
-  }
-  _tray_closed(win) {
-    win.client.debug("tray", "tray closed (ignored)");
   }
 
   reconfigure_all_trays() {
@@ -3334,13 +3301,13 @@ class XpraClient {
       override_redirect,
       false,
       client_properties,
-      this._window_geometry_changed,
-      this._window_mouse_move,
-      this._window_mouse_down,
-      this._window_mouse_up,
-      this._window_mouse_scroll,
-      this._window_set_focus,
-      this._window_closed,
+      (window) => this.send_configure_window(window, {}, false),
+      (event, window) => this.on_mousemove(event, window),
+      (event, window) => this.on_mousedown(event, window),
+      (event, window) => this.on_mouseup(event, window),
+      (event, window) => this.on_mousescroll(event, window),
+      (window) => this._window_set_focus(window),
+      (window) => this.send(["close-window", window.wid]),
       this.scale
     );
     if (win && !override_redirect && win.metadata["window-type"] == "NORMAL") {
@@ -3408,16 +3375,6 @@ class XpraClient {
     this._new_ui_event();
   }
 
-  _window_closed(win) {
-    win.client.send(["close-window", win.wid]);
-  }
-
-  _window_geometry_changed(win) {
-    // window callbacks are called from the XpraWindow function context
-    // so use win.client instead of `this` to refer to the client
-    win.client.send_configure_window(win, {}, false);
-  }
-
   send_configure_window(win, state, skip_geometry) {
     const geom = win.get_internal_geometry();
     const wid = win.wid;
@@ -3456,21 +3413,24 @@ class XpraClient {
   _process_initiate_moveresize(packet) {
     const wid = packet[1],
       win = this.id_to_window[wid];
-    if (win != null) {
-      const x_root = packet[2],
-        y_root = packet[3],
-        direction = packet[4],
-        button = packet[5],
-        source_indication = packet[6];
-      win.initiate_moveresize(
-        this.mousedown_event,
-        x_root,
-        y_root,
-        direction,
-        button,
-        source_indication
-      );
+    if (!win) {
+      this.log("cannot initiate moveresize, window", wid, "not found");
+      return;
     }
+    const x_root = packet[2],
+      y_root = packet[3],
+      direction = packet[4],
+      button = packet[5],
+      source_indication = packet[6];
+    this.log("initiate moveresize on", win, "mousedown_event=", this.mousedown_event);
+    win.initiate_moveresize(
+      this.mousedown_event,
+      x_root,
+      y_root,
+      direction,
+      button,
+      source_indication
+    );
   }
 
   _process_pointer_position(packet) {
