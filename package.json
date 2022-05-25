@@ -5,7 +5,7 @@
   "main": "html5/index.html",
   "scripts": {
     "format": "eslint --fix .",
-    "lint": "eslint .",
+    "lint": "eslint --quiet .",
     "test": "echo \"Error: no test specified\" && exit 1",
     "prepare": "husky install"
   },
@@ -53,8 +53,8 @@
           "allowEmptyCatch": true
         }
       ],
-      "no-undef": 0,
-      "no-unused-vars": 0
+      "no-undef": "warn",
+      "no-unused-vars": "warn"
     }
   },
   "prettier": {}
