@@ -265,7 +265,7 @@ class XpraWindow {
         !this.minimized &&
         $(e.target).parents(".windowbuttons").length === 0
       ) {
-        this.client._window_set_focus(this);
+        this.set_focus_cb(this);
       }
     });
   }
