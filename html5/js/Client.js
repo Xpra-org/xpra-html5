@@ -5289,7 +5289,7 @@ class XpraClient {
       "chunk_no",
       chunk_no,
       "found chunk_state",
-      new Boolean(chunk_state)
+      Boolean(chunk_state)
     );
     if (!chunk_state) {
       return;
@@ -5309,7 +5309,7 @@ class XpraClient {
       "cancel_sending",
       chunk_id,
       "chunk state found:",
-      new Boolean(chunk_state)
+      Boolean(chunk_state)
     );
     if (!chunk_state) {
       return;
