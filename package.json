@@ -61,6 +61,12 @@
       "no-undef": "warn",
       "no-unused-vars": "warn",
       "sonarjs/cognitive-complexity": "warn",
+      "unicorn/filename-case": [
+        "error",
+        {
+          "case": "pascalCase"
+        }
+      ],
       "unicorn/no-for-loop": "off"
     }
   },
