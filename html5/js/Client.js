@@ -38,7 +38,7 @@ class XpraClient {
   constructor(container) {
     // the container div is the "screen" on the HTML page where we
     // are able to draw our windows in.
-    this.container = document.getElementById(container);
+    this.container = document.querySelector(`#${container}`);
     if (!this.container) {
       throw new Error("invalid container element");
     }

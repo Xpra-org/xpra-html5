@@ -115,7 +115,7 @@ function addWindowListItem(wid, title) {
 }
 
 function removeWindowListItem(itemId) {
-  const element = document.getElementById("windowlistitem" + itemId);
+  const element = document.querySelector(`#windowlistitem${itemId}`);
   if (element && element.parentNode) {
     element.remove();
   }
