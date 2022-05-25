@@ -2322,9 +2322,9 @@ class XpraClient {
       const wid = $(".slick-current .window-preview-item-container").data(
         "wid"
       );
-      client.clog("current wid: " + wid);
+      this.clog("current wid: " + wid);
       if (client.id_to_window[wid].minimized) {
-        client._window_set_focus(client.id_to_window[wid]);
+        this._window_set_focus(this.id_to_window[wid]);
       }
 
       // Clear the list of window elements.
