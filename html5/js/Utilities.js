@@ -656,10 +656,8 @@ const Utilities = {
     }
     xhr.open("GET", url, true);
     if (username && password) {
-      xhr.setRequestHeader(
-        "Authorization",
-        `Basic ${btoa(`${username}:${password}`)}`
-      );
+      const credentials = btoa(`${username}:${password}`);
+      xhr.setRequestHeader("Authorization", `Basic ${credentials}`);
     }
     xhr.responseType = "json";
     xhr.addEventListener("load", function () {
