@@ -519,27 +519,19 @@ class XpraWindow {
    * Mouse: delegate to client, telling it which window triggered the event.
    */
   on_mousemove(e) {
-    this.mouse_move_cb(e, this);
-    e.preventDefault();
-    return false;
+    return this.mouse_move_cb(e, this);
   }
 
   on_mousedown(e) {
-    this.mouse_down_cb(e, this);
-    e.preventDefault();
-    return false;
+    return this.mouse_down_cb(e, this);
   }
 
   on_mouseup(e) {
-    this.mouse_up_cb(e, this);
-    e.preventDefault();
-    return false;
+    return this.mouse_up_cb(e, this);
   }
 
   on_mousescroll(e) {
-    this.mouse_scroll_cb(e, this);
-    //e.preventDefault();
-    return false;
+    return this.mouse_scroll_cb(e, this);
   }
 
   /**

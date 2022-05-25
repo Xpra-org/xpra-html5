@@ -1716,15 +1716,19 @@ class XpraClient {
   on_mousedown(e) {
     this.mousedown_event = e;
     this.do_window_mouse_click(e, null, true);
+    e.preventDefault();
+    return false;
   }
 
   on_mouseup(e) {
     this.do_window_mouse_click(e, null, false);
+    e.preventDefault();
+    return false;
   }
 
   on_mousemove(e, window) {
     if (this.server_readonly || this.mouse_grabbed || !this.connected) {
-      return;
+      return false;
     }
     const mouse = this.getMouse(e),
       x = Math.round(mouse.x),
@@ -1736,6 +1740,8 @@ class XpraClient {
       wid = window.wid;
     }
     this.send(["pointer-position", wid, [x, y], modifiers, buttons]);
+    e.preventDefault();
+    return false;
   }
 
   release_buttons(e, window) {
@@ -1845,7 +1851,7 @@ class XpraClient {
 
   on_mousescroll(e, window) {
     if (this.server_readonly || this.mouse_grabbed || !this.connected) {
-      return;
+      return false;
     }
     const mouse = this.getMouse(e),
       x = Math.round(mouse.x),
@@ -1964,6 +1970,8 @@ class XpraClient {
     //store left overs:
     this.wheel_delta_x = this.wheel_delta_x >= 0 ? wx : -wx;
     this.wheel_delta_y = this.wheel_delta_y >= 0 ? wy : -wy;
+    e.preventDefault();
+    return false;
   }
 
   init_clipboard() {
