@@ -1,3 +1,7 @@
+import { MediaSourceConstants, MediaSourceUtil } from "./MediaSourceUtil.js";
+import { XpraOffscreenWorker } from "./OffscreenDecodeWorkerHelper.js";
+import { Utilities } from "./Utilities.js";
+
 const VALUE_PROPERTIES = [
   "server",
   "port",

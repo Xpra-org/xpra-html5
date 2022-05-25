@@ -7,7 +7,7 @@
  *
  */
 
-const Utilities = {
+export const Utilities = {
   VERSION: "6.0",
   REVISION: 1285,
   LOCAL_MODIFICATIONS: 3,
@@ -473,7 +473,7 @@ const Utilities = {
     try {
       return window.btoa(v);
     } catch {
-      return ArrayBufferToBase64(v);
+      return this.ArrayBufferToBase64(v);
     }
   },
 

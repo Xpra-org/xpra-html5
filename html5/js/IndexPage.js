@@ -1,3 +1,10 @@
+import { XpraClient } from "./Client.js";
+import { CHAR_TO_NAME, KEYSYM_TO_LAYOUT } from "./Keycodes.js";
+import "./Menu.js";
+import "./MenuCustom.js";
+import "./Notifications.js";
+import { Utilities } from "./Utilities.js";
+
 const default_settings = {};
 const getparam = function (prop) {
   let v = Utilities.getparam(prop);

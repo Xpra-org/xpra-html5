@@ -7,6 +7,8 @@
  *
  */
 
+import { Utilities } from "./Utilities.js";
+
 $(function () {
   window.notification_timers = {};
 

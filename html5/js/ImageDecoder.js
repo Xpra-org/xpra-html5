@@ -14,13 +14,15 @@
  *
  */
 
-const XpraImageDecoderLoader = {
+import { decode_rgb } from "./RgbHelpers.js";
+
+export const XpraImageDecoderLoader = {
   hasNativeDecoder() {
     return typeof ImageDecoder !== "undefined";
   },
 };
 
-class XpraImageDecoder {
+export class XpraImageDecoder {
   constructor() {
     this.on_frame_decoded = null;
     this.on_frame_error = (packet, error) => {

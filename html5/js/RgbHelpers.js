@@ -7,7 +7,7 @@
 //re-striding the pixel data if needed so that lines are not padded
 //(that is: the rowstride must be width*4)
 //this function modifies the packet data directly
-function decode_rgb(packet) {
+export function decode_rgb(packet) {
   const width = packet[4];
   const height = packet[5];
   const coding = packet[6];

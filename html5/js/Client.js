@@ -13,6 +13,23 @@
  *	Keycodes.js
  */
 
+import { PACKET_TYPES } from "./Constants.js";
+import {
+  CHAR_TO_NAME,
+  CHARCODE_TO_NAME,
+  CHARCODE_TO_NAME_SHIFTED,
+  DEAD_KEYS,
+  get_event_modifiers,
+  KEY_TO_NAME,
+  KEYSYM_TO_LAYOUT,
+  NUMPAD_TO_NAME,
+} from "./Keycodes.js";
+import { MediaSourceConstants, MediaSourceUtil } from "./MediaSourceUtil.js";
+import { XpraOffscreenWorker } from "./OffscreenDecodeWorkerHelper.js";
+import { XpraProtocol, XpraProtocolWorkerHost } from "./Protocol.js";
+import { Utilities } from "./Utilities.js";
+import { XpraWindow } from "./Window.js";
+
 const XPRA_CLIENT_FORCE_NO_WORKER = false;
 const CLIPBOARD_IMAGES = true;
 const CLIPBOARD_EVENT_DELAY = 100;
@@ -30,7 +47,7 @@ const FLOAT_MENU_SELECTOR = "#float_menu";
 const PASTEBOARD_SELECTOR = "#pasteboard";
 const WINDOW_PREVIEW_SELECTOR = "#window_preview";
 
-class XpraClient {
+export class XpraClient {
   constructor(container, default_settings) {
     // the container div is the "screen" on the HTML page where we
     // are able to draw our windows in.
@@ -701,7 +718,7 @@ class XpraClient {
           `.*${this.default_settings.auto_fullscreen}.*`
         );
         if (iwin.fullscreen === false && pattern.test(iwin.metadata.title)) {
-          clog(`auto fullscreen window: ${iwin.metadata.title}`);
+          this.clog(`auto fullscreen window: ${iwin.metadata.title}`);
           iwin.set_fullscreen(true);
           iwin.screen_resized();
         }
@@ -710,7 +727,7 @@ class XpraClient {
       // Make a DESKTOP-type window fullscreen automatically.
       // This resizes things like xfdesktop according to the window size.
       if (this.fullscreen === false && this.client.is_window_desktop(iwin)) {
-        clog(`auto fullscreen desktop window: ${this.metadata.title}`);
+        this.clog(`auto fullscreen desktop window: ${this.metadata.title}`);
         this.set_fullscreen(true);
         this.screen_resized();
       }
@@ -793,11 +810,11 @@ class XpraClient {
       return;
     }
     keyboard.getLayoutMap().then((keyboardLayoutMap) => {
-      clog("got a keyboard layout map:", keyboardLayoutMap);
-      clog("keys:", [...keyboardLayoutMap.keys()]);
+      this.clog("got a keyboard layout map:", keyboardLayoutMap);
+      this.clog("keys:", [...keyboardLayoutMap.keys()]);
       for (const key of keyboardLayoutMap.keys()) {
         const value = keyboardLayoutMap[key];
-        cdebug("keyboard", key, "=", value);
+        this.cdebug("keyboard", key, "=", value);
         this.keyboard_map[key] = value;
       }
     });
@@ -1994,7 +2011,7 @@ class XpraClient {
         paste_data = unescape(
           encodeURIComponent(clipboardData.getData(datatype))
         );
-        cdebug("clipboard", "paste event, data=", paste_data);
+        this.cdebug("clipboard", "paste event, data=", paste_data);
         this.clipboard_buffer = paste_data;
         this.send_clipboard_token(paste_data);
       }
@@ -5135,7 +5152,7 @@ class XpraClient {
   }
 
   send_file(f) {
-    clog("send_file:", f.name, ", type:", f.type, ", size:", f.size);
+    this.clog("send_file:", f.name, ", type:", f.type, ", size:", f.size);
     const fileReader = new FileReader();
     fileReader.onloadend = (event_) => {
       const u8a = new Uint8Array(event_.target.result);
@@ -5154,7 +5171,7 @@ class XpraClient {
     const chunk_size = Math.min(FILE_CHUNKS_SIZE, this.remote_file_chunks || 0);
     if (chunk_size > 0 && size > chunk_size) {
       if (this.send_chunks_in_progress.size >= MAX_CONCURRENT_FILES) {
-        throw Exception(
+        throw new Error(
           `too many file transfers in progress:${this.send_chunks_in_progress.size}`
         );
       }
@@ -5285,7 +5302,7 @@ class XpraClient {
       return;
     }
     if (chunk_size <= 0) {
-      throw Exception(`invalid chunk size ${chunk_size}`);
+      throw new Error(`invalid chunk size ${chunk_size}`);
     }
     //carve out another chunk:
     const cdata = data.subarray(0, chunk_size);

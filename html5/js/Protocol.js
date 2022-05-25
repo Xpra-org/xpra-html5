@@ -15,13 +15,15 @@
  *  brotli_decode.js
  */
 
+import { Utilities } from "./Utilities.js";
+
 const CONNECT_TIMEOUT = 15_000;
 
 /*
 A stub class to facilitate communication with the protocol when
 it is loaded in a worker
 */
-class XpraProtocolWorkerHost {
+export class XpraProtocolWorkerHost {
   constructor() {
     this.worker = null;
     this.packet_handler = null;
@@ -91,7 +93,7 @@ class XpraProtocolWorkerHost {
 /*
 The main Xpra wire protocol
 */
-class XpraProtocol {
+export class XpraProtocol {
   constructor() {
     this.verify_connected_timer = 0;
     this.is_worker = false;
@@ -607,9 +609,9 @@ if (
   // some required imports
   // worker imports are relative to worker script path
   importScripts(
-    "lib/lz4.js",
     "lib/brotli_decode.js",
     "lib/forge.js",
+    "lib/lz4.js",
     "lib/rencode.js"
   );
   // make protocol instance

@@ -12,6 +12,16 @@
  *   jQueryUI
  */
 
+import {
+  DEFAULT_BOX_COLORS,
+  MOVERESIZE_CANCEL,
+  MOVERESIZE_DIRECTION_JS_NAME,
+  MOVERESIZE_DIRECTION_STRING,
+  MOVERESIZE_MOVE,
+} from "./Constants.js";
+import { decode_rgb } from "./RgbHelpers.js";
+import { Utilities } from "./Utilities.js";
+
 const TASKBAR_HEIGHT = 0;
 
 function dummy() {}
@@ -22,7 +32,7 @@ function dummy() {}
  * The contents of the window is an image, which gets updated
  * when we receive pixels from the server.
  */
-class XpraWindow {
+export class XpraWindow {
   constructor(
     client,
     wid,
@@ -1236,7 +1246,7 @@ class XpraWindow {
       //CSS3 with hotspot:
       window_element.css("cursor", `${url_string} ${x} ${y}, auto`);
     }
-    let zoom = detectZoom.zoom();
+    let zoom = window.detectZoom.zoom();
     //prefer fractional zoom values if possible:
     if (Math.round(zoom * 4) == 2 * Math.round(zoom * 2)) {
       zoom = Math.round(zoom * 2) / 2;
