@@ -16,7 +16,7 @@
  */
 
 const XpraVideoDecoderLoader = {
-  hasNativeDecoder: function () {
+  hasNativeDecoder() {
     return typeof VideoDecoder !== "undefined";
   },
 };
@@ -103,7 +103,7 @@ class XpraVideoDecoder {
       return;
     }
 
-    packet[6] = "frame:" + packet[6];
+    packet[6] = `frame:${packet[6]}`;
     packet[7] = videoFrame;
     this.on_frame_decoded(packet, current_frame);
   }
@@ -114,7 +114,7 @@ class XpraVideoDecoder {
   }
 
   queue_frame(packet) {
-    let options = packet[10] || {};
+    const options = packet[10] || {};
     const data = packet[7];
     decode_error = (error) => {
       this.on_frame_error(packet, error);
@@ -138,7 +138,7 @@ class XpraVideoDecoder {
     this.decoder_queue.push({ p: packet });
     const init = {
       type: options["type"] == "IDR" ? "key" : "delta",
-      data: data,
+      data,
       timestamp: options["frame"],
     };
     const chunk = new EncodedVideoChunk(init);
@@ -154,10 +154,10 @@ class XpraVideoDecoder {
 
       // Callback on all frames (bail out)
       this.draining = true;
-      let drain_queue = this.decoder_queue;
+      const drain_queue = this.decoder_queue;
       this.decoder_queue = [];
 
-      for (let frame of drain_queue) {
+      for (const frame of drain_queue) {
         const packet = frame.p;
         this.on_frame_error(packet, "video decoder is draining");
       }

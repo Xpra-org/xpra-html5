@@ -46,7 +46,7 @@ const vsync = false;
 
 function send_decode_error(packet, error) {
   packet[7] = null;
-  self.postMessage({ error: "" + error, packet: packet });
+  self.postMessage({ error: `${error}`, packet });
 }
 
 class WindowDecoder {
@@ -210,11 +210,11 @@ class WindowDecoder {
     //process packets up to max_seq,
     //in ascending order:
     const seqs = [...this.pending_processing.keys()].sort((a, b) => a - b);
-    for (let seq of seqs) {
+    for (const seq of seqs) {
       if (max_seq > 0 && seq > max_seq) {
         continue;
       }
-      let packet = this.pending_processing.get(seq);
+      const packet = this.pending_processing.get(seq);
       this.pending_processing.delete(seq);
       this.decode_packet(packet);
     }
@@ -240,10 +240,10 @@ class WindowDecoder {
         }
         this.video_decoder.queue_frame(packet);
       } else {
-        this.decode_error(packet, "unsupported encoding: '" + coding + "'");
+        this.decode_error(packet, `unsupported encoding: '${coding}'`);
       }
     } catch (error) {
-      this.decode_error(packet, "" + error);
+      this.decode_error(packet, `${error}`);
     }
   }
 
@@ -252,13 +252,7 @@ class WindowDecoder {
     this.init();
     const coding = packet[6];
     const packet_sequence = packet[8];
-    const message =
-      "failed to decode '" +
-      coding +
-      "' draw packet sequence " +
-      packet_sequence +
-      ": " +
-      error;
+    const message = `failed to decode '${coding}' draw packet sequence ${packet_sequence}: ${error}`;
     console.error(message);
     packet[7] = null;
     send_decode_error(packet, message);
@@ -358,7 +352,7 @@ class WindowDecoder {
     clone[6] = "offscreen-painted";
     clone[7] = null;
     clone[10] = options;
-    self.postMessage({ draw: clone, start: start });
+    self.postMessage({ draw: clone, start });
   }
 
   paint_packet(packet) {
@@ -366,12 +360,12 @@ class WindowDecoder {
       this.decode_error(packet, "decoder is closed");
       return;
     }
-    const x = packet[2],
-      y = packet[3],
-      width = packet[4],
-      height = packet[5],
-      coding_fmt = packet[6],
-      data = packet[7];
+    const x = packet[2];
+    const y = packet[3];
+    const width = packet[4];
+    const height = packet[5];
+    const coding_fmt = packet[6];
+    const data = packet[7];
 
     const canvas = this.back_buffer || this.canvas;
     let context = canvas.getContext("2d");
@@ -408,12 +402,12 @@ class WindowDecoder {
       context.imageSmoothingEnabled = false;
       for (let index = 0, index_ = data.length; index < index_; ++index) {
         const scroll_data = data[index];
-        const sx = scroll_data[0],
-          sy = scroll_data[1],
-          sw = scroll_data[2],
-          sh = scroll_data[3],
-          xdelta = scroll_data[4],
-          ydelta = scroll_data[5];
+        const sx = scroll_data[0];
+        const sy = scroll_data[1];
+        const sw = scroll_data[2];
+        const sh = scroll_data[3];
+        const xdelta = scroll_data[4];
+        const ydelta = scroll_data[5];
         context.drawImage(
           this.canvas,
           sx,
@@ -446,7 +440,7 @@ class WindowDecoder {
     } else if (coding == "void") {
       //nothing to do
     } else {
-      this.decode_error(packet, "unsupported encoding: " + coding);
+      this.decode_error(packet, `unsupported encoding: ${coding}`);
     }
     const options = packet[10] || {};
     const flush = options["flush"] || 0;
@@ -538,10 +532,9 @@ onmessage = function (e) {
       } else {
         send_decode_error(
           packet,
-          "no window decoder found for wid " +
-            wid +
-            ", only:" +
-            [...offscreen_canvas.keys()].join(",")
+          `no window decoder found for wid ${wid}, only:${[
+            ...offscreen_canvas.keys(),
+          ].join(",")}`
         );
       }
       break;
@@ -580,6 +573,6 @@ onmessage = function (e) {
       }
       break;
     default:
-      console.error("Offscreen decode worker got unknown message: " + data.cmd);
+      console.error(`Offscreen decode worker got unknown message: ${data.cmd}`);
   }
 };

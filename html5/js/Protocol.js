@@ -114,7 +114,7 @@ class XpraProtocol {
   }
 
   close_event_str(event) {
-    let code_mappings = {
+    const code_mappings = {
       1000: "Normal Closure",
       1001: "Going Away",
       1002: "Protocol Error",
@@ -137,10 +137,10 @@ class XpraProtocol {
       try {
         message +=
           typeof code_mappings[event.code] !== "undefined"
-            ? "'" + code_mappings[event.code] + "' (" + event.code + ")"
-            : "" + event.code;
+            ? `'${code_mappings[event.code]}' (${event.code})`
+            : `${event.code}`;
         if (event.reason) {
-          message += ": '" + event.reason + "'";
+          message += `: '${event.reason}'`;
         }
       } catch (error) {
         this.error("cannot parse websocket event:", error);
@@ -172,7 +172,7 @@ class XpraProtocol {
     try {
       this.websocket = new WebSocket(uri, "binary");
     } catch (error) {
-      handle(["error", "" + error, 0]);
+      handle(["error", `${error}`, 0]);
       return;
     }
     this.websocket.binaryType = "arraybuffer";
@@ -233,8 +233,8 @@ class XpraProtocol {
   }
 
   do_process_receive_queue() {
-    let index_ = 0,
-      index__ = 0;
+    let index_ = 0;
+    let index__ = 0;
     if (this.header.length < 8 && this.rQ.length > 0) {
       //add from receive queue data to header until we get the 8 bytes we need:
       while (this.header.length < 8 && this.rQ.length > 0) {
@@ -256,14 +256,14 @@ class XpraProtocol {
 
       //verify the header format:
       if (this.header[0] !== ord("P")) {
-        let message = "invalid packet header format: " + this.header[0];
+        let message = `invalid packet header format: ${this.header[0]}`;
         if (this.header.length > 1) {
-          var hex = "";
-          for (var p = 0; p < this.header.length; p++) {
-            let v = this.header[p].toString(16);
-            hex += v.length < 2 ? "0" + v : v;
+          let hex = "";
+          for (let p = 0; p < this.header.length; p++) {
+            const v = this.header[p].toString(16);
+            hex += v.length < 2 ? `0${v}` : v;
           }
-          message += ": 0x" + hex;
+          message += `: 0x${hex}`;
         }
         this.protocol_error(message);
         return false;
@@ -275,7 +275,7 @@ class XpraProtocol {
       return false;
     }
 
-    var proto_flags = this.header[1];
+    let proto_flags = this.header[1];
     const proto_crypto = proto_flags & 0x2;
     if (proto_crypto) {
       proto_flags = proto_flags & ~0x2;
@@ -288,7 +288,7 @@ class XpraProtocol {
 
     if (proto_flags > 1 && proto_flags != 0x10) {
       this.protocol_error(
-        "we can't handle this protocol flag yet: " + proto_flags
+        `we can't handle this protocol flag yet: ${proto_flags}`
       );
       return;
     }
@@ -300,7 +300,7 @@ class XpraProtocol {
     }
     const index = this.header[3];
     if (index >= 20) {
-      this.protocol_error("invalid packet index: " + index);
+      this.protocol_error(`invalid packet index: ${index}`);
       return false;
     }
     let packet_size = 0;
@@ -362,10 +362,9 @@ class XpraProtocol {
         this.error("error decrypting packet using", this.cipher_in);
         if (decrypted.length < packet_size - padding) {
           this.error(
-            " expected " +
-              (packet_size - padding) +
-              " bytes, but got " +
+            ` expected ${packet_size - padding} bytes, but got ${
               decrypted.length
+            }`
           );
         } else {
           this.error(" decrypted:", decrypted);
@@ -396,7 +395,7 @@ class XpraProtocol {
     if (index > 0) {
       this.raw_packets[index] = packet_data;
       if (this.raw_packets.length >= 4) {
-        this.protocol_error("too many raw packets: " + this.raw_packets.length);
+        this.protocol_error(`too many raw packets: ${this.raw_packets.length}`);
         return false;
       }
     } else {
@@ -410,14 +409,14 @@ class XpraProtocol {
         } else {
           packet = bdecode(packet_data);
         }
-        for (let index in this.raw_packets) {
+        for (const index in this.raw_packets) {
           packet[index] = this.raw_packets[index];
         }
         this.raw_packets = {};
       } catch (error) {
         //FIXME: maybe we should error out and disconnect here?
         this.error("error decoding packet", error);
-        this.error("packet=" + packet);
+        this.error(`packet=${packet}`);
         this.raw_packets = [];
         return this.rQ.length > 0;
       }
@@ -463,7 +462,7 @@ class XpraProtocol {
         }
       } catch (error) {
         //FIXME: maybe we should error out and disconnect here?
-        this.error("error processing packet " + packet[0] + ": " + error);
+        this.error(`error processing packet ${packet[0]}: ${error}`);
       }
     }
     return this.rQ.length > 0;
@@ -492,7 +491,7 @@ class XpraProtocol {
           bdata = rencodeplus(packet);
           proto_flags = 0x10;
         } else {
-          throw "invalid packet encoder: " + this.packet_encoder;
+          throw `invalid packet encoder: ${this.packet_encoder}`;
         }
       } catch (error) {
         this.error("Error: failed to encode packet:", packet);
@@ -534,7 +533,7 @@ class XpraProtocol {
       }
       const actual_size = bdata.length;
 
-      let packet_data = new Uint8Array(actual_size + 8);
+      const packet_data = new Uint8Array(actual_size + 8);
       const level = 0;
       //header:
       packet_data[0] = "P".charCodeAt(0);
@@ -568,7 +567,7 @@ class XpraProtocol {
         return;
       }
 
-      let raw_buffers = [];
+      const raw_buffers = [];
       if (packet[0] === "draw" && "buffer" in packet[7]) {
         raw_buffers.push(packet[7].buffer);
       } else if (packet[0] === "sound-data" && "buffer" in packet[2]) {
@@ -591,7 +590,7 @@ class XpraProtocol {
     this.setup_cipher(caps, key, (cipher, block_size, secret, iv) => {
       this.cipher_in_block_size = block_size;
       this.cipher_in = forge.cipher.createDecipher(cipher, secret);
-      this.cipher_in.start({ iv: iv });
+      this.cipher_in.start({ iv });
     });
   }
 
@@ -599,7 +598,7 @@ class XpraProtocol {
     this.setup_cipher(caps, key, (cipher, block_size, secret, iv) => {
       this.cipher_out_block_size = block_size;
       this.cipher_out = forge.cipher.createCipher(cipher, secret);
-      this.cipher_out.start({ iv: iv });
+      this.cipher_out.start({ iv });
     });
   }
 
@@ -609,7 +608,7 @@ class XpraProtocol {
     }
     const cipher = caps["cipher"] || "AES";
     if (cipher != "AES") {
-      throw "unsupported encryption specified: '" + cipher + "'";
+      throw `unsupported encryption specified: '${cipher}'`;
     }
     let key_salt = caps["cipher.key_salt"];
     if (typeof key_salt !== "string") {
@@ -617,16 +616,16 @@ class XpraProtocol {
     }
     const iterations = caps["cipher.key_stretch_iterations"];
     if (iterations < 0) {
-      throw "invalid number of iterations: " + iterations;
+      throw `invalid number of iterations: ${iterations}`;
     }
     const DEFAULT_KEYSIZE = 32;
     const key_size = caps["cipher.key_size"] || DEFAULT_KEYSIZE;
     if (![32, 24, 16].includes(key_size)) {
-      throw "invalid key size '" + key_size + "'";
+      throw `invalid key size '${key_size}'`;
     }
     const key_stretch = caps["cipher.key_stretch"] || "PBKDF2";
     if (key_stretch.toUpperCase() != "PBKDF2") {
-      throw "invalid key stretching function " + key_stretch;
+      throw `invalid key stretching function ${key_stretch}`;
     }
     const DEFAULT_KEY_HASH = "SHA1";
     const key_hash = (
@@ -645,7 +644,7 @@ class XpraProtocol {
     if (mode == "CBC") {
       block_size = 32;
     } else if (!["CFB", "CTR"].includes(mode)) {
-      throw "unsupported AES mode '" + mode + "'";
+      throw `unsupported AES mode '${mode}'`;
     }
     // start the cipher
     const iv = caps["cipher.iv"];
@@ -653,7 +652,7 @@ class XpraProtocol {
       throw "missing IV";
     }
     //ie: setup_fn("AES-CBC", "THESTRETCHEDKEYVALUE", "THEIVVALUE");
-    setup_function(cipher + "-" + mode, block_size, secret, iv);
+    setup_function(`${cipher}-${mode}`, block_size, secret, iv);
   }
 }
 

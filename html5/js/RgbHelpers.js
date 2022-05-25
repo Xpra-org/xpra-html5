@@ -8,12 +8,12 @@
 //(that is: the rowstride must be width*4)
 //this function modifies the packet data directly
 function decode_rgb(packet) {
-  const width = packet[4],
-    height = packet[5],
-    coding = packet[6],
-    rowstride = packet[9];
+  const width = packet[4];
+  const height = packet[5];
+  const coding = packet[6];
+  const rowstride = packet[9];
   let data = packet[7];
-  let options = packet[10] || {};
+  const options = packet[10] || {};
   if (options["zlib"] > 0) {
     data = new Zlib.Inflate(data).decompress();
     delete options["zlib"];
@@ -34,10 +34,10 @@ function decode_rgb(packet) {
   //might be quicker to copy 32bit at a time using Uint32Array
   //and then casting the result?
   const uint = new Uint8Array(width * height * 4);
-  let index = 0,
-    index_ = 0,
-    psrc = 0,
-    pdst = 0;
+  let index = 0;
+  let index_ = 0;
+  let psrc = 0;
+  let pdst = 0;
   for (index = 0; index < height; index++) {
     psrc = index * rowstride;
     pdst = index * width * 4;
@@ -50,8 +50,8 @@ function decode_rgb(packet) {
 
 function rgb24_to_rgb32(data, width, height, rowstride) {
   const uint = new Uint8Array(width * height * 4);
-  let index = 0,
-    index_ = 0;
+  let index = 0;
+  let index_ = 0;
   if (rowstride == width * 3) {
     //faster path, single loop:
     const l = data.length;
@@ -62,8 +62,8 @@ function rgb24_to_rgb32(data, width, height, rowstride) {
       uint[index_++] = 255;
     }
   } else {
-    let psrc = 0,
-      pdst = 0;
+    let psrc = 0;
+    let pdst = 0;
     for (index = 0; index < height; index++) {
       psrc = index * rowstride;
       for (index_ = 0; index_ < width; index_++) {

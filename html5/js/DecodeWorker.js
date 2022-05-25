@@ -23,17 +23,17 @@ function decode_eos(wid) {
 }
 
 function decode_draw_packet(packet, start) {
-  const wid = packet[1],
-    width = packet[4],
-    height = packet[5],
-    coding = packet[6],
-    packet_sequence = packet[8];
+  const wid = packet[1];
+  const width = packet[4];
+  const height = packet[5];
+  const coding = packet[6];
+  const packet_sequence = packet[8];
   function send_back(raw_buffers) {
     const wid_hold = on_hold.get(wid);
     if (wid_hold) {
       //find the highest sequence number which is still lower than this packet
       let seq_holding = 0;
-      for (let seq of wid_hold.keys()) {
+      for (const seq of wid_hold.keys()) {
         if (seq > seq_holding && seq < packet_sequence) {
           seq_holding = seq;
         }
@@ -49,10 +49,10 @@ function decode_draw_packet(packet, start) {
     do_send_back(packet, raw_buffers);
   }
   function do_send_back(p, raw_buffers) {
-    self.postMessage({ draw: p, start: start }, raw_buffers);
+    self.postMessage({ draw: p, start }, raw_buffers);
   }
   function decode_error(message) {
-    self.postMessage({ error: "" + message, packet: packet, start: start });
+    self.postMessage({ error: `${message}`, packet, start });
   }
 
   function hold() {
@@ -69,7 +69,7 @@ function decode_draw_packet(packet, start) {
   }
 
   function release() {
-    let wid_hold = on_hold.get(wid);
+    const wid_hold = on_hold.get(wid);
     if (!wid_hold) {
       //could have been cancelled by EOS
       return;
@@ -109,12 +109,7 @@ function decode_draw_packet(packet, start) {
       },
       function (error) {
         decode_error(
-          "failed to create " +
-            actual_width +
-            "x" +
-            actual_height +
-            " rgb32 bitmap from buffer " +
-            data
+          `failed to create ${actual_width}x${actual_height} rgb32 bitmap from buffer ${data}`
         );
         release();
       }
@@ -149,29 +144,22 @@ function decode_draw_packet(packet, start) {
     ) {
       const data = packet[7];
       if (!data.buffer) {
-        decode_error("missing pixel data buffer: " + typeof data);
+        decode_error(`missing pixel data buffer: ${typeof data}`);
         release();
         return;
       }
-      const blob = new Blob([data.buffer], { type: "image/" + coding });
+      const blob = new Blob([data.buffer], { type: `image/${coding}` });
       hold();
       createImageBitmap(blob, bitmap_options).then(
         function (bitmap) {
-          packet[6] = "bitmap:" + coding;
+          packet[6] = `bitmap:${coding}`;
           packet[7] = bitmap;
           send_back([bitmap]);
           release();
         },
         function (error) {
           decode_error(
-            "failed to create image bitmap from " +
-              coding +
-              " " +
-              blob +
-              ", data=" +
-              data +
-              ": " +
-              error
+            `failed to create image bitmap from ${coding} ${blob}, data=${data}: ${error}`
           );
           release();
         }
@@ -211,7 +199,7 @@ function decode_draw_packet(packet, start) {
       // broadway decoding is actually synchronous
       // and onPictureDecoded is called from decode(data) above.
       if (count == 0) {
-        decode_error("no " + coding + " picture decoded");
+        decode_error(`no ${coding} picture decoded`);
       }
     } else {
       //pass-through:
@@ -219,7 +207,7 @@ function decode_draw_packet(packet, start) {
     }
   } catch (error) {
     decode_error(
-      "error processing " + coding + " packet " + packet_sequence + ": " + error
+      `error processing ${coding} packet ${packet_sequence}: ${error}`
     );
   }
 }
@@ -234,12 +222,12 @@ function check_image_decode(
     console.info(
       "checking",
       format,
-      " with test image: " + image_bytes.length + " bytes"
+      `with test image: ${image_bytes.length} bytes`
     );
   }
   try {
     const timer = setTimeout(function () {
-      fail_callback(format, "timeout, no " + format + " picture decoded");
+      fail_callback(format, `timeout, no ${format} picture decoded`);
     }, 2000);
     if (format == "h264") {
       const decoder = new Decoder({
@@ -254,7 +242,7 @@ function check_image_decode(
       return;
     }
     const data = new Uint8Array(image_bytes);
-    const blob = new Blob([data], { type: "image/" + format });
+    const blob = new Blob([data], { type: `image/${format}` });
     createImageBitmap(blob, {
       premultiplyAlpha: "none",
     }).then(
@@ -264,11 +252,11 @@ function check_image_decode(
       },
       function (error) {
         clearTimeout(timer);
-        fail_callback(format, "" + error);
+        fail_callback(format, `${error}`);
       }
     );
   } catch (error) {
-    fail_callback(format, "" + error);
+    fail_callback(format, `${error}`);
   }
 }
 
@@ -385,9 +373,9 @@ onmessage = function (e) {
         delete CHECKS[format];
         if (Object.keys(CHECKS).length === 0) {
           if (errors.length === 0) {
-            self.postMessage({ result: true, formats: formats });
+            self.postMessage({ result: true, formats });
           } else {
-            self.postMessage({ result: false, errors: errors });
+            self.postMessage({ result: false, errors });
           }
         }
       };
@@ -404,16 +392,16 @@ onmessage = function (e) {
           errors.push(message);
           if (console.warn) {
             console.warn(
-              "Warning: decode worker error on '" + format + "': " + message
+              `Warning: decode worker error on '${format}': ${message}`
             );
           }
         } else {
-          console.info("decode worker failure on '" + format + "': " + message);
+          console.info(`decode worker failure on '${format}': ${message}`);
         }
         done(format);
       };
-      for (var format in CHECKS) {
-        var image_bytes = CHECKS[format];
+      for (const format in CHECKS) {
+        const image_bytes = CHECKS[format];
         check_image_decode(format, image_bytes, success, failure);
       }
       break;
@@ -429,6 +417,6 @@ onmessage = function (e) {
       decode_draw_packet(data.packet, data.start);
       break;
     default:
-      console.error("decode worker got unknown message: " + data.cmd);
+      console.error(`decode worker got unknown message: ${data.cmd}`);
   }
 };

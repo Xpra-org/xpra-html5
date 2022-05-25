@@ -37,24 +37,14 @@ $(function () {
       onAction,
       onClose
     );
-    const nID = "notification" + nid;
+    const nID = `notification${nid}`;
     const a = $(
-      '<div id="' +
-        nID +
-        '" class="alert ' +
-        type +
-        '">' +
-        '<img class="notification_icon" id="notification_icon' +
-        nID +
-        '">' +
-        '<span class="title">' +
-        title +
-        "</span>" +
-        '<span class="message">' +
-        message +
-        "</span>" +
-        '<div class="dismiss">&#215;</div>' +
-        "</div>"
+      `<div id="${nID}" class="alert ${type}">` +
+        `<img class="notification_icon" id="notification_icon${nID}">` +
+        `<span class="title">${title}</span>` +
+        `<span class="message">${message}</span>` +
+        `<div class="dismiss">&#215;</div>` +
+        `</div>`
     );
     const notifications_elements = $(NOTIFICATION_SELECTOR);
     notifications_elements.prepend(a);
@@ -78,15 +68,13 @@ $(function () {
     }
     notifications_elements.prepend(a);
     if (icon) {
-      const encoding = icon[0],
-        img_data = icon[3];
+      const encoding = icon[0];
+      const img_data = icon[3];
       if (encoding == "png") {
-        const source =
-          "data:image/" +
-          encoding +
-          ";base64," +
-          Utilities.ArrayBufferToBase64(img_data);
-        $("#notification_icon" + nID).attr("src", source);
+        const source = `data:image/${encoding};base64,${Utilities.ArrayBufferToBase64(
+          img_data
+        )}`;
+        $(`#notification_icon${nID}`).attr("src", source);
       }
     }
 
@@ -135,11 +123,7 @@ $(function () {
     onClose
   ) {
     const notification_button = $(
-      '<div class="notification_button" id=notification"' +
-        action_id +
-        '">' +
-        action_label +
-        "</div>"
+      `<div class="notification_button" id=notification"${action_id}">${action_label}</div>`
     );
     notification_button.on("click", function () {
       window.closeNotification(nid);
@@ -168,11 +152,8 @@ $(function () {
 
   window.closeNotification = function (nid) {
     window.cancelNotificationTimer(nid);
-    const nID = "notification" + nid;
-    $(NOTIFICATION_SELECTOR)
-      .find("#" + nID)
-      .find(".dismiss")
-      .trigger("click");
+    const nID = `notification${nid}`;
+    $(NOTIFICATION_SELECTOR).find(`#${nID}`).find(".dismiss").trigger("click");
   };
 
   window.clearNotifications = function () {

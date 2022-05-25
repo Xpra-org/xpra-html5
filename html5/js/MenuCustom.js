@@ -29,11 +29,11 @@ const MENU_CONTENT_RIGHT_CLASS_NAME = "menu-content-right";
 function addWindowListItem(wid, title) {
   const li = document.createElement("li");
   li.className = "windowlist-li";
-  li.id = "windowlistitem" + wid;
+  li.id = `windowlistitem${wid}`;
 
   const a = document.createElement("a");
 
-  a.id = "windowlistitemlink" + wid;
+  a.id = `windowlistitemlink${wid}`;
 
   a.addEventListener("mouseover", function (e) {
     if (e.ctrlKey) {
@@ -56,17 +56,17 @@ function addWindowListItem(wid, title) {
   }
 
   const divLeft = document.createElement("div");
-  divLeft.id = "windowlistdivleft" + wid;
+  divLeft.id = `windowlistdivleft${wid}`;
   divLeft.className = "menu-divleft";
   const img = new Image();
-  img.id = "windowlistitemicon" + wid;
+  img.id = `windowlistitemicon${wid}`;
   img.src = "favicon.png";
   img.className = MENU_CONTENT_LEFT_CLASS_NAME;
   divLeft.append(img);
 
   const titleDiv = document.createElement("div");
   titleDiv.append(document.createTextNode(title));
-  titleDiv.id = "windowlistitemtitle" + wid;
+  titleDiv.id = `windowlistitemtitle${wid}`;
   titleDiv.className = MENU_CONTENT_LEFT_CLASS_NAME;
   divLeft.append(titleDiv);
 
@@ -74,7 +74,7 @@ function addWindowListItem(wid, title) {
   divRight.className = "menu-divright";
 
   const img2 = new Image();
-  img2.id = "windowlistitemclose" + wid;
+  img2.id = `windowlistitemclose${wid}`;
   img2.src = "icons/close.png";
   img2.title = "Close";
   img2.className = MENU_CONTENT_RIGHT_CLASS_NAME;
@@ -84,7 +84,7 @@ function addWindowListItem(wid, title) {
     hideWindowList();
   });
   const img3 = new Image();
-  img3.id = "windowlistitemmax" + wid;
+  img3.id = `windowlistitemmax${wid}`;
   img3.src = "icons/maximize.png";
   img3.title = "Maximize";
   img3.addEventListener("click", function (e) {
@@ -94,7 +94,7 @@ function addWindowListItem(wid, title) {
   });
   img3.className = MENU_CONTENT_RIGHT_CLASS_NAME;
   const img4 = new Image();
-  img4.id = "windowlistitemmin" + wid;
+  img4.id = `windowlistitemmin${wid}`;
   img4.src = "icons/minimize.png";
   img4.title = "Minimize";
   img4.addEventListener("click", function (e) {

@@ -49,7 +49,7 @@ class XpraWindow {
     //xpra specific attributes:
     this.wid = wid;
     //enclosing div in page DOM
-    this.div = jQuery("#" + String(wid));
+    this.div = jQuery(`#${String(wid)}`);
 
     //these values represent the internal geometry
     //i.e. geometry as windows appear to the compositor
@@ -123,7 +123,7 @@ class XpraWindow {
     // create the decoration as part of the window, style is in CSS
     jQuery(this.div).addClass("window");
     if (this.windowtype) {
-      jQuery(this.div).addClass("window-" + this.windowtype);
+      jQuery(this.div).addClass(`window-${this.windowtype}`);
     }
 
     if (this.client.server_is_desktop || this.client.server_is_shadow) {
@@ -145,11 +145,11 @@ class XpraWindow {
 
     // create the spinner overlay div
     jQuery(this.div).prepend(
-      '<div id="spinner' +
-        String(wid) +
-        '" class="spinneroverlay"><div class="spinnermiddle"><div class="spinner"></div></div></div>'
+      `<div id="spinner${String(
+        wid
+      )}" class="spinneroverlay"><div class="spinnermiddle"><div class="spinner"></div></div></div>`
     );
-    this.spinnerdiv = jQuery("#spinner" + String(wid));
+    this.spinnerdiv = jQuery(`#spinner${String(wid)}`);
 
     this.png_cursor_data = null;
     this.pointer_down = -1;
@@ -170,35 +170,29 @@ class XpraWindow {
     // add a title bar to this window if we need to
     // create header
     jQuery(this.div).prepend(
-      '<div id="head' +
-        String(wid) +
-        '" class="windowhead"> ' +
-        '<span class="windowicon"><img class="windowicon" id="windowicon' +
-        String(wid) +
-        '" /></span> ' +
-        '<span class="windowtitle" id="title' +
-        String(wid) +
-        '">' +
-        this.title +
-        "</span> " +
-        '<span class="windowbuttons"> ' +
-        '<span id="minimize' +
-        String(wid) +
-        '"><img src="icons/minimize.png" /></span> ' +
-        '<span id="maximize' +
-        String(wid) +
-        '"><img src="icons/maximize.png" /></span> ' +
-        '<span id="close' +
-        String(wid) +
-        '"><img src="icons/close.png" /></span> ' +
-        "</span></div>"
+      `<div id="head${String(wid)}" class="windowhead"> ` +
+        `<span class="windowicon"><img class="windowicon" id="windowicon${String(
+          wid
+        )}" /></span> ` +
+        `<span class="windowtitle" id="title${String(wid)}">${
+          this.title
+        }</span> ` +
+        `<span class="windowbuttons"> ` +
+        `<span id="minimize${String(
+          wid
+        )}"><img src="icons/minimize.png" /></span> ` +
+        `<span id="maximize${String(
+          wid
+        )}"><img src="icons/maximize.png" /></span> ` +
+        `<span id="close${String(wid)}"><img src="icons/close.png" /></span> ` +
+        `</span></div>`
     );
     // make draggable
     if (this.scale !== 1) {
       jQuery(this.div).draggable({ transform: true });
     }
     jQuery(this.div).draggable({ cancel: "canvas" });
-    jQuery("#head" + String(this.wid)).click((event_) => {
+    jQuery(`#head${String(this.wid)}`).click((event_) => {
       if (!this.minimized) {
         this.set_focus_cb(this);
       }
@@ -237,10 +231,10 @@ class XpraWindow {
       setTimeout(() => this.client.request_refresh(wid), 200);
       setTimeout(() => this.client.request_refresh(wid), 500);
     });
-    this.d_header = "#head" + String(wid);
-    this.d_closebtn = "#close" + String(wid);
-    this.d_maximizebtn = "#maximize" + String(wid);
-    this.d_minimizebtn = "#minimize" + String(wid);
+    this.d_header = `#head${String(wid)}`;
+    this.d_closebtn = `#close${String(wid)}`;
+    this.d_maximizebtn = `#maximize${String(wid)}`;
+    this.d_minimizebtn = `#minimize${String(wid)}`;
     if (this.resizable) {
       jQuery(this.d_header).dblclick(() => this.toggle_maximized());
       jQuery(this.d_closebtn).click(() => this.window_closed_cb(this));
@@ -249,7 +243,7 @@ class XpraWindow {
     } else {
       jQuery(this.d_closebtn).hide();
       jQuery(this.d_maximizebtn).hide();
-      jQuery("#windowlistitemmax" + String(wid)).hide();
+      jQuery(`#windowlistitemmax${String(wid)}`).hide();
       jQuery(this.d_minimizebtn).hide();
     }
     // adjust top offset
@@ -488,7 +482,7 @@ class XpraWindow {
 
       // Update window title
       jQuery("title").text(
-        location.pathname.replaceAll("/", "") + ": " + this.title
+        `${location.pathname.replaceAll("/", "")}: ${this.title}`
       );
 
       // Update the icon
@@ -538,7 +532,7 @@ class XpraWindow {
    * toString allows us to identify windows by their unique window id.
    */
   toString() {
-    return "Window(" + this.wid + ")";
+    return `Window(${this.wid})`;
   }
 
   update_zindex() {
@@ -584,7 +578,7 @@ class XpraWindow {
   update_metadata(metadata, safe) {
     //update our metadata cache with new key-values:
     this.debug("main", "update_metadata(", metadata, ")");
-    for (let attrname in metadata) {
+    for (const attrname in metadata) {
       this.metadata[attrname] = metadata[attrname];
     }
     if (safe) {
@@ -606,18 +600,18 @@ class XpraWindow {
           title = decodeURIComponent(escape(title));
         } catch (error) {
           this.log(
-            "unable to decode title string '" + title + "' received from ",
+            `unable to decode title string '${title}' received from `,
             this.client.protocol.packet_encoder,
-            ": " + error
+            `: ${error}`
           );
         }
       }
       if (this.title != title) {
         this.title = title;
         this.log("title=", this.title);
-        jQuery("#title" + this.wid).html(this.title);
+        jQuery(`#title${this.wid}`).html(this.title);
         const trimmedTitle = Utilities.trimString(this.title, 30);
-        jQuery("#windowlistitemtitle" + this.wid).text(trimmedTitle);
+        jQuery(`#windowlistitemtitle${this.wid}`).text(trimmedTitle);
       }
     }
     if ("has-alpha" in metadata) {
@@ -636,7 +630,7 @@ class XpraWindow {
     if ("opacity" in metadata) {
       let opacity = metadata["opacity"];
       opacity = opacity < 0 ? 1 : opacity / 0x1_00_00_00_00;
-      jQuery(this.div).css("opacity", "" + opacity);
+      jQuery(this.div).css("opacity", `${opacity}`);
     }
     if ("iconic" in metadata) {
       this.set_minimized(metadata["iconic"] == 1);
@@ -664,7 +658,7 @@ class XpraWindow {
       if (classes) {
         //remove any existing "wmclass-" classes not in the new wm_class list:
         for (let index = 0; index < classes.length; index++) {
-          const tclass = "" + classes[index];
+          const tclass = `${classes[index]}`;
           if (
             tclass.indexOf("wmclass-") === 0 &&
             wm_class &&
@@ -682,7 +676,7 @@ class XpraWindow {
             ""
           );
           if (tclass && !jQuery(this.div).hasClass(tclass)) {
-            jQuery(this.div).addClass("wmclass-" + tclass);
+            jQuery(this.div).addClass(`wmclass-${tclass}`);
           }
         }
       }
@@ -702,30 +696,30 @@ class XpraWindow {
     const wdec = 0;
     if (this.decorations) {
       //adjust for header
-      hdec = jQuery("#head" + this.wid).outerHeight(true);
+      hdec = jQuery(`#head${this.wid}`).outerHeight(true);
     }
-    let min_size = null,
-      max_size = null;
+    let min_size = null;
+    let max_size = null;
     const size_constraints = this.metadata["size-constraints"];
     if (size_constraints) {
       min_size = size_constraints["minimum-size"];
       max_size = size_constraints["maximum-size"];
     }
-    let minw = null,
-      minh = null;
+    let minw = null;
+    let minh = null;
     if (min_size) {
       minw = min_size[0] + wdec;
       minh = min_size[1] + hdec;
     }
-    let maxw = null,
-      maxh = null;
+    let maxw = null;
+    let maxh = null;
     if (max_size) {
       maxw = max_size[0] + wdec;
       maxh = max_size[1] + hdec;
     }
     if (minw > 0 && minw == maxw && minh > 0 && minh == maxh) {
       jQuery(this.d_maximizebtn).hide();
-      jQuery("#windowlistitemmax" + String(this.wid)).hide();
+      jQuery(`#windowlistitemmax${String(this.wid)}`).hide();
       jQuery(this.div).resizable("disable");
     } else {
       jQuery(this.d_maximizebtn).show();
@@ -899,7 +893,7 @@ class XpraWindow {
       10
     );
     if (decorated) {
-      jQuery("#head" + this.wid).show();
+      jQuery(`#head${this.wid}`).show();
       jQuery(this.div).removeClass("undecorated");
       jQuery(this.div).addClass("window");
       if (this.d_header) {
@@ -915,7 +909,7 @@ class XpraWindow {
         );
       }
     } else {
-      jQuery("#head" + this.wid).hide();
+      jQuery(`#head${this.wid}`).hide();
       jQuery(this.div).removeClass("window");
       jQuery(this.div).addClass("undecorated");
     }
@@ -980,8 +974,8 @@ class XpraWindow {
    * store internal geometry, external is always in CSS left and top
    */
   handle_moved(e) {
-    const left = Math.round(e.position.left),
-      top = Math.round(e.position.top);
+    const left = Math.round(e.position.left);
+    const top = Math.round(e.position.top);
     this.debug("geometry", "handle_moved(", e, ") left=", left, ", top=", top);
     // add on padding to the event position so that
     // it reflects the internal geometry of the canvas
@@ -1027,8 +1021,8 @@ class XpraWindow {
   }
 
   recenter(force_update_geometry) {
-    let x = this.x,
-      y = this.y;
+    let x = this.x;
+    let y = this.y;
     this.debug(
       "geometry",
       "recenter() x=",
@@ -1058,8 +1052,8 @@ class XpraWindow {
   match_screen_size() {
     const maxw = this.client.desktop_width;
     const maxh = this.client.desktop_height;
-    let neww = 0,
-      newh = 0;
+    let neww = 0;
+    let newh = 0;
     if (this.client.server_resize_exact) {
       neww = maxw;
       newh = maxh;
@@ -1072,8 +1066,8 @@ class XpraWindow {
       //try to find the best screen size to use,
       //cannot be larger than the browser area
       let best = 0;
-      let w = 0,
-        h = 0;
+      let w = 0;
+      let h = 0;
       const screen_sizes = this.client.server_screen_sizes;
       let screen_size;
       for (let index = 0; index < screen_sizes.length; index++) {
@@ -1166,7 +1160,7 @@ class XpraWindow {
     } else if (direction in MOVERESIZE_DIRECTION_JS_NAME) {
       const js_dir = MOVERESIZE_DIRECTION_JS_NAME[direction];
       const resize_widget = jQuery(this.div)
-        .find(".ui-resizable-handle.ui-resizable-" + js_dir)
+        .find(`.ui-resizable-handle.ui-resizable-${js_dir}`)
         .first();
       if (resize_widget) {
         const pageX = resize_widget.offset().left;
@@ -1175,8 +1169,8 @@ class XpraWindow {
         resize_widget.trigger({
           type: "mousedown",
           which: 1,
-          pageX: pageX,
-          pageY: pageY,
+          pageX,
+          pageY,
         });
       }
     }
@@ -1213,16 +1207,16 @@ class XpraWindow {
   update_icon(width, height, encoding, img_data) {
     // Cache the icon.
     this.icon = {
-      width: width,
-      height: height,
-      encoding: encoding,
-      img_data: img_data,
+      width,
+      height,
+      encoding,
+      img_data,
     };
 
     let source = "favicon.png";
     if (encoding == "png") {
       //move title to the right:
-      $("#title" + String(this.wid)).css("left", 32);
+      $(`#title${String(this.wid)}`).css("left", 32);
       if (typeof img_data === "string") {
         const uint = new Uint8Array(img_data.length);
         for (let index = 0; index < img_data.length; ++index) {
@@ -1232,13 +1226,13 @@ class XpraWindow {
       }
       source = this.construct_base64_image_url(encoding, img_data);
     }
-    jQuery("#windowicon" + String(this.wid)).attr("src", source);
-    jQuery("#windowlistitemicon" + String(this.wid)).attr("src", source);
+    jQuery(`#windowicon${String(this.wid)}`).attr("src", source);
+    jQuery(`#windowlistitemicon${String(this.wid)}`).attr("src", source);
     return source;
   }
 
   reset_cursor() {
-    jQuery("#" + String(this.wid)).css("cursor", "default");
+    jQuery(`#${String(this.wid)}`).css("cursor", "default");
     this.png_cursor_data = null;
   }
 
@@ -1252,13 +1246,13 @@ class XpraWindow {
     if (typeof img_data === "string") {
       array = Utilities.StringToUint8(img_data);
     }
-    const window_element = jQuery("#" + String(this.wid));
+    const window_element = jQuery(`#${String(this.wid)}`);
     const cursor_url = this.construct_base64_image_url(encoding, array);
     function set_cursor_url(url, x, y) {
-      const url_string = "url('" + url + "')";
-      window_element.css("cursor", url_string + ", default");
+      const url_string = `url('${url}')`;
+      window_element.css("cursor", `${url_string}, default`);
       //CSS3 with hotspot:
-      window_element.css("cursor", url_string + " " + x + " " + y + ", auto");
+      window_element.css("cursor", `${url_string} ${x} ${y}, auto`);
     }
     let zoom = detectZoom.zoom();
     //prefer fractional zoom values if possible:
@@ -1275,7 +1269,7 @@ class XpraWindow {
         canvas.width = Math.round(w * window.devicePixelRatio);
         canvas.height = Math.round(h * window.devicePixelRatio);
         context.drawImage(temporary_img, 0, 0, canvas.width, canvas.height);
-        var scaled_cursor_url = canvas.toDataURL();
+        const scaled_cursor_url = canvas.toDataURL();
         set_cursor_url(
           scaled_cursor_url,
           Math.round(xhot * window.devicePixelRatio),
@@ -1357,7 +1351,7 @@ class XpraWindow {
       "bytes, size ",
       p_width,
       "x",
-      p_height + ", paint location: ",
+      `${p_height}, paint location: `,
       this.broadway_paint_location,
       "with infos=",
       infos
@@ -1450,15 +1444,15 @@ class XpraWindow {
   do_paint(packet, decode_callback) {
     const me = this;
 
-    const x = packet[2],
-      y = packet[3],
-      width = packet[4],
-      height = packet[5],
-      img_data = packet[7],
-      options = packet[10] || {};
-    let coding = Utilities.s(packet[6]),
-      enc_width = width,
-      enc_height = height;
+    const x = packet[2];
+    const y = packet[3];
+    const width = packet[4];
+    const height = packet[5];
+    const img_data = packet[7];
+    const options = packet[10] || {};
+    let coding = Utilities.s(packet[6]);
+    let enc_width = width;
+    let enc_height = height;
     const scaled_size = options["scaled_size"];
     if (scaled_size) {
       enc_width = scaled_size[0];
@@ -1472,7 +1466,7 @@ class XpraWindow {
         coding,
         img_data,
         " at ",
-        "" + x + "," + y,
+        `${x},${y}`,
         ") focused=",
         this.focused
       );
@@ -1508,7 +1502,7 @@ class XpraWindow {
     function paint_error(e) {
       me.error("error painting", coding, e);
       me.paint_pending = 0;
-      decode_callback("" + e);
+      decode_callback(`${e}`);
     }
 
     function paint_bitmap() {
@@ -1551,9 +1545,7 @@ class XpraWindow {
         const index = new Image();
         index.addEventListener("load", () => {
           if (index.width == 0 || index.height == 0) {
-            paint_error(
-              "invalid image size: " + index.width + "x" + index.height
-            );
+            paint_error(`invalid image size: ${index.width}x${index.height}`);
           } else {
             this.offscreen_canvas_ctx.clearRect(x, y, width, height);
             this.offscreen_canvas_ctx.drawImage(index, x, y, width, height);
@@ -1562,7 +1554,7 @@ class XpraWindow {
           this.may_paint_now();
         });
         index.onerror = () => {
-          paint_error("failed to load " + coding + " into image tag");
+          paint_error(`failed to load ${coding} into image tag`);
           this.may_paint_now();
         };
         const paint_coding = coding.split("/")[0]; //ie: "png/P" -> "png"
@@ -1586,12 +1578,12 @@ class XpraWindow {
         for (let index = 0, index_ = img_data.length; index < index_; ++index) {
           const scroll_data = img_data[index];
           this.debug("draw", "scroll", index, ":", scroll_data);
-          const sx = scroll_data[0],
-            sy = scroll_data[1],
-            sw = scroll_data[2],
-            sh = scroll_data[3],
-            xdelta = scroll_data[4],
-            ydelta = scroll_data[5];
+          const sx = scroll_data[0];
+          const sy = scroll_data[1];
+          const sw = scroll_data[2];
+          const sh = scroll_data[3];
+          const xdelta = scroll_data[4];
+          const ydelta = scroll_data[5];
           this.offscreen_canvas_ctx.drawImage(
             this.draw_canvas,
             sx,

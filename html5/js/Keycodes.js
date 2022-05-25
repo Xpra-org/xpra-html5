@@ -62,11 +62,11 @@ NUMPAD_TO_NAME = {
   PageUp: "KP_Prior",
 };
 for (let index = 0; index <= 9; index++) {
-  KEY_TO_NAME["Numpad" + index] = "" + index;
-  KEY_TO_NAME["KP" + index] = "KP" + index;
+  KEY_TO_NAME[`Numpad${index}`] = `${index}`;
+  KEY_TO_NAME[`KP${index}`] = `KP${index}`;
 }
 for (let index = 1; index <= 20; index++) {
-  KEY_TO_NAME["F" + index] = "F" + index;
+  KEY_TO_NAME[`F${index}`] = `F${index}`;
 }
 
 /**
@@ -1625,7 +1625,7 @@ KEYSYM_TO_UNICODE = {
 CHAR_TO_NAME = {
   " ": "space",
 };
-for (let keysym in KEYSYM_TO_UNICODE) {
+for (const keysym in KEYSYM_TO_UNICODE) {
   const u = KEYSYM_TO_UNICODE[keysym];
   const character = String.fromCharCode(u);
   CHAR_TO_NAME[character] = keysym;
@@ -1726,12 +1726,12 @@ for (let index = 0; index < 26; index++) {
   CHARCODE_TO_NAME[65 + index] = "abcdefghijklmnopqrstuvwxyz"[index];
 }
 for (let index = 0; index < 10; index++) {
-  CHARCODE_TO_NAME[48 + index] = "" + index;
-  CHARCODE_TO_NAME[96 + index] = "" + index;
+  CHARCODE_TO_NAME[48 + index] = `${index}`;
+  CHARCODE_TO_NAME[96 + index] = `${index}`;
   //fix for OSX numpad?: CHARCODE_TO_NAME[96+i] = "KP_"+i;
 }
 for (let index = 1; index <= 24; index++) {
-  CHARCODE_TO_NAME[111 + index] = "F" + index;
+  CHARCODE_TO_NAME[111 + index] = `F${index}`;
 }
 //overrides: only for 'de' layout?
 CHARCODE_TO_NAME[192] = "dead_circumflex";

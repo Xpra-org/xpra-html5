@@ -13,7 +13,7 @@
  */
 
 const XpraOffscreenWorker = {
-  isAvailable: function () {
+  isAvailable() {
     if (
       XpraImageDecoderLoader.hasNativeDecoder() &&
       XpraVideoDecoderLoader.hasNativeDecoder &&

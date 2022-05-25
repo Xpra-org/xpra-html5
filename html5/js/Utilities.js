@@ -26,7 +26,7 @@ const Utilities = {
   clog: console_log_safe,
   cdebug: console_debug_safe,
 
-  stristrue: function (v, default_value) {
+  stristrue(v, default_value) {
     if (v === null) {
       return default_value;
     }
@@ -35,7 +35,7 @@ const Utilities = {
     );
   },
 
-  getHexUUID: function () {
+  getHexUUID() {
     const s = [];
     const hexDigits = "0123456789abcdef";
     for (let index = 0; index < 36; index++) {
@@ -51,7 +51,7 @@ const Utilities = {
     return s.join("");
   },
 
-  getSecureRandomString: function (length_) {
+  getSecureRandomString(length_) {
     const crypto = window.crypto || window.mscrypto;
     if (!crypto) {
       let s = "";
@@ -65,7 +65,7 @@ const Utilities = {
     return String.fromCharCode.apply(null, u);
   },
 
-  xorString: function (string1, string2) {
+  xorString(string1, string2) {
     let result = "";
     if (string1.length !== string2.length) {
       throw "strings must be equal length";
@@ -78,21 +78,21 @@ const Utilities = {
     return result;
   },
 
-  trimString: function (string_, trimLength) {
+  trimString(string_, trimLength) {
     return string_.length > trimLength
-      ? string_.slice(0, Math.max(0, trimLength - 3)) + "..."
+      ? `${string_.slice(0, Math.max(0, trimLength - 3))}...`
       : string_;
   },
 
-  convertToHex: function (string_) {
-    var hex = "";
-    for (var index = 0; index < string_.length; index++) {
-      hex += "" + string_.charCodeAt(index).toString(16).padStart(2, "0");
+  convertToHex(string_) {
+    let hex = "";
+    for (let index = 0; index < string_.length; index++) {
+      hex += `${string_.charCodeAt(index).toString(16).padStart(2, "0")}`;
     }
     return hex;
   },
 
-  getPlatformProcessor: function () {
+  getPlatformProcessor() {
     //mozilla property:
     if (navigator.oscpu) {
       return navigator.oscpu;
@@ -104,7 +104,7 @@ const Utilities = {
     return "unknown";
   },
 
-  getPlatformName: function () {
+  getPlatformName() {
     if (navigator.appVersion.includes("Win")) {
       return "Microsoft Windows";
     }
@@ -120,7 +120,7 @@ const Utilities = {
     return "unknown";
   },
 
-  getPlatform: function () {
+  getPlatform() {
     //use python style strings for platforms:
     if (navigator.appVersion.includes("Win")) {
       return "win32";
@@ -137,14 +137,14 @@ const Utilities = {
     return "unknown";
   },
 
-  getFirstBrowserLanguage: function () {
-    const nav = window.navigator,
-      browserLanguagePropertyKeys = [
-        "language",
-        "browserLanguage",
-        "systemLanguage",
-        "userLanguage",
-      ];
+  getFirstBrowserLanguage() {
+    const nav = window.navigator;
+    const browserLanguagePropertyKeys = [
+      "language",
+      "browserLanguage",
+      "systemLanguage",
+      "userLanguage",
+    ];
     let language;
     // support for HTML 5.1 "navigator.languages"
     if (Array.isArray(nav.languages)) {
@@ -166,7 +166,7 @@ const Utilities = {
     return null;
   },
 
-  getKeyboardLayout: function () {
+  getKeyboardLayout() {
     let v = Utilities.getFirstBrowserLanguage();
     Utilities.debug("getFirstBrowserLanguage()=", v);
     if (v == undefined) {
@@ -191,40 +191,40 @@ const Utilities = {
     return layout;
   },
 
-  isMacOS: function () {
+  isMacOS() {
     return navigator.platform.includes("Mac");
   },
 
-  isWindows: function () {
+  isWindows() {
     return navigator.platform.includes("Win");
   },
 
-  isLinux: function () {
+  isLinux() {
     return navigator.platform.includes("Linux");
   },
 
-  isFirefox: function () {
+  isFirefox() {
     const ua = navigator.userAgent.toLowerCase();
     return ua.includes("firefox");
   },
-  isOpera: function () {
+  isOpera() {
     const ua = navigator.userAgent.toLowerCase();
     return ua.includes("opera");
   },
-  isSafari: function () {
+  isSafari() {
     const ua = navigator.userAgent.toLowerCase();
     return ua.includes("safari") && !ua.includes("chrome");
   },
-  isEdge: function () {
+  isEdge() {
     return navigator.userAgent.includes("Edge");
   },
-  isChrome: function () {
-    const isChromium = Object.prototype.hasOwnProperty.call(window, "chrome"),
-      winNav = window.navigator,
-      vendorName = winNav.vendor,
-      isOpera = winNav.userAgent.includes("OPR"),
-      isIEedge = winNav.userAgent.includes("Edge"),
-      isIOSChrome = winNav.userAgent.match("CriOS");
+  isChrome() {
+    const isChromium = Object.prototype.hasOwnProperty.call(window, "chrome");
+    const winNav = window.navigator;
+    const vendorName = winNav.vendor;
+    const isOpera = winNav.userAgent.includes("OPR");
+    const isIEedge = winNav.userAgent.includes("Edge");
+    const isIOSChrome = winNav.userAgent.match("CriOS");
     if (isIOSChrome) {
       return true;
     } else if (
@@ -239,21 +239,21 @@ const Utilities = {
       return false;
     }
   },
-  isIE: function () {
+  isIE() {
     return (
       navigator.userAgent.includes("MSIE") ||
       navigator.userAgent.includes("Trident/")
     );
   },
 
-  is_64bit: function () {
-    let _to_check = [];
+  is_64bit() {
+    const _to_check = [];
     if (Object.prototype.hasOwnProperty.call((window.navigator, "cpuClass")))
-      _to_check.push((window.navigator.cpuClass + "").toLowerCase());
+      _to_check.push(`${window.navigator.cpuClass}`.toLowerCase());
     if (window.navigator.platform)
-      _to_check.push((window.navigator.platform + "").toLowerCase());
+      _to_check.push(`${window.navigator.platform}`.toLowerCase());
     if (navigator.userAgent)
-      _to_check.push((navigator.userAgent + "").toLowerCase());
+      _to_check.push(`${navigator.userAgent}`.toLowerCase());
     const _64bits_signatures = [
       "x86_64",
       "x86-64",
@@ -278,11 +278,11 @@ const Utilities = {
     return false;
   },
 
-  isMobile: function () {
+  isMobile() {
     return /iphone|ipad|ipod|android/i.test(navigator.userAgent);
   },
 
-  getSimpleUserAgentString: function () {
+  getSimpleUserAgentString() {
     if (Utilities.isFirefox()) {
       return "Firefox";
     } else if (Utilities.isOpera()) {
@@ -298,7 +298,7 @@ const Utilities = {
     }
   },
 
-  getColorGamut: function () {
+  getColorGamut() {
     if (!window.matchMedia) {
       //unknown
       return "";
@@ -313,11 +313,11 @@ const Utilities = {
     }
   },
 
-  isEventSupported: function (event) {
+  isEventSupported(event) {
     let testElement = document.createElement("div");
     let isSupported;
 
-    event = "on" + event;
+    event = `on${event}`;
     isSupported = event in testElement;
 
     if (!isSupported) {
@@ -330,14 +330,14 @@ const Utilities = {
 
   //https://github.com/facebook/fixed-data-table/blob/master/src/vendor_upstream/dom/normalizeWheel.js
   //BSD license
-  normalizeWheel: function (/*object*/ event) /*object*/ {
+  normalizeWheel(/*object*/ event) /*object*/ {
     // Reasonable defaults
     const PIXEL_STEP = 10;
     const LINE_HEIGHT = 40;
     const PAGE_HEIGHT = 800;
 
-    let sX = 0,
-      sY = 0; // spinX, spinY
+    let sX = 0;
+    let sY = 0; // spinX, spinY
 
     // Legacy
     if ("detail" in event) {
@@ -398,7 +398,7 @@ const Utilities = {
     };
   },
 
-  saveFile: function (filename, data, mimetype) {
+  saveFile(filename, data, mimetype) {
     const a = document.createElement("a");
     a.setAttribute("style", "display: none");
     document.body.append(a);
@@ -414,7 +414,7 @@ const Utilities = {
     }
   },
 
-  StringToUint8: function (string_) {
+  StringToUint8(string_) {
     const u8a = new Uint8Array(string_.length);
     for (let index = 0, index_ = string_.length; index < index_; ++index) {
       u8a[index] = string_.charCodeAt(index);
@@ -422,7 +422,7 @@ const Utilities = {
     return u8a;
   },
 
-  Uint8ToString: function (u8a) {
+  Uint8ToString(u8a) {
     const CHUNK_SZ = 0x80_00;
     const c = [];
     for (let index = 0; index < u8a.length; index += CHUNK_SZ) {
@@ -433,7 +433,7 @@ const Utilities = {
     return c.join("");
   },
 
-  s: function (v) {
+  s(v) {
     const type = typeof v;
     if (type === "object" && v.constructor === Uint8Array) {
       return Utilities.Uint8ToString(v);
@@ -441,7 +441,7 @@ const Utilities = {
     return v.toString();
   },
 
-  ArrayBufferToBase64: function (uintArray) {
+  ArrayBufferToBase64(uintArray) {
     // apply in chunks of 10400 to avoid call stack overflow
     // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/apply
     let s = "";
@@ -472,7 +472,7 @@ const Utilities = {
     return window.btoa(s);
   },
 
-  ToBase64: function (v) {
+  ToBase64(v) {
     try {
       return window.btoa(v);
     } catch {
@@ -480,7 +480,7 @@ const Utilities = {
     }
   },
 
-  convertDataURIToBinary: function (dataURI) {
+  convertDataURIToBinary(dataURI) {
     const BASE64_MARKER = ";base64,";
     const base64Index = dataURI.indexOf(BASE64_MARKER) + BASE64_MARKER.length;
     const base64 = dataURI.slice(Math.max(0, base64Index));
@@ -494,7 +494,7 @@ const Utilities = {
     return array;
   },
 
-  parseINIString: function (data) {
+  parseINIString(data) {
     const regex = {
       section: /^\s*\[\s*([^\]]*)\s*]\s*$/,
       param: /^\s*([^=]+?)\s*=\s*(.*?)\s*$/,
@@ -530,7 +530,7 @@ const Utilities = {
    * http://www.w3.org/TR/XMLHttpRequest/#the-getallresponseheaders-method
    * This method parses that string into a user-friendly key/value pair object.
    */
-  ParseResponseHeaders: function (headerString) {
+  ParseResponseHeaders(headerString) {
     const headers = {};
     if (!headerString) {
       return headers;
@@ -550,19 +550,19 @@ const Utilities = {
     return headers;
   },
 
-  parseParams: function (q) {
+  parseParams(q) {
     const parameters = {};
     let e;
-    const a = /\+/g, // Regex for replacing addition symbol with a space
-      r = /([^&=]+)=?([^&]*)/g,
-      d = function (s) {
-        return decodeURIComponent(s.replace(a, " "));
-      };
+    const a = /\+/g; // Regex for replacing addition symbol with a space
+    const r = /([^&=]+)=?([^&]*)/g;
+    const d = function (s) {
+      return decodeURIComponent(s.replace(a, " "));
+    };
     while ((e = r.exec(q))) parameters[d(e[1])] = d(e[2]);
     return parameters;
   },
 
-  getparam: function (property) {
+  getparam(property) {
     let getParameter = window.location.getParameter;
     if (!getParameter) {
       getParameter = function (key) {
@@ -584,7 +584,7 @@ const Utilities = {
     return value;
   },
 
-  getboolparam: function (property, default_value) {
+  getboolparam(property, default_value) {
     const v = Utilities.getparam(property);
     if (v === null) {
       return default_value;
@@ -594,7 +594,7 @@ const Utilities = {
     );
   },
 
-  hasSessionStorage: function () {
+  hasSessionStorage() {
     if (typeof Storage === "undefined") {
       return false;
     }
@@ -608,7 +608,7 @@ const Utilities = {
     }
   },
 
-  getConnectionInfo: function () {
+  getConnectionInfo() {
     if (!Object.prototype.hasOwnProperty.call(navigator, "connection")) {
       return {};
     }
@@ -638,13 +638,7 @@ const Utilities = {
     return index;
   },
 
-  json_action: function (
-    uri,
-    success_function,
-    error_function,
-    username,
-    password
-  ) {
+  json_action(uri, success_function, error_function, username, password) {
     Utilities.log(
       "json_action(",
       uri,
@@ -654,8 +648,8 @@ const Utilities = {
       error_function,
       ")"
     );
-    var xhr = new XMLHttpRequest();
-    var url = uri;
+    const xhr = new XMLHttpRequest();
+    let url = uri;
     if (uri.startsWith("/")) {
       //relative URI
       url = document.location.href.split("/connect.html")[0] + uri;
@@ -664,19 +658,19 @@ const Utilities = {
     if (username && password) {
       xhr.setRequestHeader(
         "Authorization",
-        "Basic " + btoa(username + ":" + password)
+        `Basic ${btoa(`${username}:${password}`)}`
       );
     }
     xhr.responseType = "json";
     xhr.addEventListener("load", function () {
       Utilities.log("loaded", url, "status", xhr.status);
-      var status = xhr.status;
+      const status = xhr.status;
       if (status === 200) {
         success_function(xhr, xhr.response);
       } else {
         Utilities.log(uri, "failed:", status + xhr.response);
         if (error_function) {
-          error_function("failed: " + status + xhr.response);
+          error_function(`failed: ${status}${xhr.response}`);
         }
       }
     });
