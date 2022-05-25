@@ -12,7 +12,10 @@
  * Requires Chrome 94+ or Android and a secure (SSL or localhost) context.
  */
 
-const XpraOffscreenWorker = {
+import { XpraImageDecoderLoader } from "./ImageDecoder.js";
+import { XpraVideoDecoderLoader } from "./VideoDecoder.js";
+
+export const XpraOffscreenWorker = {
   isAvailable() {
     if (
       XpraImageDecoderLoader.hasNativeDecoder() &&

@@ -6,7 +6,7 @@
  *
  */
 
-const DEFAULT_BOX_COLORS = {
+export const DEFAULT_BOX_COLORS = {
   png: "yellow",
   h264: "blue",
   vp8: "green",
@@ -24,19 +24,19 @@ const DEFAULT_BOX_COLORS = {
   avif: "cyan",
 };
 
-const MOVERESIZE_SIZE_TOPLEFT = 0;
-const MOVERESIZE_SIZE_TOP = 1;
-const MOVERESIZE_SIZE_TOPRIGHT = 2;
-const MOVERESIZE_SIZE_RIGHT = 3;
-const MOVERESIZE_SIZE_BOTTOMRIGHT = 4;
-const MOVERESIZE_SIZE_BOTTOM = 5;
-const MOVERESIZE_SIZE_BOTTOMLEFT = 6;
-const MOVERESIZE_SIZE_LEFT = 7;
-const MOVERESIZE_MOVE = 8;
-const MOVERESIZE_SIZE_KEYBOARD = 9;
-const MOVERESIZE_MOVE_KEYBOARD = 10;
-const MOVERESIZE_CANCEL = 11;
-const MOVERESIZE_DIRECTION_STRING = {
+export const MOVERESIZE_SIZE_TOPLEFT = 0;
+export const MOVERESIZE_SIZE_TOP = 1;
+export const MOVERESIZE_SIZE_TOPRIGHT = 2;
+export const MOVERESIZE_SIZE_RIGHT = 3;
+export const MOVERESIZE_SIZE_BOTTOMRIGHT = 4;
+export const MOVERESIZE_SIZE_BOTTOM = 5;
+export const MOVERESIZE_SIZE_BOTTOMLEFT = 6;
+export const MOVERESIZE_SIZE_LEFT = 7;
+export const MOVERESIZE_MOVE = 8;
+export const MOVERESIZE_SIZE_KEYBOARD = 9;
+export const MOVERESIZE_MOVE_KEYBOARD = 10;
+export const MOVERESIZE_CANCEL = 11;
+export const MOVERESIZE_DIRECTION_STRING = {
   0: "SIZE_TOPLEFT",
   1: "SIZE_TOP",
   2: "SIZE_TOPRIGHT",
@@ -50,7 +50,7 @@ const MOVERESIZE_DIRECTION_STRING = {
   10: "MOVE_KEYBOARD",
   11: "CANCEL",
 };
-const MOVERESIZE_DIRECTION_JS_NAME = {
+export const MOVERESIZE_DIRECTION_JS_NAME = {
   0: "nw",
   1: "n",
   2: "ne",
@@ -61,7 +61,7 @@ const MOVERESIZE_DIRECTION_JS_NAME = {
   7: "w",
 };
 
-const PACKET_TYPES = {
+export const PACKET_TYPES = {
   ack_file_chunk: "ack-file-chunk",
   bell: "bell",
   buffer_refresh: "buffer-refresh",

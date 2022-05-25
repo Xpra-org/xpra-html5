@@ -15,13 +15,13 @@
  *
  */
 
-const XpraVideoDecoderLoader = {
+export const XpraVideoDecoderLoader = {
   hasNativeDecoder() {
     return typeof VideoDecoder !== "undefined";
   },
 };
 
-class XpraVideoDecoder {
+export class XpraVideoDecoder {
   constructor() {
     this.initialized = false;
     this.had_first_key = false;
