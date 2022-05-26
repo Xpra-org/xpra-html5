@@ -4,7 +4,7 @@
   "description": "HTML5 client for Xpra",
   "main": "html5/index.html",
   "scripts": {
-    "format": "eslint --fix .",
+    "format": "eslint --fix --quiet .",
     "lint": "eslint --quiet .",
     "test": "echo \"Error: no test specified\" && exit 1",
     "prepare": "husky install"
@@ -52,7 +52,10 @@
     "parserOptions": {
       "ecmaVersion": "latest"
     },
-    "plugins": ["github", "unicorn"],
+    "plugins": [
+      "github",
+      "unicorn"
+    ],
     "rules": {
       "camelcase": "warn",
       "eqeqeq": "warn",
