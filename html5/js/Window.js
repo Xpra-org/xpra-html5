@@ -16,6 +16,8 @@
 
 const TASKBAR_HEIGHT = 0;
 
+function dummy() {}
+
 /**
  * This is the class representing a window we draw on the canvas.
  * It has a geometry, it may have borders and a top bar.
@@ -66,13 +68,13 @@ class XpraWindow {
     this.has_alpha = false;
     this.client_properties = client_properties;
 
-    this.set_focus_cb = set_focus_cb || null;
-    this.mouse_move_cb = mouse_move_cb || null;
-    this.mouse_down_cb = mouse_down_cb || null;
-    this.mouse_up_cb = mouse_up_cb || null;
-    this.mouse_scroll_cb = mouse_scroll_cb || null;
-    this.geometry_cb = geometry_cb || null;
-    this.window_closed_cb = window_closed_cb || null;
+    this.set_focus_cb = set_focus_cb || dummy;
+    this.mouse_move_cb = mouse_move_cb || dummy;
+    this.mouse_down_cb = mouse_down_cb || dummy;
+    this.mouse_up_cb = mouse_up_cb || dummy;
+    this.mouse_scroll_cb = mouse_scroll_cb || dummy;
+    this.geometry_cb = geometry_cb || dummy;
+    this.window_closed_cb = window_closed_cb || dummy;
 
     this.log = () => client.log.apply(client, arguments);
     this.warn = () => client.warn.apply(client, arguments);
@@ -256,7 +258,7 @@ class XpraWindow {
         !this.minimized &&
         $(e.target).parents(".windowbuttons").length === 0
       ) {
-        this.client._window_set_focus(this);
+        this.set_focus_cb(this);
       }
     });
   }
@@ -510,26 +512,19 @@ class XpraWindow {
    * Mouse: delegate to client, telling it which window triggered the event.
    */
   on_mousemove(e) {
-    this.mouse_move_cb(this.client, e, this);
-    e.preventDefault();
-    return false;
+    return this.mouse_move_cb(e, this);
   }
 
   on_mousedown(e) {
-    this.mouse_down_cb(this.client, e, this);
-    e.preventDefault();
-    return false;
+    return this.mouse_down_cb(e, this);
   }
 
   on_mouseup(e) {
-    this.mouse_up_cb(this.client, e, this);
-    e.preventDefault();
-    return false;
+    return this.mouse_up_cb(e, this);
   }
 
   on_mousescroll(e) {
-    this.mouse_scroll_cb(this.client, e, this);
-    return false;
+    return this.mouse_scroll_cb(e, this);
   }
 
   /**
