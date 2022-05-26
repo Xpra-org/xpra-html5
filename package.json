@@ -5,6 +5,7 @@
   "main": "html5/index.html",
   "scripts": {
     "format": "eslint --fix --quiet .",
+    "graph_imports": "madge --image docs/imports_graph.svg html5/**/*.js",
     "lint": "eslint --quiet .",
     "test": "echo \"Error: no test specified\" && exit 1",
     "prepare": "husky install"
@@ -28,6 +29,7 @@
     "eslint-plugin-unicorn": "^42.0.0",
     "husky": "^8.0.1",
     "lint-staged": "^12.4.1",
+    "madge": "^5.0.1",
     "prettier": "2.6.2"
   },
   "lint-staged": {
