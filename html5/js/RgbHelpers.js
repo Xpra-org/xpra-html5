@@ -21,7 +21,6 @@ function decode_rgb(packet) {
     data = lz4.decode(data);
     delete options["lz4"];
   }
-  //this.debug("draw", "got ", data.length, "bytes of", coding, "to paint with stride", rowstride);
   if (coding == "rgb24") {
     packet[9] = width * 4;
     packet[6] = "rgb32";

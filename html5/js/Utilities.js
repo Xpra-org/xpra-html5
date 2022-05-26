@@ -199,7 +199,6 @@ const Utilities = {
     for (let i = 0; i < browserLanguagePropertyKeys.length; i++) {
       const prop = browserLanguagePropertyKeys[i];
       language = nav[prop];
-      //Utilities.debug(prop, "=", language);
       if (language && language.length) {
         return language;
       }
@@ -727,22 +726,13 @@ const LANGUAGE_TO_LAYOUT = {
   zh: "cn",
   af: "za",
   sq: "al",
-  //"ar"	: "ar",
-  //"eu"	: "eu",
-  //"bg"	: "bg",
-  //"be"	: "be",
   ca: "ca",
   "zh-TW": "tw",
   "zh-CN": "cn",
-  //"zh-HK"	: ??
-  //"zh-SG"	: ??
-  //"hr"	: "hr",
   cs: "cz",
   da: "dk",
-  //"nl"	: "nl",
   "nl-BE": "be",
   "en-US": "us",
-  //"en-EG"	: ??
   "en-AU": "us",
   "en-GB": "gb",
   "en-CA": "ca",
@@ -750,67 +740,51 @@ const LANGUAGE_TO_LAYOUT = {
   "en-IE": "ie",
   "en-ZA": "za",
   "en-JM": "us",
-  //"en-BZ"	: ??
   "en-TT": "tr",
   et: "ee",
-  //"fo"	: "fo",
   fa: "ir",
-  //"fi"	: "fi",
-  //"fr"	: "fr",
   "fr-BE": "be",
   "fr-CA": "ca",
   "fr-CH": "ch",
   "fr-LU": "fr",
-  //"gd"	: ??
   "gd-IE": "ie",
-  //"de"	: "de",
   "de-CH": "ch",
   "de-AT": "at",
   "de-LU": "de",
   "de-LI": "de",
   he: "il",
   hi: "in",
-  //"hu"	: "hu",
-  //"is"	: "is",
-  //"id"	: ??,
-  //"it"	: "it",
   "it-CH": "ch",
   ja: "jp",
   ko: "kr",
-  //"lv"	: "lv",
-  //"lt"	: "lt",
-  //"mk"	: "mk",
-  //"mt"	: "mt",
-  //"no"	: "no",
-  //"pl"	: "pl",
   "pt-BR": "br",
   pt: "pt",
-  //"rm"	: ??,
-  //"ro"	: "ro",
-  //"ro-MO"	: ??,
-  //"ru"	: "ru",
-  ///"ru-MI"	: ??,
-  //"sz"	: ??,
   sr: "rs",
-  //"sk"	: "sk",
   sl: "si",
-  //"sb"	: ??,
   es: "es",
-  //"es-AR", "es-GT", "es-CR", "es-PA", "es-DO", "es-MX", "es-VE", "es-CO",
-  //"es-PE", "es-EC", "es-CL", "es-UY", "es-PY", "es-BO", "es-SV", "es-HN",
-  //"es-NI", "es-PR",
-  //"sx"	: ??,
   sv: "se",
   "sv-FI": "fi",
-  //"th"	: "th",
-  //"ts"	: ??,
-  //"tn"	: ??,
   tr: "tr",
   uk: "ua",
   ur: "pk",
-  //"ve"	: ??,
   vi: "vn",
-  //"xh"	: "??",
-  //"ji"	: "??",
-  //"zu"	: "??",
+  //Unknown conversions
+  //"en-BZ": ??
+  //"en-EG": ??
+  //"gd": ??
+  //"id": ??
+  //"ji": ??
+  //"rm": ??
+  //"ro-MO": ??
+  //"ru-MI": ??
+  //"sb": ??
+  //"sx": ??
+  //"sz": ??
+  //"ts": ??
+  //"tn": ??
+  //"ve": ??
+  //"xh": ??
+  //"zh-HK": ??
+  //"zh-SG": ??
+  //"zu": ??
 };

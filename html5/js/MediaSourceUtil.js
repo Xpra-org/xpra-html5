@@ -27,14 +27,9 @@ const MediaSourceConstants = {
 
   CODEC_STRING: {
     "aac+mpeg4": 'audio/mp4; codecs="mp4a.40.2"',
-    //"aac+mpeg4"		: 'audio/mp4; codecs="aac51"',
-    //"aac+mpeg4"		: 'audio/aac',
     mp3: "audio/mpeg",
     "mp3+mpeg4": 'audio/mp4; codecs="mp3"',
-    //"mp3"			: "audio/mp3",
     ogg: "audio/ogg",
-    //"wave"		: 'audio/wave',
-    //"wav"			: 'audio/wav; codec="1"',
     wav: "audio/wav",
     flac: "audio/flac",
     "opus+mka": 'audio/webm; codecs="opus"',
@@ -64,7 +59,6 @@ const MediaSourceConstants = {
   ],
 
   H264_PROFILE_CODE: {
-    //"baseline"	: "42E0",
     baseline: "42C0",
     main: "4D40",
     high: "6400",

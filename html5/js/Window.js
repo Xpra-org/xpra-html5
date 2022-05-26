@@ -217,9 +217,6 @@ class XpraWindow {
       helper: "ui-resizable-helper",
       handles: "n, e, s, w, ne, se, sw, nw",
     });
-    //jQuery(this.div).on("resize",jQuery.debounce(50, (ev, ui) => {
-    //  	this.handle_resized(ui);
-    //}));
     jQuery(this.div).on("resizestart", (ev, ui) => {
       client.do_window_mouse_click(ev, this, false);
       client.mouse_grabbed = true;
@@ -255,9 +252,6 @@ class XpraWindow {
     jQuery(this.div).mousedown((e) => e.stopPropagation());
     //bug 2418: if we stop 'mouseup' propagation,
     //jQuery can't ungrab the window with Firefox
-    //jQuery(this.div).mouseup(function (e) {
-    //	e.stopPropagation();
-    //});
     // assign callback to focus window if header is clicked.
     jQuery(this.d_header).click((e) => {
       if (
@@ -396,7 +390,6 @@ class XpraWindow {
     const desktop_size = this.client._get_desktop_size();
     const ww = desktop_size[0];
     const wh = desktop_size[1];
-    //this.log("x=", this.x, "y=", this.y, "w=", this.w, "h=", this.h, "leftoffset=", this.leftoffset, "topoffset=", this.topoffset, " - ww=", ww, "wh=", wh);
     if (oldx < this.leftoffset && oldx + this.w <= min_visible) {
       this.x = min_visible - this.w + this.leftoffset;
     } else if (oldx >= ww - min_visible) {
@@ -843,7 +836,6 @@ class XpraWindow {
    * Toggle minimized state
    */
   toggle_minimized() {
-    //console.error("toggle_minimized minimized=", this.minimized);
     //get the geometry before modifying the window:
     const geom = this.get_internal_geometry();
     this.set_minimized(!this.minimized);
@@ -874,8 +866,8 @@ class XpraWindow {
    */
   set_fullscreen(fullscreen) {
     //the browser itself:
-    //we can't bring attention to the fullscreen widget, ie:
-    //$("#fullscreen").fadeIn(100).fadeOut(100).fadeIn(100).fadeOut(100).fadeIn(100);
+    //we can't bring attention to the fullscreen widget,
+    //ie: $("#fullscreen").fadeIn(100).fadeOut(100).fadeIn(100).fadeOut(100).fadeIn(100);
     //because the window is about to cover the top bar...
     //so just fullscreen the window:
     if (this.fullscreen == fullscreen) {
@@ -983,7 +975,6 @@ class XpraWindow {
     this.debug("geometry", "handle_moved(", e, ") left=", left, ", top=", top);
     // add on padding to the event position so that
     // it reflects the internal geometry of the canvas
-    //this.log("handle moved: position=", e.position.left, e.position.top);
     this.x = left + this.leftoffset;
     this.y = top + this.topoffset;
     // make sure we are visible after move
@@ -1159,7 +1150,6 @@ class XpraWindow {
       e.type = "mousedown.draggable";
       e.target = this.div[0];
       this.div.trigger(e);
-      //jQuery(this.div).trigger("mousedown");
     } else if (direction == MOVERESIZE_CANCEL) {
       jQuery(this.div).draggable("disable");
       jQuery(this.div).draggable("enable");

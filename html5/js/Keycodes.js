@@ -1625,13 +1625,11 @@ KEYSYM_TO_UNICODE = {
 CHAR_TO_NAME = {
   " ": "space",
 };
-//console.debug("KEYSYM_TO_UNICODE=", KEYSYM_TO_UNICODE);
 for (let keysym in KEYSYM_TO_UNICODE) {
   const u = KEYSYM_TO_UNICODE[keysym];
   const character = String.fromCharCode(u);
   CHAR_TO_NAME[character] = keysym;
 }
-//console.debug("CHAR_TO_NAME=", KEYSYM_TO_UNICODE);
 
 //some keysyms require specific layouts
 KEYSYM_TO_LAYOUT = {
@@ -1730,8 +1728,7 @@ for (let i = 0; i < 26; i++) {
 for (let i = 0; i < 10; i++) {
   CHARCODE_TO_NAME[48 + i] = "" + i;
   CHARCODE_TO_NAME[96 + i] = "" + i;
-  //fix for OSX numpad?
-  //CHARCODE_TO_NAME[96+i] = "KP_"+i;
+  //fix for OSX numpad?: CHARCODE_TO_NAME[96+i] = "KP_"+i;
 }
 for (let i = 1; i <= 24; i++) {
   CHARCODE_TO_NAME[111 + i] = "F" + i;

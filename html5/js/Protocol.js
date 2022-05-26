@@ -346,7 +346,6 @@ class XpraProtocol {
       while (rsize < packet_size) {
         const slice = this.rQ[0];
         const needed = packet_size - rsize;
-        //console.log("slice:", slice.length, "bytes, needed", needed);
         if (slice.length > needed) {
           //add part of this slice:
           packet_data.set(slice.subarray(0, needed), rsize);
@@ -396,13 +395,11 @@ class XpraProtocol {
       } else {
         inflated = new Zlib.Inflate(packet_data).decompress();
       }
-      //debug("inflated("+packet_data+")="+inflated);
       packet_data = inflated;
     }
 
     //save it for later? (partial raw packet)
     if (index > 0) {
-      //debug("added raw packet for index "+index);
       this.raw_packets[index] = packet_data;
       if (this.raw_packets.length >= 4) {
         this.protocol_error("too many raw packets: " + this.raw_packets.length);
@@ -465,7 +462,6 @@ class XpraProtocol {
       } catch (e) {
         //FIXME: maybe we should error out and disconnect here?
         this.error("error processing packet " + packet[0] + ": " + e);
-        //this.error("packet_data="+packet_data);
       }
     }
     return this.rQ.length > 0;
@@ -590,7 +586,6 @@ class XpraProtocol {
     this.setup_cipher(caps, key, (cipher, block_size, secret, iv) => {
       this.cipher_in_block_size = block_size;
       this.cipher_in = forge.cipher.createDecipher(cipher, secret);
-      //this.cipher_in.start({"iv": iv, "tagLength" : 0, "tag" : ""});
       this.cipher_in.start({ iv: iv });
     });
   }

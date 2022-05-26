@@ -77,8 +77,6 @@ $(function () {
     notifications_elements.prepend(a);
     if (icon) {
       const encoding = icon[0],
-        //w = icon[1],
-        //h = icon[2],
         img_data = icon[3];
       if (encoding == "png") {
         const src =

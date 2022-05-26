@@ -330,7 +330,6 @@ class XpraClient {
   debug() {
     const category = arguments[0];
     let args = Array.from(arguments);
-    //args = args.splice(1);
     if (this.debug_categories.includes(category)) {
       if (category != "network") {
         //logging.DEBUG = 10
@@ -864,7 +863,6 @@ class XpraClient {
       index = new_modifiers.indexOf(control);
       if (index >= 0) new_modifiers.splice(index, 1);
     }
-    //this.clog("altgr_state=", this.altgr_state, ", altgr_modifier=", this.altgr_modifier, ", modifiers=", new_modifiers);
     return new_modifiers;
   }
 
@@ -1053,9 +1051,6 @@ class XpraClient {
       str = "AltGraph";
     }
 
-    //if (this.num_lock && keycode>=96 && keycode<106)
-    //	keyname = "KP_"+(keycode-96);
-
     const raw_modifiers = get_event_modifiers(event);
     const modifiers = this._keyb_get_modifiers(event);
     const keyval = keycode;
@@ -1225,7 +1220,6 @@ class XpraClient {
       kc = parseInt(keycode);
       keycodes.push([kc, CHARCODE_TO_NAME[keycode], kc, 0, 0]);
     }
-    //show("keycodes="+keycodes.toSource());
     return keycodes;
   }
 
@@ -1237,7 +1231,6 @@ class XpraClient {
     "use strict";
     const dpi_div = document.getElementById("dpi");
     if (dpi_div != undefined) {
-      //show("dpiX="+dpi_div.offsetWidth+", dpiY="+dpi_div.offsetHeight);
       if (dpi_div.offsetWidth > 0 && dpi_div.offsetHeight > 0)
         return Math.round((dpi_div.offsetWidth + dpi_div.offsetHeight) / 2.0);
     }
@@ -1285,7 +1278,6 @@ class XpraClient {
   _check_server_echo(ping_sent_time) {
     const last = this.server_ok;
     this.server_ok = this.last_ping_echoed_time >= ping_sent_time;
-    //this.clog("check_server_echo", this.server_ok, "last", last, "last_time", this.last_ping_echoed_time, "this_this", ping_sent_time);
     if (last != this.server_ok) {
       if (!this.server_ok) {
         this.clog("server connection is not responding, drawing spinners...");
@@ -1552,7 +1544,6 @@ class XpraClient {
         "iconic",
         "above",
         "below",
-        //"set-initial-position", "group-leader",
         "title",
         "size-hints",
         "class-instance",
@@ -1564,7 +1555,6 @@ class XpraClient {
         "tray",
         "modal",
         "opacity",
-        //"shadow", "desktop",
       ],
       encoding: this.encoding,
       encodings: this.supported_encodings,
@@ -1577,11 +1567,12 @@ class XpraClient {
       "encoding.transparency": true,
       "encoding.decoder-speed": { video: 0 },
       "encodings.packet": true,
-      //"encoding.min-speed"		: 80,
-      //"encoding.min-quality"	: 50,
-      "encoding.color-gamut": Utilities.getColorGamut(),
-      //"encoding.non-scroll"		: ["rgb32", "png", "jpeg"],
+      //skipping some keys
+      //ie: "encoding.min-quality": 50,
+      //ie: "encoding.min-speed": 80,
+      //ie: "encoding.non-scroll": ["rgb32", "png", "jpeg"],
       //video stuff:
+      "encoding.color-gamut": Utilities.getColorGamut(),
       "encoding.video_scaling": true,
       "encoding.video_max_size": [1024, 768],
       "encoding.eos": true,
@@ -1617,9 +1608,7 @@ class XpraClient {
       "encoding.h264.score-delta": -20,
       "encoding.h264+mp4.score-delta": 50,
       "encoding.h264+mp4.": 50,
-      //"encoding.h264+mp4.fast-decode"		: true,
       "encoding.mpeg4+mp4.score-delta": 40,
-      //"encoding.mpeg4+mp4.fast-decode"	: true,
       "encoding.vp8+webm.score-delta": 40,
 
       "sound.receive": true,
@@ -1986,12 +1975,6 @@ class XpraClient {
         this.clog("paste got", files.length, "files");
         for (let i = 0; i < files.length; i++) {
           let file = files.item(i);
-          //lastModified: 1634740745068
-          //lastModifiedDate: Wed Oct 20 2021 21:39:05 GMT+0700 (Indochina Time) {}
-          //name: "addresses.png"
-          //size: 17698
-          //type: "image/png"
-          //webkitRelativePath: ""
           this.send_file(file);
         }
         e.preventDefault();
@@ -2252,7 +2235,6 @@ class XpraClient {
       iwin.updateFocus();
       iwin.update_zindex();
     }
-    //client._set_favicon(wid);
   }
 
   /*
@@ -2597,7 +2579,6 @@ class XpraClient {
   }
 
   _process_hello(packet) {
-    //show("process_hello("+packet+")");
     this.cancel_hello_timer();
     const hello = packet[1];
     this.clog("received hello capabilities", hello);
@@ -2700,7 +2681,6 @@ class XpraClient {
     if ("modifier_keycodes" in hello) {
       const modifier_keycodes = hello["modifier_keycodes"];
       for (const mod in modifier_keycodes) {
-        //show("modifier_keycode["+mod+"]="+modifier_keycodes[mod].toSource());
         const keys = modifier_keycodes[mod];
         for (let i = 0; i < keys.length; i++) {
           const key = keys[i];
@@ -2717,7 +2697,6 @@ class XpraClient {
         }
       }
     }
-    //show("alt="+alt_modifier+", meta="+meta_modifier);
     // stuff that must be done after hello
     if (this.audio_enabled) {
       if (!hello["sound.send"]) {
@@ -3188,8 +3167,6 @@ class XpraClient {
 
   _process_new_tray(packet) {
     const wid = packet[1];
-    //let w = packet[2];
-    //let h = packet[3];
     const metadata = packet[4];
     const mydiv = document.createElement("div");
     mydiv.id = String(wid);
@@ -3592,7 +3569,6 @@ class XpraClient {
   }
 
   _process_desktop_size(packet) {
-    //root_w, root_h, max_w, max_h = packet[1:5]
     //we don't use this yet,
     //we could use this to clamp the windows to a certain area
   }
@@ -3626,10 +3602,6 @@ class XpraClient {
    */
   _process_notify_show(packet) {
     //TODO: add UI switch to disable notifications
-    //unused:
-    //const dbus_id = packet[1];
-    //const app_name = packet[3];
-    //const app_icon = packet[5];
     const nid = packet[2];
     const replaces_nid = packet[4];
     const summary = Utilities.s(packet[6]);
@@ -3652,17 +3624,6 @@ class XpraClient {
         icon_url = "data:image/png;base64," + Utilities.ToBase64(icon[3]);
         this.clog("notification icon_url=", icon_url);
       }
-      /*
-			const nactions = [];
-			if (actions) {
-				ctx.log("actions=", actions);
-				for (let i=0; i<actions.length/2;++i) {
-					nactions.push({
-						"action"	: actions[i*2],
-						"title"		: actions[i*2+1],
-					});
-				}
-			}*/
       const notification = new Notification(summary, {
         body: body,
         icon: icon_url,
@@ -4441,13 +4402,7 @@ class XpraClient {
       this.audio_source_buffer.appendBuffer(buf);
       const b = this.audio_source_buffer.buffered;
       if (b && b.length >= 1) {
-        //for (let i=0; i<b.length;i++) {
-        //	this.clog("buffered[", i, "]=", b.start(i), b.end(i));
-        //}
         const p = this.audio.played;
-        //for (let i=0; i<p.length;i++) {
-        //	this.clog("played[", i, "]=", p.start(i), p.end(i));
-        //}
         const e = b.end(0);
         const buf_size = Math.round(1000 * (e - this.audio.currentTime));
         this.debug(
@@ -4489,8 +4444,6 @@ class XpraClient {
         "demuxer=",
         this.audio_aurora_ctx.demuxer
       );
-      //"source=", this.audio_aurora_ctx.asset.source,
-      //"events=", this.audio_aurora_ctx.asset.source.events);
     }
     this.on_audio_state_change("playing", "");
   }
@@ -4658,7 +4611,6 @@ class XpraClient {
     // unless we have support for navigator.clipboard:
     const request_id = packet[1],
       selection = packet[2];
-    //target = packet[3];
 
     this.debug("clipboard", selection + " request");
 
@@ -5445,7 +5397,6 @@ class XpraClient {
 
   _process_open_url(packet) {
     const url = packet[1];
-    //const send_id = packet[2];
     if (!this.open_url) {
       this.cwarn("Warning: received a request to open URL", url);
       this.clog(" but opening of URLs is disabled");
