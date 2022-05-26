@@ -2,9 +2,10 @@
  * Copyright (c) 2021 Antoine Martin <antoine@xpra.org>
  */
 
-import { decode_rgb } from "./RgbHelpers.js";
+import "./lib/broadway/Decoder.js";
+import "./lib/lz4.js";
 
-importScripts("./lib/broadway/Decoder.js", "./lib/lz4.js");
+import { decode_rgb } from "./RgbHelpers.js";
 
 const broadway_decoders = {};
 function close_broadway(wid) {

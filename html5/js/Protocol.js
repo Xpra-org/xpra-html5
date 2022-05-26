@@ -15,6 +15,11 @@
  *  brotli_decode.js
  */
 
+import "./lib/brotli_decode.js";
+import "./lib/forge.js";
+import "./lib/lz4.js";
+import "./lib/rencode.js";
+
 import { Utilities } from "./Utilities.js";
 
 const CONNECT_TIMEOUT = 15_000;
@@ -606,14 +611,6 @@ if (
     window.document === document
   )
 ) {
-  // some required imports
-  // worker imports are relative to worker script path
-  importScripts(
-    "lib/brotli_decode.js",
-    "lib/forge.js",
-    "lib/lz4.js",
-    "lib/rencode.js"
-  );
   // make protocol instance
   const protocol = new XpraProtocol();
   protocol.is_worker = true;
