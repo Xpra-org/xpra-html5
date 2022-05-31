@@ -52,7 +52,7 @@ class XpraVideoDecoder {
     this.initialized = true;
   }
 
-  _on_decoded_framefunction(videoFrame) {
+  _on_decoded_frame(videoFrame) {
     if (this.decoder_queue.length == 0) {
       videoFrame.close();
       return;
