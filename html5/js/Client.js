@@ -948,7 +948,7 @@ class XpraClient {
       //this usually fires when we have received the event via "oninput" already
       return;
     }
-    let string_ = event.key || String.fromCharCode(keycode);
+    let keystring = event.key || String.fromCharCode(keycode);
     let unpress_now = false;
     this.debug(
       "keyboard",
@@ -959,9 +959,9 @@ class XpraClient {
       ", pressed=",
       pressed,
       ", str=",
-      string_
+      keystring
     );
-    const dead = string_.toLowerCase() == "dead";
+    const dead = keystring.toLowerCase() == "dead";
     if (
       dead &&
       ((this.last_keycode_pressed != keycode && !pressed) || pressed)
@@ -998,23 +998,23 @@ class XpraClient {
     const map_string = this.keyboard_map[keyname];
     if (dead && map_string && map_string in DEAD_KEYS) {
       keyname = DEAD_KEYS[map_string];
-      string_ = map_string;
+      keystring = map_string;
       this.debug("keyboard", "dead key:", keyname);
     } else if (keyname in KEY_TO_NAME) {
       keyname = KEY_TO_NAME[keyname];
-    } else if (keyname == "" && string_ in KEY_TO_NAME) {
-      keyname = KEY_TO_NAME[string_];
+    } else if (keyname == "" && keystring in KEY_TO_NAME) {
+      keyname = KEY_TO_NAME[keystring];
     }
     //special case for numpad,
     //try to distinguish arrowpad and numpad:
     //(for arrowpad, keyname==str)
-    else if (keyname != string_ && string_ in NUMPAD_TO_NAME) {
-      keyname = NUMPAD_TO_NAME[string_];
+    else if (keyname != keystring && keystring in NUMPAD_TO_NAME) {
+      keyname = NUMPAD_TO_NAME[keystring];
       this.num_lock = "0123456789.".includes(keyname);
     }
     //next try mapping the actual character
-    else if (string_ in CHAR_TO_NAME) {
-      keyname = CHAR_TO_NAME[string_];
+    else if (keystring in CHAR_TO_NAME) {
+      keyname = CHAR_TO_NAME[keystring];
       if (keyname.includes("_")) {
         //ie: Thai_dochada
         const lang = keyname.split("_")[0];
@@ -1044,13 +1044,13 @@ class XpraClient {
 
     //AltGr: keep track of pressed state
     if (
-      string_ == "AltGraph" ||
+      keystring == "AltGraph" ||
       (keyname == "Alt_R" && (Utilities.isWindows() || Utilities.isMacOS())) ||
       (keyname == "Alt_L" && Utilities.isMacOS())
     ) {
       this.altgr_state = pressed;
       keyname = "ISO_Level3_Shift";
-      string_ = "AltGraph";
+      keystring = "AltGraph";
     }
 
     const raw_modifiers = get_event_modifiers(event);
@@ -1061,23 +1061,23 @@ class XpraClient {
     const shift = modifiers.includes("shift");
     const capslock = modifiers.includes("capslock");
     if ((capslock && shift) || (!capslock && !shift)) {
-      string_ = string_.toLowerCase();
+      keystring = keystring.toLowerCase();
     }
 
-    const ostr = string_;
+    const ostr = keystring;
     if (this.swap_keys) {
       if (keyname == "Control_L") {
         keyname = "Meta_L";
-        string_ = "meta";
+        keystring = "meta";
       } else if (keyname == "Meta_L") {
         keyname = "Control_L";
-        string_ = "control";
+        keystring = "control";
       } else if (keyname == "Control_R") {
         keyname = "Meta_R";
-        string_ = "meta";
+        keystring = "meta";
       } else if (keyname == "Meta_R") {
         keyname = "Control_R";
-        string_ = "control";
+        keystring = "control";
       }
     }
 
@@ -1154,7 +1154,7 @@ class XpraClient {
         pressed,
         modifiers,
         keyval,
-        string_,
+        keystring,
         keycode,
         group,
       ];
@@ -1167,7 +1167,7 @@ class XpraClient {
           false,
           modifiers,
           keyval,
-          string_,
+          keystring,
           keycode,
           group,
         ];
