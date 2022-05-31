@@ -640,7 +640,7 @@ const Utilities = {
   },
 
   getConnectionInfo: function () {
-    if ({}.hasOwnProperty.call((!navigator, "connection"))) {
+    if (!Object.prototype.hasOwnProperty.call(navigator, "connection")) {
       return {};
     }
     const c = navigator.connection;
