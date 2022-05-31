@@ -24,15 +24,18 @@ const FILE_CHUNKS_SIZE = 128 * 1024;
 const MAX_CONCURRENT_FILES = 5;
 const CHUNK_TIMEOUT = 10 * 1000;
 
-const ACK_FILE_CHUNK = "ack-file-chunk";
-const BUTTON_ACTION = "button-action";
-const CLASS_INSTANCE = "class-instance";
-const FLOAT_MENU_SELECTOR = "#float_menu";
-const PASTEBOARD_SELECTOR = "#pasteboard";
 const TEXT_PLAIN = "text/plain";
 const UTF8_STRING = "UTF8_STRING";
+
+const CLASS_INSTANCE_METADATA_KEY = "class-instance";
+const WINDOW_TYPE_METADATA_KEY = "window-type";
+
+const ACK_FILE_CHUNK_PACKET_TYPE = "ack-file-chunk";
+const BUTTON_ACTION_PACKET_TYPE = "button-action";
+
+const FLOAT_MENU_SELECTOR = "#float_menu";
+const PASTEBOARD_SELECTOR = "#pasteboard";
 const WINDOW_PREVIEW_SELECTOR = "#window_preview";
-const WINDOW_TYPE = "window-type";
 
 class XpraClient {
   constructor(container) {
@@ -406,7 +409,7 @@ class XpraClient {
       "set-clipboard-enabled": this._process_set_clipboard_enabled,
       "clipboard-request": this._process_clipboard_request,
       "send-file": this._process_send_file,
-      [ACK_FILE_CHUNK]: this._process_ack_file_chunk,
+      [ACK_FILE_CHUNK_PACKET_TYPE]: this._process_ack_file_chunk,
       "send-file-chunk": this._process_send_file_chunk,
       "open-url": this._process_open_url,
       "setting-change": this._process_setting_change,
@@ -1549,9 +1552,9 @@ class XpraClient {
         "below",
         "title",
         "size-hints",
-        CLASS_INSTANCE,
+        CLASS_INSTANCE_METADATA_KEY,
         "transient-for",
-        WINDOW_TYPE,
+        WINDOW_TYPE_METADATA_KEY,
         "has-alpha",
         "decorations",
         "override-redirect",
@@ -1808,7 +1811,7 @@ class XpraClient {
       this.buttons_pressed.delete(button);
     }
     this.send([
-      BUTTON_ACTION,
+      BUTTON_ACTION_PACKET_TYPE,
       wid,
       button,
       pressed,
@@ -1923,7 +1926,7 @@ class XpraClient {
     while (wx >= 120) {
       wx -= 120;
       this.send([
-        BUTTON_ACTION,
+        BUTTON_ACTION_PACKET_TYPE,
         wid,
         button_x,
         true,
@@ -1932,7 +1935,7 @@ class XpraClient {
         buttons,
       ]);
       this.send([
-        BUTTON_ACTION,
+        BUTTON_ACTION_PACKET_TYPE,
         wid,
         button_x,
         false,
@@ -1944,7 +1947,7 @@ class XpraClient {
     while (wy >= 120) {
       wy -= 120;
       this.send([
-        BUTTON_ACTION,
+        BUTTON_ACTION_PACKET_TYPE,
         wid,
         button_y,
         true,
@@ -1953,7 +1956,7 @@ class XpraClient {
         buttons,
       ]);
       this.send([
-        BUTTON_ACTION,
+        BUTTON_ACTION_PACKET_TYPE,
         wid,
         button_y,
         false,
@@ -2203,7 +2206,9 @@ class XpraClient {
         default_settings.auto_fullscreen_desktop_class;
       if (
         win.windowtype == "DESKTOP" &&
-        win.metadata[CLASS_INSTANCE].includes(auto_fullscreen_desktop_class)
+        win.metadata[CLASS_INSTANCE_METADATA_KEY].includes(
+          auto_fullscreen_desktop_class
+        )
       ) {
         for (const index in this.id_to_window) {
           const iwin = this.id_to_window[index];
@@ -2256,7 +2261,9 @@ class XpraClient {
         default_settings.auto_fullscreen_desktop_class;
       if (
         win.windowtype == "DESKTOP" &&
-        win.metadata[CLASS_INSTANCE].includes(auto_fullscreen_desktop_class)
+        win.metadata[CLASS_INSTANCE_METADATA_KEY].includes(
+          auto_fullscreen_desktop_class
+        )
       ) {
         return true;
       }
@@ -3291,7 +3298,11 @@ class XpraClient {
       (window) => this.send(["close-window", window.wid]),
       this.scale
     );
-    if (win && !override_redirect && win.metadata[WINDOW_TYPE] == "NORMAL") {
+    if (
+      win &&
+      !override_redirect &&
+      win.metadata[WINDOW_TYPE_METADATA_KEY] == "NORMAL"
+    ) {
       const trimmedTitle = Utilities.trimString(win.title, 30);
       window.addWindowListItem(wid, trimmedTitle);
     }
@@ -3471,7 +3482,7 @@ class XpraClient {
     if (
       win &&
       !win.override_redirect &&
-      win.metadata[WINDOW_TYPE] == "NORMAL"
+      win.metadata[WINDOW_TYPE_METADATA_KEY] == "NORMAL"
     ) {
       window.removeWindowListItem(wid);
     }
@@ -4880,7 +4891,7 @@ class XpraClient {
       chunk,
     ];
     this.receive_chunks_in_progress.set(chunk_id, chunk_state);
-    this.send([ACK_FILE_CHUNK, chunk_id, true, "", chunk]);
+    this.send([ACK_FILE_CHUNK_PACKET_TYPE, chunk_id, true, "", chunk]);
     this.log(
       "receiving chunks for",
       basefilename,
@@ -4951,7 +4962,7 @@ class XpraClient {
         20_000
       );
     }
-    this.send([ACK_FILE_CHUNK, chunk_id, false, message, chunk]);
+    this.send([ACK_FILE_CHUNK_PACKET_TYPE, chunk_id, false, message, chunk]);
   }
 
   _process_send_file_chunk(packet) {
@@ -5051,7 +5062,7 @@ class XpraClient {
     if (digest) {
       digest.update(Utilities.Uint8ToString(file_data));
     }
-    this.send([ACK_FILE_CHUNK, chunk_id, true, "", chunk]);
+    this.send([ACK_FILE_CHUNK_PACKET_TYPE, chunk_id, true, "", chunk]);
     if (has_more) {
       const timer = chunk_state[12];
       if (timer) {
