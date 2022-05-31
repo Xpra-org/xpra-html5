@@ -1404,7 +1404,7 @@ class XpraWindow {
       //no need to synchronize paint packets here
       //the decode worker ensures that we get the packets
       //in the correct order, ready to update the canvas
-      do_paint.apply(this, arguments);
+      this.do_paint.apply(this, arguments);
       return;
     }
     //process all paint request in order using the paint_queue:
