@@ -2954,17 +2954,18 @@ class XpraClient {
       ""
     );
     this.clog("process challenge:", digest);
+    const client = this;
     function call_do_process_challenge(password) {
-      if (!this || !this.connected) {
+      if (!client || !client.protocol) {
         return;
       }
       if (password == null) {
-        this.disconnect_reason = "password prompt cancelled";
-        this.close();
+        client.disconnect_reason = "password prompt cancelled";
+        client.close();
         return;
       }
       const challenge_digest = digest.startsWith("keycloak") ? "xor" : digest;
-      this.do_process_challenge(
+      client.do_process_challenge(
         challenge_digest,
         server_salt,
         salt_digest,
