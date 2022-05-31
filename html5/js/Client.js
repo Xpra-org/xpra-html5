@@ -4270,13 +4270,13 @@ class XpraClient {
           buf = ab[0];
         } else {
           //concatenate all pending buffers into one:
-          let size = 0;
-          for (let index = 0, index_ = ab.length; index < index_; ++index) {
-            size += ab[index].length;
-          }
+          let size = ab.reduce(
+            (accumulator, value) => accumulator + value.length,
+            0
+          );
           buf = new Uint8Array(size);
           size = 0;
-          for (let index = 0, index_ = ab.length; index < index_; ++index) {
+          for (let index = 0, stop = ab.length; index < stop; ++index) {
             const v = ab[index];
             if (v.length > 0) {
               buf.set(v, size);
@@ -4288,7 +4288,7 @@ class XpraClient {
         this.push_audio_buffer(buf);
       } else {
         this.audio_buffers_count += ab.length;
-        for (let index = 0, index_ = ab.length; index < index_; ++index) {
+        for (let index = 0, stop = ab.length; index < stop; ++index) {
           this.push_audio_buffer(ab[index]);
         }
       }

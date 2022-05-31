@@ -400,7 +400,7 @@ class WindowDecoder {
       this.init_back_buffer();
       context = this.back_buffer.getContext("2d");
       context.imageSmoothingEnabled = false;
-      for (let index = 0, index_ = data.length; index < index_; ++index) {
+      for (let index = 0, stop = data.length; index < stop; ++index) {
         const scroll_data = data[index];
         const sx = scroll_data[0];
         const sy = scroll_data[1];

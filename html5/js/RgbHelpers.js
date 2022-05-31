@@ -34,14 +34,12 @@ function decode_rgb(packet) {
   //might be quicker to copy 32bit at a time using Uint32Array
   //and then casting the result?
   const uint = new Uint8Array(width * height * 4);
-  let index = 0;
-  let index_ = 0;
   let psrc = 0;
   let pdst = 0;
-  for (index = 0; index < height; index++) {
-    psrc = index * rowstride;
-    pdst = index * width * 4;
-    for (index_ = 0; index_ < width * 4; index_++) {
+  for (let row_index = 0; row_index < height; row_index++) {
+    psrc = row_index * rowstride;
+    pdst = row_index * width * 4;
+    for (let column_index = 0; column_index < width * 4; column_index++) {
       uint[pdst++] = data[psrc++];
     }
   }
@@ -50,27 +48,25 @@ function decode_rgb(packet) {
 
 function rgb24_to_rgb32(data, width, height, rowstride) {
   const uint = new Uint8Array(width * height * 4);
-  let index = 0;
-  let index_ = 0;
+  let source_index = 0;
+  let target_index = 0;
   if (rowstride == width * 3) {
     //faster path, single loop:
-    const l = data.length;
-    while (index < l) {
-      uint[index_++] = data[index++];
-      uint[index_++] = data[index++];
-      uint[index_++] = data[index++];
-      uint[index_++] = 255;
+    const source_length = data.length;
+    while (source_index < source_length) {
+      uint[target_index++] = data[source_index++];
+      uint[target_index++] = data[source_index++];
+      uint[target_index++] = data[source_index++];
+      uint[target_index++] = 255;
     }
   } else {
-    let psrc = 0;
-    let pdst = 0;
-    for (index = 0; index < height; index++) {
-      psrc = index * rowstride;
-      for (index_ = 0; index_ < width; index_++) {
-        uint[pdst++] = data[psrc++];
-        uint[pdst++] = data[psrc++];
-        uint[pdst++] = data[psrc++];
-        uint[pdst++] = 255;
+    for (let row_index = 0; row_index < height; row_index++) {
+      source_index = row_index * rowstride;
+      for (let column_index = 0; column_index < width; column_index++) {
+        uint[target_index++] = data[source_index++];
+        uint[target_index++] = data[source_index++];
+        uint[target_index++] = data[source_index++];
+        uint[target_index++] = 255;
       }
     }
   }

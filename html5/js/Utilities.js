@@ -415,11 +415,7 @@ const Utilities = {
   },
 
   StringToUint8(string_) {
-    const u8a = new Uint8Array(string_.length);
-    for (let index = 0, index_ = string_.length; index < index_; ++index) {
-      u8a[index] = string_.charCodeAt(index);
-    }
-    return u8a;
+    return Uint8Array.from([...string_].map((x) => x.charCodeAt(0)));
   },
 
   Uint8ToString(u8a) {

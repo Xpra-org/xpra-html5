@@ -233,18 +233,13 @@ class XpraProtocol {
   }
 
   do_process_receive_queue() {
-    let index_ = 0;
-    let index__ = 0;
     if (this.header.length < 8 && this.rQ.length > 0) {
       //add from receive queue data to header until we get the 8 bytes we need:
       while (this.header.length < 8 && this.rQ.length > 0) {
         const slice = this.rQ[0];
         const needed = 8 - this.header.length;
         const n = Math.min(needed, slice.length);
-        //copy at most n characters:
-        for (index_ = 0; index_ < n; index_++) {
-          this.header.push(slice[index_]);
-        }
+        this.header.push(...slice.subarray(0, n));
         if (slice.length > needed) {
           //replace the slice with what is left over:
           this.rQ[0] = slice.subarray(n);
@@ -303,11 +298,10 @@ class XpraProtocol {
       this.protocol_error(`invalid packet index: ${index}`);
       return false;
     }
-    let packet_size = 0;
-    for (index_ = 0; index_ < 4; index_++) {
-      packet_size = packet_size * 0x1_00;
-      packet_size += this.header[4 + index_];
-    }
+    let packet_size = [4, 5, 6, 7].reduce(
+      (accumulator, value) => accumulator * 0x1_00 + this.header[value],
+      0
+    );
 
     // work out padding if necessary
     let padding = 0;
@@ -318,10 +312,10 @@ class XpraProtocol {
     }
 
     // verify that we have enough data for the full payload:
-    let rsize = 0;
-    for (index_ = 0, index__ = this.rQ.length; index_ < index__; ++index_) {
-      rsize += this.rQ[index_].length;
-    }
+    let rsize = this.rQ.reduce(
+      (accumulator, value) => accumulator + value.length,
+      0
+    );
     if (rsize < packet_size) {
       return false;
     }
@@ -372,10 +366,9 @@ class XpraProtocol {
         this.raw_packets = [];
         return this.rQ.length > 0;
       }
-      packet_data = new Uint8Array(packet_size - padding);
-      for (index_ = 0; index_ < packet_size - padding; index_++) {
-        packet_data[index_] = decrypted[index_].charCodeAt(0);
-      }
+      packet_data = Utilities.StringToUint8(
+        decrypted.slice(0, packet_size - padding)
+      );
     }
 
     //decompress it if needed:
@@ -429,29 +422,13 @@ class XpraProtocol {
             //we converted to string in the network layer,
             //and now we're converting back to bytes...
             //(use 'rencodeplus' to avoid all this unnecessary churn)
-            const u8a = new Uint8Array(img_data.length);
-            for (
-              let index_ = 0, index__ = img_data.length;
-              index_ < index__;
-              ++index_
-            ) {
-              u8a[index_] = img_data.charCodeAt(index_);
-            }
-            packet[7] = u8a;
+            packet[7] = Utilities.StringToUint8(img_data);
           }
         } else if (packet[0] === "sound-data") {
           const sound_data = packet[2];
           if (typeof sound_data === "string") {
             //same workaround as 'draw' above
-            const u8a = new Uint8Array(sound_data.length);
-            for (
-              let index_ = 0, index__ = sound_data.length;
-              index_ < index__;
-              ++index_
-            ) {
-              u8a[index_] = sound_data.charCodeAt(index_);
-            }
-            packet[2] = u8a;
+            packet[7] = Utilities.StringToUint8(sound_data);
           }
         }
         if (this.is_worker) {
@@ -506,27 +483,11 @@ class XpraProtocol {
         const padding_size =
           this.cipher_out_block_size -
           (payload_size % this.cipher_out_block_size);
-        let input_data = null;
-        if (typeof bdata === "string") {
-          input_data = bdata;
-        } else {
-          const CHUNK_SZ = 0x80_00;
-          const c = [];
-          for (let index = 0; index < bdata.length; index += CHUNK_SZ) {
-            c.push(
-              String.fromCharCode.apply(
-                null,
-                bdata.subarray(index, index + CHUNK_SZ)
-              )
-            );
-          }
-          input_data = c.join("");
-        }
+        let input_data =
+          typeof bdata === "string" ? bdata : Utilities.Uint8ToString(bdata);
         if (padding_size) {
           const padding_char = String.fromCharCode(padding_size);
-          for (let index = 0; index < padding_size; index++) {
-            input_data += padding_char;
-          }
+          input_data += padding_char.repeat(padding_size);
         }
         this.cipher_out.update(forge.util.createBuffer(input_data), "utf8");
         bdata = this.cipher_out.output.getBytes();

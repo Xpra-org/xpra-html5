@@ -1575,7 +1575,7 @@ class XpraWindow {
         // (and already painted via the onPictureDecoded callback)
         painted();
       } else if (coding == "scroll") {
-        for (let index = 0, index_ = img_data.length; index < index_; ++index) {
+        for (let index = 0, stop = img_data.length; index < stop; ++index) {
           const scroll_data = img_data[index];
           this.debug("draw", "scroll", index, ":", scroll_data);
           const sx = scroll_data[0];
