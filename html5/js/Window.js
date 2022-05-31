@@ -1542,23 +1542,23 @@ class XpraWindow {
           paint_bitmap();
           return;
         }
-        const index = new Image();
-        index.addEventListener("load", () => {
-          if (index.width == 0 || index.height == 0) {
-            paint_error(`invalid image size: ${index.width}x${index.height}`);
+        const image = new Image();
+        image.addEventListener("load", () => {
+          if (image.width == 0 || image.height == 0) {
+            paint_error(`invalid image size: ${image.width}x${image.height}`);
           } else {
             this.offscreen_canvas_ctx.clearRect(x, y, width, height);
-            this.offscreen_canvas_ctx.drawImage(index, x, y, width, height);
+            this.offscreen_canvas_ctx.drawImage(image, x, y, width, height);
             painted();
           }
           this.may_paint_now();
         });
-        index.onerror = () => {
+        image.onerror = () => {
           paint_error(`failed to load ${coding} into image tag`);
           this.may_paint_now();
         };
         const paint_coding = coding.split("/")[0]; //ie: "png/P" -> "png"
-        index.src = this.construct_base64_image_url(paint_coding, img_data);
+        image.src = this.construct_base64_image_url(paint_coding, img_data);
       } else if (coding == "h264") {
         const frame = options["frame"] || 0;
         if (frame == 0) {
