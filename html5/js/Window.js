@@ -197,12 +197,12 @@ class XpraWindow {
       }
     });
     jQuery(this.div).on("dragstart", (ev) => {
-      client.release_buttons(ev, this);
+      this.client.release_buttons(ev, this);
       this.set_focus_cb(this);
-      client.mouse_grabbed = true;
+      this.client.mouse_grabbed = true;
     });
     jQuery(this.div).on("dragstop", (ev, ui) => {
-      client.mouse_grabbed = false;
+      this.client.mouse_grabbed = false;
       this.handle_moved(ui);
     });
     // Use transform if scaled
@@ -218,13 +218,13 @@ class XpraWindow {
       handles: "n, e, s, w, ne, se, sw, nw",
     });
     jQuery(this.div).on("resizestart", (ev, ui) => {
-      client.do_window_mouse_click(ev, this, false);
-      client.mouse_grabbed = true;
+      this.client.do_window_mouse_click(ev, this, false);
+      this.client.mouse_grabbed = true;
     });
     jQuery(this.div).on("resizestop", (ev, ui) => {
       this.handle_resized(ui);
       this.set_focus_cb(this);
-      client.mouse_grabbed = false;
+      this.client.mouse_grabbed = false;
       //workaround for the window going blank,
       //just force a refresh:
       setTimeout(() => this.client.request_refresh(wid), 200);
