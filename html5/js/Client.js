@@ -30,9 +30,6 @@ const UTF8_STRING = "UTF8_STRING";
 const CLASS_INSTANCE_METADATA_KEY = "class-instance";
 const WINDOW_TYPE_METADATA_KEY = "window-type";
 
-const ACK_FILE_CHUNK_PACKET_TYPE = "ack-file-chunk";
-const BUTTON_ACTION_PACKET_TYPE = "button-action";
-
 const FLOAT_MENU_SELECTOR = "#float_menu";
 const PASTEBOARD_SELECTOR = "#pasteboard";
 const WINDOW_PREVIEW_SELECTOR = "#window_preview";
@@ -288,7 +285,7 @@ class XpraClient {
         for (let index = 0; index < arguments_.length; index++) {
           sargs.push(unescape(encodeURIComponent(String(arguments_[index]))));
         }
-        this.send(["logging", level, sargs]);
+        this.send([PACKET_TYPES.logging, level, sargs]);
       } catch {
         this.cerror("remote logging failed");
         for (let index = 0; index < arguments_.length; index++) {
@@ -375,45 +372,46 @@ class XpraClient {
   init_packet_handlers() {
     // the client holds a list of packet handlers
     this.packet_handlers = {
-      open: this._process_open,
-      close: this._process_close,
-      error: this._process_error,
-      disconnect: this._process_disconnect,
-      challenge: this._process_challenge,
-      "startup-complete": this._process_startup_complete,
-      hello: this._process_hello,
-      encodings: this._process_encodings,
-      ping: this._process_ping,
-      ping_echo: this._process_ping_echo,
-      "info-response": this._process_info_response,
-      "new-tray": this._process_new_tray,
-      "new-window": this._process_new_window,
-      "new-override-redirect": this._process_new_override_redirect,
-      "window-metadata": this._process_window_metadata,
-      "lost-window": this._process_lost_window,
-      "raise-window": this._process_raise_window,
-      "window-icon": this._process_window_icon,
-      "window-resized": this._process_window_resized,
-      "window-move-resize": this._process_window_move_resize,
-      "initiate-moveresize": this._process_initiate_moveresize,
-      "configure-override-redirect": this._process_configure_override_redirect,
-      desktop_size: this._process_desktop_size,
-      eos: this._process_eos,
-      draw: this._process_draw,
-      cursor: this._process_cursor,
-      bell: this._process_bell,
-      notify_show: this._process_notify_show,
-      notify_close: this._process_notify_close,
-      "sound-data": this._process_sound_data,
-      "clipboard-token": this._process_clipboard_token,
-      "set-clipboard-enabled": this._process_set_clipboard_enabled,
-      "clipboard-request": this._process_clipboard_request,
-      "send-file": this._process_send_file,
-      [ACK_FILE_CHUNK_PACKET_TYPE]: this._process_ack_file_chunk,
-      "send-file-chunk": this._process_send_file_chunk,
-      "open-url": this._process_open_url,
-      "setting-change": this._process_setting_change,
-      "pointer-position": this._process_pointer_position,
+      [PACKET_TYPES.ack_file_chunk]: this._process_ack_file_chunk,
+      [PACKET_TYPES.bell]: this._process_bell,
+      [PACKET_TYPES.challenge]: this._process_challenge,
+      [PACKET_TYPES.clipboard_request]: this._process_clipboard_request,
+      [PACKET_TYPES.clipboard_token]: this._process_clipboard_token,
+      [PACKET_TYPES.close]: this._process_close,
+      [PACKET_TYPES.configure_override_redirect]:
+        this._process_configure_override_redirect,
+      [PACKET_TYPES.cursor]: this._process_cursor,
+      [PACKET_TYPES.desktop_size]: this._process_desktop_size,
+      [PACKET_TYPES.disconnect]: this._process_disconnect,
+      [PACKET_TYPES.draw]: this._process_draw,
+      [PACKET_TYPES.encodings]: this._process_encodings,
+      [PACKET_TYPES.eos]: this._process_eos,
+      [PACKET_TYPES.error]: this._process_error,
+      [PACKET_TYPES.hello]: this._process_hello,
+      [PACKET_TYPES.info_response]: this._process_info_response,
+      [PACKET_TYPES.initiate_moveresize]: this._process_initiate_moveresize,
+      [PACKET_TYPES.lost_window]: this._process_lost_window,
+      [PACKET_TYPES.new_override_redirect]: this._process_new_override_redirect,
+      [PACKET_TYPES.new_tray]: this._process_new_tray,
+      [PACKET_TYPES.new_window]: this._process_new_window,
+      [PACKET_TYPES.notify_close]: this._process_notify_close,
+      [PACKET_TYPES.notify_show]: this._process_notify_show,
+      [PACKET_TYPES.open]: this._process_open,
+      [PACKET_TYPES.open_url]: this._process_open_url,
+      [PACKET_TYPES.ping]: this._process_ping,
+      [PACKET_TYPES.ping_echo]: this._process_ping_echo,
+      [PACKET_TYPES.pointer_position]: this._process_pointer_position,
+      [PACKET_TYPES.raise_window]: this._process_raise_window,
+      [PACKET_TYPES.send_file]: this._process_send_file,
+      [PACKET_TYPES.send_file_chunk]: this._process_send_file_chunk,
+      [PACKET_TYPES.set_clipboard_enabled]: this._process_set_clipboard_enabled,
+      [PACKET_TYPES.setting_change]: this._process_setting_change,
+      [PACKET_TYPES.sound_data]: this._process_sound_data,
+      [PACKET_TYPES.startup_complete]: this._process_startup_complete,
+      [PACKET_TYPES.window_icon]: this._process_window_icon,
+      [PACKET_TYPES.window_metadata]: this._process_window_metadata,
+      [PACKET_TYPES.window_move_resize]: this._process_window_move_resize,
+      [PACKET_TYPES.window_resized]: this._process_window_resized,
     };
   }
 
@@ -604,7 +602,7 @@ class XpraClient {
 
   request_refresh(wid) {
     this.send([
-      "buffer-refresh",
+      PACKET_TYPES.buffer_refresh,
       wid,
       0,
       100,
@@ -917,7 +915,7 @@ class XpraClient {
         "to",
         key_layout
       );
-      this.send(["layout-changed", new_layout, ""]);
+      this.send([PACKET_TYPES.layout_changed, new_layout, ""]);
       //changing the language too quickly can cause problems server side,
       //wait a bit before checking again:
       this.browser_language_change_embargo_time = now + 1000;
@@ -1390,7 +1388,7 @@ class XpraClient {
       }
     }
     // send the packet
-    this.send(["hello", this.capabilities]);
+    this.send([PACKET_TYPES.hello, this.capabilities]);
   }
 
   _make_hello_base() {
@@ -1732,7 +1730,7 @@ class XpraClient {
     if (window) {
       wid = window.wid;
     }
-    this.send(["pointer-position", wid, [x, y], modifiers, buttons]);
+    this.send([PACKET_TYPES.pointer_position, wid, [x, y], modifiers, buttons]);
     if (window) {
       e.preventDefault();
     }
@@ -1811,7 +1809,7 @@ class XpraClient {
       this.buttons_pressed.delete(button);
     }
     this.send([
-      BUTTON_ACTION_PACKET_TYPE,
+      PACKET_TYPES.button_action,
       wid,
       button,
       pressed,
@@ -1883,7 +1881,7 @@ class XpraClient {
         const button_x = px >= 0 ? 6 : 7;
         const xdist = Math.round((px * 1000) / 120);
         this.send([
-          "wheel-motion",
+          PACKET_TYPES.wheel_motion,
           wid,
           button_x,
           -xdist,
@@ -1896,7 +1894,7 @@ class XpraClient {
         const button_y = py >= 0 ? 5 : 4;
         const ydist = Math.round((py * 1000) / 120);
         this.send([
-          "wheel-motion",
+          PACKET_TYPES.wheel_motion,
           wid,
           button_y,
           -ydist,
@@ -1926,7 +1924,7 @@ class XpraClient {
     while (wx >= 120) {
       wx -= 120;
       this.send([
-        BUTTON_ACTION_PACKET_TYPE,
+        PACKET_TYPES.button_action,
         wid,
         button_x,
         true,
@@ -1935,7 +1933,7 @@ class XpraClient {
         buttons,
       ]);
       this.send([
-        BUTTON_ACTION_PACKET_TYPE,
+        PACKET_TYPES.button_action,
         wid,
         button_x,
         false,
@@ -1947,7 +1945,7 @@ class XpraClient {
     while (wy >= 120) {
       wy -= 120;
       this.send([
-        BUTTON_ACTION_PACKET_TYPE,
+        PACKET_TYPES.button_action,
         wid,
         button_y,
         true,
@@ -1956,7 +1954,7 @@ class XpraClient {
         buttons,
       ]);
       this.send([
-        BUTTON_ACTION_PACKET_TYPE,
+        PACKET_TYPES.button_action,
         wid,
         button_y,
         false,
@@ -2224,7 +2222,7 @@ class XpraClient {
     const had_focus = this.focus;
     this.focus = wid;
     this.topwindow = wid;
-    this.send(["focus", wid, []]);
+    this.send([PACKET_TYPES.focus, wid, []]);
     //set the focused flag on the window specified,
     //adjust stacking order:
     let iwin = null;
@@ -2583,7 +2581,7 @@ class XpraClient {
       this.server_connection_data
     );
     if (ci && this.server_connection_data) {
-      this.send(["connection-data", ci]);
+      this.send([PACKET_TYPES.connection_data, ci]);
     }
   }
 
@@ -2791,7 +2789,7 @@ class XpraClient {
           mimetypes: ["application/pdf"],
         },
       };
-      this.send(["printers", printers]);
+      this.send([PACKET_TYPES.printers, printers]);
     }
     this.server_connection_data = hello["connection-data"];
     if (Object.hasOwn((navigator, "connection"))) {
@@ -3066,7 +3064,7 @@ class XpraClient {
       return;
     }
     const now_ms = Math.ceil(performance.now());
-    this.send(["ping", now_ms]);
+    this.send([PACKET_TYPES.ping, now_ms]);
     // add timeout to wait for ping timout
     this.ping_timeout_timer = setTimeout(
       () => this._check_echo_timeout(now_ms),
@@ -3095,7 +3093,7 @@ class XpraClient {
     const l1 = 0;
     const l2 = 0;
     const l3 = 0;
-    this.send(["ping_echo", echotime, l1, l2, l3, 0, sid]);
+    this.send([PACKET_TYPES.ping_echo, echotime, l1, l2, l3, 0, sid]);
   }
 
   _process_ping_echo(packet) {
@@ -3125,7 +3123,7 @@ class XpraClient {
   }
   send_info_request() {
     if (!this.info_request_pending) {
-      this.send(["info-request", [this.uuid], [], []]);
+      this.send([PACKET_TYPES.info_request, [this.uuid], [], []]);
       this.info_request_pending = true;
     }
   }
@@ -3226,7 +3224,7 @@ class XpraClient {
     const w = float_menu_item_size;
     const h = float_menu_item_size;
     this.clog("tray", wid, "position:", x, y);
-    this.send(["configure-window", Number(wid), x, y, w, h, {}]);
+    this.send([PACKET_TYPES.configure_window, Number(wid), x, y, w, h, {}]);
   }
 
   reconfigure_all_trays() {
@@ -3249,7 +3247,7 @@ class XpraClient {
 
   suspend() {
     const window_ids = Object.keys(client.id_to_window).map(Number);
-    this.send(["suspend", true, window_ids]);
+    this.send([PACKET_TYPES.suspend, true, window_ids]);
     for (const index in this.id_to_window) {
       const iwin = this.id_to_window[index];
       iwin.suspend();
@@ -3262,7 +3260,7 @@ class XpraClient {
       const iwin = this.id_to_window[index];
       iwin.resume();
     }
-    this.send(["resume", true, window_ids]);
+    this.send([PACKET_TYPES.resume, true, window_ids]);
     this.redraw_windows();
     this.request_refresh(-1);
   }
@@ -3295,7 +3293,7 @@ class XpraClient {
       (event, window) => this.on_mouseup(event, window),
       (event, window) => this.on_mousescroll(event, window),
       (window) => this._window_set_focus(window),
-      (window) => this.send(["close-window", window.wid]),
+      (window) => this.send([PACKET_TYPES.close_window, window.wid]),
       this.scale
     );
     if (
@@ -3371,7 +3369,7 @@ class XpraClient {
     const geom = win.get_internal_geometry();
     const wid = win.wid;
     const packet = [
-      "configure-window",
+      PACKET_TYPES.configure_window,
       wid,
       geom.x,
       geom.y,
@@ -3532,7 +3530,7 @@ class XpraClient {
       this._window_set_focus(highest_window);
     } else {
       this.focus = 0;
-      this.send(["focus", 0, []]);
+      this.send([PACKET_TYPES.focus, 0, []]);
     }
   }
 
@@ -4030,7 +4028,7 @@ class XpraClient {
 
   _send_sound_start() {
     this.log(`audio: requesting ${this.audio_codec} stream from the server`);
-    this.send(["sound-control", "start", this.audio_codec]);
+    this.send([PACKET_TYPES.sound_control, "start", this.audio_codec]);
   }
 
   _sound_start_aurora() {
@@ -4127,7 +4125,7 @@ class XpraClient {
 
   _send_sound_stop() {
     this.log("audio: stopping stream");
-    this.send(["sound-control", "stop"]);
+    this.send([PACKET_TYPES.sound_control, "stop"]);
   }
 
   close_audio() {
@@ -4891,7 +4889,7 @@ class XpraClient {
       chunk,
     ];
     this.receive_chunks_in_progress.set(chunk_id, chunk_state);
-    this.send([ACK_FILE_CHUNK_PACKET_TYPE, chunk_id, true, "", chunk]);
+    this.send([PACKET_TYPES.ack_file_chunk, chunk_id, true, "", chunk]);
     this.log(
       "receiving chunks for",
       basefilename,
@@ -4962,7 +4960,7 @@ class XpraClient {
         20_000
       );
     }
-    this.send([ACK_FILE_CHUNK_PACKET_TYPE, chunk_id, false, message, chunk]);
+    this.send([PACKET_TYPES.ack_file_chunk, chunk_id, false, message, chunk]);
   }
 
   _process_send_file_chunk(packet) {
@@ -5062,7 +5060,7 @@ class XpraClient {
     if (digest) {
       digest.update(Utilities.Uint8ToString(file_data));
     }
-    this.send([ACK_FILE_CHUNK_PACKET_TYPE, chunk_id, true, "", chunk]);
+    this.send([PACKET_TYPES.ack_file_chunk, chunk_id, true, "", chunk]);
     if (has_more) {
       const timer = chunk_state[12];
       if (timer) {
@@ -5355,7 +5353,13 @@ class XpraClient {
       timer,
       chunk,
     ]);
-    this.send(["send-file-chunk", chunk_id, chunk, cdata, data.length > 0]);
+    this.send([
+      PACKET_TYPES.send_file_chunk,
+      chunk_id,
+      chunk,
+      cdata,
+      data.length > 0,
+    ]);
   }
 
   start_command(name, command, ignore) {
