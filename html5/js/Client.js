@@ -196,7 +196,7 @@ class XpraClient {
     if (
       CLIPBOARD_IMAGES &&
       navigator.clipboard &&
-      Object.prototype.hasOwnProperty.call(navigator.clipboard, "write")
+      Object.hasOwn(navigator.clipboard, "write")
     ) {
       this.clipboard_targets.push("image/png");
     } else {
@@ -2073,8 +2073,8 @@ class XpraClient {
     //for IE:
     let success = false;
     if (
-      Object.prototype.hasOwnProperty.call(window, "clipboardData") &&
-      Object.prototype.hasOwnProperty.call(window.clipboardData, "setData") &&
+      Object.hasOwn(window, "clipboardData") &&
+      Object.hasOwn(window.clipboardData, "setData") &&
       typeof window.clipboardData.setData === "function"
     ) {
       try {
@@ -2644,9 +2644,7 @@ class XpraClient {
     const modifier_keycodes = hello["modifier_keycodes"];
     if (modifier_keycodes) {
       for (const modifier in modifier_keycodes) {
-        if (
-          Object.prototype.hasOwnProperty.call((modifier_keycodes, modifier))
-        ) {
+        if (Object.hasOwn((modifier_keycodes, modifier))) {
           const mappings = modifier_keycodes[modifier];
           for (const keycode in mappings) {
             const keys = mappings[keycode];
@@ -2789,7 +2787,7 @@ class XpraClient {
       this.send(["printers", printers]);
     }
     this.server_connection_data = hello["connection-data"];
-    if (Object.prototype.hasOwnProperty.call((navigator, "connection"))) {
+    if (Object.hasOwn((navigator, "connection"))) {
       navigator.connection.addEventListener("change", this._connection_change);
       this._connection_change();
     }
@@ -4547,7 +4545,7 @@ class XpraClient {
         dformat == 8 &&
         wire_encoding == "bytes" &&
         navigator.clipboard &&
-        Object.prototype.hasOwnProperty.call(navigator.clipboard, "write")
+        Object.hasOwn(navigator.clipboard, "write")
       ) {
         this.debug("clipboard", "png image received");
         const blob = new Blob([wire_data], { type: dtype });
@@ -4590,7 +4588,7 @@ class XpraClient {
     }
 
     if (navigator.clipboard) {
-      if (Object.prototype.hasOwnProperty.call((navigator.clipboard, "read"))) {
+      if (Object.hasOwn((navigator.clipboard, "read"))) {
         this.debug("clipboard", "request using read()");
         navigator.clipboard.read().then(
           (data) => {
@@ -4667,9 +4665,7 @@ class XpraClient {
           }
         );
         return;
-      } else if (
-        Object.prototype.hasOwnProperty.call((navigator.clipboard, "readText"))
-      ) {
+      } else if (Object.hasOwn((navigator.clipboard, "readText"))) {
         this.debug("clipboard", "clipboard request using readText()");
         navigator.clipboard.readText().then(
           (text) => {
