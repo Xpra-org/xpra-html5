@@ -375,7 +375,7 @@ onmessage = function (e) {
         ],
       };
       const errors = [];
-      const formats = [];
+      const formats = ["rgb24", "rgb32"];
       const done = (format) => {
         delete CHECKS[format];
         if (Object.keys(CHECKS).length == 0) {
