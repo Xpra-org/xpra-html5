@@ -78,32 +78,32 @@ function add_prop(prop, value, first) {
   if (first) {
     sep = "?";
   }
-  return sep + prop + "=" + encodeURIComponent("" + value); //ie: "&port=10000"
+  return `${sep + prop}=${encodeURIComponent(`${value}`)}`; //ie: "&port=10000"
 }
 
 function doConnect() {
-  let url =
-    "./index.html" +
-    add_prop("submit", true, true) +
-    get_URL_action() +
-    get_URL_props();
+  let url = `./index.html${add_prop(
+    "submit",
+    true,
+    true
+  )}${get_URL_action()}${get_URL_props()}`;
   window.location = url;
 }
 
 function doConnectURI() {
   let url = "xpraws://";
-  const ssl = document.getElementById("ssl").checked;
+  const ssl = document.querySelector("#ssl").checked;
   if (ssl) {
     url = "xprawss://";
   }
-  const username = document.getElementById("username").value;
+  const username = document.querySelector("#username").value;
   if (username) {
-    url += username + "@";
+    url += `${username}@`;
   }
-  url += document.getElementById("server").value;
-  const port = document.getElementById("port").value;
+  url += document.querySelector("#server").value;
+  const port = document.querySelector("#port").value;
   if (port) {
-    url += ":" + port;
+    url += `:${port}`;
   }
   url += "/";
   url += get_URL_action() + get_URL_props();
@@ -111,22 +111,19 @@ function doConnectURI() {
 }
 
 function downloadConnectionFile() {
-  const filename =
-    (document.getElementById("server").value || "session") + ".xpra";
+  const filename = `${
+    document.querySelector("#server").value || "session"
+  }.xpra`;
   let data = "autoconnect=true\n";
   //set a mode:
-  const ssl = document.getElementById("ssl").checked;
-  if (ssl) {
-    data += "mode=wss\n";
-  } else {
-    data += "mode=ws\n";
-  }
+  const ssl = document.querySelector("#ssl").checked;
+  data += ssl ? "mode=wss\n" : "mode=ws\n";
   for (let i = 0; i < FILE_PROPERTIES.length; i++) {
     const prop = FILE_PROPERTIES[i];
     const prop_name = FILE_TRANSLATION[prop] || prop;
     const value = document.getElementById(prop).value;
     if (value !== "") {
-      data += prop_name + "=" + value + "\n";
+      data += `${prop_name}=${value}\n`;
     }
   }
   //convert debug switches to a list of debug categories:
@@ -144,19 +141,19 @@ function downloadConnectionFile() {
   ];
   for (let i = 0; i < DEBUG_CATEGORIES.length; i++) {
     let category = DEBUG_CATEGORIES[i];
-    const el = document.getElementById("debug_" + category);
+    const el = document.getElementById(`debug_${category}`);
     if (el && el.checked) {
       //"main" enables "client" debugging:
       let s = category == "main" ? "client" : category;
       if (debug) {
-        debug += "," + category;
+        debug += `,${category}`;
       } else {
         debug = category;
       }
     }
   }
   if (debug) {
-    data += "debug=" + debug + "\n";
+    data += `debug=${debug}\n`;
   }
   Utilities.saveFile(filename, data, { type: "text/plain" });
 }
@@ -184,16 +181,16 @@ function get_URL_action() {
   let start = "";
   let display = "";
   let action = "";
-  if (document.getElementById("action_connect").checked) {
+  if (document.querySelector("#action_connect").checked) {
     action = "connect";
     display = get_visible_value("display", "select_display");
-  } else if (document.getElementById("action_start").checked) {
+  } else if (document.querySelector("#action_start").checked) {
     action = "start";
     start = get_visible_value("start_command", "command_entry");
-  } else if (document.getElementById("action_start_desktop").checked) {
+  } else if (document.querySelector("#action_start_desktop").checked) {
     action = "start-desktop";
     start = get_visible_value("start_desktop_command", "desktop_entry");
-  } else if (document.getElementById("action_shadow").checked) {
+  } else if (document.querySelector("#action_shadow").checked) {
     action = "shadow";
     display = get_visible_value("shadow_display", "select_shadow_display");
   }
@@ -239,16 +236,15 @@ function fill_form(default_settings) {
     if (v === null) {
       return default_value;
     }
-    return (
-      ["true", "on", "1", "yes", "enabled"].indexOf(String(v).toLowerCase()) !==
-      -1
+    return ["true", "on", "1", "yes", "enabled"].includes(
+      String(v).toLowerCase()
     );
   };
 
   const disconnect_reason = getparam("disconnect") || null;
   if (disconnect_reason) {
-    document.getElementById("alert-disconnect").style.display = "block";
-    document.getElementById("disconnect-reason").innerText = disconnect_reason;
+    document.querySelector("#alert-disconnect").style.display = "block";
+    document.querySelector("#disconnect-reason").innerText = disconnect_reason;
   }
 
   //Populate the form:
@@ -257,40 +253,43 @@ function fill_form(default_settings) {
   link.setAttribute("href", url);
   let pathname = link.pathname;
   if (pathname && pathname.endsWith("connect.html")) {
-    pathname = pathname.substring(0, pathname.length - "connect.html".length);
+    pathname = pathname.slice(
+      0,
+      Math.max(0, pathname.length - "connect.html".length)
+    );
   }
   if (pathname && pathname == "/") {
     pathname = "";
   }
-  var path = getparam("path");
+  let path = getparam("path");
   if (path && path.endsWith("/index.html")) {
-    path = path.substr(0, path.lastIndexOf("/"));
+    path = path.slice(0, Math.max(0, path.lastIndexOf("/")));
   }
   const https = document.location.protocol == "https:";
-  var protocol_port = 80;
+  let protocol_port = 80;
   if (https) {
     protocol_port = 443;
   }
-  document.getElementById("server").value = getparam("server") || link.hostname;
-  document.getElementById("port").value =
+  document.querySelector("#server").value = getparam("server") || link.hostname;
+  document.querySelector("#port").value =
     getparam("port") || link.port || protocol_port;
-  document.getElementById("path").value = path || pathname;
-  document.getElementById("username").value = getparam("username") || "";
+  document.querySelector("#path").value = path || pathname;
+  document.querySelector("#username").value = getparam("username") || "";
 
   const override_width = getparam("override_width");
   if (override_width) {
-    document.getElementById("override_width").value = override_width;
+    document.querySelector("#override_width").value = override_width;
   } else {
-    document.getElementById("override_width").placeholder = window.innerWidth;
+    document.querySelector("#override_width").placeholder = window.innerWidth;
   }
 
   const ssl = getboolparam("ssl", https);
   const insecure = getboolparam("insecure", false);
   $("input#ssl").prop("checked", ssl);
   $("input#insecure").prop("checked", insecure);
-  const ssl_input = document.getElementById("ssl");
-  const insecure_input = document.getElementById("insecure");
-  const aes_input = document.getElementById("aes");
+  const ssl_input = document.querySelector("#ssl");
+  const insecure_input = document.querySelector("#insecure");
+  const aes_input = document.querySelector("#aes");
   const has_session_storage = Utilities.hasSessionStorage();
   $("span#encryption-key-span").hide();
   aes_input.onchange = function () {
@@ -300,7 +299,7 @@ function fill_form(default_settings) {
       $("img#toggle-key").show();
       $("span#aes-label").hide();
       $("span#encryption-key-span").show();
-      const key_input = document.getElementById("key");
+      const key_input = document.querySelector("#key");
       if (!key_input.value) {
         key_input.focus();
       }
@@ -320,7 +319,7 @@ function fill_form(default_settings) {
     if (enc == "AES") {
       aes_input.checked = true;
       let enc_mode = encryption.split("-")[1] || "CBC";
-      document.getElementById("encryption").value = "AES-" + enc_mode;
+      document.querySelector("#encryption").value = `AES-${enc_mode}`;
     }
   }
   aes_input.onchange();
@@ -336,7 +335,7 @@ function fill_form(default_settings) {
     let t0 = animation_times[0];
     if (now > t0 && l > 20) {
       fps = Math.floor((1000 * (l - 1)) / (now - t0));
-      document.getElementById("vrefresh").value = "" + fps;
+      document.querySelector("#vrefresh").value = `${fps}`;
       if (l <= 40) {
         Utilities.debug("draw", "animation_cb", now, "fps", fps);
       }
@@ -357,10 +356,10 @@ function fill_form(default_settings) {
     }
   }
   $("#toggle-password").on("click", function () {
-    $("#toggle-password").attr("src", "../icons/" + toggle_reveal("password"));
+    $("#toggle-password").attr("src", `../icons/${toggle_reveal("password")}`);
   });
   $("#toggle-key").on("click", function () {
-    $("#toggle-key").attr("src", "../icons/" + toggle_reveal("key"));
+    $("#toggle-key").attr("src", `../icons/${toggle_reveal("key")}`);
   });
 
   if (!has_session_storage) {
@@ -396,45 +395,45 @@ function fill_form(default_settings) {
 
   const action = getparam("action") || "";
   if (action == "shadow") {
-    document.getElementById("action_shadow").checked = true;
+    document.querySelector("#action_shadow").checked = true;
   } else if (action == "start-desktop") {
-    document.getElementById("action_start_desktop").checked = true;
+    document.querySelector("#action_start_desktop").checked = true;
   } else if (action == "start") {
-    document.getElementById("action_start").checked = true;
+    document.querySelector("#action_start").checked = true;
   } else {
-    document.getElementById("action_connect").checked = true;
+    document.querySelector("#action_connect").checked = true;
   }
   const start = getparam("start") || "";
 
   function get_host_address(skip_credentials) {
     let url = "http";
-    if (document.getElementById("ssl").checked) {
+    if (document.querySelector("#ssl").checked) {
       url += "s";
     }
     url += "://";
     if (!skip_credentials) {
-      const username = document.getElementById("username").value;
+      const username = document.querySelector("#username").value;
       if (username) {
-        url += username + "@";
+        url += `${username}@`;
       }
     }
-    const server = document.getElementById("server").value;
+    const server = document.querySelector("#server").value;
     if (!server) {
       //nothing we can do
       error_fn("no server address");
       return;
     }
     url += server;
-    const port = document.getElementById("port").value;
+    const port = document.querySelector("#port").value;
     const iport = parseInt(port) || 0;
     if (port && !iport) {
-      error_fn("invalid port number '" + port + "'");
+      error_fn(`invalid port number '${port}'`);
       return;
     }
     if (iport) {
-      url += ":" + port;
+      url += `:${port}`;
     }
-    const path = document.getElementById("path").value;
+    const path = document.querySelector("#path").value;
     if (path) {
       if (!path.startsWith("/")) {
         url += "/";
@@ -452,12 +451,12 @@ function fill_form(default_settings) {
     Utilities.json_action(url, success_fn, error_fn);
   }
 
-  const command_category_icon = document.getElementById(
-    "command_category_icon"
+  const command_category_icon = document.querySelector(
+    "#command_category_icon"
   );
-  const command_category = document.getElementById("command_category");
-  const command_entry_icon = document.getElementById("command_entry_icon");
-  const command_entry = document.getElementById("command_entry");
+  const command_category = document.querySelector("#command_category");
+  const command_entry_icon = document.querySelector("#command_entry_icon");
+  const command_entry = document.querySelector("#command_entry");
   function load_icon(icon, src) {
     const url = get_host_address(true) + src;
     icon.onload = function () {
@@ -472,15 +471,15 @@ function fill_form(default_settings) {
     icon.src = url;
   }
   function command_entry_changed() {
-    var cc = command_category.options[command_category.selectedIndex].innerHTML;
-    var c = command_entry.options[command_entry.selectedIndex].innerHTML;
+    let cc = command_category.options[command_category.selectedIndex].innerHTML;
+    let c = command_entry.options[command_entry.selectedIndex].innerHTML;
     Utilities.log("command_category=", cc, ", command_entry=", c);
     load_icon(command_entry_icon, `MenuIcon/${cc}/${c}`);
     $("#command_entry_icon").show();
   }
   command_entry.addEventListener("change", command_entry_changed);
   function command_category_changed() {
-    var cc = command_category.options[command_category.selectedIndex].innerHTML;
+    let cc = command_category.options[command_category.selectedIndex].innerHTML;
     Utilities.log("command_category=", cc);
     load_icon(command_category_icon, `MenuIcon/${cc}`);
     $("#command_category_icon").show();
@@ -517,19 +516,11 @@ function fill_form(default_settings) {
             let command_exec = entry.TryExec || entry.Exec;
             if (default_start == command_exec) {
               $("select#command_entry").append(
-                '<option selected="selected" value="' +
-                  command_exec +
-                  '">' +
-                  entry.Name +
-                  "</option>"
+                `<option selected="selected" value="${command_exec}">${entry.Name}</option>`
               );
             } else {
               $("select#command_entry").append(
-                '<option value="' +
-                  command_exec +
-                  '">' +
-                  entry.Name +
-                  "</option>"
+                `<option value="${command_exec}">${entry.Name}</option>`
               );
             }
           }
@@ -543,12 +534,10 @@ function fill_form(default_settings) {
           let category = categories[c];
           if (category == current_category) {
             $("select#command_category").append(
-              '<option selected="selected">' + category + "</option>"
+              `<option selected="selected">${category}</option>`
             );
           } else {
-            $("select#command_category").append(
-              "<option>" + category + "</option>"
-            );
+            $("select#command_category").append(`<option>${category}</option>`);
           }
         }
         command_category_changed();
@@ -564,10 +553,10 @@ function fill_form(default_settings) {
     );
   }
 
-  const desktop_entry_icon = document.getElementById("desktop_entry_icon");
-  const desktop_entry = document.getElementById("desktop_entry");
+  const desktop_entry_icon = document.querySelector("#desktop_entry_icon");
+  const desktop_entry = document.querySelector("#desktop_entry");
   function desktop_entry_changed() {
-    var de = desktop_entry.options[desktop_entry.selectedIndex].innerHTML;
+    let de = desktop_entry.options[desktop_entry.selectedIndex].innerHTML;
     Utilities.log("desktop_session=", de);
     load_icon(desktop_entry_icon, `DesktopMenuIcon/${de}`);
   }
@@ -578,7 +567,7 @@ function fill_form(default_settings) {
     json_action(
       "DesktopMenu",
       function (xhr, response) {
-        var desktop_sessions = Object.keys(response);
+        let desktop_sessions = Object.keys(response);
         desktop_entry.innerText = null;
         let default_start_desktop = start;
         if (!default_start_desktop) {
@@ -608,13 +597,7 @@ function fill_form(default_settings) {
             default_start_desktop = null;
           }
           $("select#desktop_entry").append(
-            "<option" +
-              selected +
-              ' value="' +
-              command_exec +
-              '">' +
-              desktop_session +
-              "</option>"
+            `<option${selected} value="${command_exec}">${desktop_session}</option>`
           );
         }
         desktop_entry_changed();
@@ -634,9 +617,9 @@ function fill_form(default_settings) {
     json_action(
       "Displays",
       function (xhr, response) {
-        var displays = Object.keys(response);
-        const select_shadow_display = document.getElementById(
-          "select_shadow_display"
+        let displays = Object.keys(response);
+        const select_shadow_display = document.querySelector(
+          "#select_shadow_display"
         );
         select_shadow_display.innerText = null;
         for (let d in displays) {
@@ -645,16 +628,16 @@ function fill_form(default_settings) {
           let selected = "";
           let attr = response[display_option];
           if (attr && attr.wmname) {
-            label = attr.wmname + " on " + display_option;
+            label = `${attr.wmname} on ${display_option}`;
           }
           if (display == display_option) {
             selected = ' selected="selected" ';
           }
           $("select#select_shadow_display").append(
-            "<option" + selected + ">" + label + "</option>"
+            `<option${selected}>${label}</option>`
           );
         }
-        if (displays.length == 0) {
+        if (displays.length === 0) {
           $("span#select_shadow_display_warning").show();
           $("span#select_shadow_display_warning").text("no displays found");
         } else {
@@ -675,8 +658,8 @@ function fill_form(default_settings) {
     json_action(
       "Sessions",
       function (xhr, response) {
-        var sessions = Object.keys(response);
-        const select_display = document.getElementById("select_display");
+        let sessions = Object.keys(response);
+        const select_display = document.querySelector("#select_display");
         select_display.innerText = null;
         let count = 0;
         for (let s in sessions) {
@@ -689,24 +672,18 @@ function fill_form(default_settings) {
           }
           let session_string = "";
           if (attributes["session-name"]) {
-            session_string = attributes["session-name"] + " ";
+            session_string = `${attributes["session-name"]} `;
           }
           session_string += session;
           if (attributes.username) {
-            session_string += " (" + attributes.username + ")";
+            session_string += ` (${attributes.username})`;
           }
           let selected = "";
           if (display == session) {
             selected = ' selected="selected" ';
           }
           $("select#select_display").append(
-            "<option" +
-              selected +
-              " value=" +
-              session +
-              ">" +
-              session_string +
-              "</option>"
+            `<option${selected} value=${session}>${session_string}</option>`
           );
           count += 1;
         }
@@ -726,7 +703,7 @@ function fill_form(default_settings) {
           if (session) {
             let attributes = response[session];
             if (attributes && attributes.username) {
-              document.getElementById("username").value = attributes.username;
+              document.querySelector("#username").value = attributes.username;
             }
           }
         }
@@ -773,9 +750,9 @@ function fill_form(default_settings) {
         Utilities.log("Info=", response);
         let mode = response.mode || "";
         if (
-          mode.indexOf("seamless") >= 0 ||
-          mode.indexOf("desktop") >= 0 ||
-          mode.indexOf("shadow") >= 0
+          mode.includes("seamless") ||
+          mode.includes("desktop") ||
+          mode.includes("shadow")
         ) {
           show_mode(false);
         } else {
@@ -793,9 +770,9 @@ function fill_form(default_settings) {
   let ajax_delay = 2000;
   let watched_elements = ["server", "port", "ssl", "encryption", "aes"];
   let host_address = "";
-  for (var i = 0, l = watched_elements.length; i < l; i++) {
+  for (let i = 0, l = watched_elements.length; i < l; i++) {
     let watched_element = watched_elements[i];
-    let el = $("#" + watched_element);
+    let el = $(`#${watched_element}`);
     function cancel_changed_timer() {
       if (target_changed_timer) {
         clearTimeout(target_changed_timer);
@@ -844,24 +821,24 @@ function fill_form(default_settings) {
     const action = $(this).val();
     set_exit_actions(action == "connect");
   });
-  $('input:radio[value="' + action + '"]').click();
+  $(`input:radio[value="${action}"]`).click();
 
   const encoding = getparam("encoding") || "auto";
-  document.getElementById("encoding").value = encoding;
+  document.querySelector("#encoding").value = encoding;
 
   const offscreen = getboolparam(
     "offscreen",
     XpraOffscreenWorker.isAvailable()
   );
-  document.getElementById("offscreen").checked = offscreen;
+  document.querySelector("#offscreen").checked = offscreen;
   if (!XpraOffscreenWorker.isAvailable()) {
-    document.getElementById("offscreen").disabled = true;
+    document.querySelector("#offscreen").disabled = true;
     document
-      .getElementById("offscreen")
+      .querySelector("#offscreen")
       .setAttribute("title", "not available in your browser");
-    document.getElementById("offscreen_label").classList.add("disabled");
+    document.querySelector("#offscreen_label").classList.add("disabled");
     document
-      .getElementById("offscreen_label")
+      .querySelector("#offscreen_label")
       .setAttribute("title", "not available in your browser");
   }
 
@@ -872,13 +849,13 @@ function fill_form(default_settings) {
       bandwidth_limit = ci["downlink"];
     }
   }
-  document.getElementById("bandwidth_limit").value = bandwidth_limit || 0;
+  document.querySelector("#bandwidth_limit").value = bandwidth_limit || 0;
 
   let keyboard_layout = getparam("keyboard_layout");
   if (keyboard_layout == null) {
     keyboard_layout = Utilities.getKeyboardLayout();
   }
-  document.getElementById("keyboard_layout").value = keyboard_layout;
+  document.querySelector("#keyboard_layout").value = keyboard_layout;
   json_action("favicon.png?echo-headers", function (xhr, response) {
     const headers = Utilities.ParseResponseHeaders(xhr.getAllResponseHeaders());
     Utilities.debug("headers:", headers);
@@ -895,13 +872,13 @@ function fill_form(default_settings) {
         Utilities.debug("request locale:", locale);
         if (locale != keyboard_layout) {
           keyboard_layout = locale;
-          document.getElementById("keyboard_layout").value = keyboard_layout;
+          document.querySelector("#keyboard_layout").value = keyboard_layout;
         }
       }
     }
   });
   const audio_codec = getparam("audio_codec") || "";
-  const audio_codec_select = document.getElementById("audio_codec");
+  const audio_codec_select = document.querySelector("#audio_codec");
   const ignore_audio_blacklist = getboolparam("ignore_audio_blacklist", false);
   if (ignore_audio_blacklist) {
     $("input#ignore_audio_blacklist").prop("value", true);
@@ -931,7 +908,7 @@ function fill_form(default_settings) {
   } else {
     //enable sound checkbox if the codec is changed:
     audio_codec_select.onchange = function () {
-      document.getElementById("sound").checked = true;
+      document.querySelector("#sound").checked = true;
     };
   }
   const sound = getboolparam("sound");
@@ -992,12 +969,12 @@ function fill_form(default_settings) {
   }
   //scroll_reverse_y has 3 options: Yes, No, Auto
   const scroll_reverse_y = getboolparam("scroll_reverse_y", "auto");
-  document.getElementById("scroll_reverse_y").value = scroll_reverse_y;
+  document.querySelector("#scroll_reverse_y").value = scroll_reverse_y;
 
   function toggle_mediasource_video() {
     $("#mediasource_video").prop("disabled", !video.checked);
   }
-  const video = document.getElementById("video");
+  const video = document.querySelector("#video");
   video.onchange = toggle_mediasource_video;
   toggle_mediasource_video();
 
@@ -1015,7 +992,7 @@ function fill_form(default_settings) {
   set_menu_attributes_visibility();
   let toolbar_position = getparam("toolbar_position") || "top";
   if (toolbar_position) {
-    document.getElementById("toolbar_position").value = toolbar_position;
+    document.querySelector("#toolbar_position").value = toolbar_position;
   }
 
   aes_input.onchange();
@@ -1029,7 +1006,7 @@ function fill_form(default_settings) {
   //delete session params:
   try {
     sessionStorage.clear();
-  } catch (e) {
+  } catch {
     //ignore
   }
   function submit_if_enter(e) {
