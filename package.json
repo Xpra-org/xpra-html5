@@ -45,6 +45,25 @@
       "plugin:unicorn/recommended",
       "plugin:prettier/recommended"
     ],
+    "globals": {
+      "$": "readonly",
+      "AV": "writable",
+      "client": "writable",
+      "ClipboardItem": "readonly",
+      "decode_error": "writable",
+      "default_settings": "writable",
+      "EncodedVideoChunk": "readonly",
+      "float_menu_item_size": "writable",
+      "float_menu_padding": "writable",
+      "float_menu_width": "writable",
+      "ImageDecoder": "readonly",
+      "importScripts": "readonly",
+      "jQuery": "readonly",
+      "JSMpeg": "readonly",
+      "JSZip": "readonly",
+      "saveAs": "readonly",
+      "VideoDecoder": "readonly"
+    },
     "ignorePatterns": [
       "html5/sw.js",
       "html5/js/lib/**/*"
