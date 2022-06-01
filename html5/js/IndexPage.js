@@ -31,7 +31,7 @@ const getintparam = function (prop, default_value) {
   }
   try {
     v = parseInt(v);
-  } catch (e) {
+  } catch {
     return default_value;
   }
   if (v === null || isNaN(v)) {
@@ -46,7 +46,7 @@ const getfloatparam = function (prop, default_value) {
   }
   try {
     v = parseFloat(v);
-  } catch (e) {
+  } catch {
     return default_value;
   }
   if (v === null || isNaN(v)) {
@@ -170,19 +170,19 @@ document.addEventListener(
     if (client.server_load == null) {
       $("#server_load").html("n/a");
     } else {
-      $("#server_load").html("" + client.server_load);
+      $("#server_load").html(`${client.server_load}`);
     }
     function toHHMMSS(t) {
       let s = "";
       const hh = Math.floor(t / 1000 / 60 / 60);
-      if (hh > 0) s += "" + hh + ":";
+      if (hh > 0) s += `${hh}:`;
       const mm = Math.floor(t / 1000 / 60) % 60;
-      s += ("0" + mm).slice(-2); //left pad with "0"
+      s += `0${mm}`.slice(-2); //left pad with "0"
       const ss = Math.floor(t / 1000) % 60;
-      s += ":" + ("0" + ss).slice(-2); //left pad with "0"
+      s += `:${`0${ss}`.slice(-2)}`; //left pad with "0"
       return s;
     }
-    const elapsed = new Date().getTime() - client.client_start_time;
+    const elapsed = Date.now() - client.client_start_time;
     $("#session_connected").html(toHHMMSS(elapsed));
     if (client.server_ping_latency >= 0)
       $("#server_latency").html(client.server_ping_latency);
@@ -222,12 +222,9 @@ function generate_bugreport() {
   const zip = new JSZip();
   zip.file(
     "Summary.txt",
-    "" +
-      $("#bugreport_summary").val() +
-      "\n\n" +
-      $("#bugreport_description").val()
+    `${$("#bugreport_summary").val()}\n\n${$("#bugreport_description").val()}`
   );
-  zip.file("Server-Info.txt", "" + JSON.stringify(client.server_last_info));
+  zip.file("Server-Info.txt", `${JSON.stringify(client.server_last_info)}`);
   //screenshot:
   const canvas = document.createElement("canvas");
   canvas.width = client.desktop_width;
@@ -244,7 +241,7 @@ function generate_bugreport() {
   });
   hide_bugreport();
 }
-const password_input = document.getElementById("password");
+const password_input = document.querySelector("#password");
 let login_callback = null;
 function login_cancel() {
   $("#login-overlay").fadeOut();
@@ -301,7 +298,8 @@ function toggle_touchaction() {
   set_touchaction();
 }
 function set_touchaction() {
-  let touchaction, label;
+  let touchaction;
+  let label;
   if (touchaction_scroll) {
     touchaction = "none";
     label = "zoom";
@@ -317,7 +315,7 @@ function set_touchaction() {
     label
   );
   $("div.window canvas").css("touch-action", touchaction);
-  $("#touchaction_link").html("Set Touch Action: " + label);
+  $("#touchaction_link").html(`Set Touch Action: ${label}`);
   if (!Utilities.isEdge()) {
     $("#touchaction_link").hide();
   }
@@ -336,7 +334,7 @@ function init_client() {
   const username = getparam("username") || getparam("handle") || null;
   const passwords = [];
   for (let i = 0; i < 10; i++) {
-    let password = getparam("password" + i) || getparam("token" + i) || null;
+    let password = getparam(`password${i}`) || getparam(`token${i}`) || null;
     if (!password && i == 0) {
       //try with no suffix:
       password = getparam("password") || getparam("token") || null;
@@ -392,16 +390,16 @@ function init_client() {
 
   try {
     sessionStorage.removeItem("password");
-  } catch (e) {
+  } catch {
     //ignore
   }
   try {
     sessionStorage.removeItem("token");
-  } catch (e) {
+  } catch {
     //ignore
   }
 
-  var scale = 1;
+  let scale = 1;
   if (window.innerWidth !== override_width) {
     scale = override_width / window.innerWidth;
   }
@@ -459,7 +457,7 @@ function init_client() {
 
   for (let i = 0; i < categories.length; i++) {
     const category = categories[i];
-    debug = getboolparam("debug_" + category, false);
+    debug = getboolparam(`debug_${category}`, false);
     if (debug) {
       debug_categories.push(category);
     }
@@ -547,7 +545,7 @@ function init_client() {
   // sound support
   if (sound) {
     client.audio_enabled = true;
-    clog("sound enabled, audio codec string: " + audio_codec);
+    clog(`sound enabled, audio codec string: ${audio_codec}`);
     if (audio_codec && audio_codec.includes(":")) {
       const acparts = audio_codec.split(":");
       client.audio_framework = acparts[0];
@@ -578,7 +576,7 @@ function init_client() {
   // check for encryption parameters
   if (
     encryption &&
-    ["0", "false", "no", "disabled"].indexOf(encryption.toLowerCase()) < 0
+    !["0", "false", "no", "disabled"].includes(encryption.toLowerCase())
   ) {
     client.encryption = encryption.toUpperCase();
     if (key) {
@@ -610,56 +608,53 @@ function init_client() {
             if (value === null || value === "undefined") {
               value = "";
             }
-            url = url + "&" + prop + "=" + encodeURIComponent("" + value);
+            url = `${url}&${prop}=${encodeURIComponent(`${value}`)}`;
           }
         }
         add_prop("disconnect", message);
         const props = {
-          username: username,
-          insecure: insecure,
-          server: server,
-          port: port,
-          ssl: ssl,
-          path: path,
-          encryption: encryption,
-          encoding: encoding,
-          bandwidth_limit: bandwidth_limit,
-          keyboard_layout: keyboard_layout,
-          swap_keys: swap_keys,
-          scroll_reverse_x: scroll_reverse_x,
-          scroll_reverse_y: scroll_reverse_y,
-          reconnect: reconnect,
-          action: action,
-          display: display,
-          shadow_display: shadow_display,
-          start: start,
-          sound: sound,
-          audio_codec: audio_codec,
-          keyboard: keyboard,
-          clipboard: clipboard,
-          printing: printing,
-          file_transfer: file_transfer,
-          exit_with_children: exit_with_children,
-          exit_with_client: exit_with_client,
-          sharing: sharing,
-          steal: steal,
-          video: video,
-          mediasource_video: mediasource_video,
-          remote_logging: remote_logging,
-          ignore_audio_blacklist: ignore_audio_blacklist,
-          floating_menu: floating_menu,
-          toolbar_position: toolbar_position,
-          autohide: autohide,
+          username,
+          insecure,
+          server,
+          port,
+          ssl,
+          path,
+          encryption,
+          encoding,
+          bandwidth_limit,
+          keyboard_layout,
+          swap_keys,
+          scroll_reverse_x,
+          scroll_reverse_y,
+          reconnect,
+          action,
+          display,
+          shadow_display,
+          start,
+          sound,
+          audio_codec,
+          keyboard,
+          clipboard,
+          printing,
+          file_transfer,
+          exit_with_children,
+          exit_with_client,
+          sharing,
+          steal,
+          video,
+          mediasource_video,
+          remote_logging,
+          ignore_audio_blacklist,
+          floating_menu,
+          toolbar_position,
+          autohide,
         };
         for (let i = 0; i < client.debug_categories.length; i++) {
           const category = client.debug_categories[i];
-          props["debug_" + category] = true;
+          props[`debug_${category}`] = true;
         }
-        if (insecure || Utilities.hasSessionStorage()) {
-          props["password"] = password;
-        } else {
-          props["password"] = "";
-        }
+        props["password"] =
+          insecure || Utilities.hasSessionStorage() ? password : "";
         for (let name in props) {
           const value = props[name];
           add_prop(name, value);
@@ -686,7 +681,7 @@ function init_tablet_input(client) {
   pasteboard.on("input", function (e) {
     const txt = pasteboard.val();
     pasteboard.val("");
-    cdebug("keyboard", "oninput: '" + txt + "'");
+    cdebug("keyboard", `oninput: '${txt}'`);
     if (!client.topwindow) {
       return;
     }
@@ -733,8 +728,8 @@ function init_tablet_input(client) {
         ];
         cdebug("keyboard", packet);
         client.send(packet);
-      } catch (e) {
-        client.exc(e, "input handling error");
+      } catch (error) {
+        client.exc(error, "input handling error");
       }
     }
   });
@@ -792,7 +787,7 @@ function init_keyboard(client) {
     let e = {
       which: 0,
       keyCode: 0,
-      key: key,
+      key,
       code: key,
     };
     client.do_keyb_process(pressed, e);
@@ -826,7 +821,7 @@ function init_file_transfer(client) {
     evt.preventDefault();
     evt.dataTransfer.dropEffect = "copy";
   }
-  const screen = document.getElementById("screen");
+  const screen = document.querySelector("#screen");
   screen.addEventListener("dragover", handleDragOver, false);
   screen.addEventListener("drop", handleFileSelect, false);
 
@@ -847,7 +842,7 @@ function init_clock(client, enabled) {
     return;
   }
   function update_clock() {
-    const now = new Date().getTime();
+    const now = Date.now();
     const server_time =
       client.last_ping_server_time +
       (now - client.last_ping_local_time) +
@@ -856,11 +851,11 @@ function init_clock(client, enabled) {
     const clock_text = $("#clock_text");
     const width = clock_text.width();
     clock_text.text(
-      date.toLocaleDateString() + " " + date.toLocaleTimeString()
+      `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`
     );
     const clock_menu_text = $("#clock_menu_text");
     clock_menu_text.text(
-      date.toLocaleDateString() + " " + date.toLocaleTimeString()
+      `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`
     );
     if (width != clock_text.width()) {
       //trays have been shifted left or right:
@@ -934,8 +929,8 @@ function toggle_fullscreen() {
     Object.hasOwn(document, "mozRequestFullScreen") ||
     Object.hasOwn(document, "msRequestFullscreen");
   if (!f_el) {
-    const elem = document.getElementById("fullscreen_button");
-    var is_fullscreen =
+    const elem = document.querySelector("#fullscreen_button");
+    let is_fullscreen =
       document.fullScreen ||
       document.mozFullScreen ||
       document.webkitIsFullScreen;
@@ -974,8 +969,8 @@ function toggle_fullscreen() {
           .then(() => {
             console.log("keyboard lock success");
           })
-          .catch((e) => {
-            console.log("keyboard lock failed: ", e);
+          .catch((error) => {
+            console.log("keyboard lock failed:", error);
           });
 
         $("#fullscreen").attr("src", "./icons/unfullscreen.png");
@@ -1002,9 +997,9 @@ function toggle_fullscreen() {
 
 function expand_float_menu() {
   const expanded_width = float_menu_item_size * 5;
-  const float_menu = document.getElementById("float_menu");
+  const float_menu = document.querySelector("#float_menu");
   float_menu.style.display = "inline-block";
-  float_menu.style.width = expanded_width + "px";
+  float_menu.style.width = `${expanded_width}px`;
   $("#float_menu").children().show();
   if (client) {
     client.reconfigure_all_trays();
@@ -1012,7 +1007,7 @@ function expand_float_menu() {
 }
 
 function retract_float_menu() {
-  document.getElementById("float_menu").style.width = "0px";
+  document.querySelector("#float_menu").style.width = "0px";
   $("#float_menu").children().hide();
 }
 
@@ -1077,11 +1072,12 @@ function init_page() {
     client.capture_keyboard = true;
   };
   const blocked_hosts = (getparam("blocked-hosts") || "").split(",");
-  if (blocked_hosts.indexOf(client.host.toLowerCase()) >= 0) {
+  if (blocked_hosts.includes(client.host.toLowerCase())) {
     client.callback_close(
-      "connection to host '" +
-        client.host.replace(/[^A-Za-z0-9\.\:]/g, "") +
-        "' blocked"
+      `connection to host '${client.host.replace(
+        /[^\d.:A-Za-z]/g,
+        ""
+      )}' blocked`
     );
   } else {
     client.connect();
@@ -1190,7 +1186,7 @@ function init_page() {
   // Prevent stuck keys.
   $(window).on("blur", (e) => {
     if (client.last_key_packet.length > 2 && client.last_keycode_pressed > 0) {
-      console.log("clearing keycode: " + client.last_keycode_pressed);
+      console.log(`clearing keycode: ${client.last_keycode_pressed}`);
       key_packet = client.last_key_packet;
       // Set pressed = false to indicate key up.
       key_packet[3] = false;

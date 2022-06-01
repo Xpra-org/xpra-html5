@@ -1,14 +1,17 @@
 // This will prevent the sw from restarting
 let keepAlive = () => {
   keepAlive = () => {};
-  var ping = location.href.substr(0, location.href.lastIndexOf("/")) + "/ping";
+  let ping = `${location.href.slice(
+    0,
+    Math.max(0, location.href.lastIndexOf("/"))
+  )}/ping`;
   var interval = setInterval(() => {
     if (sw) {
       sw.postMessage("ping");
     } else {
       fetch(ping).then((res) => res.text(!res.ok && clearInterval(interval)));
     }
-  }, 10000);
+  }, 10_000);
 };
 
 // message event is the first thing we need to setup a listner for
@@ -59,7 +62,7 @@ function onMessage(event) {
 
   // It's important to have a messageChannel, don't want to interfere
   // with other simultaneous downloads
-  if (!ports || !ports.length) {
+  if (!ports || ports.length === 0) {
     throw new TypeError("[StreamSaver] You didn't send a messageChannel");
   }
 
@@ -103,7 +106,7 @@ function onMessage(event) {
   }
 
   /** @since v2.0.0 */
-  if (data.size) {
+  if (data.size > 0) {
     console.warn(
       "[StreamSaver] You shouldn't send `data.size` anymore. It should be included in the content-length header option"
     );
@@ -121,7 +124,7 @@ function onMessage(event) {
     console.warn(
       "[StreamSaver] Please send `data.pathname` (eg: /pictures/summer.jpg)"
     );
-    data.pathname = Math.random().toString().slice(-6) + "/" + data.filename;
+    data.pathname = `${Math.random().toString().slice(-6)}/${data.filename}`;
   }
 
   // remove all leading slashes
