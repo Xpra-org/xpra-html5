@@ -12,13 +12,13 @@
  * Requires Chrome 94+ or Android and a secure (SSL or localhost) context.
  */
 
+import "./lib/broadway/Decoder.js";
+import "./lib/lz4.js";
+import "./lib/zlib.js";
+
 import { DEFAULT_BOX_COLORS } from "./Constants.js";
 import { XpraImageDecoder } from "./ImageDecoder.js";
 import { XpraVideoDecoder } from "./VideoDecoder.js";
-
-importScripts("./lib/zlib.js");
-importScripts("./lib/lz4.js");
-importScripts("./lib/broadway/Decoder.js");
 
 // WindowDecoder for each window we have control over:
 const offscreen_canvas = new Map();

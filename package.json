@@ -63,7 +63,6 @@
       "float_menu_width": "writable",
       "forge": "readonly",
       "ImageDecoder": "readonly",
-      "importScripts": "readonly",
       "jQuery": "readonly",
       "JSMpeg": "readonly",
       "JSZip": "readonly",
