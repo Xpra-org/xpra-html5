@@ -1,6 +1,11 @@
+// [XPRA] Note to Xpra maintainers: When updating, preserve this block...
+const this_ = window;
+// [XPRA] ... of ES module import compatibility adjustments.
+// [XPRA] Also, assign `this_` to `goog.global`!
+
 /** @license zlib.js 2012 - imaya [ https://github.com/imaya/zlib.js ] The MIT License */(function() {'use strict';var COMPILED = false;
 var goog = goog || {};
-goog.global = this;
+goog.global = this_;
 goog.DEBUG = true;
 goog.LOCALE = "en";
 goog.provide = function(name) {

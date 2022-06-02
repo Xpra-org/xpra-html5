@@ -1,3 +1,8 @@
+// [XPRA] Note to Xpra maintainers: When updating, preserve this block...
+const this_ = window;
+// [XPRA] ... of ES module import compatibility adjustments.
+// [XPRA] Also, pass `this_` to `webpackUniversalModuleDefinition` as `root`!
+
 /*!
  * 
  *   simple-keyboard v3.3.30
@@ -18,7 +23,7 @@
 		exports["SimpleKeyboard"] = factory();
 	else
 		root["SimpleKeyboard"] = factory();
-})(this, function() {
+})(this_, function() {
 return /******/ (function() { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 

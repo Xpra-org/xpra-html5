@@ -1,3 +1,8 @@
+// [XPRA] Note to Xpra maintainers: When updating, preserve this block...
+const this_ = window;
+// [XPRA] ... of ES module import compatibility adjustments.
+// [XPRA] Also, use `this_` in the end of `(name, definition) => { ... }`!
+
 /*! streamsaver. MIT License. Jimmy Wärting <https://jimmy.warting.se/opensource> */
 
 /* global chrome location ReadableStream define MessageChannel TransformStream */
@@ -7,7 +12,7 @@
     ? module.exports = definition()
     : typeof define === 'function' && typeof define.amd === 'object'
       ? define(definition)
-      : this[name] = definition()
+      : this_[name] = definition()
 })('streamSaver', () => {
   'use strict'
 

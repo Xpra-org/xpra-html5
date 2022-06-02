@@ -4,6 +4,8 @@
  *
  */
 
+import "./lib/aurora/aurora.js";
+
 import { Utilities } from "./Utilities.js";
 
 export const MediaSourceConstants = {

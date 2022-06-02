@@ -23,6 +23,8 @@ SOFTWARE.
 
 */
 
+import "./lib/jquery.js";
+
 (function () {
   function $(selector, context) {
     context = context || document;

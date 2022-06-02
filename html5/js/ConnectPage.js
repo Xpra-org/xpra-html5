@@ -1,3 +1,5 @@
+import "./lib/jquery.js";
+
 import { MediaSourceConstants, MediaSourceUtil } from "./MediaSourceUtil.js";
 import { XpraOffscreenWorker } from "./OffscreenDecodeWorkerHelper.js";
 import { Utilities } from "./Utilities.js";

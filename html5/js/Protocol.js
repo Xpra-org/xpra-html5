@@ -9,12 +9,6 @@
  * Licensed under MPL 2.0
  *
  * xpra wire protocol with worker support
- *
- * requires:
- *  bencode.js
- *  inflate.js
- *  lz4.js
- *  brotli_decode.js
  */
 
 import "./lib/bencode.js";

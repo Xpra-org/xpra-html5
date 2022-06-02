@@ -23,6 +23,9 @@ SOFTWARE.
 
 */
 
+import "./lib/jquery.js";
+import "./lib/jquery-transform-draggable.js";
+
 const MENU_CONTENT_LEFT_CLASS_NAME = "menu-content-left";
 const MENU_CONTENT_RIGHT_CLASS_NAME = "menu-content-right";
 

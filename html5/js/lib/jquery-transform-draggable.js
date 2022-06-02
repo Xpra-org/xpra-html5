@@ -1,3 +1,8 @@
+// [XPRA] Note to Xpra maintainers: When updating, preserve this block...
+import "./jquery.js";
+import "./jquery-ui.js";
+// [XPRA] ... of ES module import compatibility adjustments.
+
 /*
  * xpra client
  * Licensed under MPL 2.0

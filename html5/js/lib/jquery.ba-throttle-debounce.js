@@ -1,3 +1,9 @@
+// [XPRA] Note to Xpra maintainers: When updating, preserve this block...
+import "./jquery.js";
+const this_ = window;
+// [XPRA] ... of ES module import compatibility adjustments.
+// [XPRA] Also, pass `this_` to `function(window,undefined)` as `window`!
+
 /*!
  * jQuery throttle / debounce - v1.1 - 3/7/2010
  * http://benalman.com/projects/jquery-throttle-debounce-plugin/
@@ -249,4 +255,4 @@
       : jq_throttle( delay, callback, at_begin !== false );
   };
   
-})(this);
+})(this_);

@@ -1,3 +1,8 @@
+// [XPRA] Note to Xpra maintainers: When updating, preserve this block...
+const this_ = window;
+// [XPRA] ... of ES module import compatibility adjustments.
+// [XPRA] Also, pass `this_` to `function (root, factory)` as `root`!
+
 // universal module definition
 (function (root, factory) {
     if (typeof define === 'function' && define.amd) {
@@ -12,7 +17,7 @@
         // Browser globals (root is window)
         root.Decoder = factory();
     }
-}(this, function () {
+}(this_, function () {
   
   var global;
   

@@ -1,3 +1,7 @@
+// [XPRA] Note to Xpra maintainers: When updating, preserve this block...
+window.JSMpeg = JSMpeg;
+// [XPRA] ... of ES module import compatibility adjustments.
+
 /*! jsmpeg v1.0 | (c) Dominic Szablewski | MIT license */
 
 

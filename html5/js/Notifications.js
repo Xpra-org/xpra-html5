@@ -7,6 +7,9 @@
  *
  */
 
+import "./lib/jquery.js";
+import "./lib/jquery.ba-throttle-debounce.js";
+
 import { Utilities } from "./Utilities.js";
 
 $(function () {
