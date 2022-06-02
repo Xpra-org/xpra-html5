@@ -514,14 +514,6 @@ XpraClient.prototype.open_protocol = function() {
 	this.protocol.open(uri);
 };
 
-XpraClient.prototype.close = function() {
-	this.clog("client closed");
-	this.close_windows();
-	this.clear_timers();
-	this.close_audio();
-	this.close_protocol();
-};
-
 XpraClient.prototype.request_refresh = function(wid) {
 	this.send([
 		"buffer-refresh", wid, 0, 100,
