@@ -61,7 +61,8 @@
       "no-undef": "warn",
       "no-unused-vars": "warn",
       "sonarjs/cognitive-complexity": "warn",
-      "unicorn/no-for-loop": "off"
+      "unicorn/no-for-loop": "off",
+      "unicorn/prevent-abbreviations": "off"
     }
   },
   "prettier": {}
