@@ -134,24 +134,24 @@ class XpraProtocol {
       1014: "Bad Gateway",
       1015: "TLS Handshake",
     };
-    let msg = "";
+    let message = "";
     if (event.code) {
       try {
-        msg +=
+        message +=
           typeof code_mappings[event.code] !== "undefined"
             ? "'" + code_mappings[event.code] + "' (" + event.code + ")"
             : "" + event.code;
         if (event.reason) {
-          msg += ": '" + event.reason + "'";
+          message += ": '" + event.reason + "'";
         }
       } catch (error) {
         this.error("cannot parse websocket event:", error);
-        msg = "unknown reason";
+        message = "unknown reason";
       }
     } else {
-      msg = "unknown reason (no websocket error code)";
+      message = "unknown reason (no websocket error code)";
     }
-    return msg;
+    return message;
   }
 
   open(uri) {
@@ -210,8 +210,8 @@ class XpraProtocol {
     }
   }
 
-  protocol_error(msg) {
-    this.error("protocol error:", msg);
+  protocol_error(message) {
+    this.error("protocol error:", message);
     //make sure we stop processing packets and events:
     this.websocket.onopen = null;
     this.websocket.onclose = null;
@@ -220,7 +220,7 @@ class XpraProtocol {
     this.header = [];
     this.rQ = [];
     //and just tell the client to close (it may still try to re-connect):
-    this.packet_handler(["close", msg]);
+    this.packet_handler(["close", message]);
   }
 
   process_receive_queue() {
@@ -235,8 +235,8 @@ class XpraProtocol {
   }
 
   do_process_receive_queue() {
-    let i = 0,
-      j = 0;
+    let index_ = 0,
+      index__ = 0;
     if (this.header.length < 8 && this.rQ.length > 0) {
       //add from receive queue data to header until we get the 8 bytes we need:
       while (this.header.length < 8 && this.rQ.length > 0) {
@@ -244,8 +244,8 @@ class XpraProtocol {
         const needed = 8 - this.header.length;
         const n = Math.min(needed, slice.length);
         //copy at most n characters:
-        for (i = 0; i < n; i++) {
-          this.header.push(slice[i]);
+        for (index_ = 0; index_ < n; index_++) {
+          this.header.push(slice[index_]);
         }
         if (slice.length > needed) {
           //replace the slice with what is left over:
@@ -258,16 +258,16 @@ class XpraProtocol {
 
       //verify the header format:
       if (this.header[0] !== ord("P")) {
-        let msg = "invalid packet header format: " + this.header[0];
+        let message = "invalid packet header format: " + this.header[0];
         if (this.header.length > 1) {
           var hex = "";
           for (var p = 0; p < this.header.length; p++) {
             let v = this.header[p].toString(16);
             hex += v.length < 2 ? "0" + v : v;
           }
-          msg += ": 0x" + hex;
+          message += ": 0x" + hex;
         }
-        this.protocol_error(msg);
+        this.protocol_error(message);
         return false;
       }
     }
@@ -306,9 +306,9 @@ class XpraProtocol {
       return false;
     }
     let packet_size = 0;
-    for (i = 0; i < 4; i++) {
+    for (index_ = 0; index_ < 4; index_++) {
       packet_size = packet_size * 0x1_00;
-      packet_size += this.header[4 + i];
+      packet_size += this.header[4 + index_];
     }
 
     // work out padding if necessary
@@ -321,8 +321,8 @@ class XpraProtocol {
 
     // verify that we have enough data for the full payload:
     let rsize = 0;
-    for (i = 0, j = this.rQ.length; i < j; ++i) {
-      rsize += this.rQ[i].length;
+    for (index_ = 0, index__ = this.rQ.length; index_ < index__; ++index_) {
+      rsize += this.rQ[index_].length;
     }
     if (rsize < packet_size) {
       return false;
@@ -376,8 +376,8 @@ class XpraProtocol {
         return this.rQ.length > 0;
       }
       packet_data = new Uint8Array(packet_size - padding);
-      for (i = 0; i < packet_size - padding; i++) {
-        packet_data[i] = decrypted[i].charCodeAt(0);
+      for (index_ = 0; index_ < packet_size - padding; index_++) {
+        packet_data[index_] = decrypted[index_].charCodeAt(0);
       }
     }
 
@@ -433,8 +433,12 @@ class XpraProtocol {
             //and now we're converting back to bytes...
             //(use 'rencodeplus' to avoid all this unnecessary churn)
             const u8a = new Uint8Array(img_data.length);
-            for (let i = 0, j = img_data.length; i < j; ++i) {
-              u8a[i] = img_data.charCodeAt(i);
+            for (
+              let index_ = 0, index__ = img_data.length;
+              index_ < index__;
+              ++index_
+            ) {
+              u8a[index_] = img_data.charCodeAt(index_);
             }
             packet[7] = u8a;
           }
@@ -443,8 +447,12 @@ class XpraProtocol {
           if (typeof sound_data === "string") {
             //same workaround as 'draw' above
             const u8a = new Uint8Array(sound_data.length);
-            for (let i = 0, j = sound_data.length; i < j; ++i) {
-              u8a[i] = sound_data.charCodeAt(i);
+            for (
+              let index_ = 0, index__ = sound_data.length;
+              index_ < index__;
+              ++index_
+            ) {
+              u8a[index_] = sound_data.charCodeAt(index_);
             }
             packet[2] = u8a;
           }
@@ -507,16 +515,19 @@ class XpraProtocol {
         } else {
           const CHUNK_SZ = 0x80_00;
           const c = [];
-          for (let i = 0; i < bdata.length; i += CHUNK_SZ) {
+          for (let index = 0; index < bdata.length; index += CHUNK_SZ) {
             c.push(
-              String.fromCharCode.apply(null, bdata.subarray(i, i + CHUNK_SZ))
+              String.fromCharCode.apply(
+                null,
+                bdata.subarray(index, index + CHUNK_SZ)
+              )
             );
           }
           input_data = c.join("");
         }
         if (padding_size) {
           const padding_char = String.fromCharCode(padding_size);
-          for (let i = 0; i < padding_size; i++) {
+          for (let index = 0; index < padding_size; index++) {
             input_data += padding_char;
           }
         }
@@ -533,15 +544,15 @@ class XpraProtocol {
       packet_data[2] = level;
       packet_data[3] = 0;
       //size header:
-      for (let i = 0; i < 4; i++) {
-        packet_data[7 - i] = (payload_size >> (8 * i)) & 0xff;
+      for (let index = 0; index < 4; index++) {
+        packet_data[7 - index] = (payload_size >> (8 * index)) & 0xff;
       }
       if (typeof bdata === "object" && bdata.constructor === Uint8Array) {
         packet_data.set(bdata, 8);
       } else {
         //copy string one character at a time..
-        for (let i = 0; i < actual_size; i++) {
-          packet_data[8 + i] = ord(bdata[i]);
+        for (let index = 0; index < actual_size; index++) {
+          packet_data[8 + index] = ord(bdata[index]);
         }
       }
       // put into buffer before send
@@ -594,7 +605,7 @@ class XpraProtocol {
     });
   }
 
-  setup_cipher(caps, key, setup_fn) {
+  setup_cipher(caps, key, setup_function) {
     if (!key) {
       throw "missing encryption key";
     }
@@ -644,7 +655,7 @@ class XpraProtocol {
       throw "missing IV";
     }
     //ie: setup_fn("AES-CBC", "THESTRETCHEDKEYVALUE", "THEIVVALUE");
-    setup_fn(cipher + "-" + mode, block_size, secret, iv);
+    setup_function(cipher + "-" + mode, block_size, secret, iv);
   }
 }
 

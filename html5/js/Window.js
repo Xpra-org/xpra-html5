@@ -36,13 +36,13 @@ class XpraWindow {
     override_redirect,
     tray,
     client_properties,
-    geometry_cb,
-    mouse_move_cb,
-    mouse_down_cb,
-    mouse_up_cb,
-    mouse_scroll_cb,
-    set_focus_cb,
-    window_closed_cb,
+    geometry_callback,
+    mouse_move_callback,
+    mouse_down_callback,
+    mouse_up_callback,
+    mouse_scroll_callback,
+    set_focus_callback,
+    window_closed_callback,
     scale
   ) {
     // use me in jquery callbacks as we lose 'this'
@@ -68,13 +68,13 @@ class XpraWindow {
     this.has_alpha = false;
     this.client_properties = client_properties;
 
-    this.set_focus_cb = set_focus_cb || dummy;
-    this.mouse_move_cb = mouse_move_cb || dummy;
-    this.mouse_down_cb = mouse_down_cb || dummy;
-    this.mouse_up_cb = mouse_up_cb || dummy;
-    this.mouse_scroll_cb = mouse_scroll_cb || dummy;
-    this.geometry_cb = geometry_cb || dummy;
-    this.window_closed_cb = window_closed_cb || dummy;
+    this.set_focus_cb = set_focus_callback || dummy;
+    this.mouse_move_cb = mouse_move_callback || dummy;
+    this.mouse_down_cb = mouse_down_callback || dummy;
+    this.mouse_up_cb = mouse_up_callback || dummy;
+    this.mouse_scroll_cb = mouse_scroll_callback || dummy;
+    this.geometry_cb = geometry_callback || dummy;
+    this.window_closed_cb = window_closed_callback || dummy;
 
     this.log = () => client.log.apply(client, arguments);
     this.warn = () => client.warn.apply(client, arguments);
@@ -200,17 +200,17 @@ class XpraWindow {
       jQuery(this.div).draggable({ transform: true });
     }
     jQuery(this.div).draggable({ cancel: "canvas" });
-    jQuery("#head" + String(this.wid)).click((ev) => {
+    jQuery("#head" + String(this.wid)).click((event_) => {
       if (!this.minimized) {
         this.set_focus_cb(this);
       }
     });
-    jQuery(this.div).on("dragstart", (ev) => {
-      this.client.release_buttons(ev, this);
+    jQuery(this.div).on("dragstart", (event_) => {
+      this.client.release_buttons(event_, this);
       this.set_focus_cb(this);
       this.client.mouse_grabbed = true;
     });
-    jQuery(this.div).on("dragstop", (ev, ui) => {
+    jQuery(this.div).on("dragstop", (event_, ui) => {
       this.client.mouse_grabbed = false;
       this.handle_moved(ui);
     });
@@ -226,11 +226,11 @@ class XpraWindow {
       helper: "ui-resizable-helper",
       handles: "n, e, s, w, ne, se, sw, nw",
     });
-    jQuery(this.div).on("resizestart", (ev, ui) => {
-      this.client.do_window_mouse_click(ev, this, false);
+    jQuery(this.div).on("resizestart", (event_, ui) => {
+      this.client.do_window_mouse_click(event_, this, false);
       this.client.mouse_grabbed = true;
     });
-    jQuery(this.div).on("resizestop", (ev, ui) => {
+    jQuery(this.div).on("resizestop", (event_, ui) => {
       this.handle_resized(ui);
       this.set_focus_cb(this);
       this.client.mouse_grabbed = false;
@@ -339,37 +339,37 @@ class XpraWindow {
     if (!window.PointerEvent) {
       return;
     }
-    canvas.addEventListener("pointerdown", (ev) => {
-      this.debug("mouse", "pointerdown:", ev);
-      if (ev.pointerType == "touch") {
-        this.pointer_down = ev.pointerId;
-        this.pointer_last_x = ev.offsetX;
-        this.pointer_last_y = ev.offsetY;
+    canvas.addEventListener("pointerdown", (event_) => {
+      this.debug("mouse", "pointerdown:", event_);
+      if (event_.pointerType == "touch") {
+        this.pointer_down = event_.pointerId;
+        this.pointer_last_x = event_.offsetX;
+        this.pointer_last_y = event_.offsetY;
       }
     });
-    canvas.addEventListener("pointermove", (ev) => {
-      this.debug("mouse", "pointermove:", ev);
-      if (this.pointer_down == ev.pointerId) {
-        const dx = ev.offsetX - this.pointer_last_x;
-        const dy = ev.offsetY - this.pointer_last_y;
-        this.pointer_last_x = ev.offsetX;
-        this.pointer_last_y = ev.offsetY;
+    canvas.addEventListener("pointermove", (event_) => {
+      this.debug("mouse", "pointermove:", event_);
+      if (this.pointer_down == event_.pointerId) {
+        const dx = event_.offsetX - this.pointer_last_x;
+        const dy = event_.offsetY - this.pointer_last_y;
+        this.pointer_last_x = event_.offsetX;
+        this.pointer_last_y = event_.offsetY;
         const mult = 20 * (window.devicePixelRatio || 1);
-        ev.wheelDeltaX = Math.round(dx * mult);
-        ev.wheelDeltaY = Math.round(dy * mult);
-        this.on_mousescroll(ev);
+        event_.wheelDeltaX = Math.round(dx * mult);
+        event_.wheelDeltaY = Math.round(dy * mult);
+        this.on_mousescroll(event_);
       }
     });
-    canvas.addEventListener("pointerup", (ev) => {
-      this.debug("mouse", "pointerup:", ev);
+    canvas.addEventListener("pointerup", (event_) => {
+      this.debug("mouse", "pointerup:", event_);
       this.pointer_down = -1;
     });
-    canvas.addEventListener("pointercancel", (ev) => {
-      this.debug("mouse", "pointercancel:", ev);
+    canvas.addEventListener("pointercancel", (event_) => {
+      this.debug("mouse", "pointercancel:", event_);
       this.pointer_down = -1;
     });
-    canvas.addEventListener("pointerout", (ev) => {
-      this.debug("mouse", "pointerout:", ev);
+    canvas.addEventListener("pointerout", (event_) => {
+      this.debug("mouse", "pointerout:", event_);
     });
   }
 
@@ -495,13 +495,13 @@ class XpraWindow {
 
       // Update the icon
       if (this.icon !== null) {
-        const src = this.update_icon(
+        const source = this.update_icon(
           this.icon.width,
           this.icon.height,
           this.icon.encoding,
           this.icon.img_data
         );
-        jQuery("#favicon").attr("href", src);
+        jQuery("#favicon").attr("href", source);
       } else {
         jQuery("#favicon").attr("href", "favicon.png");
       }
@@ -645,15 +645,15 @@ class XpraWindow {
     }
 
     //if the attribute is set, add the corresponding css class:
-    const attrs = ["modal", "above", "below"];
-    for (let i = 0; i < attrs.length; i++) {
-      const attr = attrs[i];
-      if (attr in metadata) {
-        const value = metadata[attr];
+    const attributes = ["modal", "above", "below"];
+    for (let index = 0; index < attributes.length; index++) {
+      const attribute = attributes[index];
+      if (attribute in metadata) {
+        const value = metadata[attribute];
         if (value) {
-          jQuery(this.div).addClass(attr);
+          jQuery(this.div).addClass(attribute);
         } else {
-          jQuery(this.div).removeClass(attr);
+          jQuery(this.div).removeClass(attribute);
         }
       }
     }
@@ -665,8 +665,8 @@ class XpraWindow {
       const classes = jQuery(this.div).prop("classList");
       if (classes) {
         //remove any existing "wmclass-" classes not in the new wm_class list:
-        for (let i = 0; i < classes.length; i++) {
-          const tclass = "" + classes[i];
+        for (let index = 0; index < classes.length; index++) {
+          const tclass = "" + classes[index];
           if (
             tclass.indexOf("wmclass-") === 0 &&
             wm_class &&
@@ -678,8 +678,11 @@ class XpraWindow {
       }
       if (wm_class) {
         //add new wm-class:
-        for (let i = 0; i < wm_class.length; i++) {
-          const tclass = Utilities.s(wm_class[i]).replace(/[^\dA-Za-z]/g, "");
+        for (let index = 0; index < wm_class.length; index++) {
+          const tclass = Utilities.s(wm_class[index]).replace(
+            /[^\dA-Za-z]/g,
+            ""
+          );
           if (tclass && !jQuery(this.div).hasClass(tclass)) {
             jQuery(this.div).addClass("wmclass-" + tclass);
           }
@@ -1075,8 +1078,8 @@ class XpraWindow {
         h = 0;
       const screen_sizes = this.client.server_screen_sizes;
       let screen_size;
-      for (let i = 0; i < screen_sizes.length; i++) {
-        screen_size = screen_sizes[i];
+      for (let index = 0; index < screen_sizes.length; index++) {
+        screen_size = screen_sizes[index];
         w = screen_size[0];
         h = screen_size[1];
         if (w <= maxw && h <= maxh && w * h > best) {
@@ -1088,8 +1091,8 @@ class XpraWindow {
       if (neww == 0 && newh == 0) {
         //not found, try to find the smallest one:
         best = 0;
-        for (let i = 0; i < screen_sizes.length; i++) {
-          screen_size = screen_sizes[i];
+        for (let index = 0; index < screen_sizes.length; index++) {
+          screen_size = screen_sizes[index];
           w = screen_size[0];
           h = screen_size[1];
           if (best == 0 || w * h < best) {
@@ -1218,22 +1221,22 @@ class XpraWindow {
       img_data: img_data,
     };
 
-    let src = "favicon.png";
+    let source = "favicon.png";
     if (encoding == "png") {
       //move title to the right:
       $("#title" + String(this.wid)).css("left", 32);
       if (typeof img_data === "string") {
         const uint = new Uint8Array(img_data.length);
-        for (let i = 0; i < img_data.length; ++i) {
-          uint[i] = img_data.charCodeAt(i);
+        for (let index = 0; index < img_data.length; ++index) {
+          uint[index] = img_data.charCodeAt(index);
         }
         img_data = uint;
       }
-      src = this.construct_base64_image_url(encoding, img_data);
+      source = this.construct_base64_image_url(encoding, img_data);
     }
-    jQuery("#windowicon" + String(this.wid)).attr("src", src);
-    jQuery("#windowlistitemicon" + String(this.wid)).attr("src", src);
-    return src;
+    jQuery("#windowicon" + String(this.wid)).attr("src", source);
+    jQuery("#windowlistitemicon" + String(this.wid)).attr("src", source);
+    return source;
   }
 
   reset_cursor() {
@@ -1254,10 +1257,10 @@ class XpraWindow {
     const window_element = jQuery("#" + String(this.wid));
     const cursor_url = this.construct_base64_image_url(encoding, array);
     function set_cursor_url(url, x, y) {
-      const url_str = "url('" + url + "')";
-      window_element.css("cursor", url_str + ", default");
+      const url_string = "url('" + url + "')";
+      window_element.css("cursor", url_string + ", default");
       //CSS3 with hotspot:
-      window_element.css("cursor", url_str + " " + x + " " + y + ", auto");
+      window_element.css("cursor", url_string + " " + x + " " + y + ", auto");
     }
     let zoom = detectZoom.zoom();
     //prefer fractional zoom values if possible:
@@ -1266,14 +1269,14 @@ class XpraWindow {
     }
     if (zoom != 1 && !Utilities.isMacOS()) {
       //scale it:
-      const tmp_img = new Image();
-      tmp_img.addEventListener("load", () => {
+      const temporary_img = new Image();
+      temporary_img.addEventListener("load", () => {
         const canvas = document.createElement("canvas");
-        const ctx = canvas.getContext("2d");
-        ctx.imageSmoothingEnabled = false;
+        const context = canvas.getContext("2d");
+        context.imageSmoothingEnabled = false;
         canvas.width = Math.round(w * window.devicePixelRatio);
         canvas.height = Math.round(h * window.devicePixelRatio);
-        ctx.drawImage(tmp_img, 0, 0, canvas.width, canvas.height);
+        context.drawImage(temporary_img, 0, 0, canvas.width, canvas.height);
         var scaled_cursor_url = canvas.toDataURL();
         set_cursor_url(
           scaled_cursor_url,
@@ -1281,7 +1284,7 @@ class XpraWindow {
           Math.round(yhot * window.devicePixelRatio)
         );
       });
-      tmp_img.src = cursor_url;
+      temporary_img.src = cursor_url;
     } else {
       set_cursor_url(cursor_url, xhot, yhot);
     }
@@ -1547,23 +1550,25 @@ class XpraWindow {
           paint_bitmap();
           return;
         }
-        const j = new Image();
-        j.addEventListener("load", () => {
-          if (j.width == 0 || j.height == 0) {
-            paint_error("invalid image size: " + j.width + "x" + j.height);
+        const index = new Image();
+        index.addEventListener("load", () => {
+          if (index.width == 0 || index.height == 0) {
+            paint_error(
+              "invalid image size: " + index.width + "x" + index.height
+            );
           } else {
             this.offscreen_canvas_ctx.clearRect(x, y, width, height);
-            this.offscreen_canvas_ctx.drawImage(j, x, y, width, height);
+            this.offscreen_canvas_ctx.drawImage(index, x, y, width, height);
             painted();
           }
           this.may_paint_now();
         });
-        j.onerror = () => {
+        index.onerror = () => {
           paint_error("failed to load " + coding + " into image tag");
           this.may_paint_now();
         };
         const paint_coding = coding.split("/")[0]; //ie: "png/P" -> "png"
-        j.src = this.construct_base64_image_url(paint_coding, img_data);
+        index.src = this.construct_base64_image_url(paint_coding, img_data);
       } else if (coding == "h264") {
         const frame = options["frame"] || 0;
         if (frame == 0) {
@@ -1580,9 +1585,9 @@ class XpraWindow {
         // (and already painted via the onPictureDecoded callback)
         painted();
       } else if (coding == "scroll") {
-        for (let i = 0, j = img_data.length; i < j; ++i) {
-          const scroll_data = img_data[i];
-          this.debug("draw", "scroll", i, ":", scroll_data);
+        for (let index = 0, index_ = img_data.length; index < index_; ++index) {
+          const scroll_data = img_data[index];
+          this.debug("draw", "scroll", index, ":", scroll_data);
           const sx = scroll_data[0],
             sy = scroll_data[1],
             sw = scroll_data[2],

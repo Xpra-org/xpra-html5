@@ -95,14 +95,14 @@ class WindowDecoder {
       this.canvas.width,
       this.canvas.height
     );
-    const ctx = this.back_buffer.getContext("2d");
-    ctx.imageSmoothingEnabled = false;
+    const context = this.back_buffer.getContext("2d");
+    context.imageSmoothingEnabled = false;
     if (
       old_back_buffer &&
       old_back_buffer.width > 0 &&
       old_back_buffer.height > 0
     ) {
-      ctx.drawImage(old_back_buffer, 0, 0);
+      context.drawImage(old_back_buffer, 0, 0);
     }
   }
 
@@ -375,8 +375,8 @@ class WindowDecoder {
       data = packet[7];
 
     const canvas = this.back_buffer || this.canvas;
-    let ctx = canvas.getContext("2d");
-    ctx.imageSmoothingEnabled = false;
+    let context = canvas.getContext("2d");
+    context.imageSmoothingEnabled = false;
 
     const parts = coding_fmt.split(":"); //ie: "bitmap:rgb24" or "image:jpeg"
     const coding = parts[0]; //ie: "bitmap"
@@ -384,38 +384,38 @@ class WindowDecoder {
       if (!this.debug) {
         return;
       }
-      const src_encoding = parts[1] || ""; //ie: "rgb24"
-      const box_color = DEFAULT_BOX_COLORS[src_encoding];
+      const source_encoding = parts[1] || ""; //ie: "rgb24"
+      const box_color = DEFAULT_BOX_COLORS[source_encoding];
       if (box_color) {
         //ie: "orange"
-        this.paint_box(ctx, box_color, x, y, width, height);
+        this.paint_box(context, box_color, x, y, width, height);
       }
     };
 
     if (coding == "bitmap") {
       // RGB is transformed to bitmap
-      ctx.clearRect(x, y, width, height);
-      ctx.drawImage(data, x, y, width, height);
+      context.clearRect(x, y, width, height);
+      context.drawImage(data, x, y, width, height);
       paint_box();
     } else if (coding == "image") {
       // All others are transformed to VideoFrame
-      ctx.clearRect(x, y, width, height);
-      ctx.drawImage(data.image, x, y, width, height);
+      context.clearRect(x, y, width, height);
+      context.drawImage(data.image, x, y, width, height);
       data.image.close();
       paint_box();
     } else if (coding == "scroll") {
       this.init_back_buffer();
-      ctx = this.back_buffer.getContext("2d");
-      ctx.imageSmoothingEnabled = false;
-      for (let i = 0, j = data.length; i < j; ++i) {
-        const scroll_data = data[i];
+      context = this.back_buffer.getContext("2d");
+      context.imageSmoothingEnabled = false;
+      for (let index = 0, index_ = data.length; index < index_; ++index) {
+        const scroll_data = data[index];
         const sx = scroll_data[0],
           sy = scroll_data[1],
           sw = scroll_data[2],
           sh = scroll_data[3],
           xdelta = scroll_data[4],
           ydelta = scroll_data[5];
-        ctx.drawImage(
+        context.drawImage(
           this.canvas,
           sx,
           sy,
@@ -427,7 +427,7 @@ class WindowDecoder {
           sh
         );
         if (this.debug) {
-          this.paint_box(ctx, "brown", sx + xdelta, sy + ydelta, sw, sh);
+          this.paint_box(context, "brown", sx + xdelta, sy + ydelta, sw, sh);
         }
       }
     } else if (coding == "frame") {
@@ -439,7 +439,7 @@ class WindowDecoder {
         enc_width = scaled_size[0];
         enc_height = scaled_size[1];
       }
-      ctx.drawImage(data, x, y, enc_width, enc_height);
+      context.drawImage(data, x, y, enc_width, enc_height);
       data.close();
       paint_box();
     } else if (coding == "throttle") {
@@ -451,16 +451,16 @@ class WindowDecoder {
     }
     const options = packet[10] || {};
     const flush = options["flush"] || 0;
-    if (flush == 0 && ctx.commit) {
-      ctx.commit();
+    if (flush == 0 && context.commit) {
+      context.commit();
     }
   }
 
-  paint_box(ctx, color, px, py, pw, ph) {
+  paint_box(context, color, px, py, pw, ph) {
     if (color) {
-      ctx.strokeStyle = color;
-      ctx.lineWidth = 2;
-      ctx.strokeRect(px, py, pw, ph);
+      context.strokeStyle = color;
+      context.lineWidth = 2;
+      context.strokeRect(px, py, pw, ph);
     }
   }
 
@@ -484,11 +484,11 @@ class WindowDecoder {
     if (!this.snapshot_buffer) {
       return;
     }
-    const ctx = this.canvas.getContext("2d");
-    ctx.imageSmoothingEnabled = false;
-    ctx.drawImage(this.snapshot_buffer, 0, 0);
-    if (ctx.commit) {
-      ctx.commit();
+    const context = this.canvas.getContext("2d");
+    context.imageSmoothingEnabled = false;
+    context.drawImage(this.snapshot_buffer, 0, 0);
+    if (context.commit) {
+      context.commit();
     }
   }
 
@@ -498,9 +498,9 @@ class WindowDecoder {
     const h = this.canvas.height;
     if (w > 0 && h > 0) {
       this.snapshot_buffer = new OffscreenCanvas(w, h);
-      const ctx = this.snapshot_buffer.getContext("2d");
-      ctx.imageSmoothingEnabled = false;
-      ctx.drawImage(this.canvas, 0, 0);
+      const context = this.snapshot_buffer.getContext("2d");
+      context.imageSmoothingEnabled = false;
+      context.drawImage(this.canvas, 0, 0);
     }
   }
 }

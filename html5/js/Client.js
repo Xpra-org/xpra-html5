@@ -280,18 +280,24 @@ class XpraClient {
     }
   }
 
-  send_log(level, args) {
+  send_log(level, arguments_) {
     if (this.remote_logging && this.server_remote_logging && this.connected) {
       try {
         const sargs = [];
-        for (let i = 0; i < args.length; i++) {
-          sargs.push(unescape(encodeURIComponent(String(args[i]))));
+        for (let index = 0; index < arguments_.length; index++) {
+          sargs.push(unescape(encodeURIComponent(String(arguments_[index]))));
         }
         this.send(["logging", level, sargs]);
       } catch {
         this.cerror("remote logging failed");
-        for (let i = 0; i < args.length; i++) {
-          this.clog(" argument", i, typeof args[i], ":", "'" + args[i] + "'");
+        for (let index = 0; index < arguments_.length; index++) {
+          this.clog(
+            " argument",
+            index,
+            typeof arguments_[index],
+            ":",
+            "'" + arguments_[index] + "'"
+          );
         }
       }
     }
@@ -299,10 +305,10 @@ class XpraClient {
   exc() {
     //first argument is the exception:
     const exception = arguments[0];
-    let args = [...arguments];
-    args = args.splice(1);
-    if (args.length > 0) {
-      this.cerror(args);
+    let arguments_ = [...arguments];
+    arguments_ = arguments_.splice(1);
+    if (arguments_.length > 0) {
+      this.cerror(arguments_);
     }
     if (exception.stack) {
       try {
@@ -339,7 +345,7 @@ class XpraClient {
   }
   debug() {
     const category = arguments[0];
-    let args = [...arguments];
+    let arguments_ = [...arguments];
     if (this.debug_categories.includes(category)) {
       if (category != "network") {
         //logging.DEBUG = 10
@@ -514,7 +520,7 @@ class XpraClient {
           return;
         }
         if (data["error"]) {
-          const msg = data["error"],
+          const message = data["error"],
             packet = data["packet"],
             wid = packet[1],
             width = packet[2],
@@ -527,7 +533,7 @@ class XpraClient {
             "packet sequence",
             packet_sequence,
             ":",
-            msg
+            message
           );
           if (!this.offscreen_api) {
             this.clog(" pixel data:", packet[7]);
@@ -538,7 +544,7 @@ class XpraClient {
             width,
             height,
             -1,
-            msg
+            message
           );
           return;
         }
@@ -610,16 +616,16 @@ class XpraClient {
   }
 
   redraw_windows() {
-    for (const i in this.id_to_window) {
-      const iwin = this.id_to_window[i];
+    for (const index in this.id_to_window) {
+      const iwin = this.id_to_window[index];
       this.request_redraw(iwin);
     }
   }
 
   close_windows() {
-    for (const i in this.id_to_window) {
-      const iwin = this.id_to_window[i];
-      window.removeWindowListItem(i);
+    for (const index in this.id_to_window) {
+      const iwin = this.id_to_window[index];
+      window.removeWindowListItem(index);
       iwin.destroy();
     }
   }
@@ -659,12 +665,12 @@ class XpraClient {
     // ctx refers to `this` because we came through a callback
     const packet_type = Utilities.s(packet[0]);
     this.debug("network", "received a", packet_type, "packet");
-    const fn = this.packet_handlers[packet_type];
-    if (fn == undefined) {
+    const function_ = this.packet_handlers[packet_type];
+    if (function_ == undefined) {
       this.cerror("no packet handler for ", packet_type);
       this.clog(packet);
     } else {
-      fn.call(this, packet);
+      function_.call(this, packet);
     }
   }
 
@@ -690,8 +696,8 @@ class XpraClient {
     ];
     this.send(packet);
     // call the screen_resized function on all open windows
-    for (const i in this.id_to_window) {
-      const iwin = this.id_to_window[i];
+    for (const index in this.id_to_window) {
+      const iwin = this.id_to_window[index];
       iwin.screen_resized();
 
       // Force fullscreen on a a given window name from the provided settings
@@ -738,28 +744,28 @@ class XpraClient {
     this.capture_keyboard = false;
     // assign the key callbacks
     document.addEventListener("keydown", (e) => {
-      const preview_el = $(WINDOW_PREVIEW_SELECTOR);
-      if (e.code === "Escape" && preview_el.is(":visible")) {
+      const preview_element = $(WINDOW_PREVIEW_SELECTOR);
+      if (e.code === "Escape" && preview_element.is(":visible")) {
         client.toggle_window_preview();
         return e.stopPropagation() || e.preventDefault();
       }
       if (e.code === "Tab") {
-        if (preview_el.is(":visible")) {
+        if (preview_element.is(":visible")) {
           // Select next for previous window.
-          const num_slides = $(".window-preview-item-container").length;
-          const curr_slide = preview_el.slick("slickCurrentSlide");
-          var next_index = curr_slide;
+          const number_slides = $(".window-preview-item-container").length;
+          const current_slide = preview_element.slick("slickCurrentSlide");
+          var next_index = current_slide;
           next_index = e.shiftKey
-            ? (curr_slide - 1) % num_slides
-            : (curr_slide + 1) % num_slides;
-          preview_el.slick("goTo", next_index, true);
+            ? (current_slide - 1) % number_slides
+            : (current_slide + 1) % number_slides;
+          preview_element.slick("goTo", next_index, true);
           return e.stopPropagation() || e.preventDefault();
         } else if (e.altKey) {
           // Alt+Tab shows window preview. and goes to the next window.
           client.toggle_window_preview((e, slick) => {
-            const num_slides = slick.slideCount;
-            const curr_slide = slick.currentSlide;
-            var next_index = (curr_slide + 1) % num_slides;
+            const number_slides = slick.slideCount;
+            const current_slide = slick.currentSlide;
+            var next_index = (current_slide + 1) % number_slides;
             setTimeout(() => {
               slick.goTo(next_index, true);
             }, 10);
@@ -946,7 +952,7 @@ class XpraClient {
       //this usually fires when we have received the event via "oninput" already
       return;
     }
-    let str = event.key || String.fromCharCode(keycode);
+    let string_ = event.key || String.fromCharCode(keycode);
     let unpress_now = false;
     this.debug(
       "keyboard",
@@ -957,9 +963,9 @@ class XpraClient {
       ", pressed=",
       pressed,
       ", str=",
-      str
+      string_
     );
-    const dead = str.toLowerCase() == "dead";
+    const dead = string_.toLowerCase() == "dead";
     if (
       dead &&
       ((this.last_keycode_pressed != keycode && !pressed) || pressed)
@@ -993,26 +999,26 @@ class XpraClient {
 
     let key_language = null;
     //some special keys are better mapped by name:
-    const map_str = this.keyboard_map[keyname];
-    if (dead && map_str && map_str in DEAD_KEYS) {
-      keyname = DEAD_KEYS[map_str];
-      str = map_str;
+    const map_string = this.keyboard_map[keyname];
+    if (dead && map_string && map_string in DEAD_KEYS) {
+      keyname = DEAD_KEYS[map_string];
+      string_ = map_string;
       this.debug("keyboard", "dead key:", keyname);
     } else if (keyname in KEY_TO_NAME) {
       keyname = KEY_TO_NAME[keyname];
-    } else if (keyname == "" && str in KEY_TO_NAME) {
-      keyname = KEY_TO_NAME[str];
+    } else if (keyname == "" && string_ in KEY_TO_NAME) {
+      keyname = KEY_TO_NAME[string_];
     }
     //special case for numpad,
     //try to distinguish arrowpad and numpad:
     //(for arrowpad, keyname==str)
-    else if (keyname != str && str in NUMPAD_TO_NAME) {
-      keyname = NUMPAD_TO_NAME[str];
+    else if (keyname != string_ && string_ in NUMPAD_TO_NAME) {
+      keyname = NUMPAD_TO_NAME[string_];
       this.num_lock = "0123456789.".includes(keyname);
     }
     //next try mapping the actual character
-    else if (str in CHAR_TO_NAME) {
-      keyname = CHAR_TO_NAME[str];
+    else if (string_ in CHAR_TO_NAME) {
+      keyname = CHAR_TO_NAME[string_];
       if (keyname.includes("_")) {
         //ie: Thai_dochada
         const lang = keyname.split("_")[0];
@@ -1042,13 +1048,13 @@ class XpraClient {
 
     //AltGr: keep track of pressed state
     if (
-      str == "AltGraph" ||
+      string_ == "AltGraph" ||
       (keyname == "Alt_R" && (Utilities.isWindows() || Utilities.isMacOS())) ||
       (keyname == "Alt_L" && Utilities.isMacOS())
     ) {
       this.altgr_state = pressed;
       keyname = "ISO_Level3_Shift";
-      str = "AltGraph";
+      string_ = "AltGraph";
     }
 
     const raw_modifiers = get_event_modifiers(event);
@@ -1059,23 +1065,23 @@ class XpraClient {
     const shift = modifiers.includes("shift");
     const capslock = modifiers.includes("capslock");
     if ((capslock && shift) || (!capslock && !shift)) {
-      str = str.toLowerCase();
+      string_ = string_.toLowerCase();
     }
 
-    const ostr = str;
+    const ostr = string_;
     if (this.swap_keys) {
       if (keyname == "Control_L") {
         keyname = "Meta_L";
-        str = "meta";
+        string_ = "meta";
       } else if (keyname == "Meta_L") {
         keyname = "Control_L";
-        str = "control";
+        string_ = "control";
       } else if (keyname == "Control_R") {
         keyname = "Meta_R";
-        str = "meta";
+        string_ = "meta";
       } else if (keyname == "Meta_R") {
         keyname = "Control_R";
-        str = "control";
+        string_ = "control";
       }
     }
 
@@ -1123,8 +1129,9 @@ class XpraClient {
         );
         allow_default = true;
       }
-      const clipboard_mod_set = raw_modifiers.includes(clipboard_modifier);
-      if (clipboard_mod_set) {
+      const is_clipboard_modifier_set =
+        raw_modifiers.includes(clipboard_modifier);
+      if (is_clipboard_modifier_set) {
         const l = keyname.toLowerCase();
         if (l == "c" || l == "x" || l == "v") {
           this.debug(
@@ -1151,7 +1158,7 @@ class XpraClient {
         pressed,
         modifiers,
         keyval,
-        str,
+        string_,
         keycode,
         group,
       ];
@@ -1164,7 +1171,7 @@ class XpraClient {
           false,
           modifiers,
           keyval,
-          str,
+          string_,
           keycode,
           group,
         ];
@@ -1270,8 +1277,8 @@ class XpraClient {
   }
 
   _update_capabilities(appendobj) {
-    for (const attr in appendobj) {
-      this.capabilities[attr] = appendobj[attr];
+    for (const attribute in appendobj) {
+      this.capabilities[attribute] = appendobj[attribute];
     }
   }
 
@@ -1287,8 +1294,8 @@ class XpraClient {
       } else {
         this.clog("server connection is OK");
       }
-      for (const i in this.id_to_window) {
-        const iwin = this.id_to_window[i];
+      for (const index in this.id_to_window) {
+        const iwin = this.id_to_window[index];
         iwin.set_spinner(this.server_ok);
       }
     }
@@ -1877,12 +1884,12 @@ class XpraClient {
     const apy = Math.abs(py);
     if (this.server_precise_wheel) {
       if (apx > 0) {
-        const btn_x = px >= 0 ? 6 : 7;
+        const button_x = px >= 0 ? 6 : 7;
         const xdist = Math.round((px * 1000) / 120);
         this.send([
           "wheel-motion",
           wid,
-          btn_x,
+          button_x,
           -xdist,
           [x, y],
           modifiers,
@@ -1890,12 +1897,12 @@ class XpraClient {
         ]);
       }
       if (apy > 0) {
-        const btn_y = py >= 0 ? 5 : 4;
+        const button_y = py >= 0 ? 5 : 4;
         const ydist = Math.round((py * 1000) / 120);
         this.send([
           "wheel-motion",
           wid,
-          btn_y,
+          button_y,
           -ydist,
           [x, y],
           modifiers,
@@ -1918,17 +1925,49 @@ class XpraClient {
     //send synthetic click+release as many times as needed:
     let wx = Math.abs(this.wheel_delta_x);
     let wy = Math.abs(this.wheel_delta_y);
-    const btn_x = this.wheel_delta_x >= 0 ? 6 : 7;
-    const btn_y = this.wheel_delta_y >= 0 ? 5 : 4;
+    const button_x = this.wheel_delta_x >= 0 ? 6 : 7;
+    const button_y = this.wheel_delta_y >= 0 ? 5 : 4;
     while (wx >= 120) {
       wx -= 120;
-      this.send([BUTTON_ACTION, wid, btn_x, true, [x, y], modifiers, buttons]);
-      this.send([BUTTON_ACTION, wid, btn_x, false, [x, y], modifiers, buttons]);
+      this.send([
+        BUTTON_ACTION,
+        wid,
+        button_x,
+        true,
+        [x, y],
+        modifiers,
+        buttons,
+      ]);
+      this.send([
+        BUTTON_ACTION,
+        wid,
+        button_x,
+        false,
+        [x, y],
+        modifiers,
+        buttons,
+      ]);
     }
     while (wy >= 120) {
       wy -= 120;
-      this.send([BUTTON_ACTION, wid, btn_y, true, [x, y], modifiers, buttons]);
-      this.send([BUTTON_ACTION, wid, btn_y, false, [x, y], modifiers, buttons]);
+      this.send([
+        BUTTON_ACTION,
+        wid,
+        button_y,
+        true,
+        [x, y],
+        modifiers,
+        buttons,
+      ]);
+      this.send([
+        BUTTON_ACTION,
+        wid,
+        button_y,
+        false,
+        [x, y],
+        modifiers,
+        buttons,
+      ]);
     }
     //store left overs:
     this.wheel_delta_x = this.wheel_delta_x >= 0 ? wx : -wx;
@@ -1947,8 +1986,8 @@ class XpraClient {
       if (clipboardData && clipboardData.files) {
         const files = clipboardData.files;
         this.clog("paste got", files.length, "files");
-        for (let i = 0; i < files.length; i++) {
-          let file = files.item(i);
+        for (let index = 0; index < files.length; index++) {
+          let file = files.item(index);
           this.send_file(file);
         }
         e.preventDefault();
@@ -2173,8 +2212,8 @@ class XpraClient {
         win.windowtype == "DESKTOP" &&
         win.metadata[CLASS_INSTANCE].includes(auto_fullscreen_desktop_class)
       ) {
-        for (let i in this.id_to_window) {
-          const iwin = this.id_to_window[i];
+        for (let index in this.id_to_window) {
+          const iwin = this.id_to_window[index];
           if (iwin.wid != win.wid && !iwin.minimized) {
             return;
           }
@@ -2191,8 +2230,8 @@ class XpraClient {
     //set the focused flag on the window specified,
     //adjust stacking order:
     let iwin = null;
-    for (const i in this.id_to_window) {
-      iwin = this.id_to_window[i];
+    for (const index in this.id_to_window) {
+      iwin = this.id_to_window[index];
       iwin.focused = iwin.wid == wid;
       if (iwin.focused) {
         iwin.stacking_layer = top_stacking_layer;
@@ -2202,7 +2241,7 @@ class XpraClient {
         if (iwin.stacking_layer > old_stacking_layer) {
           iwin.stacking_layer--;
         }
-        if (had_focus == i) {
+        if (had_focus == index) {
           this.send_configure_window(iwin, { focused: false }, true);
         }
       }
@@ -2235,12 +2274,12 @@ class XpraClient {
   /*
    * Show/Hide the window preview list
    */
-  toggle_window_preview(init_cb) {
+  toggle_window_preview(init_callback) {
     const preview_element = $(WINDOW_PREVIEW_SELECTOR);
 
     preview_element.on("init", (e, slick) => {
-      if (init_cb) {
-        init_cb(e, slick);
+      if (init_callback) {
+        init_callback(e, slick);
       }
     });
 
@@ -2306,25 +2345,25 @@ class XpraClient {
     });
 
     // Add all open windows to the list.
-    for (let i in windows_sorted) {
-      var win = windows_sorted[i];
+    for (let index in windows_sorted) {
+      var win = windows_sorted[index];
       var item_container = $("<div>");
       item_container.data("wid", win.wid);
       item_container.addClass("window-preview-item-container");
 
       // Text
-      var item_text_el = $("<div>");
-      item_text_el.addClass("window-preview-item-text");
-      item_text_el.text(win.title);
+      var item_text_element = $("<div>");
+      item_text_element.addClass("window-preview-item-text");
+      item_text_element.text(win.title);
 
       // Window image
       var png_base64 = win.canvas.toDataURL("image/png");
-      var img_el = $("<img>");
-      img_el.addClass("window-preview-item-img");
-      img_el.attr("src", png_base64);
+      var img_element = $("<img>");
+      img_element.addClass("window-preview-item-img");
+      img_element.attr("src", png_base64);
 
-      item_container.append(item_text_el);
-      item_container.append(img_el);
+      item_container.append(item_text_element);
+      item_container.append(img_element);
 
       preview_element.append(item_container);
     }
@@ -2449,10 +2488,10 @@ class XpraClient {
         this.disconnect_reason = "connection failed, invalid address?";
       } else {
         this.disconnect_reason = packet[1];
-        let i = 2;
-        while (packet.length > i && packet[i]) {
-          this.disconnect_reason += "\n" + packet[i];
-          i++;
+        let index = 2;
+        while (packet.length > index && packet[index]) {
+          this.disconnect_reason += "\n" + packet[index];
+          index++;
         }
       }
     }
@@ -2576,8 +2615,8 @@ class XpraClient {
         ".padding",
         ".padding.options",
       ];
-      for (let i = 0; i < CIPHER_CAPS.length; ++i) {
-        const cipher_key = "cipher" + CIPHER_CAPS[i];
+      for (let index = 0; index < CIPHER_CAPS.length; ++index) {
+        const cipher_key = "cipher" + CIPHER_CAPS[index];
         let value = hello[cipher_key];
         if (typeof value === "object" && value.constructor === Uint8Array) {
           value = String.fromCharCode.apply(null, value);
@@ -2590,8 +2629,8 @@ class XpraClient {
     if (rencode_ok) {
       PACKET_ENCODERS = ["rencodeplus", "bencode"];
     }
-    for (const i in PACKET_ENCODERS) {
-      const packet_encoder = PACKET_ENCODERS[i];
+    for (const index in PACKET_ENCODERS) {
+      const packet_encoder = PACKET_ENCODERS[index];
       if (hello[packet_encoder]) {
         this.packet_encoder = packet_encoder;
         this.protocol.enable_packet_encoder(packet_encoder);
@@ -2635,8 +2674,8 @@ class XpraClient {
     try {
       const vparts = version.split(".");
       const vno = [];
-      for (let i = 0; i < vparts.length; i++) {
-        vno[i] = Number.parseInt(vparts[i]);
+      for (let index = 0; index < vparts.length; index++) {
+        vno[index] = Number.parseInt(vparts[index]);
       }
       if (vno[0] <= 0 && vno[1] < 10) {
         this.callback_close("unsupported version: " + version);
@@ -2652,19 +2691,24 @@ class XpraClient {
     //figure out "alt" and "meta" keys:
     if ("modifier_keycodes" in hello) {
       const modifier_keycodes = hello["modifier_keycodes"];
-      for (const mod in modifier_keycodes) {
-        const keys = modifier_keycodes[mod];
-        for (let i = 0; i < keys.length; i++) {
-          const key = keys[i];
+      for (const keycode_index in modifier_keycodes) {
+        const keys = modifier_keycodes[keycode_index];
+        for (const key_index in keys) {
+          const key = keys[key_index];
           //the first value is usually the integer keycode,
           //the second one is the actual key name,
           //doesn't hurt to test both:
-          for (let j = 0; j < key.length; j++) {
-            if ("Alt_L" == key[j]) this.alt_modifier = mod;
-            else if ("Meta_L" == key[j]) this.meta_modifier = mod;
-            else if ("ISO_Level3_Shift" == key[j] || "Mode_switch" == key[j])
-              this.altgr_modifier = mod;
-            else if ("Control_L" == key[j]) this.control_modifier = mod;
+          for (const subkey_index in key) {
+            if ("Alt_L" == key[subkey_index]) this.alt_modifier = keycode_index;
+            else if ("Meta_L" == key[subkey_index])
+              this.meta_modifier = keycode_index;
+            else if (
+              "ISO_Level3_Shift" == key[subkey_index] ||
+              "Mode_switch" == key[subkey_index]
+            )
+              this.altgr_modifier = keycode_index;
+            else if ("Control_L" == key[subkey_index])
+              this.control_modifier = keycode_index;
           }
         }
       }
@@ -2693,11 +2737,11 @@ class XpraClient {
             this.audio_codec = null;
             //find the best one we can use:
             for (
-              let i = 0;
-              i < MediaSourceConstants.PREFERRED_CODEC_ORDER.length;
-              i++
+              let index = 0;
+              index < MediaSourceConstants.PREFERRED_CODEC_ORDER.length;
+              index++
             ) {
-              const codec = MediaSourceConstants.PREFERRED_CODEC_ORDER[i];
+              const codec = MediaSourceConstants.PREFERRED_CODEC_ORDER[index];
               if (
                 codec in this.audio_codecs &&
                 this.server_audio_codecs.includes(codec)
@@ -3215,16 +3259,16 @@ class XpraClient {
   suspend() {
     const window_ids = Object.keys(client.id_to_window).map(Number);
     this.send(["suspend", true, window_ids]);
-    for (const i in this.id_to_window) {
-      let iwin = this.id_to_window[i];
+    for (const index in this.id_to_window) {
+      let iwin = this.id_to_window[index];
       iwin.suspend();
     }
   }
 
   resume() {
     const window_ids = Object.keys(client.id_to_window).map(Number);
-    for (const i in this.id_to_window) {
-      let iwin = this.id_to_window[i];
+    for (const index in this.id_to_window) {
+      let iwin = this.id_to_window[index];
       iwin.resume();
     }
     this.send(["resume", true, window_ids]);
@@ -3473,8 +3517,8 @@ class XpraClient {
   auto_focus() {
     let highest_window = null;
     let highest_stacking = -1;
-    for (const i in this.id_to_window) {
-      let iwin = this.id_to_window[i];
+    for (const index in this.id_to_window) {
+      let iwin = this.id_to_window[index];
       if (
         !iwin.minimized &&
         iwin.stacking_layer > highest_stacking &&
@@ -3569,7 +3613,7 @@ class XpraClient {
       window.closeNotification(nid);
     }
 
-    const ctx = this;
+    const context = this;
     function notify() {
       let icon_url = "";
       if (icon && icon[0] == "png") {
@@ -3582,10 +3626,10 @@ class XpraClient {
       });
       const reason = 2; //closed by the user - best guess...
       notification.addEventListener("close", () =>
-        ctx.send(["notification-close", nid, reason, ""])
+        context.send(["notification-close", nid, reason, ""])
       );
       notification.addEventListener("click", () =>
-        ctx.log("user clicked on notification", nid)
+        context.log("user clicked on notification", nid)
       );
     }
 
@@ -3615,14 +3659,14 @@ class XpraClient {
         actions,
         hints,
         function (nid, action_id) {
-          ctx.send(["notification-action", nid, action_id]);
+          context.send(["notification-action", nid, action_id]);
         },
         function (nid, reason, text) {
-          ctx.send(["notification-close", nid, reason, text || ""]);
+          context.send(["notification-close", nid, reason, text || ""]);
         }
       );
     }
-    ctx._new_ui_event();
+    context._new_ui_event();
   }
 
   _process_notify_close(packet) {
@@ -3673,14 +3717,14 @@ class XpraClient {
     this.debug("main", "window-icon: ", encoding, " size ", w, "x", h);
     const win = this.id_to_window[wid];
     if (win) {
-      const src = win.update_icon(w, h, encoding, img_data);
+      const source = win.update_icon(w, h, encoding, img_data);
       //update favicon too:
       if (
         wid == this.focus ||
         this.server_is_desktop ||
         this.server_is_shadow
       ) {
-        jQuery("#favicon").attr("href", src);
+        jQuery("#favicon").attr("href", source);
       }
     }
   }
@@ -4218,19 +4262,19 @@ class XpraClient {
     if (metadata) {
       this.debug("audio", "audio metadata=", metadata);
       //push metadata first:
-      for (let i = 0; i < metadata.length; i++) {
+      for (let index = 0; index < metadata.length; index++) {
         this.debug(
           "audio",
           "metadata[",
-          i,
+          index,
           "]=",
-          metadata[i],
+          metadata[index],
           ", length=",
-          metadata[i].length,
+          metadata[index].length,
           ", type=",
-          Object.prototype.toString.call(metadata[i])
+          Object.prototype.toString.call(metadata[index])
         );
-        this.audio_buffers.push(Utilities.StringToUint8(metadata[i]));
+        this.audio_buffers.push(Utilities.StringToUint8(metadata[index]));
       }
       //since we have the metadata, we should be good to go:
       MIN_START_BUFFERS = 1;
@@ -4250,13 +4294,13 @@ class XpraClient {
         } else {
           //concatenate all pending buffers into one:
           let size = 0;
-          for (let i = 0, j = ab.length; i < j; ++i) {
-            size += ab[i].length;
+          for (let index = 0, index_ = ab.length; index < index_; ++index) {
+            size += ab[index].length;
           }
           buf = new Uint8Array(size);
           size = 0;
-          for (let i = 0, j = ab.length; i < j; ++i) {
-            const v = ab[i];
+          for (let index = 0, index_ = ab.length; index < index_; ++index) {
+            const v = ab[index];
             if (v.length > 0) {
               buf.set(v, size);
               size += v.length;
@@ -4267,8 +4311,8 @@ class XpraClient {
         this.push_audio_buffer(buf);
       } else {
         this.audio_buffers_count += ab.length;
-        for (let i = 0, j = ab.length; i < j; ++i) {
-          this.push_audio_buffer(ab[i]);
+        for (let index = 0, index_ = ab.length; index < index_; ++index) {
+          this.push_audio_buffer(ab[index]);
         }
       }
       this.audio_buffers = [];
@@ -4580,11 +4624,11 @@ class XpraClient {
             let item = null;
             let itemtype = null;
             this.debug("clipboard", "request via read() data=", data);
-            for (let i = 0; i < data.length; i++) {
-              item = data[i];
-              this.debug("clipboard", "item", i, "types:", item.types);
-              for (let j = 0; j < item.types.length; j++) {
-                itemtype = item.types[j];
+            for (let index = 0; index < data.length; index++) {
+              item = data[index];
+              this.debug("clipboard", "item", index, "types:", item.types);
+              for (let index = 0; index < item.types.length; index++) {
+                itemtype = item.types[index];
                 if (itemtype == TEXT_PLAIN) {
                   item.getType(itemtype).then(
                     (blob) => {
@@ -4783,13 +4827,19 @@ class XpraClient {
       return;
     }
     let digest = null;
-    for (let hash_fn of ["sha512", "sha384", "sha256", "sha224", "sha1"]) {
-      if (options[hash_fn]) {
+    for (let hash_function of [
+      "sha512",
+      "sha384",
+      "sha256",
+      "sha224",
+      "sha1",
+    ]) {
+      if (options[hash_function]) {
         try {
-          digest = forge.md[hash_fn].create();
+          digest = forge.md[hash_function].create();
           break;
         } catch (error) {
-          this.error("Error: no", hash_fn, "checksum available:", error);
+          this.error("Error: no", hash_function, "checksum available:", error);
         }
       }
     }
@@ -4998,13 +5048,13 @@ class XpraClient {
               this.file_chunk_written(packet);
             },
             (error) => {
-              let msg = "cannot write file data, download cancelled?";
+              let message = "cannot write file data, download cancelled?";
               if (error) {
                 this.clog("write failed:", error);
-                msg =
+                message =
                   "cannot write file data: " + error + ", download cancelled?";
               }
-              this.cancel_file(chunk_id, msg);
+              this.cancel_file(chunk_id, message);
             }
           );
           //we will continue when the promise resolves, see above
@@ -5012,9 +5062,9 @@ class XpraClient {
         }
         this.clog("write(..)=", p);
       } catch (error) {
-        const msg = "cannot write file data - download cancelled?";
+        const message = "cannot write file data - download cancelled?";
         this.error(error);
-        this.cancel_file(chunk_id, msg);
+        this.cancel_file(chunk_id, message);
         return;
       }
     } else {
@@ -5088,9 +5138,9 @@ class XpraClient {
       writer.close();
     } else {
       const chunks = chunk_state[1];
-      for (let i = 0; i < chunks.length; ++i) {
-        data.set(chunks[i], start);
-        start += chunks[i].length;
+      for (let index = 0; index < chunks.length; ++index) {
+        data.set(chunks[index], start);
+        start += chunks[index].length;
       }
       this._got_file(filename, data, mimetype, printit, mimetype, options);
     }
@@ -5158,7 +5208,7 @@ class XpraClient {
   }
 
   send_all_files(files) {
-    for (let i = 0, f; (f = files[i]); i++) {
+    for (let index = 0, f; (f = files[index]); index++) {
       this.send_file(f);
     }
   }
@@ -5167,8 +5217,8 @@ class XpraClient {
     clog("send_file:", f.name, ", type:", f.type, ", size:", f.size);
     const me = this;
     const fileReader = new FileReader();
-    fileReader.onloadend = (evt) => {
-      const u8a = new Uint8Array(evt.target.result);
+    fileReader.onloadend = (event_) => {
+      const u8a = new Uint8Array(event_.target.result);
       var buf = u8a;
       if (client.packet_encoder != "rencodeplus") {
         buf = Utilities.Uint8ToString(u8a);

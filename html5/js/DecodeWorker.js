@@ -51,8 +51,8 @@ function decode_draw_packet(packet, start) {
   function do_send_back(p, raw_buffers) {
     self.postMessage({ draw: p, start: start }, raw_buffers);
   }
-  function decode_error(msg) {
-    self.postMessage({ error: "" + msg, packet: packet, start: start });
+  function decode_error(message) {
+    self.postMessage({ error: "" + message, packet: packet, start: start });
   }
 
   function hold() {
@@ -80,10 +80,10 @@ function decode_draw_packet(packet, start) {
       //could have been cancelled by EOS
       return;
     }
-    let i;
-    for (i = 0; i < held.length; i++) {
-      const held_packet = held[i][0];
-      const held_raw_buffers = held[i][1];
+    let index;
+    for (index = 0; index < held.length; index++) {
+      const held_packet = held[index][0];
+      const held_raw_buffers = held[index][1];
       do_send_back(held_packet, held_raw_buffers);
     }
     wid_hold.delete(packet_sequence);
@@ -224,7 +224,12 @@ function decode_draw_packet(packet, start) {
   }
 }
 
-function check_image_decode(format, image_bytes, success_cb, fail_cb) {
+function check_image_decode(
+  format,
+  image_bytes,
+  success_callback,
+  fail_callback
+) {
   if (console) {
     console.info(
       "checking",
@@ -234,7 +239,7 @@ function check_image_decode(format, image_bytes, success_cb, fail_cb) {
   }
   try {
     const timer = setTimeout(function () {
-      fail_cb(format, "timeout, no " + format + " picture decoded");
+      fail_callback(format, "timeout, no " + format + " picture decoded");
     }, 2000);
     if (format == "h264") {
       const decoder = new Decoder({
@@ -243,7 +248,7 @@ function check_image_decode(format, image_bytes, success_cb, fail_cb) {
       });
       decoder.onPictureDecoded = function (buffer, p_width, p_height, infos) {
         clearTimeout(timer);
-        success_cb(format);
+        success_callback(format);
       };
       decoder.decode(image_bytes);
       return;
@@ -255,15 +260,15 @@ function check_image_decode(format, image_bytes, success_cb, fail_cb) {
     }).then(
       function () {
         clearTimeout(timer);
-        success_cb(format);
+        success_callback(format);
       },
       function (error) {
         clearTimeout(timer);
-        fail_cb(format, "" + error);
+        fail_callback(format, "" + error);
       }
     );
   } catch (error) {
-    fail_cb(format, "" + error);
+    fail_callback(format, "" + error);
   }
 }
 

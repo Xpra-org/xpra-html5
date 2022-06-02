@@ -61,12 +61,12 @@ NUMPAD_TO_NAME = {
   ArrowUp: "KP_Up",
   PageUp: "KP_Prior",
 };
-for (let i = 0; i <= 9; i++) {
-  KEY_TO_NAME["Numpad" + i] = "" + i;
-  KEY_TO_NAME["KP" + i] = "KP" + i;
+for (let index = 0; index <= 9; index++) {
+  KEY_TO_NAME["Numpad" + index] = "" + index;
+  KEY_TO_NAME["KP" + index] = "KP" + index;
 }
-for (let i = 1; i <= 20; i++) {
-  KEY_TO_NAME["F" + i] = "F" + i;
+for (let index = 1; index <= 20; index++) {
+  KEY_TO_NAME["F" + index] = "F" + index;
 }
 
 /**
@@ -1722,16 +1722,16 @@ CHARCODE_TO_NAME = {
   221: "bracketright",
   222: "apostrophe",
 };
-for (let i = 0; i < 26; i++) {
-  CHARCODE_TO_NAME[65 + i] = "abcdefghijklmnopqrstuvwxyz"[i];
+for (let index = 0; index < 26; index++) {
+  CHARCODE_TO_NAME[65 + index] = "abcdefghijklmnopqrstuvwxyz"[index];
 }
-for (let i = 0; i < 10; i++) {
-  CHARCODE_TO_NAME[48 + i] = "" + i;
-  CHARCODE_TO_NAME[96 + i] = "" + i;
+for (let index = 0; index < 10; index++) {
+  CHARCODE_TO_NAME[48 + index] = "" + index;
+  CHARCODE_TO_NAME[96 + index] = "" + index;
   //fix for OSX numpad?: CHARCODE_TO_NAME[96+i] = "KP_"+i;
 }
-for (let i = 1; i <= 24; i++) {
-  CHARCODE_TO_NAME[111 + i] = "F" + i;
+for (let index = 1; index <= 24; index++) {
+  CHARCODE_TO_NAME[111 + index] = "F" + index;
 }
 //overrides: only for 'de' layout?
 CHARCODE_TO_NAME[192] = "dead_circumflex";

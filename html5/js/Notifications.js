@@ -63,9 +63,9 @@ $(function () {
         '<div class="notification_buttons"></div>'
       );
       a.append(notification_buttons);
-      for (let i = 0; i < actions.length; i += 2) {
-        const action_id = actions[i];
-        const action_label = actions[i + 1];
+      for (let index = 0; index < actions.length; index += 2) {
+        const action_id = actions[index];
+        const action_label = actions[index + 1];
         const notification_button = window._notification_button(
           nid,
           action_id,
@@ -81,12 +81,12 @@ $(function () {
       const encoding = icon[0],
         img_data = icon[3];
       if (encoding == "png") {
-        const src =
+        const source =
           "data:image/" +
           encoding +
           ";base64," +
           Utilities.ArrayBufferToBase64(img_data);
-        $("#notification_icon" + nID).attr("src", src);
+        $("#notification_icon" + nID).attr("src", source);
       }
     }
 

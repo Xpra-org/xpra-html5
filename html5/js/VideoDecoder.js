@@ -108,7 +108,7 @@ class XpraVideoDecoder {
     this.on_frame_decoded(packet, current_frame);
   }
 
-  _on_decoder_error(err) {
+  _on_decoder_error(error) {
     // TODO: Handle err? Or just assume we will catch up?
     this._close();
   }

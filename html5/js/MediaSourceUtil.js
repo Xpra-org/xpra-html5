@@ -216,11 +216,11 @@ const MediaSourceUtil = {
     }
     const codec_options = Object.keys(codecs);
     for (
-      let i = 0;
-      i < MediaSourceConstants.PREFERRED_CODEC_ORDER.length;
-      i++
+      let index = 0;
+      index < MediaSourceConstants.PREFERRED_CODEC_ORDER.length;
+      index++
     ) {
-      const codec_option = MediaSourceConstants.PREFERRED_CODEC_ORDER[i];
+      const codec_option = MediaSourceConstants.PREFERRED_CODEC_ORDER[index];
       if (codec_options.includes(codec_option)) {
         return codec_option;
       }
@@ -230,13 +230,13 @@ const MediaSourceUtil = {
 
   addMediaSourceEventDebugListeners: function (media_source, source_type) {
     function debug_source_event(event) {
-      let msg = "" + source_type + " source " + event;
+      let message = "" + source_type + " source " + event;
       try {
-        msg += ": " + media_source.readyState;
+        message += ": " + media_source.readyState;
       } catch {
         //don't care
       }
-      console.debug(msg);
+      console.debug(message);
     }
     media_source.addEventListener("sourceopen", function (e) {
       debug_source_event("open");
@@ -287,8 +287,8 @@ const MediaSourceUtil = {
 
   addSourceBufferEventDebugListeners: function (asb, element_type) {
     function debug_buffer_event(event) {
-      const msg = "" + element_type + " buffer " + event;
-      console.debug(msg);
+      const message = "" + element_type + " buffer " + event;
+      console.debug(message);
     }
     asb.addEventListener("updatestart", function (e) {
       debug_buffer_event("updatestart");

@@ -40,11 +40,11 @@ const Utilities = {
   getHexUUID: function () {
     const s = [];
     const hexDigits = "0123456789abcdef";
-    for (let i = 0; i < 36; i++) {
-      if (i == 8 || i == 13 || i == 18 || i == 23) {
-        s[i] = "-";
+    for (let index = 0; index < 36; index++) {
+      if (index == 8 || index == 13 || index == 18 || index == 23) {
+        s[index] = "-";
       } else {
-        s[i] = hexDigits.slice(
+        s[index] = hexDigits.slice(
           Math.floor(Math.random() * 0x10),
           Math.floor(Math.random() * 0x10) + 1
         );
@@ -53,43 +53,43 @@ const Utilities = {
     return s.join("");
   },
 
-  getSecureRandomString: function (len) {
+  getSecureRandomString: function (length_) {
     const crypto = window.crypto || window.mscrypto;
     if (!crypto) {
       let s = "";
-      while (s.length < len) {
+      while (s.length < length_) {
         s += Utilities.getHexUUID();
       }
-      return s.slice(0, Math.max(0, len));
+      return s.slice(0, Math.max(0, length_));
     }
-    const u = new Uint8Array(len);
+    const u = new Uint8Array(length_);
     crypto.getRandomValues(u);
     return String.fromCharCode.apply(null, u);
   },
 
-  xorString: function (str1, str2) {
+  xorString: function (string1, string2) {
     let result = "";
-    if (str1.length !== str2.length) {
+    if (string1.length !== string2.length) {
       throw "strings must be equal length";
     }
-    for (let i = 0; i < str1.length; i++) {
+    for (let index = 0; index < string1.length; index++) {
       result += String.fromCharCode(
-        str1[i].charCodeAt(0) ^ str2[i].charCodeAt(0)
+        string1[index].charCodeAt(0) ^ string2[index].charCodeAt(0)
       );
     }
     return result;
   },
 
-  trimString: function (str, trimLength) {
-    return str.length > trimLength
-      ? str.slice(0, Math.max(0, trimLength - 3)) + "..."
-      : str;
+  trimString: function (string_, trimLength) {
+    return string_.length > trimLength
+      ? string_.slice(0, Math.max(0, trimLength - 3)) + "..."
+      : string_;
   },
 
-  convertToHex: function (str) {
+  convertToHex: function (string_) {
     var hex = "";
-    for (var i = 0; i < str.length; i++) {
-      hex += "" + str.charCodeAt(i).toString(16).padStart(2, "0");
+    for (var index = 0; index < string_.length; index++) {
+      hex += "" + string_.charCodeAt(index).toString(16).padStart(2, "0");
     }
     return hex;
   },
@@ -150,17 +150,17 @@ const Utilities = {
     let language;
     // support for HTML 5.1 "navigator.languages"
     if (Array.isArray(nav.languages)) {
-      for (let i = 0; i < nav.languages.length; i++) {
-        language = nav.languages[i];
+      for (let index = 0; index < nav.languages.length; index++) {
+        language = nav.languages[index];
         if (language && language.length > 0) {
           return language;
         }
       }
     }
     // support for other well known properties in browsers
-    for (let i = 0; i < browserLanguagePropertyKeys.length; i++) {
-      const prop = browserLanguagePropertyKeys[i];
-      language = nav[prop];
+    for (let index = 0; index < browserLanguagePropertyKeys.length; index++) {
+      const property = browserLanguagePropertyKeys[index];
+      language = nav[property];
       if (language && language.length > 0) {
         return language;
       }
@@ -184,9 +184,9 @@ const Utilities = {
       }
       //ie: "en"
       layout = l[0].toLowerCase();
-      const tmp = LANGUAGE_TO_LAYOUT[layout];
-      if (tmp) {
-        layout = tmp;
+      const temporary = LANGUAGE_TO_LAYOUT[layout];
+      if (temporary) {
+        layout = temporary;
       }
     }
     Utilities.debug("getKeyboardLayout()=", layout);
@@ -271,8 +271,8 @@ const Utilities = {
       "IRIX64",
     ];
     for (let _c = 0; _c < _to_check.length; _c++) {
-      for (let _i = 0; _i < _64bits_signatures.length; _i++) {
-        if (_to_check[_c].includes(_64bits_signatures[_i].toLowerCase())) {
+      for (let _index = 0; _index < _64bits_signatures.length; _index++) {
+        if (_to_check[_c].includes(_64bits_signatures[_index].toLowerCase())) {
           return true;
         }
       }
@@ -316,17 +316,17 @@ const Utilities = {
   },
 
   isEventSupported: function (event) {
-    let testEl = document.createElement("div");
+    let testElement = document.createElement("div");
     let isSupported;
 
     event = "on" + event;
-    isSupported = event in testEl;
+    isSupported = event in testElement;
 
     if (!isSupported) {
-      testEl.setAttribute(event, "return;");
-      isSupported = typeof testEl[event] === "function";
+      testElement.setAttribute(event, "return;");
+      isSupported = typeof testElement[event] === "function";
     }
-    testEl = null;
+    testElement = null;
     return isSupported;
   },
 
@@ -416,10 +416,10 @@ const Utilities = {
     }
   },
 
-  StringToUint8: function (str) {
-    const u8a = new Uint8Array(str.length);
-    for (let i = 0, j = str.length; i < j; ++i) {
-      u8a[i] = str.charCodeAt(i);
+  StringToUint8: function (string_) {
+    const u8a = new Uint8Array(string_.length);
+    for (let index = 0, index_ = string_.length; index < index_; ++index) {
+      u8a[index] = string_.charCodeAt(index);
     }
     return u8a;
   },
@@ -427,8 +427,10 @@ const Utilities = {
   Uint8ToString: function (u8a) {
     const CHUNK_SZ = 0x80_00;
     const c = [];
-    for (let i = 0; i < u8a.length; i += CHUNK_SZ) {
-      c.push(String.fromCharCode.apply(null, u8a.subarray(i, i + CHUNK_SZ)));
+    for (let index = 0; index < u8a.length; index += CHUNK_SZ) {
+      c.push(
+        String.fromCharCode.apply(null, u8a.subarray(index, index + CHUNK_SZ))
+      );
     }
     return c.join("");
   },
@@ -447,17 +449,25 @@ const Utilities = {
     let s = "";
     const skip = 10_400;
     if (uintArray.subarray) {
-      for (let i = 0, len = uintArray.length; i < len; i += skip) {
+      for (
+        let index = 0, length_ = uintArray.length;
+        index < length_;
+        index += skip
+      ) {
         s += String.fromCharCode.apply(
           null,
-          uintArray.subarray(i, Math.min(i + skip, len))
+          uintArray.subarray(index, Math.min(index + skip, length_))
         );
       }
     } else {
-      for (let i = 0, len = uintArray.length; i < len; i += skip) {
+      for (
+        let index = 0, length_ = uintArray.length;
+        index < length_;
+        index += skip
+      ) {
         s += String.fromCharCode.apply(
           null,
-          uintArray.slice(i, Math.min(i + skip, len))
+          uintArray.slice(index, Math.min(index + skip, length_))
         );
       }
     }
@@ -480,8 +490,8 @@ const Utilities = {
     const rawLength = raw.length;
     const array = new Uint8Array(new ArrayBuffer(rawLength));
 
-    for (let i = 0; i < rawLength; i++) {
-      array[i] = raw.charCodeAt(i);
+    for (let index = 0; index < rawLength; index++) {
+      array[index] = raw.charCodeAt(index);
     }
     return array;
   },
@@ -522,39 +532,39 @@ const Utilities = {
    * http://www.w3.org/TR/XMLHttpRequest/#the-getallresponseheaders-method
    * This method parses that string into a user-friendly key/value pair object.
    */
-  ParseResponseHeaders: function (headerStr) {
+  ParseResponseHeaders: function (headerString) {
     const headers = {};
-    if (!headerStr) {
+    if (!headerString) {
       return headers;
     }
-    const headerPairs = headerStr.split("\u000D\u000A");
-    for (let i = 0; i < headerPairs.length; i++) {
-      const headerPair = headerPairs[i];
+    const headerPairs = headerString.split("\u000D\u000A");
+    for (let index_ = 0; index_ < headerPairs.length; index_++) {
+      const headerPair = headerPairs[index_];
       // Can't use split() here because it does the wrong thing
       // if the header value has the string ": " in it.
       const index = headerPair.indexOf("\u003A\u0020");
       if (index > 0) {
         const key = headerPair.slice(0, Math.max(0, index));
-        const val = headerPair.slice(Math.max(0, index + 2));
-        headers[key] = val;
+        const value = headerPair.slice(Math.max(0, index + 2));
+        headers[key] = value;
       }
     }
     return headers;
   },
 
   parseParams: function (q) {
-    const params = {};
+    const parameters = {};
     let e;
     const a = /\+/g, // Regex for replacing addition symbol with a space
       r = /([^&=]+)=?([^&]*)/g,
       d = function (s) {
         return decodeURIComponent(s.replace(a, " "));
       };
-    while ((e = r.exec(q))) params[d(e[1])] = d(e[2]);
-    return params;
+    while ((e = r.exec(q))) parameters[d(e[1])] = d(e[2]);
+    return parameters;
   },
 
-  getparam: function (prop) {
+  getparam: function (property) {
     let getParameter = window.location.getParameter;
     if (!getParameter) {
       getParameter = function (key) {
@@ -565,10 +575,10 @@ const Utilities = {
         return window.location.queryStringParams[key];
       };
     }
-    let value = getParameter(prop);
+    let value = getParameter(property);
     try {
       if (value === undefined && typeof sessionStorage !== "undefined") {
-        value = sessionStorage.getItem(prop);
+        value = sessionStorage.getItem(property);
       }
     } catch {
       value = null;
@@ -576,8 +586,8 @@ const Utilities = {
     return value;
   },
 
-  getboolparam: function (prop, default_value) {
-    const v = Utilities.getparam(prop);
+  getboolparam: function (property, default_value) {
+    const v = Utilities.getparam(property);
     if (v === null) {
       return default_value;
     }
@@ -605,15 +615,15 @@ const Utilities = {
       return {};
     }
     const c = navigator.connection;
-    const i = {};
+    const index = {};
     if (c.type) {
-      i["type"] = c.type;
+      index["type"] = c.type;
     }
     if (Object.prototype.hasOwnProperty.call((c, "effectiveType"))) {
-      i["effective-type"] = c.effectiveType;
+      index["effective-type"] = c.effectiveType;
     }
     if (!isNaN(c.downlink) && c.downlink > 0 && isFinite(c.downlink)) {
-      i["downlink"] = Math.round(c.downlink * 1000 * 1000);
+      index["downlink"] = Math.round(c.downlink * 1000 * 1000);
     }
     if (
       Object.prototype.hasOwnProperty.call(c, "downlinkMax") &&
@@ -622,16 +632,30 @@ const Utilities = {
       c.downlinkMax > 0 &&
       isFinite(c.downlinkMax)
     ) {
-      i["downlink.max"] = Math.round(c.downlinkMax * 1000 * 1000);
+      index["downlink.max"] = Math.round(c.downlinkMax * 1000 * 1000);
     }
     if (!isNaN(c.rtt) && c.rtt > 0) {
-      i["rtt"] = c.rtt;
+      index["rtt"] = c.rtt;
     }
-    return i;
+    return index;
   },
 
-  json_action: function (uri, success_fn, error_fn, username, password) {
-    Utilities.log("json_action(", uri, ", ", success_fn, ", ", error_fn, ")");
+  json_action: function (
+    uri,
+    success_function,
+    error_function,
+    username,
+    password
+  ) {
+    Utilities.log(
+      "json_action(",
+      uri,
+      ", ",
+      success_function,
+      ", ",
+      error_function,
+      ")"
+    );
     var xhr = new XMLHttpRequest();
     var url = uri;
     if (uri.startsWith("/")) {
@@ -650,24 +674,24 @@ const Utilities = {
       Utilities.log("loaded", url, "status", xhr.status);
       var status = xhr.status;
       if (status === 200) {
-        success_fn(xhr, xhr.response);
+        success_function(xhr, xhr.response);
       } else {
         Utilities.log(uri, "failed:", status + xhr.response);
-        if (error_fn) {
-          error_fn("failed: " + status + xhr.response);
+        if (error_function) {
+          error_function("failed: " + status + xhr.response);
         }
       }
     });
     xhr.addEventListener("error", function (e) {
       Utilities.log(uri, "error:", e);
-      if (error_fn) {
-        error_fn(e);
+      if (error_function) {
+        error_function(e);
       }
     });
     xhr.addEventListener("abort", function (e) {
       Utilities.log(uri, "abort:", e);
-      if (error_fn) {
-        error_fn(e);
+      if (error_function) {
+        error_function(e);
       }
     });
     xhr.send();

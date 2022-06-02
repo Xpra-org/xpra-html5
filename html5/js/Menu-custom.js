@@ -128,10 +128,10 @@ $(function () {
     containment: "window",
     scroll: false,
   });
-  float_menu.on("dragstart", function (ev, ui) {
+  float_menu.on("dragstart", function (event_, ui) {
     client.mouse_grabbed = true;
   });
-  float_menu.on("dragstop", function (ev, ui) {
+  float_menu.on("dragstop", function (event_, ui) {
     client.mouse_grabbed = false;
     client.toolbar_position = "custom";
     client.reconfigure_all_trays();
