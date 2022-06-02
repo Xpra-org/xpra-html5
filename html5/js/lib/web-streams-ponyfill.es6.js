@@ -1,3 +1,8 @@
+// [XPRA] Note to Xpra maintainers: When updating, preserve this block...
+const this_ = window;
+// [XPRA] ... of ES module import compatibility adjustments.
+// [XPRA] Also, pass `this_` to `function (global, factory)` as `global`!
+
 /**
  * web-streams-polyfill v3.2.1
  */
@@ -5,7 +10,7 @@
     typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
     typeof define === 'function' && define.amd ? define(['exports'], factory) :
     (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.WebStreamsPolyfill = {}));
-})(this, (function (exports) { 'use strict';
+})(this_, (function (exports) { 'use strict';
 
     /// <reference lib="es2015.symbol" />
     const SymbolPolyfill = typeof Symbol === 'function' && typeof Symbol.iterator === 'symbol' ?

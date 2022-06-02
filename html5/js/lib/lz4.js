@@ -1,3 +1,9 @@
+// [XPRA] Note to Xpra maintainers: When updating, preserve this block...
+let lz4;
+let util;
+let xxhash;
+// [XPRA] ... of ES module import compatibility adjustments.
+
 // lz4.js - An implementation of Lz4 in plain JavaScript.
 //
 // TODO:

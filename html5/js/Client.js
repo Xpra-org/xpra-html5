@@ -6,12 +6,14 @@
  * Licensed under MPL 2.0
  *
  * xpra client
- *
- * requires:
- *	Protocol.js
- *	Window.js
- *	Keycodes.js
  */
+
+import "./lib/forge.js";
+import "./lib/jquery.js";
+import "./lib/jquery.ba-throttle-debounce.js";
+import "./lib/lz4.js";
+import "./lib/rencode.js";
+import "./lib/StreamSaver.js";
 
 import { PACKET_TYPES } from "./Constants.js";
 import {

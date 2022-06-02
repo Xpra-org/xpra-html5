@@ -7,10 +7,10 @@
  * xpra window
  *
  * Based on shape.js but no longer requires it
- *
- * requires:
- *   jQueryUI
  */
+
+import "./lib/broadway/Decoder.js";
+import "./lib/jquery.js";
 
 import {
   DEFAULT_BOX_COLORS,

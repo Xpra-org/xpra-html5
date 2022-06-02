@@ -1,3 +1,13 @@
+// [XPRA] Note to Xpra maintainers: When updating, preserve this block...
+let rencode_legacy_mode;
+window.rdecodelegacy = rdecodelegacy;
+window.rdecodeplus = rdecodeplus;
+window.rencode = rencode;
+window.rencode_selftest = rencode_selftest;
+window.rencodelegacy = rencodelegacy;
+window.rencodeplus = rencodeplus;
+// [XPRA] ... of ES module import compatibility adjustments.
+
 /*
  * Copyright (c) 2021 Antoine Martin <antoine@xpra.org>
  */

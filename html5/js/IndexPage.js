@@ -1,3 +1,8 @@
+import "./lib/jquery.js";
+import "./lib/jsmpeg.js";
+import "./lib/simple-keyboard.js";
+import "./lib/slick.js";
+
 import { XpraClient } from "./Client.js";
 import { CHAR_TO_NAME, KEYSYM_TO_LAYOUT } from "./Keycodes.js";
 import "./Menu.js";

@@ -2,6 +2,9 @@
  * Copyright (c) 2021 Antoine Martin <antoine@xpra.org>
  */
 
+import "./lib/lz4.js";
+import "./lib/zlib.js";
+
 //deals with zlib or lz4 pixel compression
 //as well as converting rgb24 to rb32 and
 //re-striding the pixel data if needed so that lines are not padded

@@ -4470,7 +4470,7 @@ module.exports = {
 },{"./_cof":39,"./_ctx":41,"./_dom-create":43,"./_global":46,"./_html":48,"./_invoke":50}],55:[function(require,module,exports){
 // 7.1.1 ToPrimitive(input [, PreferredType])
 var isObject = require('./_is-object');
-// instead of the ES6 spec version, we didn't implement @@toPrimitive case
+// instead of the ES spec version, we didn't implement @@toPrimitive case
 // and the second argument - flag - preferred type is a string
 module.exports = function(it, S){
   if(!isObject(it))return it;

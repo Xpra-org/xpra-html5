@@ -9,10 +9,6 @@
  * Licensed under MPL 2.0
  *
  * xpra wire protocol with worker support
- *
- * requires:
- *  lz4.js
- *  brotli_decode.js
  */
 
 import "./lib/brotli_decode.js";
