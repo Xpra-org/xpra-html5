@@ -3,7 +3,7 @@
 # Xpra is released under the terms of the GNU GPL v2, or, at your option, any
 # later version. See the file COPYING for details.
 
-%define version 5.0
+%define version 5.1
 %define release 1.r1275%{?dist}
 %define minifier uglifyjs
 %define python python3
@@ -77,6 +77,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Thu Jun 02 2022 Antoine Martin <antoine@xpra.org> 5.1-1285-1
+- TODO
+
 * Wed May 11 2022 Antoine Martin <antoine@xpra.org> 5.0-1237-1
 - auto-fullscreen, alt-tabbing with window previews
 - decode images using an offscreen worker thread

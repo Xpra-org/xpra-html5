@@ -1,3 +1,8 @@
+xpra-html5 (5.1-r1285-1) UNRELEASED; urgency=low
+  * TODO
+
+ -- Antoine Martin antoine@xpra.org  Thu, 02 Jun 2022 14:52:12 +0700 +700
+
 xpra-html5 (5.0-r1275-1) UNRELEASED; urgency=low
   * auto-fullscreen, alt-tabbing with window previews
   * decode images using an offscreen worker thread
