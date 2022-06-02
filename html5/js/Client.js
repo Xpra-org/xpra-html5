@@ -31,7 +31,7 @@ const PASTEBOARD_SELECTOR = "#pasteboard";
 const WINDOW_PREVIEW_SELECTOR = "#window_preview";
 
 class XpraClient {
-  constructor(container) {
+  constructor(container, default_settings) {
     // the container div is the "screen" on the HTML page where we
     // are able to draw our windows in.
     this.container = document.querySelector(`#${container}`);
@@ -45,6 +45,7 @@ class XpraClient {
       );
     }
 
+    this.default_settings = default_settings;
     this.protocol = null;
 
     this.init_settings();
@@ -183,7 +184,7 @@ class XpraClient {
     this.scroll_reverse_y = "auto";
     // clipboard
     this.clipboard_direction =
-      default_settings["clipboard_direction"] || "both";
+      this.default_settings["clipboard_direction"] || "both";
     this.clipboard_datatype = null;
     this.clipboard_buffer = "";
     this.clipboard_server_buffers = {};
@@ -692,11 +693,13 @@ class XpraClient {
 
       // Force fullscreen on a a given window name from the provided settings
       if (
-        default_settings !== undefined &&
-        default_settings.auto_fullscreen !== undefined &&
-        default_settings.auto_fullscreen.length > 0
+        this.default_settings !== undefined &&
+        this.default_settings.auto_fullscreen !== undefined &&
+        this.default_settings.auto_fullscreen.length > 0
       ) {
-        const pattern = new RegExp(`.*${default_settings.auto_fullscreen}.*`);
+        const pattern = new RegExp(
+          `.*${this.default_settings.auto_fullscreen}.*`
+        );
         if (iwin.fullscreen === false && pattern.test(iwin.metadata.title)) {
           clog(`auto fullscreen window: ${iwin.metadata.title}`);
           iwin.set_fullscreen(true);
@@ -2181,12 +2184,12 @@ class XpraClient {
     // Keep DESKTOP-type windows per default setttings lower than all other windows.
     // Only allow focus if all other windows are minimized.
     if (
-      default_settings !== undefined &&
-      default_settings.auto_fullscreen_desktop_class !== undefined &&
-      default_settings.auto_fullscreen_desktop_class.length > 0
+      this.default_settings !== undefined &&
+      this.default_settings.auto_fullscreen_desktop_class !== undefined &&
+      this.default_settings.auto_fullscreen_desktop_class.length > 0
     ) {
       const auto_fullscreen_desktop_class =
-        default_settings.auto_fullscreen_desktop_class;
+        this.default_settings.auto_fullscreen_desktop_class;
       if (
         win.windowtype == "DESKTOP" &&
         win.metadata["class-instance"].includes(auto_fullscreen_desktop_class)
@@ -2234,12 +2237,12 @@ class XpraClient {
    */
   is_window_desktop(win) {
     if (
-      default_settings !== undefined &&
-      default_settings.auto_fullscreen_desktop_class !== undefined &&
-      default_settings.auto_fullscreen_desktop_class.length > 0
+      this.default_settings !== undefined &&
+      this.default_settings.auto_fullscreen_desktop_class !== undefined &&
+      this.default_settings.auto_fullscreen_desktop_class.length > 0
     ) {
       const auto_fullscreen_desktop_class =
-        default_settings.auto_fullscreen_desktop_class;
+        this.default_settings.auto_fullscreen_desktop_class;
       if (
         win.windowtype == "DESKTOP" &&
         win.metadata["class-instance"].includes(auto_fullscreen_desktop_class)

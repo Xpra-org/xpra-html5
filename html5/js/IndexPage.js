@@ -465,7 +465,7 @@ function init_client() {
   clog("debug enabled for:", debug_categories);
 
   // create the client
-  const client = new XpraClient("screen");
+  const client = new XpraClient("screen", default_settings);
   client.debug_categories = debug_categories;
   client.remote_logging = remote_logging;
   client.sharing = sharing;
