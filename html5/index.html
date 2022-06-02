@@ -1511,10 +1511,14 @@
         //from now on, send log and debug to client function
         //which may forward it to the server once connected:
         clog = function () {
-          client.log.apply(client, arguments);
+          if (client) {
+            client.log.apply(client, arguments);
+          }
         };
         cdebug = function () {
-          client.debug.apply(client, arguments);
+          if (client) {
+            client.debug.apply(client, arguments);
+          }
         };
         init_tablet_input(client);
         if (client.clipboard_enabled) {
