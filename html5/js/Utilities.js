@@ -70,9 +70,11 @@ const Utilities = {
     if (string1.length !== string2.length) {
       throw "strings must be equal length";
     }
-    for (let index = 0; index < string1.length; index++) {
+    for (const index in string1) {
+      const character1 = string1[index];
+      const character2 = string2[index];
       result += String.fromCharCode(
-        string1[index].charCodeAt(0) ^ string2[index].charCodeAt(0)
+        character1.charCodeAt(0) ^ character2.charCodeAt(0)
       );
     }
     return result;
@@ -156,8 +158,7 @@ const Utilities = {
       }
     }
     // support for other well known properties in browsers
-    for (let index = 0; index < browserLanguagePropertyKeys.length; index++) {
-      const property = browserLanguagePropertyKeys[index];
+    for (const property of browserLanguagePropertyKeys) {
       language = nav[property];
       if (language && language.length > 0) {
         return language;
@@ -268,9 +269,9 @@ const Utilities = {
       "ppc64",
       "IRIX64",
     ];
-    for (let _c = 0; _c < _to_check.length; _c++) {
-      for (let _index = 0; _index < _64bits_signatures.length; _index++) {
-        if (_to_check[_c].includes(_64bits_signatures[_index].toLowerCase())) {
+    for (const a of _to_check) {
+      for (const b of _64bits_signatures) {
+        if (a.includes(b.toLowerCase())) {
           return true;
         }
       }
@@ -532,8 +533,7 @@ const Utilities = {
       return headers;
     }
     const headerPairs = headerString.split("\u000D\u000A");
-    for (let index_ = 0; index_ < headerPairs.length; index_++) {
-      const headerPair = headerPairs[index_];
+    for (const headerPair of headerPairs) {
       // Can't use split() here because it does the wrong thing
       // if the header value has the string ": " in it.
       const index = headerPair.indexOf("\u003A\u0020");

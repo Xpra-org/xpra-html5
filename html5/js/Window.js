@@ -638,8 +638,7 @@ class XpraWindow {
 
     //if the attribute is set, add the corresponding css class:
     const attributes = ["modal", "above", "below"];
-    for (let index = 0; index < attributes.length; index++) {
-      const attribute = attributes[index];
+    for (const attribute of attributes) {
       if (attribute in metadata) {
         const value = metadata[attribute];
         if (value) {
@@ -657,8 +656,8 @@ class XpraWindow {
       const classes = jQuery(this.div).prop("classList");
       if (classes) {
         //remove any existing "wmclass-" classes not in the new wm_class list:
-        for (let index = 0; index < classes.length; index++) {
-          const tclass = `${classes[index]}`;
+        for (const class_ of classes) {
+          const tclass = `${class_}`;
           if (
             tclass.indexOf("wmclass-") === 0 &&
             wm_class &&
@@ -670,11 +669,8 @@ class XpraWindow {
       }
       if (wm_class) {
         //add new wm-class:
-        for (let index = 0; index < wm_class.length; index++) {
-          const tclass = Utilities.s(wm_class[index]).replace(
-            /[^\dA-Za-z]/g,
-            ""
-          );
+        for (const element of wm_class) {
+          const tclass = Utilities.s(element).replace(/[^\dA-Za-z]/g, "");
           if (tclass && !jQuery(this.div).hasClass(tclass)) {
             jQuery(this.div).addClass(`wmclass-${tclass}`);
           }
@@ -1069,9 +1065,7 @@ class XpraWindow {
       let w = 0;
       let h = 0;
       const screen_sizes = this.client.server_screen_sizes;
-      let screen_size;
-      for (let index = 0; index < screen_sizes.length; index++) {
-        screen_size = screen_sizes[index];
+      for (const screen_size of screen_sizes) {
         w = screen_size[0];
         h = screen_size[1];
         if (w <= maxw && h <= maxh && w * h > best) {
@@ -1083,8 +1077,7 @@ class XpraWindow {
       if (neww == 0 && newh == 0) {
         //not found, try to find the smallest one:
         best = 0;
-        for (let index = 0; index < screen_sizes.length; index++) {
-          screen_size = screen_sizes[index];
+        for (const screen_size of screen_sizes) {
           w = screen_size[0];
           h = screen_size[1];
           if (best == 0 || w * h < best) {

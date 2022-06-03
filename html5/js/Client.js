@@ -282,20 +282,15 @@ class XpraClient {
     if (this.remote_logging && this.server_remote_logging && this.connected) {
       try {
         const sargs = [];
-        for (let index = 0; index < arguments_.length; index++) {
-          sargs.push(unescape(encodeURIComponent(String(arguments_[index]))));
+        for (const argument of arguments_) {
+          sargs.push(unescape(encodeURIComponent(String(argument))));
         }
         this.send([PACKET_TYPES.logging, level, sargs]);
       } catch {
         this.cerror("remote logging failed");
-        for (let index = 0; index < arguments_.length; index++) {
-          this.clog(
-            " argument",
-            index,
-            typeof arguments_[index],
-            ":",
-            `'${arguments_[index]}'`
-          );
+        for (const index in arguments_) {
+          const argument = arguments_[index];
+          this.clog(" argument", index, typeof argument, ":", `'${argument}'`);
         }
       }
     }
@@ -2613,8 +2608,8 @@ class XpraClient {
         ".padding",
         ".padding.options",
       ];
-      for (let index = 0; index < CIPHER_CAPS.length; ++index) {
-        const cipher_key = `cipher${CIPHER_CAPS[index]}`;
+      for (const CIPHER_CAP of CIPHER_CAPS) {
+        const cipher_key = `cipher${CIPHER_CAP}`;
         let value = hello[cipher_key];
         if (typeof value === "object" && value.constructor === Uint8Array) {
           value = String.fromCharCode.apply(null, value);
@@ -2667,10 +2662,7 @@ class XpraClient {
     const version = Utilities.s(hello["version"]);
     try {
       const vparts = version.split(".");
-      const vno = [];
-      for (let index = 0; index < vparts.length; index++) {
-        vno[index] = Number.parseInt(vparts[index]);
-      }
+      const vno = vparts.map((x) => Number.parseInt(x));
       if (vno[0] <= 0 && vno[1] < 10) {
         this.callback_close(`unsupported version: ${version}`);
         this.close();
@@ -4246,19 +4238,20 @@ class XpraClient {
     if (metadata) {
       this.debug("audio", "audio metadata=", metadata);
       //push metadata first:
-      for (let index = 0; index < metadata.length; index++) {
+      for (const index in metadata) {
+        const metadatum = metadata[index];
         this.debug(
           "audio",
           "metadata[",
           index,
           "]=",
-          metadata[index],
+          metadatum,
           ", length=",
-          metadata[index].length,
+          metadatum.length,
           ", type=",
-          Object.prototype.toString.call(metadata[index])
+          Object.prototype.toString.call(metadatum)
         );
-        this.audio_buffers.push(Utilities.StringToUint8(metadata[index]));
+        this.audio_buffers.push(Utilities.StringToUint8(metadatum));
       }
       //since we have the metadata, we should be good to go:
       MIN_START_BUFFERS = 1;
@@ -4601,16 +4594,13 @@ class XpraClient {
         this.debug("clipboard", "request using read()");
         navigator.clipboard.read().then(
           (data) => {
-            let item = null;
-            let itemtype = null;
             this.debug("clipboard", "request via read() data=", data);
-            for (let index = 0; index < data.length; index++) {
-              item = data[index];
+            for (const index in data) {
+              const item = data[index];
               this.debug("clipboard", "item", index, "types:", item.types);
-              for (let index = 0; index < item.types.length; index++) {
-                itemtype = item.types[index];
-                if (itemtype == TEXT_PLAIN) {
-                  item.getType(itemtype).then(
+              for (const item_type of item.types) {
+                if (item_type == TEXT_PLAIN) {
+                  item.getType(item_type).then(
                     (blob) => {
                       const fileReader = new FileReader();
                       fileReader.addEventListener("load", (event) =>
@@ -4625,7 +4615,7 @@ class XpraClient {
                     (error) => {
                       this.debug(
                         "clipboard",
-                        `getType('${itemtype}') failed`,
+                        `getType('${item_type}') failed`,
                         error
                       );
                       //send last server buffer instead:
@@ -4633,15 +4623,15 @@ class XpraClient {
                     }
                   );
                   return;
-                } else if (itemtype == "image/png") {
-                  item.getType(itemtype).then(
+                } else if (item_type == "image/png") {
+                  item.getType(item_type).then(
                     (blob) => {
                       const fileReader = new FileReader();
                       fileReader.addEventListener("load", (event) =>
                         this.send_clipboard_contents(
                           request_id,
                           selection,
-                          itemtype,
+                          item_type,
                           8,
                           "bytes",
                           event.target.result
@@ -4652,7 +4642,7 @@ class XpraClient {
                     (error) => {
                       this.debug(
                         "clipboard",
-                        `getType('${itemtype}') failed`,
+                        `getType('${item_type}') failed`,
                         error
                       );
                       //send last server buffer instead:
@@ -5107,9 +5097,9 @@ class XpraClient {
       writer.close();
     } else {
       const chunks = chunk_state[1];
-      for (let index = 0; index < chunks.length; ++index) {
-        data.set(chunks[index], start);
-        start += chunks[index].length;
+      for (const chunk_ of chunks) {
+        data.set(chunk_, start);
+        start += chunk_.length;
       }
       this._got_file(filename, data, mimetype, printit, mimetype, options);
     }
