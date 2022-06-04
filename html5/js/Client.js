@@ -517,10 +517,12 @@ export class XpraClient {
     let decode_worker;
     if (this.offscreen_api) {
       this.clog("using offscreen decode worker");
-      decode_worker = new Worker("js/OffscreenDecodeWorker.js");
+      decode_worker = new Worker("js/OffscreenDecodeWorker.js", {
+        type: "module",
+      });
     } else {
       this.clog("using decode worker");
-      decode_worker = new Worker("js/DecodeWorker.js");
+      decode_worker = new Worker("js/DecodeWorker.js", { type: "module" });
     }
     decode_worker.addEventListener(
       "message",

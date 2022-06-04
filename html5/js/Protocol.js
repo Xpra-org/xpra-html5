@@ -38,7 +38,7 @@ export class XpraProtocolWorkerHost {
       this.worker.postMessage({ c: "o", u: uri });
       return;
     }
-    this.worker = new Worker("js/Protocol.js");
+    this.worker = new Worker("js/Protocol.js", { type: "module" });
     this.worker.addEventListener(
       "message",
       (e) => {
