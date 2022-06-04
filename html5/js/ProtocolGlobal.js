@@ -17,7 +17,7 @@ const CONNECT_TIMEOUT = 15_000;
 A stub class to facilitate communication with the protocol when
 it is loaded in a worker
 */
-export class XpraProtocolWorkerHost {
+class XpraProtocolWorkerHost {
   constructor() {
     this.worker = null;
     this.packet_handler = null;
@@ -87,7 +87,7 @@ export class XpraProtocolWorkerHost {
 /*
 The main Xpra wire protocol
 */
-export class XpraProtocol {
+class XpraProtocol {
   constructor() {
     this.verify_connected_timer = 0;
     this.is_worker = false;

@@ -1,3 +1,6 @@
+// [XPRA] Note to Xpra maintainers: When updating,
+// [XPRA] preserve the footer block at the bottom of this file.
+
 /* Copyright (c) 2009 Anton Ekblad
  * Copyright (c) 2013 Antoine Martin <antoine@xpra.org>
 
@@ -184,3 +187,8 @@ function bdict(dict) {
     }
     return str + "e";
 }
+
+// [XPRA] Note to Xpra maintainers: When updating, preserve this block...
+window.bencode = bencode;
+// [XPRA] ... of ES module import compatibility adjustments.
+// [XPRA] Also, preserve the header block at the top of this file.

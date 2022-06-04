@@ -3,6 +3,7 @@ let lz4;
 let util;
 let xxhash;
 // [XPRA] ... of ES module import compatibility adjustments.
+// [XPRA] Also, preserve the footer block at the bottom of this file.
 
 // lz4.js - An implementation of Lz4 in plain JavaScript.
 //
@@ -756,3 +757,10 @@ lz4.decode = function(data) {
 	lz4.decompressBlock(data, inflated, 4, length, 0);
 	return inflated;
 }
+
+// [XPRA] Note to Xpra maintainers: When updating, preserve this block...
+window.lz4 = lz4;
+window.util = util;
+window.xxhash = xxhash;
+// [XPRA] ... of ES module import compatibility adjustments.
+// [XPRA] Also, preserve the header block at the top of this file.
