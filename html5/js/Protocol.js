@@ -505,7 +505,10 @@ class XpraProtocol {
       const raw_buffers = [];
       if (packet[0] === "draw" && "buffer" in packet[7]) {
         raw_buffers.push(packet[7].buffer);
-      } else if (packet[0] === "sound-data" && "buffer" in packet[2]) {
+      } else if (
+        packet[0] === "sound-data" &&
+        Object.hasOwn(packet[2], "buffer")
+      ) {
         raw_buffers.push(packet[2].buffer);
       }
       postMessage({ c: "p", p: packet }, raw_buffers);
