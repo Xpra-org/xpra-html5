@@ -11,7 +11,7 @@ const broadway_decoders = {};
 function close_broadway(wid) {
   try {
     delete broadway_decoders[wid];
-  } catch (e) {
+  } catch {
     //not much we can do
   }
 }
@@ -23,17 +23,17 @@ function decode_eos(wid) {
 }
 
 function decode_draw_packet(packet, start) {
-  const wid = packet[1],
-    width = packet[4],
-    height = packet[5],
-    coding = packet[6],
-    packet_sequence = packet[8];
+  const wid = packet[1];
+  const width = packet[4];
+  const height = packet[5];
+  const coding = packet[6];
+  const packet_sequence = packet[8];
   function send_back(raw_buffers) {
     const wid_hold = on_hold.get(wid);
     if (wid_hold) {
       //find the highest sequence number which is still lower than this packet
       let seq_holding = 0;
-      for (let seq of wid_hold.keys()) {
+      for (const seq of wid_hold.keys()) {
         if (seq > seq_holding && seq < packet_sequence) {
           seq_holding = seq;
         }
@@ -49,10 +49,10 @@ function decode_draw_packet(packet, start) {
     do_send_back(packet, raw_buffers);
   }
   function do_send_back(p, raw_buffers) {
-    self.postMessage({ draw: p, start: start }, raw_buffers);
+    self.postMessage({ draw: p, start }, raw_buffers);
   }
-  function decode_error(msg) {
-    self.postMessage({ error: "" + msg, packet: packet, start: start });
+  function decode_error(message) {
+    self.postMessage({ error: `${message}`, packet, start });
   }
 
   function hold() {
@@ -69,7 +69,7 @@ function decode_draw_packet(packet, start) {
   }
 
   function release() {
-    let wid_hold = on_hold.get(wid);
+    const wid_hold = on_hold.get(wid);
     if (!wid_hold) {
       //could have been cancelled by EOS
       return;
@@ -80,14 +80,14 @@ function decode_draw_packet(packet, start) {
       //could have been cancelled by EOS
       return;
     }
-    let i;
-    for (i = 0; i < held.length; i++) {
-      const held_packet = held[i][0];
-      const held_raw_buffers = held[i][1];
+    let index;
+    for (index = 0; index < held.length; index++) {
+      const held_packet = held[index][0];
+      const held_raw_buffers = held[index][1];
       do_send_back(held_packet, held_raw_buffers);
     }
     wid_hold.delete(packet_sequence);
-    if (wid_hold.size == 0 && on_hold.has(wid)) {
+    if (wid_hold.size === 0 && on_hold.has(wid)) {
       //this was the last held sequence for this window
       on_hold.delete(wid);
     }
@@ -107,14 +107,9 @@ function decode_draw_packet(packet, start) {
         send_back([bitmap]);
         release();
       },
-      function (e) {
+      function (error) {
         decode_error(
-          "failed to create " +
-            actual_width +
-            "x" +
-            actual_height +
-            " rgb32 bitmap from buffer " +
-            data
+          `failed to create ${actual_width}x${actual_height} rgb32 bitmap from buffer ${data}`
         );
         release();
       }
@@ -149,29 +144,22 @@ function decode_draw_packet(packet, start) {
     ) {
       const data = packet[7];
       if (!data.buffer) {
-        decode_error("missing pixel data buffer: " + typeof data);
+        decode_error(`missing pixel data buffer: ${typeof data}`);
         release();
         return;
       }
-      const blob = new Blob([data.buffer], { type: "image/" + coding });
+      const blob = new Blob([data.buffer], { type: `image/${coding}` });
       hold();
       createImageBitmap(blob, bitmap_options).then(
         function (bitmap) {
-          packet[6] = "bitmap:" + coding;
+          packet[6] = `bitmap:${coding}`;
           packet[7] = bitmap;
           send_back([bitmap]);
           release();
         },
-        function (e) {
+        function (error) {
           decode_error(
-            "failed to create image bitmap from " +
-              coding +
-              " " +
-              blob +
-              ", data=" +
-              data +
-              ": " +
-              e
+            `failed to create image bitmap from ${coding} ${blob}, data=${data}: ${error}`
           );
           release();
         }
@@ -211,30 +199,35 @@ function decode_draw_packet(packet, start) {
       // broadway decoding is actually synchronous
       // and onPictureDecoded is called from decode(data) above.
       if (count == 0) {
-        decode_error("no " + coding + " picture decoded");
+        decode_error(`no ${coding} picture decoded`);
       }
     } else {
       //pass-through:
       send_back([]);
     }
-  } catch (e) {
+  } catch (error) {
     decode_error(
-      "error processing " + coding + " packet " + packet_sequence + ": " + e
+      `error processing ${coding} packet ${packet_sequence}: ${error}`
     );
   }
 }
 
-function check_image_decode(format, image_bytes, success_cb, fail_cb) {
+function check_image_decode(
+  format,
+  image_bytes,
+  success_callback,
+  fail_callback
+) {
   if (console) {
     console.info(
-      "checking ",
+      "checking",
       format,
-      " with test image: " + image_bytes.length + " bytes"
+      `with test image: ${image_bytes.length} bytes`
     );
   }
   try {
     const timer = setTimeout(function () {
-      fail_cb(format, "timeout, no " + format + " picture decoded");
+      fail_callback(format, `timeout, no ${format} picture decoded`);
     }, 2000);
     if (format == "h264") {
       const decoder = new Decoder({
@@ -243,27 +236,27 @@ function check_image_decode(format, image_bytes, success_cb, fail_cb) {
       });
       decoder.onPictureDecoded = function (buffer, p_width, p_height, infos) {
         clearTimeout(timer);
-        success_cb(format);
+        success_callback(format);
       };
       decoder.decode(image_bytes);
       return;
     }
     const data = new Uint8Array(image_bytes);
-    const blob = new Blob([data], { type: "image/" + format });
+    const blob = new Blob([data], { type: `image/${format}` });
     createImageBitmap(blob, {
       premultiplyAlpha: "none",
     }).then(
       function () {
         clearTimeout(timer);
-        success_cb(format);
+        success_callback(format);
       },
-      function (e) {
+      function (error) {
         clearTimeout(timer);
-        fail_cb(format, "" + e);
+        fail_callback(format, `${error}`);
       }
     );
-  } catch (e) {
-    fail_cb(format, "" + e);
+  } catch (error) {
+    fail_callback(format, `${error}`);
   }
 }
 
@@ -273,7 +266,7 @@ onmessage = function (e) {
     case "check": {
       const encodings = data.encodings;
       if (console) {
-        console.info("decode worker checking: ", encodings);
+        console.info("decode worker checking:", encodings);
       }
       const CHECKS = {
         png: [
@@ -378,11 +371,11 @@ onmessage = function (e) {
       const formats = ["rgb24", "rgb32"];
       const done = (format) => {
         delete CHECKS[format];
-        if (Object.keys(CHECKS).length == 0) {
-          if (errors.length == 0) {
-            self.postMessage({ result: true, formats: formats });
+        if (Object.keys(CHECKS).length === 0) {
+          if (errors.length === 0) {
+            self.postMessage({ result: true, formats });
           } else {
-            self.postMessage({ result: false, errors: errors });
+            self.postMessage({ result: false, errors });
           }
         }
       };
@@ -395,20 +388,20 @@ onmessage = function (e) {
       };
       const failure = (format, message) => {
         //only record an error if the client actually asked us to verify this format
-        if (encodings.indexOf(format) >= 0) {
+        if (encodings.includes(format)) {
           errors.push(message);
           if (console.warn) {
             console.warn(
-              "Warning: decode worker error on '" + format + "': " + message
+              `Warning: decode worker error on '${format}': ${message}`
             );
           }
         } else {
-          console.info("decode worker failure on '" + format + "': " + message);
+          console.info(`decode worker failure on '${format}': ${message}`);
         }
         done(format);
       };
-      for (var format in CHECKS) {
-        var image_bytes = CHECKS[format];
+      for (const format in CHECKS) {
+        const image_bytes = CHECKS[format];
         check_image_decode(format, image_bytes, success, failure);
       }
       break;
@@ -424,6 +417,6 @@ onmessage = function (e) {
       decode_draw_packet(data.packet, data.start);
       break;
     default:
-      console.error("decode worker got unknown message: " + data.cmd);
+      console.error(`decode worker got unknown message: ${data.cmd}`);
   }
 };

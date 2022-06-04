@@ -35,6 +35,13 @@ SOFTWARE.
     }
   }
 
+  const ACTIVE_CLASS_NAME = "-active";
+  const ANIMATING_CLASS_NAME = "-animating";
+  const HAS_SUBMENU_CLASS_NAME = "-hasSubmenu";
+  const HIDE_CLASS_NAME = "-hide";
+  const MENU_CLASS_NAME = "Menu";
+  const VISIBLE_CLASS_NAME = "-visible";
+
   function showMenu() {
     const menu = this;
     const ul = $("ul", menu)[0];
@@ -43,21 +50,21 @@ SOFTWARE.
       return;
     }
 
-    if (ul.classList.contains("-hide")) {
-      ul.classList.remove("-hide");
-      ul.parentElement.classList.remove("-active");
+    if (ul.classList.contains(HIDE_CLASS_NAME)) {
+      ul.classList.remove(HIDE_CLASS_NAME);
+      ul.parentElement.classList.remove(ACTIVE_CLASS_NAME);
       return;
     }
 
-    if (ul.classList.contains("-visible")) {
+    if (ul.classList.contains(VISIBLE_CLASS_NAME)) {
       return;
     }
 
-    menu.classList.add("-active");
-    ul.classList.add("-animating");
-    ul.classList.add("-visible");
+    menu.classList.add(ACTIVE_CLASS_NAME);
+    ul.classList.add(ANIMATING_CLASS_NAME);
+    ul.classList.add(VISIBLE_CLASS_NAME);
     setTimeout(function () {
-      ul.classList.remove("-animating");
+      ul.classList.remove(ANIMATING_CLASS_NAME);
     }, 25);
   }
 
@@ -65,47 +72,67 @@ SOFTWARE.
     const menu = this;
     const ul = $("ul", menu)[0];
 
-    if (!ul || !ul.classList.contains("-visible")) return;
+    if (!ul || !ul.classList.contains(VISIBLE_CLASS_NAME)) return;
 
-    menu.classList.remove("-active");
-    ul.classList.add("-animating");
+    menu.classList.remove(ACTIVE_CLASS_NAME);
+    ul.classList.add(ANIMATING_CLASS_NAME);
     setTimeout(function () {
-      ul.classList.remove("-visible");
-      ul.classList.remove("-animating");
+      ul.classList.remove(VISIBLE_CLASS_NAME);
+      ul.classList.remove(ANIMATING_CLASS_NAME);
     }, 300);
   }
 
   function hideAllInactiveMenus() {
     const menu = this;
-    forEach($("li.-hasSubmenu.-active:not(:hover)", menu.parent), function (e) {
-      e.hideMenu && e.hideMenu();
-    });
+    forEach(
+      $(
+        `li.${HAS_SUBMENU_CLASS_NAME}.${ACTIVE_CLASS_NAME}:not(:hover)`,
+        menu.parent
+      ),
+      function (e) {
+        e.hideMenu && e.hideMenu();
+      }
+    );
   }
 
   function hideAllMenus() {
     const menu = this;
-    forEach($("li.-hasSubmenu", menu.parent), function (e) {
+    forEach($(`li.${HAS_SUBMENU_CLASS_NAME}`, menu.parent), function (e) {
       e.hideMenu && e.hideMenu();
     });
   }
 
   window.addEventListener("load", function () {
-    forEach($(".Menu li.-hasSubmenu"), function (e) {
-      e.showMenu = showMenu;
-      e.hideMenu = hideMenu;
-    });
+    forEach(
+      $(`.${MENU_CLASS_NAME} li.${HAS_SUBMENU_CLASS_NAME}`),
+      function (e) {
+        e.showMenu = showMenu;
+        e.hideMenu = hideMenu;
+      }
+    );
 
-    forEach($(".Menu > li.-hasSubmenu"), function (e) {
-      e.addEventListener("click", showMenu);
-    });
+    forEach(
+      $(`.${MENU_CLASS_NAME} > li.${HAS_SUBMENU_CLASS_NAME}`),
+      function (e) {
+        e.addEventListener("click", showMenu);
+      }
+    );
 
-    forEach($(".Menu > li.-hasSubmenu li"), function (e) {
-      e.addEventListener("mouseenter", hideAllInactiveMenus);
-    });
+    forEach(
+      $(`.${MENU_CLASS_NAME} > li.${HAS_SUBMENU_CLASS_NAME} li`),
+      function (e) {
+        e.addEventListener("mouseenter", hideAllInactiveMenus);
+      }
+    );
 
-    forEach($(".Menu > li.-hasSubmenu li.-hasSubmenu"), function (e) {
-      e.addEventListener("mouseenter", showMenu);
-    });
+    forEach(
+      $(
+        `.${MENU_CLASS_NAME} > li.${HAS_SUBMENU_CLASS_NAME} li.${HAS_SUBMENU_CLASS_NAME}`
+      ),
+      function (e) {
+        e.addEventListener("mouseenter", showMenu);
+      }
+    );
 
     forEach($("a"), function (e) {
       e.addEventListener("click", hideAllMenus);

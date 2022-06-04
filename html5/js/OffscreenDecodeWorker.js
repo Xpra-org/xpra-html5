@@ -6,7 +6,6 @@
  * http://www.mozilla.org/MPL/2.0/
  *
  */
-"use strict";
 
 /*
  * Worker for offscreen decoding and painting.
@@ -36,13 +35,18 @@ const image_coding = [
   "avif",
 ];
 const video_coding = ["h264"];
-const all_encodings = ["void", "scroll"].concat(image_coding, video_coding);
+const all_encodings = new Set([
+  "void",
+  "scroll",
+  ...image_coding,
+  ...video_coding,
+]);
 
 const vsync = false;
 
 function send_decode_error(packet, error) {
   packet[7] = null;
-  self.postMessage({ error: "" + error, packet: packet });
+  self.postMessage({ error: `${error}`, packet });
 }
 
 class WindowDecoder {
@@ -90,14 +94,14 @@ class WindowDecoder {
       this.canvas.width,
       this.canvas.height
     );
-    const ctx = this.back_buffer.getContext("2d");
-    ctx.imageSmoothingEnabled = false;
+    const context = this.back_buffer.getContext("2d");
+    context.imageSmoothingEnabled = false;
     if (
       old_back_buffer &&
       old_back_buffer.width > 0 &&
       old_back_buffer.height > 0
     ) {
-      ctx.drawImage(old_back_buffer, 0, 0);
+      context.drawImage(old_back_buffer, 0, 0);
     }
   }
 
@@ -165,7 +169,7 @@ class WindowDecoder {
       this.flush_seqs.push(packet_sequence);
     }
     //decide if we want to decode it immediately:
-    if (this.flush_seqs.length == 0 || packet_sequence <= this.flush_seqs[0]) {
+    if (this.flush_seqs.length === 0 || packet_sequence <= this.flush_seqs[0]) {
       this.decode_packet(packet);
       return;
     }
@@ -174,7 +178,7 @@ class WindowDecoder {
   }
 
   may_decode_more() {
-    if (this.flush_seqs.length == 0) {
+    if (this.flush_seqs.length === 0) {
       //anything pending is for a flush sequence that we have not received yet,
       //so we can paint them all now:
       this.process_all(0);
@@ -186,13 +190,13 @@ class WindowDecoder {
     this.process_all(flush_seq);
     //if there are any packets waiting to be processed or decoded for this flush sequence no,
     //then we have to stop there and wait to be called again:
-    const processing_wait = Array.from(this.pending_processing.keys()).filter(
+    const processing_wait = [...this.pending_processing.keys()].filter(
       (x) => x <= flush_seq
     );
     if (processing_wait.length > 0) {
       return;
     }
-    const decode_wait = Array.from(this.pending_decode.keys()).filter(
+    const decode_wait = [...this.pending_decode.keys()].filter(
       (x) => x <= flush_seq
     );
     if (decode_wait.length > 0) {
@@ -205,14 +209,12 @@ class WindowDecoder {
   process_all(max_seq) {
     //process packets up to max_seq,
     //in ascending order:
-    const seqs = Array.from(this.pending_processing.keys()).sort(
-      (a, b) => a - b
-    );
-    for (let seq of seqs) {
+    const seqs = [...this.pending_processing.keys()].sort((a, b) => a - b);
+    for (const seq of seqs) {
       if (max_seq > 0 && seq > max_seq) {
         continue;
       }
-      let packet = this.pending_processing.get(seq);
+      const packet = this.pending_processing.get(seq);
       this.pending_processing.delete(seq);
       this.decode_packet(packet);
     }
@@ -238,10 +240,10 @@ class WindowDecoder {
         }
         this.video_decoder.queue_frame(packet);
       } else {
-        this.decode_error(packet, "unsupported encoding: '" + coding + "'");
+        this.decode_error(packet, `unsupported encoding: '${coding}'`);
       }
-    } catch (e) {
-      this.decode_error(packet, "" + e);
+    } catch (error) {
+      this.decode_error(packet, `${error}`);
     }
   }
 
@@ -250,13 +252,7 @@ class WindowDecoder {
     this.init();
     const coding = packet[6];
     const packet_sequence = packet[8];
-    const message =
-      "failed to decode '" +
-      coding +
-      "' draw packet sequence " +
-      packet_sequence +
-      ": " +
-      error;
+    const message = `failed to decode '${coding}' draw packet sequence ${packet_sequence}: ${error}`;
     console.error(message);
     packet[7] = null;
     send_decode_error(packet, message);
@@ -290,12 +286,12 @@ class WindowDecoder {
       this.snapshot_buffer = null;
 
       //are there any packets still waiting to be decoded?
-      if (this.flush_seqs.length == 0) {
+      if (this.flush_seqs.length === 0) {
         return;
       }
       //for the current flush sequence?
       const flush_seq = this.flush_seqs[0];
-      const decode_wait = Array.from(this.pending_decode.keys()).filter(
+      const decode_wait = [...this.pending_decode.keys()].filter(
         (x) => x <= flush_seq
       );
       if (decode_wait.length > 0) {
@@ -308,25 +304,23 @@ class WindowDecoder {
       this.cancel_snapshot_timer();
 
       this.schedule_show_frame();
-    } catch (e) {
-      console.error("error handling decoded packet:", e);
-      this.decode_error(packet, e);
+    } catch (error) {
+      console.error("error handling decoded packet:", error);
+      this.decode_error(packet, error);
     }
   }
 
   schedule_show_frame() {
     //move to the next frame at the next vsync:
-    if (vsync) {
-      this.animation_request = requestAnimationFrame((t) => {
-        this.animation_request = 0;
-        this.next_frame();
-      });
-    } else {
-      this.animation_request = setTimeout(() => {
-        this.animation_request = 0;
-        this.next_frame();
-      }, 16);
-    }
+    this.animation_request = vsync
+      ? requestAnimationFrame((t) => {
+          this.animation_request = 0;
+          this.next_frame();
+        })
+      : setTimeout(() => {
+          this.animation_request = 0;
+          this.next_frame();
+        }, 16);
   }
 
   next_frame() {
@@ -351,14 +345,14 @@ class WindowDecoder {
 
   send_decode_ok(packet, start) {
     //copy the packet so we can zero out the data:
-    const clone = Array.from(packet);
+    const clone = [...packet];
     const options = clone[10] || {};
     const decode_time = Math.round(1000 * (performance.now() - start));
     options["decode_time"] = Math.max(0, decode_time);
     clone[6] = "offscreen-painted";
     clone[7] = null;
     clone[10] = options;
-    self.postMessage({ draw: clone, start: start });
+    self.postMessage({ draw: clone, start });
   }
 
   paint_packet(packet) {
@@ -366,16 +360,16 @@ class WindowDecoder {
       this.decode_error(packet, "decoder is closed");
       return;
     }
-    const x = packet[2],
-      y = packet[3],
-      width = packet[4],
-      height = packet[5],
-      coding_fmt = packet[6],
-      data = packet[7];
+    const x = packet[2];
+    const y = packet[3];
+    const width = packet[4];
+    const height = packet[5];
+    const coding_fmt = packet[6];
+    const data = packet[7];
 
     const canvas = this.back_buffer || this.canvas;
-    let ctx = canvas.getContext("2d");
-    ctx.imageSmoothingEnabled = false;
+    let context = canvas.getContext("2d");
+    context.imageSmoothingEnabled = false;
 
     const parts = coding_fmt.split(":"); //ie: "bitmap:rgb24" or "image:jpeg"
     const coding = parts[0]; //ie: "bitmap"
@@ -383,38 +377,38 @@ class WindowDecoder {
       if (!this.debug) {
         return;
       }
-      const src_encoding = parts[1] || ""; //ie: "rgb24"
-      const box_color = DEFAULT_BOX_COLORS[src_encoding];
+      const source_encoding = parts[1] || ""; //ie: "rgb24"
+      const box_color = DEFAULT_BOX_COLORS[source_encoding];
       if (box_color) {
         //ie: "orange"
-        this.paint_box(ctx, box_color, x, y, width, height);
+        this.paint_box(context, box_color, x, y, width, height);
       }
     };
 
     if (coding == "bitmap") {
       // RGB is transformed to bitmap
-      ctx.clearRect(x, y, width, height);
-      ctx.drawImage(data, x, y, width, height);
+      context.clearRect(x, y, width, height);
+      context.drawImage(data, x, y, width, height);
       paint_box();
     } else if (coding == "image") {
       // All others are transformed to VideoFrame
-      ctx.clearRect(x, y, width, height);
-      ctx.drawImage(data.image, x, y, width, height);
+      context.clearRect(x, y, width, height);
+      context.drawImage(data.image, x, y, width, height);
       data.image.close();
       paint_box();
     } else if (coding == "scroll") {
       this.init_back_buffer();
-      ctx = this.back_buffer.getContext("2d");
-      ctx.imageSmoothingEnabled = false;
-      for (let i = 0, j = data.length; i < j; ++i) {
-        const scroll_data = data[i];
-        const sx = scroll_data[0],
-          sy = scroll_data[1],
-          sw = scroll_data[2],
-          sh = scroll_data[3],
-          xdelta = scroll_data[4],
-          ydelta = scroll_data[5];
-        ctx.drawImage(
+      context = this.back_buffer.getContext("2d");
+      context.imageSmoothingEnabled = false;
+      for (let index = 0, stop = data.length; index < stop; ++index) {
+        const scroll_data = data[index];
+        const sx = scroll_data[0];
+        const sy = scroll_data[1];
+        const sw = scroll_data[2];
+        const sh = scroll_data[3];
+        const xdelta = scroll_data[4];
+        const ydelta = scroll_data[5];
+        context.drawImage(
           this.canvas,
           sx,
           sy,
@@ -426,7 +420,7 @@ class WindowDecoder {
           sh
         );
         if (this.debug) {
-          this.paint_box(ctx, "brown", sx + xdelta, sy + ydelta, sw, sh);
+          this.paint_box(context, "brown", sx + xdelta, sy + ydelta, sw, sh);
         }
       }
     } else if (coding == "frame") {
@@ -438,7 +432,7 @@ class WindowDecoder {
         enc_width = scaled_size[0];
         enc_height = scaled_size[1];
       }
-      ctx.drawImage(data, x, y, enc_width, enc_height);
+      context.drawImage(data, x, y, enc_width, enc_height);
       data.close();
       paint_box();
     } else if (coding == "throttle") {
@@ -446,20 +440,20 @@ class WindowDecoder {
     } else if (coding == "void") {
       //nothing to do
     } else {
-      this.decode_error(packet, "unsupported encoding: " + coding);
+      this.decode_error(packet, `unsupported encoding: ${coding}`);
     }
     const options = packet[10] || {};
     const flush = options["flush"] || 0;
-    if (flush == 0 && ctx.commit) {
-      ctx.commit();
+    if (flush == 0 && context.commit) {
+      context.commit();
     }
   }
 
-  paint_box(ctx, color, px, py, pw, ph) {
+  paint_box(context, color, px, py, pw, ph) {
     if (color) {
-      ctx.strokeStyle = color;
-      ctx.lineWidth = 2;
-      ctx.strokeRect(px, py, pw, ph);
+      context.strokeStyle = color;
+      context.lineWidth = 2;
+      context.strokeRect(px, py, pw, ph);
     }
   }
 
@@ -483,11 +477,11 @@ class WindowDecoder {
     if (!this.snapshot_buffer) {
       return;
     }
-    const ctx = this.canvas.getContext("2d");
-    ctx.imageSmoothingEnabled = false;
-    ctx.drawImage(this.snapshot_buffer, 0, 0);
-    if (ctx.commit) {
-      ctx.commit();
+    const context = this.canvas.getContext("2d");
+    context.imageSmoothingEnabled = false;
+    context.drawImage(this.snapshot_buffer, 0, 0);
+    if (context.commit) {
+      context.commit();
     }
   }
 
@@ -497,9 +491,9 @@ class WindowDecoder {
     const h = this.canvas.height;
     if (w > 0 && h > 0) {
       this.snapshot_buffer = new OffscreenCanvas(w, h);
-      const ctx = this.snapshot_buffer.getContext("2d");
-      ctx.imageSmoothingEnabled = false;
-      ctx.drawImage(this.canvas, 0, 0);
+      const context = this.snapshot_buffer.getContext("2d");
+      context.imageSmoothingEnabled = false;
+      context.drawImage(this.canvas, 0, 0);
     }
   }
 }
@@ -511,8 +505,8 @@ onmessage = function (e) {
     case "check": {
       // We do not check. We are here because we support native decoding.
       // TODO: Reconsider this. It might be a good thing to do some testing, just for sanity??
-      const encodings = Array.from(data.encodings);
-      const common = encodings.filter((value) => all_encodings.includes(value));
+      const encodings = [...data.encodings];
+      const common = encodings.filter((value) => all_encodings.has(value));
       self.postMessage({ result: true, formats: common });
       break;
     }
@@ -538,10 +532,9 @@ onmessage = function (e) {
       } else {
         send_decode_error(
           packet,
-          "no window decoder found for wid " +
-            wid +
-            ", only:" +
-            Array.from(offscreen_canvas.keys()).join(",")
+          `no window decoder found for wid ${wid}, only:${[
+            ...offscreen_canvas.keys(),
+          ].join(",")}`
         );
       }
       break;
@@ -556,7 +549,7 @@ onmessage = function (e) {
       console.log(
         "canvas transfer for window",
         data.wid,
-        ": ",
+        ":",
         data.canvas,
         data.debug
       );
@@ -580,6 +573,6 @@ onmessage = function (e) {
       }
       break;
     default:
-      console.error("Offscreen decode worker got unknown message: " + data.cmd);
+      console.error(`Offscreen decode worker got unknown message: ${data.cmd}`);
   }
 };

@@ -3,7 +3,6 @@
  * Licensed under MPL 2.0
  *
  */
-"use strict";
 
 const MediaSourceConstants = {
   CODEC_DESCRIPTION: {
@@ -103,11 +102,11 @@ const MediaSourceConstants = {
 };
 
 const MediaSourceUtil = {
-  getMediaSourceClass: function () {
+  getMediaSourceClass() {
     return window.MediaSource || window.WebKitMediaSource;
   },
 
-  getMediaSource: function () {
+  getMediaSource() {
     const ms = MediaSourceUtil.getMediaSourceClass();
     if (!ms) {
       throw new Error("no MediaSource support!");
@@ -115,7 +114,7 @@ const MediaSourceUtil = {
     return new ms();
   },
 
-  getAuroraAudioCodecs: function () {
+  getAuroraAudioCodecs() {
     //IE is totally useless:
     if (Utilities.isIE()) {
       return {};
@@ -125,6 +124,7 @@ const MediaSourceUtil = {
     if (AV && AV.Decoder && AV.Decoder.find) {
       for (const codec_option in MediaSourceConstants.AURORA_CODECS) {
         const codec_string = MediaSourceConstants.AURORA_CODECS[codec_option];
+        // eslint-disable-next-line unicorn/no-array-callback-reference
         const decoder = AV.Decoder.find(codec_string);
         if (decoder) {
           codecs_supported[codec_option] = codec_string;
@@ -138,7 +138,7 @@ const MediaSourceUtil = {
     return codecs_supported;
   },
 
-  getMediaSourceAudioCodecs: function (ignore_blacklist) {
+  getMediaSourceAudioCodecs(ignore_blacklist) {
     const media_source_class = MediaSourceUtil.getMediaSourceClass();
     if (!media_source_class) {
       Utilities.log("audio forwarding: no media source API support");
@@ -180,14 +180,9 @@ const MediaSourceUtil = {
           }
         }
         codecs_supported[codec_option] = codec_string;
-      } catch (e) {
+      } catch (error) {
         Utilities.error(
-          "audio error probing codec '" +
-            codec_string +
-            "' / '" +
-            codec_string +
-            "': " +
-            e
+          `audio error probing codec '${codec_string}' / '${codec_string}': ${error}`
         );
         codecs_failed[codec_option] = codec_string;
       }
@@ -197,7 +192,7 @@ const MediaSourceUtil = {
     return codecs_supported;
   },
 
-  getSupportedAudioCodecs: function () {
+  getSupportedAudioCodecs() {
     const codecs_supported = MediaSourceUtil.getMediaSourceAudioCodecs();
     const aurora_codecs = MediaSourceUtil.getAuroraAudioCodecs();
     for (const codec_option in aurora_codecs) {
@@ -210,17 +205,17 @@ const MediaSourceUtil = {
     return codecs_supported;
   },
 
-  getDefaultAudioCodec: function (codecs) {
+  getDefaultAudioCodec(codecs) {
     if (!codecs) {
       return null;
     }
     const codec_options = Object.keys(codecs);
     for (
-      let i = 0;
-      i < MediaSourceConstants.PREFERRED_CODEC_ORDER.length;
-      i++
+      let index = 0;
+      index < MediaSourceConstants.PREFERRED_CODEC_ORDER.length;
+      index++
     ) {
-      const codec_option = MediaSourceConstants.PREFERRED_CODEC_ORDER[i];
+      const codec_option = MediaSourceConstants.PREFERRED_CODEC_ORDER[index];
       if (codec_options.includes(codec_option)) {
         return codec_option;
       }
@@ -228,15 +223,15 @@ const MediaSourceUtil = {
     return Object.keys(codecs)[0];
   },
 
-  addMediaSourceEventDebugListeners: function (media_source, source_type) {
+  addMediaSourceEventDebugListeners(media_source, source_type) {
     function debug_source_event(event) {
-      let msg = "" + source_type + " source " + event;
+      let message = `${source_type} source ${event}`;
       try {
-        msg += ": " + media_source.readyState;
-      } catch (e) {
+        message += `: ${media_source.readyState}`;
+      } catch {
         //don't care
       }
-      console.debug(msg);
+      console.debug(message);
     }
     media_source.addEventListener("sourceopen", function (e) {
       debug_source_event("open");
@@ -252,9 +247,9 @@ const MediaSourceUtil = {
     });
   },
 
-  addMediaElementEventDebugListeners: function (media_element, element_type) {
+  addMediaElementEventDebugListeners(media_element, element_type) {
     function debug_me_event(event) {
-      console.debug("" + element_type + " " + event);
+      console.debug(`${element_type} ${event}`);
     }
     media_element.addEventListener("waiting", function () {
       debug_me_event("waiting");
@@ -285,10 +280,10 @@ const MediaSourceUtil = {
     });
   },
 
-  addSourceBufferEventDebugListeners: function (asb, element_type) {
+  addSourceBufferEventDebugListeners(asb, element_type) {
     function debug_buffer_event(event) {
-      const msg = "" + element_type + " buffer " + event;
-      console.debug(msg);
+      const message = `${element_type} buffer ${event}`;
+      console.debug(message);
     }
     asb.addEventListener("updatestart", function (e) {
       debug_buffer_event("updatestart");
@@ -304,14 +299,14 @@ const MediaSourceUtil = {
     });
   },
 
-  get_supported_codecs: function (mediasource, aurora, ignore_audio_blacklist) {
+  get_supported_codecs(mediasource, aurora, ignore_audio_blacklist) {
     const codecs_supported = {};
     if (mediasource) {
       const mediasource_codecs = MediaSourceUtil.getMediaSourceAudioCodecs(
         ignore_audio_blacklist
       );
       for (const codec_option in mediasource_codecs) {
-        codecs_supported["mediasource:" + codec_option] =
+        codecs_supported[`mediasource:${codec_option}`] =
           MediaSourceConstants.CODEC_DESCRIPTION[codec_option];
       }
     }
@@ -322,14 +317,15 @@ const MediaSourceUtil = {
           //we already have native MediaSource support!
           continue;
         }
-        codecs_supported["aurora:" + codec_option] =
-          "legacy: " + MediaSourceConstants.CODEC_DESCRIPTION[codec_option];
+        codecs_supported[
+          `aurora:${codec_option}`
+        ] = `legacy: ${MediaSourceConstants.CODEC_DESCRIPTION[codec_option]}`;
       }
     }
     return codecs_supported;
   },
 
-  get_best_codec: function (codecs_supported) {
+  get_best_codec(codecs_supported) {
     let best_codec = null;
     let best_distance = MediaSourceConstants.PREFERRED_CODEC_ORDER.length;
     for (const codec_option in codecs_supported) {

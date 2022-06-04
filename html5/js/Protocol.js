@@ -17,9 +17,7 @@
  *  brotli_decode.js
  */
 
-"use strict";
-
-const CONNECT_TIMEOUT = 15000;
+const CONNECT_TIMEOUT = 15_000;
 
 /*
 A stub class to facilitate communication with the protocol when
@@ -116,7 +114,7 @@ class XpraProtocol {
   }
 
   close_event_str(event) {
-    let code_mappings = {
+    const code_mappings = {
       1000: "Normal Closure",
       1001: "Going Away",
       1002: "Protocol Error",
@@ -134,25 +132,24 @@ class XpraProtocol {
       1014: "Bad Gateway",
       1015: "TLS Handshake",
     };
-    let msg = "";
+    let message = "";
     if (event.code) {
       try {
-        if (typeof code_mappings[event.code] !== "undefined") {
-          msg += "'" + code_mappings[event.code] + "' (" + event.code + ")";
-        } else {
-          msg += "" + event.code;
-        }
+        message +=
+          typeof code_mappings[event.code] !== "undefined"
+            ? `'${code_mappings[event.code]}' (${event.code})`
+            : `${event.code}`;
         if (event.reason) {
-          msg += ": '" + event.reason + "'";
+          message += `: '${event.reason}'`;
         }
-      } catch (e) {
-        this.error("cannot parse websocket event:", e);
-        msg = "unknown reason";
+      } catch (error) {
+        this.error("cannot parse websocket event:", error);
+        message = "unknown reason";
       }
     } else {
-      msg = "unknown reason (no websocket error code)";
+      message = "unknown reason (no websocket error code)";
     }
-    return msg;
+    return message;
   }
 
   open(uri) {
@@ -174,20 +171,21 @@ class XpraProtocol {
     // connect the socket
     try {
       this.websocket = new WebSocket(uri, "binary");
-    } catch (e) {
-      handle(["error", "" + e, 0]);
+    } catch (error) {
+      handle(["error", `${error}`, 0]);
       return;
     }
     this.websocket.binaryType = "arraybuffer";
-    this.websocket.onopen = function () {
+    this.websocket.addEventListener("open", function () {
       if (me.verify_connected_timer) {
         clearTimeout(me.verify_connected_timer);
         me.verify_connected_timer = 0;
       }
       handle(["open"]);
-    };
-    this.websocket.onclose = (event) =>
-      handle(["close", me.close_event_str(event)]);
+    });
+    this.websocket.addEventListener("close", (event) =>
+      handle(["close", me.close_event_str(event)])
+    );
     this.websocket.onerror = (event) =>
       handle(["error", me.close_event_str(event), event.code || 0]);
     this.websocket.onmessage = function (e) {
@@ -210,8 +208,8 @@ class XpraProtocol {
     }
   }
 
-  protocol_error(msg) {
-    this.error("protocol error:", msg);
+  protocol_error(message) {
+    this.error("protocol error:", message);
     //make sure we stop processing packets and events:
     this.websocket.onopen = null;
     this.websocket.onclose = null;
@@ -220,7 +218,7 @@ class XpraProtocol {
     this.header = [];
     this.rQ = [];
     //and just tell the client to close (it may still try to re-connect):
-    this.packet_handler(["close", msg]);
+    this.packet_handler(["close", message]);
   }
 
   process_receive_queue() {
@@ -235,18 +233,13 @@ class XpraProtocol {
   }
 
   do_process_receive_queue() {
-    let i = 0,
-      j = 0;
     if (this.header.length < 8 && this.rQ.length > 0) {
       //add from receive queue data to header until we get the 8 bytes we need:
       while (this.header.length < 8 && this.rQ.length > 0) {
         const slice = this.rQ[0];
         const needed = 8 - this.header.length;
         const n = Math.min(needed, slice.length);
-        //copy at most n characters:
-        for (i = 0; i < n; i++) {
-          this.header.push(slice[i]);
-        }
+        this.header.push(...slice.subarray(0, n));
         if (slice.length > needed) {
           //replace the slice with what is left over:
           this.rQ[0] = slice.subarray(n);
@@ -258,20 +251,16 @@ class XpraProtocol {
 
       //verify the header format:
       if (this.header[0] !== ord("P")) {
-        let msg = "invalid packet header format: " + this.header[0];
+        let message = `invalid packet header format: ${this.header[0]}`;
         if (this.header.length > 1) {
-          var hex = "";
-          for (var p = 0; p < this.header.length; p++) {
-            let v = this.header[p].toString(16);
-            if (v.length < 2) {
-              hex += "0" + v;
-            } else {
-              hex += v;
-            }
+          let hex = "";
+          for (let p = 0; p < this.header.length; p++) {
+            const v = this.header[p].toString(16);
+            hex += v.length < 2 ? `0${v}` : v;
           }
-          msg += ": 0x" + hex;
+          message += `: 0x${hex}`;
         }
-        this.protocol_error(msg);
+        this.protocol_error(message);
         return false;
       }
     }
@@ -281,7 +270,7 @@ class XpraProtocol {
       return false;
     }
 
-    var proto_flags = this.header[1];
+    let proto_flags = this.header[1];
     const proto_crypto = proto_flags & 0x2;
     if (proto_crypto) {
       proto_flags = proto_flags & ~0x2;
@@ -294,7 +283,7 @@ class XpraProtocol {
 
     if (proto_flags > 1 && proto_flags != 0x10) {
       this.protocol_error(
-        "we can't handle this protocol flag yet: " + proto_flags
+        `we can't handle this protocol flag yet: ${proto_flags}`
       );
       return;
     }
@@ -306,14 +295,13 @@ class XpraProtocol {
     }
     const index = this.header[3];
     if (index >= 20) {
-      this.protocol_error("invalid packet index: " + index);
+      this.protocol_error(`invalid packet index: ${index}`);
       return false;
     }
-    let packet_size = 0;
-    for (i = 0; i < 4; i++) {
-      packet_size = packet_size * 0x100;
-      packet_size += this.header[4 + i];
-    }
+    let packet_size = [4, 5, 6, 7].reduce(
+      (accumulator, value) => accumulator * 0x1_00 + this.header[value],
+      0
+    );
 
     // work out padding if necessary
     let padding = 0;
@@ -324,10 +312,10 @@ class XpraProtocol {
     }
 
     // verify that we have enough data for the full payload:
-    let rsize = 0;
-    for (i = 0, j = this.rQ.length; i < j; ++i) {
-      rsize += this.rQ[i].length;
-    }
+    let rsize = this.rQ.reduce(
+      (accumulator, value) => accumulator + value.length,
+      0
+    );
     if (rsize < packet_size) {
       return false;
     }
@@ -368,10 +356,9 @@ class XpraProtocol {
         this.error("error decrypting packet using", this.cipher_in);
         if (decrypted.length < packet_size - padding) {
           this.error(
-            " expected " +
-              (packet_size - padding) +
-              " bytes, but got " +
+            ` expected ${packet_size - padding} bytes, but got ${
               decrypted.length
+            }`
           );
         } else {
           this.error(" decrypted:", decrypted);
@@ -379,10 +366,9 @@ class XpraProtocol {
         this.raw_packets = [];
         return this.rQ.length > 0;
       }
-      packet_data = new Uint8Array(packet_size - padding);
-      for (i = 0; i < packet_size - padding; i++) {
-        packet_data[i] = decrypted[i].charCodeAt(0);
-      }
+      packet_data = Utilities.StringToUint8(
+        decrypted.slice(0, packet_size - padding)
+      );
     }
 
     //decompress it if needed:
@@ -402,7 +388,7 @@ class XpraProtocol {
     if (index > 0) {
       this.raw_packets[index] = packet_data;
       if (this.raw_packets.length >= 4) {
-        this.protocol_error("too many raw packets: " + this.raw_packets.length);
+        this.protocol_error(`too many raw packets: ${this.raw_packets.length}`);
         return false;
       }
     } else {
@@ -416,14 +402,14 @@ class XpraProtocol {
         } else {
           packet = bdecode(packet_data);
         }
-        for (let index in this.raw_packets) {
+        for (const index in this.raw_packets) {
           packet[index] = this.raw_packets[index];
         }
         this.raw_packets = {};
-      } catch (e) {
+      } catch (error) {
         //FIXME: maybe we should error out and disconnect here?
-        this.error("error decoding packet", e);
-        this.error("packet=" + packet);
+        this.error("error decoding packet", error);
+        this.error(`packet=${packet}`);
         this.raw_packets = [];
         return this.rQ.length > 0;
       }
@@ -436,21 +422,13 @@ class XpraProtocol {
             //we converted to string in the network layer,
             //and now we're converting back to bytes...
             //(use 'rencodeplus' to avoid all this unnecessary churn)
-            const u8a = new Uint8Array(img_data.length);
-            for (let i = 0, j = img_data.length; i < j; ++i) {
-              u8a[i] = img_data.charCodeAt(i);
-            }
-            packet[7] = u8a;
+            packet[7] = Utilities.StringToUint8(img_data);
           }
         } else if (packet[0] === "sound-data") {
           const sound_data = packet[2];
           if (typeof sound_data === "string") {
             //same workaround as 'draw' above
-            const u8a = new Uint8Array(sound_data.length);
-            for (let i = 0, j = sound_data.length; i < j; ++i) {
-              u8a[i] = sound_data.charCodeAt(i);
-            }
-            packet[2] = u8a;
+            packet[7] = Utilities.StringToUint8(sound_data);
           }
         }
         if (this.is_worker) {
@@ -459,9 +437,9 @@ class XpraProtocol {
         } else {
           this.packet_handler(packet);
         }
-      } catch (e) {
+      } catch (error) {
         //FIXME: maybe we should error out and disconnect here?
-        this.error("error processing packet " + packet[0] + ": " + e);
+        this.error(`error processing packet ${packet[0]}: ${error}`);
       }
     }
     return this.rQ.length > 0;
@@ -472,7 +450,7 @@ class XpraProtocol {
   }
 
   process_send_queue() {
-    while (this.sQ.length !== 0 && this.websocket) {
+    while (this.sQ.length > 0 && this.websocket) {
       const packet = this.sQ.shift();
       if (!packet) {
         return;
@@ -490,12 +468,12 @@ class XpraProtocol {
           bdata = rencodeplus(packet);
           proto_flags = 0x10;
         } else {
-          throw "invalid packet encoder: " + this.packet_encoder;
+          throw `invalid packet encoder: ${this.packet_encoder}`;
         }
-      } catch (e) {
+      } catch (error) {
         this.error("Error: failed to encode packet:", packet);
         this.error(" with packet encoder", this.packet_encoder);
-        this.error(e);
+        this.error(error);
         continue;
       }
       const payload_size = bdata.length;
@@ -505,31 +483,18 @@ class XpraProtocol {
         const padding_size =
           this.cipher_out_block_size -
           (payload_size % this.cipher_out_block_size);
-        let input_data = null;
-        if (typeof bdata === "string") {
-          input_data = bdata;
-        } else {
-          const CHUNK_SZ = 0x8000;
-          const c = [];
-          for (let i = 0; i < bdata.length; i += CHUNK_SZ) {
-            c.push(
-              String.fromCharCode.apply(null, bdata.subarray(i, i + CHUNK_SZ))
-            );
-          }
-          input_data = c.join("");
-        }
+        let input_data =
+          typeof bdata === "string" ? bdata : Utilities.Uint8ToString(bdata);
         if (padding_size) {
           const padding_char = String.fromCharCode(padding_size);
-          for (let i = 0; i < padding_size; i++) {
-            input_data += padding_char;
-          }
+          input_data += padding_char.repeat(padding_size);
         }
         this.cipher_out.update(forge.util.createBuffer(input_data), "utf8");
         bdata = this.cipher_out.output.getBytes();
       }
       const actual_size = bdata.length;
 
-      let packet_data = new Uint8Array(actual_size + 8);
+      const packet_data = new Uint8Array(actual_size + 8);
       const level = 0;
       //header:
       packet_data[0] = "P".charCodeAt(0);
@@ -537,15 +502,15 @@ class XpraProtocol {
       packet_data[2] = level;
       packet_data[3] = 0;
       //size header:
-      for (let i = 0; i < 4; i++) {
-        packet_data[7 - i] = (payload_size >> (8 * i)) & 0xff;
+      for (let index = 0; index < 4; index++) {
+        packet_data[7 - index] = (payload_size >> (8 * index)) & 0xff;
       }
       if (typeof bdata === "object" && bdata.constructor === Uint8Array) {
         packet_data.set(bdata, 8);
       } else {
         //copy string one character at a time..
-        for (let i = 0; i < actual_size; i++) {
-          packet_data[8 + i] = ord(bdata[i]);
+        for (let index = 0; index < actual_size; index++) {
+          packet_data[8 + index] = ord(bdata[index]);
         }
       }
       // put into buffer before send
@@ -556,14 +521,14 @@ class XpraProtocol {
   }
 
   process_message_queue() {
-    while (this.mQ.length !== 0) {
+    while (this.mQ.length > 0) {
       const packet = this.mQ.shift();
 
       if (!packet) {
         return;
       }
 
-      let raw_buffers = [];
+      const raw_buffers = [];
       if (packet[0] === "draw" && "buffer" in packet[7]) {
         raw_buffers.push(packet[7].buffer);
       } else if (packet[0] === "sound-data" && "buffer" in packet[2]) {
@@ -586,7 +551,7 @@ class XpraProtocol {
     this.setup_cipher(caps, key, (cipher, block_size, secret, iv) => {
       this.cipher_in_block_size = block_size;
       this.cipher_in = forge.cipher.createDecipher(cipher, secret);
-      this.cipher_in.start({ iv: iv });
+      this.cipher_in.start({ iv });
     });
   }
 
@@ -594,17 +559,17 @@ class XpraProtocol {
     this.setup_cipher(caps, key, (cipher, block_size, secret, iv) => {
       this.cipher_out_block_size = block_size;
       this.cipher_out = forge.cipher.createCipher(cipher, secret);
-      this.cipher_out.start({ iv: iv });
+      this.cipher_out.start({ iv });
     });
   }
 
-  setup_cipher(caps, key, setup_fn) {
+  setup_cipher(caps, key, setup_function) {
     if (!key) {
       throw "missing encryption key";
     }
     const cipher = caps["cipher"] || "AES";
     if (cipher != "AES") {
-      throw "unsupported encryption specified: '" + cipher + "'";
+      throw `unsupported encryption specified: '${cipher}'`;
     }
     let key_salt = caps["cipher.key_salt"];
     if (typeof key_salt !== "string") {
@@ -612,16 +577,16 @@ class XpraProtocol {
     }
     const iterations = caps["cipher.key_stretch_iterations"];
     if (iterations < 0) {
-      throw "invalid number of iterations: " + iterations;
+      throw `invalid number of iterations: ${iterations}`;
     }
     const DEFAULT_KEYSIZE = 32;
     const key_size = caps["cipher.key_size"] || DEFAULT_KEYSIZE;
-    if ([32, 24, 16].indexOf(key_size) < 0) {
-      throw "invalid key size '" + key_size + "'";
+    if (![32, 24, 16].includes(key_size)) {
+      throw `invalid key size '${key_size}'`;
     }
     const key_stretch = caps["cipher.key_stretch"] || "PBKDF2";
     if (key_stretch.toUpperCase() != "PBKDF2") {
-      throw "invalid key stretching function " + key_stretch;
+      throw `invalid key stretching function ${key_stretch}`;
     }
     const DEFAULT_KEY_HASH = "SHA1";
     const key_hash = (
@@ -639,8 +604,8 @@ class XpraProtocol {
     let block_size = 0;
     if (mode == "CBC") {
       block_size = 32;
-    } else if (["CFB", "CTR"].indexOf(mode) < 0) {
-      throw "unsupported AES mode '" + mode + "'";
+    } else if (!["CFB", "CTR"].includes(mode)) {
+      throw `unsupported AES mode '${mode}'`;
     }
     // start the cipher
     const iv = caps["cipher.iv"];
@@ -648,7 +613,7 @@ class XpraProtocol {
       throw "missing IV";
     }
     //ie: setup_fn("AES-CBC", "THESTRETCHEDKEYVALUE", "THEIVVALUE");
-    setup_fn(cipher + "-" + mode, block_size, secret, iv);
+    setup_function(`${cipher}-${mode}`, block_size, secret, iv);
   }
 }
 
@@ -678,13 +643,13 @@ if (
   // we create a custom packet handler which posts packet as a message
   protocol.set_packet_handler((packet) => {
     let raw_buffer = [];
-    if (packet[0] === "draw" && {}.hasOwnProperty.call(packet[7], "buffer")) {
+    if (packet[0] === "draw" && Object.hasOwn(packet[7], "buffer")) {
       //zero-copy the draw buffer
       raw_buffer = packet[7].buffer;
       packet[7] = null;
     } else if (
       packet[0] === "send-file-chunk" &&
-      {}.hasOwnProperty.call(packet[3], "buffer")
+      Object.hasOwn(packet[3], "buffer")
     ) {
       //zero-copy the file data buffer
       raw_buffer = packet[3].buffer;

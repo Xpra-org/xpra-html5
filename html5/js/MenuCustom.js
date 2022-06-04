@@ -23,98 +23,101 @@ SOFTWARE.
 
 */
 
+const MENU_CONTENT_LEFT_CLASS_NAME = "menu-content-left";
+const MENU_CONTENT_RIGHT_CLASS_NAME = "menu-content-right";
+
 function addWindowListItem(wid, title) {
   const li = document.createElement("li");
   li.className = "windowlist-li";
-  li.id = "windowlistitem" + wid;
+  li.id = `windowlistitem${wid}`;
 
   const a = document.createElement("a");
 
-  a.id = "windowlistitemlink" + wid;
+  a.id = `windowlistitemlink${wid}`;
 
-  a.onmouseover = function (e) {
+  a.addEventListener("mouseover", function (e) {
     if (e.ctrlKey) {
       client._window_set_focus(client.id_to_window[wid]);
     }
-  };
-  a.onclick = function (e) {
+  });
+  a.addEventListener("click", function (e) {
     // Skip handling minimize, maximize, close events.
-    if ($(e.target).hasClass("menu-content-right")) return;
+    if ($(e.target).hasClass(MENU_CONTENT_RIGHT_CLASS_NAME)) return;
     if (client.id_to_window[wid].minimized) {
       client.id_to_window[wid].toggle_minimized();
     } else {
       client._window_set_focus(client.id_to_window[wid]);
     }
     this.parentElement.parentElement.className = "-hide";
-  };
+  });
 
   function hideWindowList() {
-    document.getElementById("open_windows_list").className = "";
+    document.querySelector("#open_windows_list").className = "";
   }
 
   const divLeft = document.createElement("div");
-  divLeft.id = "windowlistdivleft" + wid;
+  divLeft.id = `windowlistdivleft${wid}`;
   divLeft.className = "menu-divleft";
   const img = new Image();
-  img.id = "windowlistitemicon" + wid;
+  img.id = `windowlistitemicon${wid}`;
   img.src = "favicon.png";
-  img.className = "menu-content-left";
-  divLeft.appendChild(img);
+  img.className = MENU_CONTENT_LEFT_CLASS_NAME;
+  divLeft.append(img);
 
   const titleDiv = document.createElement("div");
-  titleDiv.appendChild(document.createTextNode(title));
-  titleDiv.id = "windowlistitemtitle" + wid;
-  titleDiv.className = "menu-content-left";
-  divLeft.appendChild(titleDiv);
+  titleDiv.append(document.createTextNode(title));
+  titleDiv.id = `windowlistitemtitle${wid}`;
+  titleDiv.className = MENU_CONTENT_LEFT_CLASS_NAME;
+  divLeft.append(titleDiv);
 
   const divRight = document.createElement("div");
   divRight.className = "menu-divright";
 
   const img2 = new Image();
-  img2.id = "windowlistitemclose" + wid;
+  img2.id = `windowlistitemclose${wid}`;
   img2.src = "icons/close.png";
   img2.title = "Close";
-  img2.className = "menu-content-right";
-  img2.onclick = function (e) {
+  img2.className = MENU_CONTENT_RIGHT_CLASS_NAME;
+  img2.addEventListener("click", function (e) {
     client._window_closed(client.id_to_window[wid]);
     e.stopPropagation();
     hideWindowList();
-  };
+  });
   const img3 = new Image();
-  img3.id = "windowlistitemmax" + wid;
+  img3.id = `windowlistitemmax${wid}`;
   img3.src = "icons/maximize.png";
   img3.title = "Maximize";
-  img3.onclick = function (e) {
+  img3.addEventListener("click", function (e) {
     client.id_to_window[wid].toggle_maximized();
     e.stopPropagation();
     hideWindowList();
-  };
-  img3.className = "menu-content-right";
+  });
+  img3.className = MENU_CONTENT_RIGHT_CLASS_NAME;
   const img4 = new Image();
-  img4.id = "windowlistitemmin" + wid;
+  img4.id = `windowlistitemmin${wid}`;
   img4.src = "icons/minimize.png";
   img4.title = "Minimize";
-  img4.onclick = function (e) {
+  img4.addEventListener("click", function (e) {
     client.id_to_window[wid].toggle_minimized();
     e.stopPropagation();
     hideWindowList();
-  };
-  img4.className = "menu-content-right";
+  });
+  img4.className = MENU_CONTENT_RIGHT_CLASS_NAME;
 
-  divRight.appendChild(img2);
-  divRight.appendChild(img3);
-  divRight.appendChild(img4);
-  a.appendChild(divLeft);
-  a.appendChild(divRight);
-  li.appendChild(a);
+  divRight.append(img2);
+  divRight.append(img3);
+  divRight.append(img4);
+  a.append(divLeft);
+  a.append(divRight);
+  li.append(a);
 
-  document.getElementById("open_windows_list").appendChild(li);
+  document.querySelector("#open_windows_list").append(li);
 }
 
 function removeWindowListItem(itemId) {
-  const element = document.getElementById("windowlistitem" + itemId);
+  const element = document.querySelector(`#windowlistitem${itemId}`);
   if (element && element.parentNode) {
-    element.parentNode.removeChild(element);
+    element.remove();
   }
 }
 
@@ -125,10 +128,10 @@ $(function () {
     containment: "window",
     scroll: false,
   });
-  float_menu.on("dragstart", function (ev, ui) {
+  float_menu.on("dragstart", function (event_, ui) {
     client.mouse_grabbed = true;
   });
-  float_menu.on("dragstop", function (ev, ui) {
+  float_menu.on("dragstop", function (event_, ui) {
     client.mouse_grabbed = false;
     client.toolbar_position = "custom";
     client.reconfigure_all_trays();

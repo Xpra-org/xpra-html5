@@ -1,3 +1,5 @@
+/* global self ReadableStream Response */
+
 self.addEventListener("install", () => {
   self.skipWaiting();
 });

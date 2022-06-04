@@ -78,7 +78,7 @@
 
     <link rel="stylesheet" type="text/css" href="css/menu.css" />
     <script type="application/javascript" src="js/Menu.js"></script>
-    <script type="application/javascript" src="js/Menu-custom.js"></script>
+    <script type="application/javascript" src="js/MenuCustom.js"></script>
     <link rel="stylesheet" type="text/css" href="css/menu-skin.css" />
     <link rel="stylesheet" type="text/css" href="css/icon.css" />
 
@@ -1348,10 +1348,10 @@
 
       function toggle_fullscreen() {
         const f_el =
-          {}.hasOwnProperty.call(document, "requestFullScreen") ||
-          {}.hasOwnProperty.call(document, "webkitRequestFullScreen") ||
-          {}.hasOwnProperty.call(document, "mozRequestFullScreen") ||
-          {}.hasOwnProperty.call(document, "msRequestFullscreen");
+          Object.hasOwn(document, "requestFullScreen") ||
+          Object.hasOwn(document, "webkitRequestFullScreen") ||
+          Object.hasOwn(document, "mozRequestFullScreen") ||
+          Object.hasOwn(document, "msRequestFullscreen");
         if (!f_el) {
           const elem = document.getElementById("fullscreen_button");
           var is_fullscreen =
@@ -1406,11 +1406,9 @@
               document.exitFullscreen();
             } else if (document.webkitExitFullscreen) {
               document.webkitExitFullscreen();
-            } else if (
-              {}.hasOwnProperty.call((document, "mozCancelFullScreen"))
-            ) {
+            } else if (Object.hasOwn((document, "mozCancelFullScreen"))) {
               document.mozCancelFullScreen();
-            } else if ({}.hasOwnProperty.call((document, "msExitFullscreen"))) {
+            } else if (Object.hasOwn((document, "msExitFullscreen"))) {
               document.msExitFullscreen();
             }
 

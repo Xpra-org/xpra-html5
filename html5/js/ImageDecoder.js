@@ -15,7 +15,7 @@
  */
 
 const XpraImageDecoderLoader = {
-  hasNativeDecoder: function () {
+  hasNativeDecoder() {
     return typeof ImageDecoder !== "undefined";
   },
 };
@@ -24,7 +24,7 @@ class XpraImageDecoder {
   constructor() {
     this.on_frame_decoded = null;
     this.on_frame_error = (packet, error) => {
-      console.error("ImageDecoder error on packet ", packet, ": ", error);
+      console.error("ImageDecoder error on packet", packet, ":", error);
     };
   }
 
@@ -43,26 +43,26 @@ class XpraImageDecoder {
         height
       )
         .then((bitmap) => {
-          packet[6] = "bitmap:" + coding;
+          packet[6] = `bitmap:${coding}`;
           packet[7] = bitmap;
           this.on_frame_decoded(packet);
         })
-        .catch((e) => this.on_frame_error(packet, e));
+        .catch((error) => this.on_frame_error(packet, error));
     } else {
       const paint_coding = coding.split("/")[0]; //ie: "png/P" -> "png"
       const decoder = new ImageDecoder({
-        type: "image/" + paint_coding,
+        type: `image/${paint_coding}`,
         data: packet[7],
       });
       decoder
         .decode({ frameIndex: 0 })
         .then((result) => {
-          packet[6] = "image:" + paint_coding;
+          packet[6] = `image:${paint_coding}`;
           packet[7] = result;
           decoder.close();
           this.on_frame_decoded(packet);
         })
-        .catch((e) => this.on_frame_error(packet, e));
+        .catch((error) => this.on_frame_error(packet, error));
     }
   };
 }
