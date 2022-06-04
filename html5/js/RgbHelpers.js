@@ -15,9 +15,9 @@ function decode_rgb(packet) {
   let data = packet[7];
   const options = packet[10] || {};
   if (options["zlib"] > 0) {
-    data = new Zlib.Inflate(data).decompress();
-    delete options["zlib"];
-  } else if (options["lz4"] > 0) {
+    throw "zlib compression is not supported";
+  }
+  if (options["lz4"] > 0) {
     data = lz4.decode(data);
     delete options["lz4"];
   }

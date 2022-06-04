@@ -12,7 +12,6 @@
  * Requires Chrome 94+ or Android and a secure (SSL or localhost) context.
  */
 
-importScripts("./lib/zlib.js");
 importScripts("./lib/lz4.js");
 importScripts("./lib/broadway/Decoder.js");
 importScripts("./VideoDecoder.js");

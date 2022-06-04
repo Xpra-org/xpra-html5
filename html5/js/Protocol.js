@@ -379,7 +379,7 @@ class XpraProtocol {
       } else if (level & 0x40) {
         inflated = BrotliDecode(packet_data);
       } else {
-        inflated = new Zlib.Inflate(packet_data).decompress();
+        throw "zlib is no longer supported";
       }
       packet_data = inflated;
     }
@@ -631,7 +631,6 @@ if (
   // worker imports are relative to worker script path
   importScripts(
     "lib/bencode.js",
-    "lib/zlib.js",
     "lib/lz4.js",
     "lib/brotli_decode.js",
     "lib/forge.js",

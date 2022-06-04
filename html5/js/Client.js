@@ -1425,7 +1425,7 @@ class XpraClient {
       digest: digests,
       "salt-digest": digests,
       //compression bits:
-      zlib: true,
+      zlib: false,
       compression_level: 1,
       "mouse.show": true,
       // packet encoders
