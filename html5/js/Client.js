@@ -27,9 +27,6 @@ const CHUNK_TIMEOUT = 10 * 1000;
 const TEXT_PLAIN = "text/plain";
 const UTF8_STRING = "UTF8_STRING";
 
-const CLASS_INSTANCE_METADATA_KEY = "class-instance";
-const WINDOW_TYPE_METADATA_KEY = "window-type";
-
 const FLOAT_MENU_SELECTOR = "#float_menu";
 const PASTEBOARD_SELECTOR = "#pasteboard";
 const WINDOW_PREVIEW_SELECTOR = "#window_preview";
@@ -1545,9 +1542,9 @@ class XpraClient {
         "below",
         "title",
         "size-hints",
-        CLASS_INSTANCE_METADATA_KEY,
+        "class-instance",
         "transient-for",
-        WINDOW_TYPE_METADATA_KEY,
+        "window-type",
         "has-alpha",
         "decorations",
         "override-redirect",
@@ -2199,9 +2196,7 @@ class XpraClient {
         default_settings.auto_fullscreen_desktop_class;
       if (
         win.windowtype == "DESKTOP" &&
-        win.metadata[CLASS_INSTANCE_METADATA_KEY].includes(
-          auto_fullscreen_desktop_class
-        )
+        win.metadata["class-instance"].includes(auto_fullscreen_desktop_class)
       ) {
         for (const index in this.id_to_window) {
           const iwin = this.id_to_window[index];
@@ -2254,9 +2249,7 @@ class XpraClient {
         default_settings.auto_fullscreen_desktop_class;
       if (
         win.windowtype == "DESKTOP" &&
-        win.metadata[CLASS_INSTANCE_METADATA_KEY].includes(
-          auto_fullscreen_desktop_class
-        )
+        win.metadata["class-instance"].includes(auto_fullscreen_desktop_class)
       ) {
         return true;
       }
@@ -3288,11 +3281,7 @@ class XpraClient {
       (window) => this.send([PACKET_TYPES.close_window, window.wid]),
       this.scale
     );
-    if (
-      win &&
-      !override_redirect &&
-      win.metadata[WINDOW_TYPE_METADATA_KEY] == "NORMAL"
-    ) {
+    if (win && !override_redirect && win.metadata["window-type"] == "NORMAL") {
       const trimmedTitle = Utilities.trimString(win.title, 30);
       window.addWindowListItem(wid, trimmedTitle);
     }
@@ -3472,7 +3461,7 @@ class XpraClient {
     if (
       win &&
       !win.override_redirect &&
-      win.metadata[WINDOW_TYPE_METADATA_KEY] == "NORMAL"
+      win.metadata["window-type"] == "NORMAL"
     ) {
       window.removeWindowListItem(wid);
     }

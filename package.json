@@ -78,6 +78,10 @@
       "prefer-rest-params": "warn",
       "prefer-spread": "warn",
       "sonarjs/cognitive-complexity": "warn",
+      "sonarjs/no-duplicate-string": [
+        "error",
+        4
+      ],
       "unicorn/filename-case": [
         "error",
         {
