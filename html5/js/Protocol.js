@@ -413,22 +413,6 @@ class XpraProtocol {
       }
       try {
         // pass to our packet handler
-        if (packet[0] === "draw") {
-          const img_data = packet[7];
-          if (typeof img_data === "string") {
-            //rencode does not distinguish bytes and strings
-            //we converted to string in the network layer,
-            //and now we're converting back to bytes...
-            //(use 'rencodeplus' to avoid all this unnecessary churn)
-            packet[7] = Utilities.StringToUint8(img_data);
-          }
-        } else if (packet[0] === "sound-data") {
-          const sound_data = packet[2];
-          if (typeof sound_data === "string") {
-            //same workaround as 'draw' above
-            packet[7] = Utilities.StringToUint8(sound_data);
-          }
-        }
         if (this.is_worker) {
           this.mQ[this.mQ.length] = packet;
           setTimeout(() => this.process_message_queue(), this.process_interval);
