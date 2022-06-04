@@ -11,8 +11,6 @@
  * xpra wire protocol with worker support
  *
  * requires:
- *  bencode.js
- *  inflate.js
  *  lz4.js
  *  brotli_decode.js
  */
@@ -110,7 +108,7 @@ class XpraProtocol {
 
     //Queue processing via intervals
     this.process_interval = 0; //milliseconds
-    this.packet_encoder = "bencode";
+    this.packet_encoder = "rencodeplus";
   }
 
   close_event_str(event) {
@@ -250,7 +248,7 @@ class XpraProtocol {
       }
 
       //verify the header format:
-      if (this.header[0] !== ord("P")) {
+      if (this.header[0] !== 80) {
         let message = `invalid packet header format: ${this.header[0]}`;
         if (this.header.length > 1) {
           let hex = "";
@@ -455,21 +453,13 @@ class XpraProtocol {
       if (!packet) {
         return;
       }
-      let proto_flags = 0;
+      if (this.packet_encoder != "rencodeplus") {
+        throw `invalid packet encoder: ${this.packet_encoder}`;
+      }
+      let proto_flags = 0x10;
       let bdata = null;
       try {
-        if (this.packet_encoder == "bencode") {
-          bdata = bencode(packet);
-          proto_flags = 0x0;
-        } else if (this.packet_encoder == "rencode") {
-          bdata = rencodelegacy(packet);
-          proto_flags = 0x1;
-        } else if (this.packet_encoder == "rencodeplus") {
-          bdata = rencodeplus(packet);
-          proto_flags = 0x10;
-        } else {
-          throw `invalid packet encoder: ${this.packet_encoder}`;
-        }
+        bdata = rencodeplus(packet);
       } catch (error) {
         this.error("Error: failed to encode packet:", packet);
         this.error(" with packet encoder", this.packet_encoder);
@@ -630,7 +620,6 @@ if (
   // some required imports
   // worker imports are relative to worker script path
   importScripts(
-    "lib/bencode.js",
     "lib/lz4.js",
     "lib/brotli_decode.js",
     "lib/forge.js",

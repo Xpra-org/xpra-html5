@@ -17,7 +17,6 @@ const XPRA_CLIENT_FORCE_NO_WORKER = false;
 const CLIPBOARD_IMAGES = true;
 const CLIPBOARD_EVENT_DELAY = 100;
 const DECODE_WORKER = !!window.createImageBitmap;
-const rencode_ok = rencode && rencode_selftest();
 const SHOW_START_MENU = true;
 const FILE_SIZE_LIMIT = 4 * 1024 * 1024 * 1024; //are we even allowed to allocate this much memory?
 const FILE_CHUNKS_SIZE = 128 * 1024;
@@ -1429,20 +1428,14 @@ class XpraClient {
       compression_level: 1,
       "mouse.show": true,
       // packet encoders
-      //don't enable plain rencode (too many problems with bytes and strings)
-      //"rencode" 					: rencode_ok,
-      rencodeplus: rencode_ok,
-      bencode: true,
+      rencodeplus: true,
+      bencode: false,
       yaml: false,
       "open-url": this.open_url,
       "ping-echo-sourceid": true,
       vrefresh: this.vrefresh,
+      "file-chunks": FILE_CHUNKS_SIZE,
     });
-    if (rencode_ok) {
-      this._update_capabilities({
-        "file-chunks": FILE_CHUNKS_SIZE,
-      });
-    }
     if (SHOW_START_MENU) {
       this._update_capabilities({
         "xdg-menu-update": true,
@@ -2611,26 +2604,8 @@ class XpraClient {
       }
       this.protocol.set_cipher_out(this.cipher_out_caps, this.encryption_key);
     }
-    let PACKET_ENCODERS = ["bencode"];
-    if (rencode_ok) {
-      PACKET_ENCODERS = ["rencodeplus", "bencode"];
-    }
-    for (const index in PACKET_ENCODERS) {
-      const packet_encoder = PACKET_ENCODERS[index];
-      if (hello[packet_encoder]) {
-        this.packet_encoder = packet_encoder;
-        this.protocol.enable_packet_encoder(packet_encoder);
-        Utilities.clog("packet encoder:", packet_encoder);
-        break;
-      }
-    }
-    //don't use offscreen or decode worker with 'rencodeplus':
-    if (this.decode_worker && this.packet_encoder != "rencodeplus") {
-      Utilities.clog(
-        `turning off decode worker for ${this.packet_encoder} packet encoder`
-      );
-      this.decode_worker = null;
-      this.offscreen_api = false;
+    if (!hello["rencodeplus"]) {
+      throw "no common packet encoders, 'rencodeplus' is required by this client";
     }
 
     // find the modifier to use for Num_Lock
@@ -5158,15 +5133,10 @@ class XpraClient {
 
   send_file(f) {
     clog("send_file:", f.name, ", type:", f.type, ", size:", f.size);
-    const me = this;
     const fileReader = new FileReader();
     fileReader.onloadend = (event_) => {
       const u8a = new Uint8Array(event_.target.result);
-      let buf = u8a;
-      if (client.packet_encoder != "rencodeplus") {
-        buf = Utilities.Uint8ToString(u8a);
-      }
-      this.do_send_file(f.name, f.type, f.size, buf);
+      this.do_send_file(f.name, f.type, f.size, u8a);
     };
     fileReader.readAsArrayBuffer(f);
   }

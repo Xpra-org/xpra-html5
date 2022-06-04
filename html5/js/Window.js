@@ -595,17 +595,6 @@ class XpraWindow {
   set_metadata_safe(metadata) {
     if ("title" in metadata) {
       let title = Utilities.s(metadata["title"]);
-      if (this.client.packet_encoder != "rencodeplus") {
-        try {
-          title = decodeURIComponent(escape(title));
-        } catch (error) {
-          this.log(
-            `unable to decode title string '${title}' received from `,
-            this.client.protocol.packet_encoder,
-            `: ${error}`
-          );
-        }
-      }
       if (this.title != title) {
         this.title = title;
         this.log("title=", this.title);
