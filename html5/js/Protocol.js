@@ -398,7 +398,7 @@ class XpraProtocol {
         } else if (proto_flags == 0x10) {
           packet = rdecodeplus(packet_data);
         } else {
-          packet = bdecode(packet_data);
+          throw `invalid packet encoder flags ${proto_flags}`;
         }
         for (const index in this.raw_packets) {
           packet[index] = this.raw_packets[index];
