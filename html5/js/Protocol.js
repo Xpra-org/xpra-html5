@@ -407,7 +407,8 @@ class XpraProtocol {
       } catch (error) {
         //FIXME: maybe we should error out and disconnect here?
         this.error("error decoding packet", error);
-        this.error(`packet=${packet}`);
+        this.error(`packet=${packet_data}`);
+        this.error(`protocol flags=${proto_flags}`);
         this.raw_packets = [];
         return this.rQ.length > 0;
       }
