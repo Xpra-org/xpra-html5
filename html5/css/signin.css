@@ -27,6 +27,9 @@ div.container {
 .form-or-heading {
   text-align: center;
 }
+.form-signin h5 {
+  padding-left: 8em;
+}
 .form-signin .form-signin-heading,
 .form-signin .checkbox {
   margin-bottom: 10px;

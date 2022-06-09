@@ -384,6 +384,9 @@ def set_version(NEW_VERSION):
     REVISION = vcs_info.get("REVISION", 0)
     LOCAL_MODIFICATIONS = vcs_info.get("LOCAL_MODIFICATIONS", 0)
     BRANCH = vcs_info.get("BRANCH", "master")
+    NEW_VERSION_STR = NEW_VERSION
+    if BRANCH=="master":
+        NEW_VERSION_STR += " beta"
     for filename, replace in {
         "./packaging/debian/control" : {
             r"Version: %s.*" % VERSION : r"Version: %s-r%s-1" % (NEW_VERSION, REVISION),
@@ -399,7 +402,10 @@ def set_version(NEW_VERSION):
             r'BRANCH : "[a-zA-Z]*"' : r'BRANCH : "%s"' % BRANCH,
             },
         "./html5/index.html" : {
-            r"<h3>Version .*</h3>" : "<h3>Version %s</h3>" % NEW_VERSION,
+            r"<h3>Version .*</h3>" : "<h3>Version %s</h3>" % NEW_VERSION_STR,
+            },
+        "./html5/connect.html" : {
+            r"<h5>Version .*</h5>" : "<h5>Version %s</h5>" % NEW_VERSION_STR,
             },
         "./setup.py" : {
             r'VERSION = "%s"' % VERSION : r'VERSION = "%s"' % NEW_VERSION,
