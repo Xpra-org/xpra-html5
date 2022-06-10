@@ -375,7 +375,7 @@ class XpraProtocol {
       if (level & 0x10) {
         inflated = lz4.decode(packet_data);
       } else if (level & 0x40) {
-        inflated = BrotliDecode(packet_data);
+        inflated = new Uint8Array(BrotliDecode(packet_data));
       } else {
         throw "zlib is no longer supported";
       }
