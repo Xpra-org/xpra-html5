@@ -2151,7 +2151,7 @@ class XpraClient {
         }
         this.clipboard_pending = false;
       },
-      function (error) {
+      (error) => {
         this.debug("clipboard", "paste event failed:", error);
         this.clipboard_pending = false;
       }
