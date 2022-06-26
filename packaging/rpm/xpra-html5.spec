@@ -32,11 +32,11 @@ BuildRequires:		python2
 #don't depend on this package,
 #so we can also install on a pure RHEL distro:
 %if 0%{?el8}%{?el7}
-BuildRequires:		centos-logos
+BuildRequires:		system-logos
 %if 0%{?el8}
-BuildRequires:		centos-backgrounds
-Recommends:			centos-logos
-Recommends:			centos-backgrounds
+BuildRequires:		system-backgrounds
+Recommends:			system-logos
+Recommends:			system-backgrounds
 %endif
 %else
 BuildRequires:		desktop-backgrounds-compat
