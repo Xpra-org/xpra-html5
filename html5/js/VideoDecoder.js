@@ -115,25 +115,22 @@ class XpraVideoDecoder {
 
   queue_frame(packet) {
     const options = packet[10] || {};
-    const data = packet[7];
-    decode_error = (error) => {
-      this.on_frame_error(packet, error);
-    };
 
     if (!this.had_first_key && options["type"] != "IDR") {
-      decode_error("first frame must be a key frame");
+      this.on_frame_error(packet, "first frame must be a key frame");
       return;
     }
 
     if (this.videoDecoder.state == "closed") {
-      decode_error("video decoder is closed");
+      this.on_frame_error(packet, "video decoder is closed");
       return;
     }
     if (this.draining) {
-      decode_error("video decoder is draining");
+      this.on_frame_error(packet, "video decoder is draining");
       return;
     }
 
+    const data = packet[7];
     this.had_first_key = true;
     this.decoder_queue.push({ p: packet });
     const init = {
