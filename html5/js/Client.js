@@ -1962,7 +1962,7 @@ class XpraClient {
       if (!clipboardData) {
         clipboardData = window.clipboardData;
       }
-      if (clipboardData && clipboardData.files) {
+      if (clipboardData && clipboardData.files && clipboardData.files.length > 0) {
         const files = clipboardData.files;
         this.clog("paste got", files.length, "files");
         for (let index = 0; index < files.length; index++) {
