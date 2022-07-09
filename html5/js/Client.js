@@ -1364,6 +1364,7 @@ XpraClient.prototype._make_hello = function() {
 		"randr_notify"				: true,
 		"sound.server_driven"		: true,
 		"server-window-resize"		: true,
+		"window.initiate-moveresize"	: true,
 		"screen-resize-bigger"		: false,
 		"metadata.supported"		: [
 										"fullscreen", "maximized", "iconic", "above", "below",
