@@ -1703,7 +1703,11 @@ class XpraClient {
   }
 
   on_mousemove(e, window) {
-    if (this.server_readonly || this.mouse_grabbed || !this.connected) {
+    if (this.mouse_grabbed) {
+      return true;
+    }
+
+    if (this.server_readonly || !this.connected) {
       return window == undefined;
     }
     const mouse = this.getMouse(e);
