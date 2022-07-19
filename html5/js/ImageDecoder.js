@@ -1,12 +1,13 @@
 /*
  * This file is part of Xpra.
  * Copyright (C) 2021 Tijs van der Zwaan <tijzwa@vpo.nl>
+ * Copyright (c) 2021 Antoine Martin <antoine@xpra.org>
  * Licensed under MPL 2.0, see:
  * http://www.mozilla.org/MPL/2.0/
  *
  */
 
-class XpraBitmapDecoder {
+class XpraImageDecoder {
 
   async convertToBitmap(packet) {
     const width = packet[4];

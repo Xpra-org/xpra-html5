@@ -62,7 +62,7 @@ class WindowDecoder {
     this.init();
   }
   init() {
-    this.image_decoder = new XpraBitmapDecoder();
+    this.image_decoder = new XpraImageDecoder();
     this.video_decoder = new XpraVideoDecoder();
 
     this.decode_queue = [];
