@@ -79,7 +79,7 @@ class XpraClient {
       "rgb32",
       "rgb24",
       "scroll",
-      "void",
+      "void"
     ];
     //extra encodings we enable if validated via the decode worker:
     //(we also validate jpeg and png as a sanity check)
@@ -94,7 +94,7 @@ class XpraClient {
       "scroll",
       "webp",
       "void",
-      "avif",
+      "avif"
     ];
     this.debug_categories = [];
     this.start_new_session = null;
@@ -1583,6 +1583,8 @@ class XpraClient {
           "YUV422P",
           "YUV444P",
         ],
+        vp8: ["YUV420P"],
+        vp9: ["YUV420P", "YUV444P", "YUV444P10"],
       },
       //this is a workaround for server versions between 2.5.0 to 2.5.2 only:
       "encoding.x264.YUV420P.profile": "baseline",
@@ -1593,12 +1595,14 @@ class XpraClient {
       "encoding.h264.fast-decode": true,
       "encoding.h264+mp4.YUV420P.profile": "baseline",
       "encoding.h264+mp4.YUV420P.level": "3.0",
-      //prefer native video in mp4/webm container to broadway plain h264:
-      "encoding.h264.score-delta": -20,
+      //prefer unmuxed VPX
+      "encoding.vp8.score-delta": 70,
+      "encoding.vp9.score-delta": 60,
       "encoding.h264+mp4.score-delta": 50,
       "encoding.h264+mp4.": 50,
       "encoding.mpeg4+mp4.score-delta": 40,
       "encoding.vp8+webm.score-delta": 40,
+      "encoding.h264.score-delta": -20,
 
       "sound.receive": true,
       "sound.send": false,
@@ -1703,7 +1707,11 @@ class XpraClient {
   }
 
   on_mousemove(e, window) {
-    if (this.server_readonly || this.mouse_grabbed || !this.connected) {
+    if (this.mouse_grabbed) {
+      return true;
+    }
+
+    if (this.server_readonly || !this.connected) {
       return window == undefined;
     }
     const mouse = this.getMouse(e);
