@@ -1610,10 +1610,14 @@ class XpraClient {
       "window.pre-map": true,
       //partial support:
       keyboard: true,
+      //older servers (v4.3 and older):
       xkbmap_layout: this.key_layout,
       xkbmap_keycodes: this._get_keycodes(),
-      xkbmap_print: "",
-      xkbmap_query: "",
+      //newer servers (v4.4 and later):
+      keymap: {
+        layout: this.key_layout,
+        keycodes: this._get_keycodes(),
+      },
       desktop_size: [this.desktop_width, this.desktop_height],
       desktop_mode_size: [this.desktop_width, this.desktop_height],
       screen_sizes: this._get_screen_sizes(),
@@ -1966,7 +1970,11 @@ class XpraClient {
       if (!clipboardData) {
         clipboardData = window.clipboardData;
       }
-      if (clipboardData && clipboardData.files && clipboardData.files.length > 0) {
+      if (
+        clipboardData &&
+        clipboardData.files &&
+        clipboardData.files.length > 0
+      ) {
         const files = clipboardData.files;
         this.clog("paste got", files.length, "files");
         for (let index = 0; index < files.length; index++) {
