@@ -1527,6 +1527,7 @@ class XpraClient {
       "sound.server_driven": true,
       "server-window-resize": true,
       "screen-resize-bigger": false,
+      "window.initiate-moveresize": true,
       "metadata.supported": [
         "fullscreen",
         "maximized",
