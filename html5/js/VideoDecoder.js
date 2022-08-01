@@ -28,8 +28,9 @@ class XpraVideoDecoder {
     this.draining = false;
 
     this.decoder_queue = [];
+    this.decoded_frames = [];
+
     this.frame_threshold = 250;
-    this.on_frame_decoded = {}; //callback
     this.on_frame_error = (packet, error) => {
       console.error("VideoDecoder error on packet", packet, ":", error);
     };
@@ -90,7 +91,7 @@ class XpraVideoDecoder {
       const packet = current_frame.p;
       packet[6] = "throttle";
       packet[7] = null;
-      this.on_frame_decoded(packet);
+      this.decoded_frames.push(packet);
       return;
     }
 
@@ -105,7 +106,7 @@ class XpraVideoDecoder {
 
     packet[6] = `frame:${packet[6]}`;
     packet[7] = videoFrame;
-    this.on_frame_decoded(packet, current_frame);
+    this.decoded_frames.push(packet);
   }
 
   _on_decoder_error(error) {
@@ -114,32 +115,54 @@ class XpraVideoDecoder {
   }
 
   queue_frame(packet) {
-    const options = packet[10] || {};
+    // eslint-disable-next-line no-async-promise-executor
+    return new Promise(async (resolve, reject) => {
+      const options = packet[10] || {};
+      const data = packet[7];
+      const packet_sequence = packet[8];
 
-    if (!this.had_first_key && options["type"] != "IDR") {
-      this.on_frame_error(packet, "first frame must be a key frame");
-      return;
-    }
+      if (!this.had_first_key && options["type"] != "IDR") {
+        reject(
+          new Error(
+            `first frame must be a key frame but packet ${packet_sequence} is not.`
+          )
+        );
+        return;
+      }
 
-    if (this.videoDecoder.state == "closed") {
-      this.on_frame_error(packet, "video decoder is closed");
-      return;
-    }
-    if (this.draining) {
-      this.on_frame_error(packet, "video decoder is draining");
-      return;
-    }
+      if (this.videoDecoder.state == "closed") {
+        reject(new Error("video decoder is closed"));
+        return;
+      }
+      if (this.draining) {
+        reject(new Error("video decoder is draining"));
+        return;
+      }
 
-    const data = packet[7];
-    this.had_first_key = true;
-    this.decoder_queue.push({ p: packet });
-    const init = {
-      type: options["type"] == "IDR" ? "key" : "delta",
-      data,
-      timestamp: options["frame"],
-    };
-    const chunk = new EncodedVideoChunk(init);
-    this.videoDecoder.decode(chunk);
+      this.had_first_key = true;
+      this.decoder_queue.push({ p: packet });
+      const init = {
+        type: options["type"] == "IDR" ? "key" : "delta",
+        data,
+        timestamp: options["frame"],
+      };
+      const chunk = new EncodedVideoChunk(init);
+      this.videoDecoder.decode(chunk);
+
+      let frame_out = this.decoded_frames.filter(
+        (p) => p[8] == packet_sequence
+      );
+      while (frame_out.length === 0) {
+        // Await our frame
+        await new Promise((r) => setTimeout(r, 5));
+        frame_out = this.decoded_frames.filter((p) => p[8] == packet_sequence);
+      }
+      // Remove the frame from decoded frames list
+      this.decoded_frames = this.decoded_frames.filter(
+        (p) => p[8] != packet_sequence
+      );
+      resolve(frame_out[0]);
+    });
   }
 
   _close() {

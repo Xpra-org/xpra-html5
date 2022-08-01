@@ -7,62 +7,38 @@
  *
  */
 
-/*
- * Receives native image packets and decode them via ImageDecoder.
- * https://developer.mozilla.org/en-US/docs/Web/API/ImageDecoder
- * ImageDecoder is only working in Chrome 94+ and Android
- *
- */
-
-const XpraImageDecoderLoader = {
-  hasNativeDecoder() {
-    return typeof ImageDecoder !== "undefined";
-  },
-};
-
 class XpraImageDecoder {
-  constructor() {
-    this.on_frame_decoded = null;
-    this.on_frame_error = (packet, error) => {
-      console.error("ImageDecoder error on packet", packet, ":", error);
-    };
-  }
-
-  queue_frame = function (packet) {
+  async convertToBitmap(packet) {
     const width = packet[4];
     const height = packet[5];
     const coding = packet[6];
     if (coding.startsWith("rgb")) {
-      // TODO: Figure out how to decode rgb with ImageDecoder API;
       const data = decode_rgb(packet);
-      createImageBitmap(
+      const bitmap = await createImageBitmap(
         new ImageData(new Uint8ClampedArray(data.buffer), width, height),
         0,
         0,
         width,
         height
-      )
-        .then((bitmap) => {
-          packet[6] = `bitmap:${coding}`;
-          packet[7] = bitmap;
-          this.on_frame_decoded(packet);
-        })
-        .catch((error) => this.on_frame_error(packet, error));
+      );
+      packet[6] = `bitmap:${coding}`;
+      packet[7] = bitmap;
     } else {
       const paint_coding = coding.split("/")[0]; //ie: "png/P" -> "png"
-      const decoder = new ImageDecoder({
+      const bitmap_options = {
+        premultiplyAlpha: "none",
+        resizeWidth: width,
+        resizeHeight: height,
+        resizeQuality: "high",
+      };
+
+      const blob = new Blob([packet[7].buffer], {
         type: `image/${paint_coding}`,
-        data: packet[7],
       });
-      decoder
-        .decode({ frameIndex: 0 })
-        .then((result) => {
-          packet[6] = `image:${paint_coding}`;
-          packet[7] = result;
-          decoder.close();
-          this.on_frame_decoded(packet);
-        })
-        .catch((error) => this.on_frame_error(packet, error));
+      const bitmap = await createImageBitmap(blob, bitmap_options);
+      packet[6] = `bitmap:${coding}`;
+      packet[7] = bitmap;
     }
-  };
+    return packet;
+  }
 }

@@ -9,16 +9,11 @@
 
 /*
  * Helper for offscreen decoding and painting.
- * Requires Chrome 94+ or Android and a secure (SSL or localhost) context.
  */
 
 const XpraOffscreenWorker = {
   isAvailable() {
-    if (
-      XpraImageDecoderLoader.hasNativeDecoder() &&
-      XpraVideoDecoderLoader.hasNativeDecoder &&
-      typeof OffscreenCanvas !== "undefined"
-    ) {
+    if (typeof OffscreenCanvas !== "undefined") {
       //we also need the direct constructor:
       try {
         new OffscreenCanvas(256, 256);
@@ -28,7 +23,7 @@ const XpraOffscreenWorker = {
       }
     }
     console.warn(
-      "Offscreen decoding is not available. Please consider using Google Chrome 94+ in a secure (SSL or localhost) context for better performance."
+      "Offscreen decoding is not available. Please consider using Google Chrome for better performance."
     );
     return false;
   },
