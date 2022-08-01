@@ -190,7 +190,6 @@ class WindowDecoder {
 
     // Call update_still in callback
     setTimeout(() => this.update_still(), 0);
-
   }
 
   paint_box(coding, context, px, py, pw, ph) {
@@ -207,7 +206,7 @@ class WindowDecoder {
   }
 
   update_still() {
-    this.still.getContext('2d').drawImage(this.canvas, 0, 0);
+    this.still.getContext("2d").drawImage(this.canvas, 0, 0);
   }
 
   eos() {
@@ -219,7 +218,7 @@ class WindowDecoder {
 
   redraw() {
     // Redraw the last know state (saved on still)
-    this.canvas.getContext('2d').drawImage(this.still, 0, 0);
+    this.canvas.getContext("2d").drawImage(this.still, 0, 0);
   }
 
   update_geometry(w, h) {
