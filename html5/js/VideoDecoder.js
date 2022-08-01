@@ -29,28 +29,59 @@ class XpraVideoDecoder {
 
     this.decoder_queue = [];
     this.decoded_frames = [];
+    this.erroneous_frame = false;
+
+    this.codec = null;
+    this.vp9_params = null;
+    this.frameWaitTimeout = 1; // Interval for wait loop while frame is being decoded 
 
     this.frame_threshold = 250;
-    this.on_frame_error = (packet, error) => {
-      console.error("VideoDecoder error on packet", packet, ":", error);
-    };
+
   }
 
-  init(width, height) {
+  prepareVP9params(csc) {
+    console.log(csc);
+    // Check if we have the right VP9 params before init.
+    // This is needed because we can only set the params when the video decoder is created.
+    // We close the decoder when the coding changes.
+    if (csc == "YUV444P" && this.vp9_params != ".01.10.08") {
+      this.vp9_params = ".01.10.08";
+      this._close();
+    } else if (csc == "YUV444P10" && this.vp9_params != ".03.10.10") {
+      this.vp9_params = ".03.10.10";
+      this._close();
+    } else if (this.vp9_params != ".00.20.08.01.02.02") {
+      // chroma shift for YUV420P, both X and Y are downscaled by 2^1
+      this.vp9_params = ".00.20.08.01.02.02";
+      this._close();
+    }
+  }
+
+  init(coding) {
+    this.draining = false;
+
+    this.codec = this.resolveCodec(coding);
     this.videoDecoder = new VideoDecoder({
       output: this._on_decoded_frame.bind(this),
       error: this._on_decoder_error.bind(this),
     });
 
+    // ToDo: hardwareAcceleration can be "no-preference" / "prefer-hardware" / "prefer-software"
+    // Figure out when "prefer-hardware" is the right choise and when not (ie: no GPU, remote session like RDP?)
     this.videoDecoder.configure({
-      codec: "avc1.42C01E",
-      // hardwareAcceleration: "prefer-hardware",
+      codec: this.codec,
+      hardwareAcceleration: "no-preference",
       optimizeForLatency: true,
-      codedWidth: width,
-      codedHeight: height,
     });
     this.last_timestamp = 0;
     this.initialized = true;
+  }
+
+  resolveCodec(coding) {
+    if (coding == "h264") return "avc1.42C01E";
+    if (coding == "vp8") return "vp8";
+    if (coding == "vp9") return "vp09" + this.vp9_params;
+    throw `No codec defined for coding ${coding}`;
   }
 
   _on_decoded_frame(videoFrame) {
@@ -110,8 +141,9 @@ class XpraVideoDecoder {
   }
 
   _on_decoder_error(error) {
-    // TODO: Handle err? Or just assume we will catch up?
-    this._close();
+    // TODO: Handle error? Or just assume we will catch up?
+    console.error(`Error decoding frame: ${error}`);
+    this.erroneous_frame = true;
   }
 
   queue_frame(packet) {
@@ -121,12 +153,11 @@ class XpraVideoDecoder {
       const data = packet[7];
       const packet_sequence = packet[8];
 
-      if (!this.had_first_key && options["type"] != "IDR") {
-        reject(
-          new Error(
-            `first frame must be a key frame but packet ${packet_sequence} is not.`
-          )
-        );
+      // H264 (avc1.42C01E) needs key frames
+      if (this.codec.startsWith("avc1")
+        && !this.had_first_key
+        && options["type"] != "IDR") {
+        reject(`first frame must be a key frame but packet ${packet_sequence} is not.`);
         return;
       }
 
@@ -154,8 +185,18 @@ class XpraVideoDecoder {
       );
       while (frame_out.length === 0) {
         // Await our frame
-        await new Promise((r) => setTimeout(r, 5));
-        frame_out = this.decoded_frames.filter((p) => p[8] == packet_sequence);
+        await new Promise(r => setTimeout(r, this.frameWaitTimeout));
+        if (this.erroneous_frame) {
+          // The last frame was erroneous, break the wait loop
+          break;
+        }
+        frame_out = this.decoded_frames.filter(p => p[8] == packet_sequence);
+      }
+
+      if (this.erroneous_frame) {
+        // Last frame was erroneous. Reject the promise and reset the state.
+        this.erroneous_frame = false;
+        reject("decoder error");
       }
       // Remove the frame from decoded frames list
       this.decoded_frames = this.decoded_frames.filter(
@@ -171,17 +212,8 @@ class XpraVideoDecoder {
         this.videoDecoder.close();
       }
       this.had_first_key = false;
-
-      // Callback on all frames (bail out)
       this.draining = true;
-      const drain_queue = this.decoder_queue;
       this.decoder_queue = [];
-
-      for (const frame of drain_queue) {
-        const packet = frame.p;
-        this.on_frame_error(packet, "video decoder is draining");
-      }
-      this.draining = false;
     }
     this.initialized = false;
   }
