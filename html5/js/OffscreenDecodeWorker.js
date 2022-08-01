@@ -125,8 +125,18 @@ class WindowDecoder {
       this.decode_error(packet, `unsupported encoding: '${coding}'`);
     }
 
+    // Paint the packet on screen refresh (if we can use requestAnimationFrame in the worker)
+    if (typeof requestAnimationFrame == "function") {
+      requestAnimationFrame(() => { this.paint_packet(packet, start);  })
+    } else {
+      console.warn("No function requestAnimationFrame in webworkers supported by this browser.");
+      this.paint_packet(packet, start);
+    }
+  }
+
+  paint_packet(packet, start) {
     // Update the coding propery
-    coding = packet[6];
+    const coding = packet[6];
     const x = packet[2];
     const y = packet[3];
     const width = packet[4];
