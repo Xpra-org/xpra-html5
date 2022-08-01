@@ -918,6 +918,10 @@
         if (video) {
           // broadway h264 decoder:
           client.check_encodings.push("h264");
+          // VPX checks. Will only succeed if we can use VideoDecoder.js
+          client.check_encodings.push("vp8");
+          client.check_encodings.push("vp9");
+
           if (JSMpeg && JSMpeg.Renderer && JSMpeg.Decoder) {
             //TODO: should be moved to 'check_encodings'
             //and added to the decode worker:

@@ -34,8 +34,10 @@ const image_coding = [
 ];
 const video_coding = [];
 if (XpraVideoDecoderLoader.hasNativeDecoder) {
-  // We can support native H264 decoding
+  // We can support native H264 & VP8 decoding
   video_coding.push("h264");
+  video_coding.push("vp8");
+  video_coding.push("vp9");
 } else {
   console.warn(
     "Offscreen decoding is available for images only. Please consider using Google Chrome 94+ in a secure (SSL or localhost) context h264 offscreen decoding support."
@@ -112,10 +114,14 @@ class WindowDecoder {
     } else if (image_coding.includes(coding)) {
       await this.image_decoder.convertToBitmap(packet);
     } else if (video_coding.includes(coding)) {
+      if (coding == "vp9") {
+        // Prepare the VP9 codec (if needed)
+        const csc = packet[10]["csc"];
+        this.video_decoder.prepareVP9params(csc);
+      }
+
       if (!this.video_decoder.initialized) {
-        // Init with width and heigth of this packet.
-        // TODO: Use video max-size? It does not seem to matter.
-        this.video_decoder.init(packet[4], packet[5]);
+        this.video_decoder.init(coding);
       }
       await this.video_decoder.queue_frame(packet);
     } else {
