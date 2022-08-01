@@ -37,10 +37,10 @@ if (XpraVideoDecoderLoader.hasNativeDecoder) {
   // We can support native H264 decoding
   video_coding.push("h264");
 } else {
-  console.warn("Offscreen decoding is available for images only. Please consider using Google Chrome 94+ in a secure (SSL or localhost) context h264 offscreen decoding support.");
+  console.warn(
+    "Offscreen decoding is available for images only. Please consider using Google Chrome 94+ in a secure (SSL or localhost) context h264 offscreen decoding support."
+  );
 }
-
-
 
 const all_encodings = new Set([
   "void",
@@ -53,7 +53,6 @@ function send_decode_error(packet, error) {
   packet[7] = null;
   self.postMessage({ error: `${error}`, packet });
 }
-
 
 class WindowDecoder {
   constructor(canvas, debug) {
@@ -98,12 +97,11 @@ class WindowDecoder {
       } else {
         this.decode_queue_draining = false;
       }
-    })
+    });
   }
 
   async proccess_packet(packet) {
     let coding = packet[6];
-
     const start = performance.now();
     if (coding == "eos" && this.video_decoder) {
       this.video_decoder._close();
@@ -124,12 +122,15 @@ class WindowDecoder {
     } else {
       this.decode_error(packet, `unsupported encoding: '${coding}'`);
     }
-
     // Paint the packet on screen refresh (if we can use requestAnimationFrame in the worker)
     if (typeof requestAnimationFrame == "function") {
-      requestAnimationFrame(() => { this.paint_packet(packet, start);  })
+      requestAnimationFrame(() => {
+        this.paint_packet(packet, start);
+      });
     } else {
-      console.warn("No function requestAnimationFrame in webworkers supported by this browser.");
+      console.warn(
+        "No function requestAnimationFrame in webworkers supported by this browser."
+      );
       this.paint_packet(packet, start);
     }
   }
@@ -260,7 +261,12 @@ onmessage = function (e) {
       if (wd) {
         wd.queue_draw_packet(packet);
       } else {
-        send_decode_error(packet, `no window decoder found for wid ${wid}, only:${[...offscreen_canvas.keys(),].join(",")}`);
+        send_decode_error(
+          packet,
+          `no window decoder found for wid ${wid}, only:${[
+            ...offscreen_canvas.keys(),
+          ].join(",")}`
+        );
       }
       break;
     }

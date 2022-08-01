@@ -8,7 +8,6 @@
  */
 
 class XpraImageDecoder {
-
   async convertToBitmap(packet) {
     const width = packet[4];
     const height = packet[5];
@@ -30,14 +29,16 @@ class XpraImageDecoder {
         premultiplyAlpha: "none",
         resizeWidth: width,
         resizeHeight: height,
-        resizeQuality: "high"
+        resizeQuality: "high",
       };
 
-      const blob = new Blob([packet[7].buffer], { type: `image/${paint_coding}` });
+      const blob = new Blob([packet[7].buffer], {
+        type: `image/${paint_coding}`,
+      });
       const bitmap = await createImageBitmap(blob, bitmap_options);
       packet[6] = `bitmap:${coding}`;
       packet[7] = bitmap;
     }
     return packet;
-  };
+  }
 }
