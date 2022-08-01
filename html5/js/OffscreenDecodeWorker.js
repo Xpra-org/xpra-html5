@@ -174,17 +174,9 @@ class WindowDecoder {
         this.paint_box(coding, context, sx, sy, sw, sh);
       }
     } else if (coding.startsWith("frame")) {
-      let enc_width = width;
-      let enc_height = height;
-      const options = packet[10] || {};
-      const scaled_size = options["scaled_size"];
-      if (scaled_size && (enc_width > width || enc_height > height)) {
-        enc_width = scaled_size[0];
-        enc_height = scaled_size[1];
-      }
-      context.drawImage(data, x, y, enc_width, enc_height);
+      context.drawImage(data, x, y, width, height);
       data.close();
-      this.paint_box(coding, context, x, y, enc_width, enc_height);
+      this.paint_box(coding, context, x, y, width, height);
     }
 
     // Decode ok.
