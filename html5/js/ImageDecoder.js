@@ -30,7 +30,7 @@ class XpraImageDecoder {
         premultiplyAlpha: "none",
         resizeWidth: width,
         resizeHeight: height,
-        resizeQuality: "medium"
+        resizeQuality: "high"
       };
 
       const blob = new Blob([packet[7].buffer], { type: `image/${paint_coding}` });
