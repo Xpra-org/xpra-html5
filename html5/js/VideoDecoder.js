@@ -198,7 +198,6 @@ class XpraVideoDecoder {
         this.erroneous_frame = false;
         reject("decoder error");
       }
-
       // Remove the frame from decoded frames list
       this.decoded_frames = this.decoded_frames.filter(
         (p) => p[8] != packet_sequence
