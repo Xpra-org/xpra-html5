@@ -79,7 +79,7 @@ class XpraClient {
       "rgb32",
       "rgb24",
       "scroll",
-      "void"
+      "void",
     ];
     //extra encodings we enable if validated via the decode worker:
     //(we also validate jpeg and png as a sanity check)
@@ -94,7 +94,7 @@ class XpraClient {
       "scroll",
       "webp",
       "void",
-      "avif"
+      "avif",
     ];
     this.debug_categories = [];
     this.start_new_session = null;
