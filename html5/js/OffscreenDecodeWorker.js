@@ -106,11 +106,9 @@ class WindowDecoder {
     if (coding == "eos" && this.video_decoder) {
       this.video_decoder._close();
       return;
-    }
-    else if (coding == "scroll" || coding == "void") {
+    } else if (coding == "scroll" || coding == "void") {
       // Nothing to do
-    }
-    else if (image_coding.includes(coding)) {
+    } else if (image_coding.includes(coding)) {
       await this.image_decoder.convertToBitmap(packet);
     } else if (video_coding.includes(coding)) {
       if (!this.video_decoder.initialized) {

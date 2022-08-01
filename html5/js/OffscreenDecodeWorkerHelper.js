@@ -13,9 +13,7 @@
 
 const XpraOffscreenWorker = {
   isAvailable() {
-    if (
-      typeof OffscreenCanvas !== "undefined"
-    ) {
+    if (typeof OffscreenCanvas !== "undefined") {
       //we also need the direct constructor:
       try {
         new OffscreenCanvas(256, 256);
