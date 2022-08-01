@@ -131,7 +131,6 @@ class XpraVideoDecoder {
 
     // Latest possible check for draining
     if (this.draining) {
-
       videoFrame.close();
       return;
     }
@@ -148,6 +147,7 @@ class XpraVideoDecoder {
   }
 
   queue_frame(packet) {
+    // eslint-disable-next-line no-async-promise-executor
     return new Promise(async (resolve, reject) => {
       const options = packet[10] || {};
       const data = packet[7];
@@ -162,11 +162,11 @@ class XpraVideoDecoder {
       }
 
       if (this.videoDecoder.state == "closed") {
-        reject("video decoder is closed");
+        reject(new Error("video decoder is closed"));
         return;
       }
       if (this.draining) {
-        reject("video decoder is draining");
+        reject(new Error("video decoder is draining"));
         return;
       }
 
@@ -180,8 +180,10 @@ class XpraVideoDecoder {
       const chunk = new EncodedVideoChunk(init);
       this.videoDecoder.decode(chunk);
 
-      let frame_out = this.decoded_frames.filter(p => p[8] == packet_sequence);
-      while (frame_out.length == 0) {
+      let frame_out = this.decoded_frames.filter(
+        (p) => p[8] == packet_sequence
+      );
+      while (frame_out.length === 0) {
         // Await our frame
         await new Promise(r => setTimeout(r, this.frameWaitTimeout));
         if (this.erroneous_frame) {
@@ -198,8 +200,9 @@ class XpraVideoDecoder {
       }
 
       // Remove the frame from decoded frames list
-      this.decoded_frames = this.decoded_frames.filter(p => p[8] != packet_sequence);
-
+      this.decoded_frames = this.decoded_frames.filter(
+        (p) => p[8] != packet_sequence
+      );
       resolve(frame_out[0]);
     });
   }

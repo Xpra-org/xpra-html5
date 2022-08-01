@@ -39,10 +39,10 @@ if (XpraVideoDecoderLoader.hasNativeDecoder) {
   video_coding.push("vp8");
   video_coding.push("vp9");
 } else {
-  console.warn("Offscreen decoding is available for images only. Please consider using Google Chrome 94+ in a secure (SSL or localhost) context h264 offscreen decoding support.");
+  console.warn(
+    "Offscreen decoding is available for images only. Please consider using Google Chrome 94+ in a secure (SSL or localhost) context h264 offscreen decoding support."
+  );
 }
-
-
 
 const all_encodings = new Set([
   "void",
@@ -56,11 +56,11 @@ function send_decode_error(packet, error) {
   self.postMessage({ error: `${error}`, packet });
 }
 
-
 class WindowDecoder {
   constructor(canvas, debug) {
     this.canvas = canvas;
     this.debug = debug;
+    this.still = new OffscreenCanvas(this.canvas.width, this.canvas.height);
     this.init();
   }
   init() {
@@ -100,7 +100,7 @@ class WindowDecoder {
       } else {
         this.decode_queue_draining = false;
       }
-    })
+    });
   }
 
   async proccess_packet(packet) {
@@ -109,8 +109,9 @@ class WindowDecoder {
     if (coding == "eos" && this.video_decoder) {
       this.video_decoder._close();
       return;
-    }
-    else if (image_coding.includes(coding) && !(coding == "scroll" || coding == "void")) {
+    } else if (coding == "scroll" || coding == "void") {
+      // Nothing to do
+    } else if (image_coding.includes(coding)) {
       await this.image_decoder.convertToBitmap(packet);
     } else if (video_coding.includes(coding)) {
       if (coding == "vp9") {
@@ -126,9 +127,22 @@ class WindowDecoder {
     } else {
       this.decode_error(packet, `unsupported encoding: '${coding}'`);
     }
+    // Paint the packet on screen refresh (if we can use requestAnimationFrame in the worker)
+    if (typeof requestAnimationFrame == "function") {
+      requestAnimationFrame(() => {
+        this.paint_packet(packet, start);
+      });
+    } else {
+      console.warn(
+        "No function requestAnimationFrame in webworkers supported by this browser."
+      );
+      this.paint_packet(packet, start);
+    }
+  }
 
+  paint_packet(packet, start) {
     // Update the coding propery
-    coding = packet[6];
+    const coding = packet[6];
     const x = packet[2];
     const y = packet[3];
     const width = packet[4];
@@ -166,17 +180,9 @@ class WindowDecoder {
         this.paint_box(coding, context, sx, sy, sw, sh);
       }
     } else if (coding.startsWith("frame")) {
-      let enc_width = width;
-      let enc_height = height;
-      const options = packet[10] || {};
-      const scaled_size = options["scaled_size"];
-      if (scaled_size && (enc_width > width || enc_height > height)) {
-        enc_width = scaled_size[0];
-        enc_height = scaled_size[1];
-      }
-      context.drawImage(data, x, y, enc_width, enc_height);
+      context.drawImage(data, x, y, width, height);
       data.close();
-      this.paint_box(coding, context, x, y, enc_width, enc_height);
+      this.paint_box(coding, context, x, y, width, height);
     }
 
     // Decode ok.
@@ -187,6 +193,9 @@ class WindowDecoder {
     packet[7] = null;
     packet[10] = options;
     self.postMessage({ draw: packet, start });
+
+    // Call update_still in callback
+    setTimeout(() => this.update_still(), 0);
   }
 
   paint_box(coding, context, px, py, pw, ph) {
@@ -202,11 +211,20 @@ class WindowDecoder {
     }
   }
 
+  update_still() {
+    this.still.getContext("2d").drawImage(this.canvas, 0, 0);
+  }
+
   eos() {
     // Add eos packet to queue to prevent closing the decoder before all packets are proceeded
     const packet = [];
     packet[6] = "eos";
     this.decode_queue.push(packet);
+  }
+
+  redraw() {
+    // Redraw the last know state (saved on still)
+    this.canvas.getContext("2d").drawImage(this.still, 0, 0);
   }
 
   update_geometry(w, h) {
@@ -219,6 +237,9 @@ class WindowDecoder {
     }
     this.canvas.width = w;
     this.canvas.height = h;
+    // Also update the still
+    this.still.width = w;
+    this.still.height = h;
   }
 
   close() {
@@ -260,14 +281,19 @@ onmessage = function (e) {
       if (wd) {
         wd.queue_draw_packet(packet);
       } else {
-        send_decode_error(packet, `no window decoder found for wid ${wid}, only:${[...offscreen_canvas.keys(),].join(",")}`);
+        send_decode_error(
+          packet,
+          `no window decoder found for wid ${wid}, only:${[
+            ...offscreen_canvas.keys(),
+          ].join(",")}`
+        );
       }
       break;
     }
     case "redraw":
       wd = offscreen_canvas.get(data.wid);
       if (wd) {
-        //wd.redraw();
+        wd.redraw();
       }
       break;
     case "canvas":
