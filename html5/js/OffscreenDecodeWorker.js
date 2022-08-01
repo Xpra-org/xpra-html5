@@ -58,6 +58,7 @@ class WindowDecoder {
   constructor(canvas, debug) {
     this.canvas = canvas;
     this.debug = debug;
+    this.still = new OffscreenCanvas(this.canvas.width, this.canvas.height);
     this.init();
   }
   init() {
@@ -186,6 +187,10 @@ class WindowDecoder {
     packet[7] = null;
     packet[10] = options;
     self.postMessage({ draw: packet, start });
+
+    // Call update_still in callback
+    setTimeout(() => this.update_still(), 0);
+
   }
 
   paint_box(coding, context, px, py, pw, ph) {
@@ -201,11 +206,20 @@ class WindowDecoder {
     }
   }
 
+  update_still() {
+    this.still.getContext('2d').drawImage(this.canvas, 0, 0);
+  }
+
   eos() {
     // Add eos packet to queue to prevent closing the decoder before all packets are proceeded
     const packet = [];
     packet[6] = "eos";
     this.decode_queue.push(packet);
+  }
+
+  redraw() {
+    // Redraw the last know state (saved on still)
+    this.canvas.getContext('2d').drawImage(this.still, 0, 0);
   }
 
   update_geometry(w, h) {
@@ -218,6 +232,9 @@ class WindowDecoder {
     }
     this.canvas.width = w;
     this.canvas.height = h;
+    // Also update the still
+    this.still.width = w;
+    this.still.height = h;
   }
 
   close() {
@@ -271,7 +288,7 @@ onmessage = function (e) {
     case "redraw":
       wd = offscreen_canvas.get(data.wid);
       if (wd) {
-        //wd.redraw();
+        wd.redraw();
       }
       break;
     case "canvas":
