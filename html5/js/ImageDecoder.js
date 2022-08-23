@@ -34,7 +34,7 @@ class XpraImageDecoder {
         bitmap_options.set("resizeHeight", height);
         bitmap_options.set(
           "resizeQuality",
-          options["scaling-quality"] || "high"
+          options["scaling-quality"] || "medium"
         );
       }
 
