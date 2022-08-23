@@ -93,7 +93,7 @@ class WindowDecoder {
   process_decode_queue() {
     this.decode_queue_draining = true;
     const packet = this.decode_queue.shift();
-    this.proccess_packet(packet).then(() => {
+    this.process_packet(packet).then(() => {
       if (this.decode_queue.length > 0) {
         // Next
         this.process_decode_queue();
@@ -103,7 +103,7 @@ class WindowDecoder {
     });
   }
 
-  async proccess_packet(packet) {
+  async process_packet(packet) {
     let coding = packet[6];
     const start = performance.now();
     if (coding == "eos" && this.video_decoder) {
