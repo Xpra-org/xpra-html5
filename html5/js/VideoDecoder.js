@@ -33,10 +33,9 @@ class XpraVideoDecoder {
 
     this.codec = null;
     this.vp9_params = null;
-    this.frameWaitTimeout = 1; // Interval for wait loop while frame is being decoded 
+    this.frameWaitTimeout = 1; // Interval for wait loop while frame is being decoded
 
     this.frame_threshold = 250;
-
   }
 
   prepareVP9params(csc) {
@@ -154,10 +153,15 @@ class XpraVideoDecoder {
       const packet_sequence = packet[8];
 
       // H264 (avc1.42C01E) needs key frames
-      if (this.codec.startsWith("avc1")
-        && !this.had_first_key
-        && options["type"] != "IDR") {
-        reject(`first frame must be a key frame but packet ${packet_sequence} is not.`);
+      if (
+        this.codec.startsWith("avc1") &&
+        !this.had_first_key &&
+        options["type"] &&
+        options["type"] != "IDR"
+      ) {
+        reject(
+          `first h264 frame must be a key frame but packet ${packet_sequence} is not: ${options}`
+        );
         return;
       }
 
@@ -185,12 +189,12 @@ class XpraVideoDecoder {
       );
       while (frame_out.length === 0) {
         // Await our frame
-        await new Promise(r => setTimeout(r, this.frameWaitTimeout));
+        await new Promise((r) => setTimeout(r, this.frameWaitTimeout));
         if (this.erroneous_frame) {
           // The last frame was erroneous, break the wait loop
           break;
         }
-        frame_out = this.decoded_frames.filter(p => p[8] == packet_sequence);
+        frame_out = this.decoded_frames.filter((p) => p[8] == packet_sequence);
       }
 
       if (this.erroneous_frame) {
