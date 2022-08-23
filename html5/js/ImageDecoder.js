@@ -25,12 +25,18 @@ class XpraImageDecoder {
       packet[7] = bitmap;
     } else {
       const paint_coding = coding.split("/")[0]; //ie: "png/P" -> "png"
+      const options = packet[10];
       const bitmap_options = {
         premultiplyAlpha: "none",
-        resizeWidth: width,
-        resizeHeight: height,
-        resizeQuality: "high",
       };
+      if ("scaled_size" in options) {
+        bitmap_options.set("resizeWidth", width);
+        bitmap_options.set("resizeHeight", height);
+        bitmap_options.set(
+          "resizeQuality",
+          options["scaling-quality"] || "high"
+        );
+      }
 
       const blob = new Blob([packet[7].buffer], {
         type: `image/${paint_coding}`,
