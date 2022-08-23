@@ -86,17 +86,17 @@ class WindowDecoder {
     }
     this.decode_queue.push(packet);
     if (!this.decode_queue_draining) {
-      this.proccess_decode_queue();
+      this.process_decode_queue();
     }
   }
 
-  proccess_decode_queue() {
+  process_decode_queue() {
     this.decode_queue_draining = true;
     const packet = this.decode_queue.shift();
     this.proccess_packet(packet).then(() => {
       if (this.decode_queue.length > 0) {
         // Next
-        this.proccess_decode_queue();
+        this.process_decode_queue();
       } else {
         this.decode_queue_draining = false;
       }
