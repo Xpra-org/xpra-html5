@@ -17,6 +17,10 @@ div.window canvas {
   border-radius: 0 0 3px 3px;
 }
 
+div.window canvas.gpu-trigger {
+  transform: transale3d(0,0,0); /* Refer to client.js */
+}
+
 body.desktop {
   background-color: #555;
 }

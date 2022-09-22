@@ -268,6 +268,8 @@ class XpraWindow {
     this.canvas = null;
     this.div.find("canvas").remove();
     const canvas = document.createElement("canvas");
+    if (this.client.try_gpu)
+      $(canvas).addClass("gpu-trigger");
     // set initial sizes
     canvas.width = this.w;
     canvas.height = this.h;

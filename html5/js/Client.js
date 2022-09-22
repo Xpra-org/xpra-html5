@@ -30,6 +30,11 @@ const FLOAT_MENU_SELECTOR = "#float_menu";
 const PASTEBOARD_SELECTOR = "#pasteboard";
 const WINDOW_PREVIEW_SELECTOR = "#window_preview";
 
+// This option adds the CSS class .gpu-trigger to the windows.
+// The article at https://www.urbaninsight.com/article/improving-html5-app-performance-gpu-accelerated-css-transitions
+// states that adding 'transform: transale3d(0,0,0);' is the strongest CSS indication for the browser to enable hardware acceleration.
+const TRY_GPU_TRIGGER = true;
+
 class XpraClient {
   constructor(container) {
     // the container div is the "screen" on the HTML page where we
@@ -125,6 +130,7 @@ class XpraClient {
     this.INFO_FREQUENCY = 1000;
     this.uuid = Utilities.getHexUUID();
     this.offscreen_api = DECODE_WORKER && XpraOffscreenWorker.isAvailable();
+    this.try_gpu = TRY_GPU_TRIGGER;
   }
 
   init_state() {
