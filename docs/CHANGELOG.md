@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [6.0] 2022-09-24
+
+- refactorings, cleanups, github CI, etc - JanCVanB
+- split decode from paint, PR202 - TijZwa
+- experimental native decoding, PR200 - TijZwa
+- require ES6
+- move to structured `hello` packet data
+- support `hjsmin` minifier - arrowd
+- updated installer script: #190
+- support for chunked file transfers (large files): #120
+
 ## [5.0] 2022-05-11
 
 - auto-fullscreen, alt-tabbing with window previews

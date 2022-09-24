@@ -1,5 +1,12 @@
 xpra-html5 (6.0-r1369-1) UNRELEASED; urgency=low
-  * TODO
+  * refactorings, cleanups, github CI, etc - JanCVanB
+  * split decode from paint, PR202 - TijZwa
+  * experimental native decoding, PR200 - TijZwa
+  * require ES6
+  * move to structured `hello` packet data
+  * support `hjsmin` minifier - arrowd
+  * updated installer script: #190
+  * support for chunked file transfers (large files): #120
 
  -- Antoine Martin antoine@xpra.org  Sat, 24 Sep 2022 20:39:09 +0700 +700
 

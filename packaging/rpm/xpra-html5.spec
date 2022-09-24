@@ -78,7 +78,14 @@ rm -rf $RPM_BUILD_ROOT
 
 %changelog
 * Sat Sep 24 2022 Antoine Martin <antoine@xpra.org> 6.0-1369-1
-- TODO
+- refactorings, cleanups, github CI, etc - JanCVanB
+- split decode from paint, PR202 - TijZwa
+- experimental native decoding, PR200 - TijZwa
+- require ES6
+- move to structured `hello` packet data
+- support `hjsmin` minifier - arrowd
+- updated installer script: #190
+- support for chunked file transfers (large files): #120
 
 * Wed May 11 2022 Antoine Martin <antoine@xpra.org> 5.0-1237-1
 - auto-fullscreen, alt-tabbing with window previews
