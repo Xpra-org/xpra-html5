@@ -1,7 +1,7 @@
-xpra-html5 (6.0-r1361-1) UNRELEASED; urgency=low
+xpra-html5 (6.0-r1369-1) UNRELEASED; urgency=low
   * TODO
 
- -- Antoine Martin antoine@xpra.org  Fri, 05 Aug 2022 20:12:02 +0700 +100
+ -- Antoine Martin antoine@xpra.org  Sat, 24 Sep 2022 20:39:09 +0700 +700
 
 xpra-html5 (5.0-r1275-1) UNRELEASED; urgency=low
   * auto-fullscreen, alt-tabbing with window previews
