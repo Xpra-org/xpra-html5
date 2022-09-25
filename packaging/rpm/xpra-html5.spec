@@ -21,19 +21,19 @@ Source:				xpra-html5-%{version}.tar.xz
 BuildArch:			noarch
 BuildRoot:			%{_tmppath}/%{name}-%{version}-root
 Conflicts:			xpra < 2.1
-%if 0%{?el8}%{?fedora}
-BuildRequires:		uglify-js
-BuildRequires:		python3
-%else
+%if 0%{?el7}
 %define minifier ""
 %define python python2
 BuildRequires:		python2
+%else
+BuildRequires:		uglify-js
+BuildRequires:		python3
 %endif
 #don't depend on this package,
 #so we can also install on a pure RHEL distro:
-%if 0%{?el8}%{?el7}
+%if 0%{?el9}{?el8}%{?el7}
 BuildRequires:		system-logos
-%if 0%{?el8}
+%if 0%{?el9}{?el8}
 BuildRequires:		system-backgrounds
 Recommends:			system-logos
 Recommends:			system-backgrounds
