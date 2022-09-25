@@ -77,7 +77,7 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
-* Sat Sep 24 2022 Antoine Martin <antoine@xpra.org> 6.0-1369-1
+* Sun Sep 25 2022 Antoine Martin <antoine@xpra.org> 6.0-1372-1
 - refactorings, cleanups, github CI, etc - JanCVanB
 - split decode from paint, PR202 - TijZwa
 - experimental native decoding, PR200 - TijZwa
