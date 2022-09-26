@@ -35,9 +35,7 @@ const image_coding = [
 const video_coding = [];
 if (XpraVideoDecoderLoader.hasNativeDecoder) {
   // We can support native H264 & VP8 decoding
-  video_coding.push("h264");
-  video_coding.push("vp8");
-  video_coding.push("vp9");
+  video_coding.push(["h264", "vp8", "vp9"]);
 } else {
   console.warn(
     "Offscreen decoding is available for images only. Please consider using Google Chrome 94+ in a secure (SSL or localhost) context h264 offscreen decoding support."
@@ -67,7 +65,7 @@ class WindowDecoder {
         cmd: "canvas",
         wid,
         canvas,
-        debug
+        debug,
       },
       [canvas]
     );
@@ -150,7 +148,11 @@ class WindowDecoder {
     const decode_time = Math.round(1000 * (performance.now() - start));
     options["decode_time"] = Math.max(0, decode_time);
     // Copy without data
-    const clonepacket = packet.map((x, i) => { if (i != 7) { return x; } });
+    const clonepacket = packet.map((x, i) => {
+      if (i !== 7) {
+        return x;
+      }
+    });
     clonepacket[6] = "offscreen-painted";
     clonepacket[10] = options;
 
@@ -158,8 +160,19 @@ class WindowDecoder {
     self.postMessage({ draw: clonepacket, start });
 
     // Paint the packet on screen refresh (if we can use requestAnimationFrame in the worker)
-    paint_worker.postMessage({ cmd: "paint", image: packet[7], wid: packet[1], coding: packet[6], x: packet[2], y: packet[3], w: packet[4], h: packet[5] }, [packet[7]]);
-
+    paint_worker.postMessage(
+      {
+        cmd: "paint",
+        image: packet[7],
+        wid: packet[1],
+        coding: packet[6],
+        x: packet[2],
+        y: packet[3],
+        w: packet[4],
+        h: packet[5],
+      },
+      [packet[7]]
+    );
   }
 
   eos() {
@@ -170,12 +183,10 @@ class WindowDecoder {
   }
 
   close() {
-    paint_worker.postMessage(
-      {
-        cmd: "remove",
-        wid: this.wid
-      }
-    );
+    paint_worker.postMessage({
+      cmd: "remove",
+      wid: this.wid,
+    });
     if (!this.closed) {
       this.closed = true;
       this.eos();
@@ -224,12 +235,10 @@ onmessage = function (e) {
       break;
     }
     case "redraw":
-      paint_worker.postMessage(
-        {
-          cmd: data.cmd,
-          wid: data.wid
-        }
-      );
+      paint_worker.postMessage({
+        cmd: data.cmd,
+        wid: data.wid,
+      });
       break;
     case "canvas":
       console.log(
@@ -247,14 +256,12 @@ onmessage = function (e) {
       }
       break;
     case "canvas-geo":
-      paint_worker.postMessage(
-        {
-          cmd: data.cmd,
-          w: data.w,
-          h: data.h,
-          wid: data.wid
-        }
-      );
+      paint_worker.postMessage({
+        cmd: data.cmd,
+        w: data.w,
+        h: data.h,
+        wid: data.wid,
+      });
       break;
     default:
       console.error(`Offscreen decode worker got unknown message: ${data.cmd}`);
