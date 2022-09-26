@@ -79,7 +79,7 @@ class XpraVideoDecoder {
   resolveCodec(coding) {
     if (coding == "h264") return "avc1.42C01E";
     if (coding == "vp8") return "vp8";
-    if (coding == "vp9") return "vp09" + this.vp9_params;
+    if (coding == "vp9") return `$vp09${this.vp9_params}`;
     throw `No codec defined for coding ${coding}`;
   }
 
@@ -160,7 +160,9 @@ class XpraVideoDecoder {
         options["type"] != "IDR"
       ) {
         reject(
-          `first h264 frame must be a key frame but packet ${packet_sequence} is not: ${options}`
+          new Error(
+            `first h264 frame must be a key frame but packet ${packet_sequence} is not: ${options}`
+          )
         );
         return;
       }
@@ -200,7 +202,7 @@ class XpraVideoDecoder {
       if (this.erroneous_frame) {
         // Last frame was erroneous. Reject the promise and reset the state.
         this.erroneous_frame = false;
-        reject("decoder error");
+        reject(new Error("decoder error"));
       }
       // Remove the frame from decoded frames list
       this.decoded_frames = this.decoded_frames.filter(
