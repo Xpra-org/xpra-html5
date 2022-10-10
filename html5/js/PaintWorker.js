@@ -158,7 +158,7 @@ class XpraPaintWorker {
         );
     } else {
       console.warn(
-        `PaintWorker was asked for a redraw on window ${wid} but no still available!`
+        `PaintWorker was asked for a redraw on window ${wid} but no still is available!`
       );
     }
   }
