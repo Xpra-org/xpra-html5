@@ -1,4 +1,4 @@
-xpra-html5 (6.0-r1372-1) UNRELEASED; urgency=low
+xpra-html5 (6.0-r1376-1) UNRELEASED; urgency=low
   * refactorings, cleanups, github CI, etc - JanCVanB
   * split decode from paint, PR202 - TijZwa
   * experimental native decoding, PR200 - TijZwa
