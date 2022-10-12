@@ -36,7 +36,7 @@ def get_status_output(*args, **kwargs):
     try:
         p = Popen(*args, **kwargs)
     except Exception as e:
-        print("error running %s,%s: %s" % (args, kwargs, e))
+        print(f"error running {args},{kwargs}: {e}")
         return -1, "", ""
     stdout, stderr = p.communicate()
     return p.returncode, stdout.decode("utf-8"), stderr.decode("utf-8")
@@ -53,7 +53,7 @@ def install_symlink(symlink_options, dst):
             else:
                 continue
         if os.path.exists(symlink_option):
-            print("symlinked %s from %s" % (dst, symlink_option))
+            print(f"symlinked {dst} from {symlink_option}")
             if os.path.exists(dst):
                 os.unlink(dst)
             else:
@@ -92,7 +92,7 @@ def get_vcs_info():
         proc = Popen(cmd, stdout=PIPE, stderr=PIPE, shell=True)
         out, _ = proc.communicate()
         if proc.returncode!=0:
-            print("Error: %s returned %s" % (cmd, proc.returncode))
+            print(f"Error: {cmd} returned {proc.returncode}")
             return None
         v = out.decode("utf-8").splitlines()[0]
         return v
@@ -107,7 +107,7 @@ def get_vcs_info():
         try:
             rev = int(rev)
         except ValueError:
-            print("invalid revision number %r" % (rev,))
+            print(f"invalid revision number {rev}")
         else:
             info["REVISION"] = rev
 
@@ -128,43 +128,43 @@ def get_vcs_info():
 def record_vcs_info():
     info = get_vcs_info()
     if info:
-        with open("./vcs-info", 'w') as f:
+        with open("./vcs-info", 'w', encoding="latin1") as f:
             for k,v in info.items():
-                f.write("%s=%s\n" % (k,v))
+                f.write(f"{k}={v}\n")
         #record revision in packaging:
         rev = info.get("REVISION")
         if rev is not None:
             #add full version string to control:
-            fdata = open("./packaging/debian/control", "r").read()
+            fdata = open("./packaging/debian/control", "r", encoding="latin1").read()
             lines = fdata.splitlines()
             for i, line in enumerate(lines):
                 if line.startswith("Version: "):
-                    lines[i] = line.split("-", 1)[0]+"-r%i-1" % rev
+                    lines[i] = line.split("-", 1)[0]+f"-r{rev}-1"
                     break
             lines.append("")
-            open("./packaging/debian/control", "w").write("\n".join(lines))
+            open("./packaging/debian/control", "w", encoding="latin1").write("\n".join(lines))
             #preserve the changelog version, but update the revision:
-            fdata = open("./packaging/debian/changelog", "r").read()
+            fdata = open("./packaging/debian/changelog", "r", encoding="latin1").read()
             lines = fdata.splitlines()
             changelog_version = re.match(r".*\(([0-9\.]+)\-[r0-9\-]*\).*", lines[0]).group(1)
-            assert changelog_version, "version not found in changelog first line '%s'" % (lines[0],)
-            lines[0] = "xpra-html5 (%s-r%s-1) UNRELEASED; urgency=low" % (changelog_version, rev)
+            assert changelog_version, f"version not found in changelog first line {lines[0]!r}"
+            lines[0] = f"xpra-html5 ({changelog_version}-r{rev}-1) UNRELEASED; urgency=low"
             lines.append("")
-            open("./packaging/debian/changelog", "w").write("\n".join(lines))
+            open("./packaging/debian/changelog", "w", encoding="latin1").write("\n".join(lines))
             #ie: %define release 1.r1000.fc34
-            fdata = open("./packaging/rpm/xpra-html5.spec", "r").read()
+            fdata = open("./packaging/rpm/xpra-html5.spec", "r", encoding="latin1").read()
             lines = fdata.splitlines()
             for i, line in enumerate(lines):
                 if line.startswith("%define release "):
-                    lines[i] = "%%define release 1.r%s%%{?dist}" % rev
+                    lines[i] = f"%define release 1.r{rev}%\{{?dist\}}"
                     break
             lines.append("")
-            open("./packaging/rpm/xpra-html5.spec", "w").write("\n".join(lines))
+            open("./packaging/rpm/xpra-html5.spec", "w", encoding="latin1").write("\n".join(lines))
 
 def load_vcs_info():
     info = {}
     if os.path.exists("./vcs-info"):
-        with open("./vcs-info", 'r') as f:
+        with open("./vcs-info", 'r', encoding="latin1") as f:
             for line in f:
                 if line.startswith("#"):
                     continue
@@ -179,9 +179,9 @@ def install_html5(root="/", install_dir="/usr/share/xpra/www/", config_dir="/etc
                   gzip=True, brotli=True):
     print("install_html5%s" % ((root, install_dir, config_dir, configuration_files, minifier, gzip, brotli),))
     if minifier not in ("", None, "copy"):
-        print("minifying html5 client to '%s' using %s" % (install_dir, minifier))
+        print(f"minifying html5 client to {install_dir!r} using {minifier}")
     else:
-        print("copying html5 client to '%s'" % (install_dir, ))
+        print(f"copying html5 client to {install_dir!r}")
     if install_dir==".":
         install_dir = os.getcwd()
     brotli_cmd = None
@@ -204,9 +204,9 @@ def install_html5(root="/", install_dir="/usr/share/xpra/www/", config_dir="/etc
                     brotli_version = stdout.strip(b"\n\r").decode()
                 brotli_cmd = br
                 break
-    print("brotli_cmd=%s" % (brotli_cmd))
+    print(f"brotli_cmd={brotli_cmd}")
     if brotli_version:
-        print("  %s" % (brotli_version))
+        print(f"  {brotli_version}")
     #those are used to replace the file we ship in source form
     #with one that is maintained by the distribution:
     symlinks = {
@@ -258,7 +258,7 @@ def install_html5(root="/", install_dir="/usr/share/xpra/www/", config_dir="/etc
                 #pointing to the config_file without the root:
                 config_file = os.path.join(config_dir, fname)
                 os.symlink(config_file, dst)
-                print("config file symlinked: %s -> %s" % (dst, config_file))
+                print(f"config file symlinked: {dst} -> {config_file}")
                 continue
             #try to find an existing installed library and symlink it:
             symlink_options = symlinks.get(os.path.basename(fname), [])
@@ -322,13 +322,12 @@ def install_html5(root="/", install_dir="/usr/share/xpra/www/", config_dir="/etc
                                   ]
                 r = get_status_output(minify_cmd)[0]
                 if r!=0:
-                    print("Error: failed to minify '%s', command %s returned error %i" % (
-                        bname, minify_cmd, r))
+                    print(f"Error: failed to minify {bname!r}, command {minify_cmd} returned error {r}")
                     shutil.copyfile(fsrc, dst)
                 os.chmod(dst, 0o644)
-                print("minified %s" % (fname, ))
+                print(f"minified {fname}")
             else:
-                print("copied %s" % (fname, ))
+                print(f"copied {fname}")
                 shutil.copyfile(fsrc, dst)
                 os.chmod(dst, 0o644)
 
@@ -337,7 +336,7 @@ def install_html5(root="/", install_dir="/usr/share/xpra/www/", config_dir="/etc
 
             if ftype not in ("png", ) and fname not in configuration_files:
                 if gzip:
-                    gzip_dst = "%s.gz" % dst
+                    gzip_dst = f"{dst}.gz"
                     if os.path.exists(gzip_dst):
                         os.unlink(gzip_dst)
                     cmd = ["gzip", "-f", "-n", "-9", "-k", dst]
@@ -345,7 +344,7 @@ def install_html5(root="/", install_dir="/usr/share/xpra/www/", config_dir="/etc
                     if os.path.exists(gzip_dst):
                         os.chmod(gzip_dst, 0o644)
                 if brotli and brotli_cmd:
-                    br_dst = "%s.br" % dst
+                    br_dst = f"{dst}.br"
                     if os.path.exists(br_dst):
                         os.unlink(br_dst)
                     if brotli_version and brotli_version>="1":
@@ -354,15 +353,15 @@ def install_html5(root="/", install_dir="/usr/share/xpra/www/", config_dir="/etc
                         cmd = [brotli_cmd, "--input", dst, "--output", br_dst, "-q", "11"]
                     code, out, err = get_status_output(cmd)
                     if code!=0:
-                        print("brotli error code=%i on %s" % (code, cmd))
+                        print(f"brotli error code={code} on {cmd}")
                         if out:
-                            print("stdout=%s" % out)
+                            print(f"stdout={out}")
                         if err:
-                            print("stderr=%s" % err)
+                            print(f"stderr={err}")
                     elif os.path.exists(br_dst):
                         os.chmod(br_dst, 0o644)
                     else:
-                        print("Warning: brotli did not create '%s'" % br_dst)
+                        print(f"Warning: brotli did not create {br_dst!r}")
 
     if os.name=="posix":
         paths = [
@@ -389,26 +388,26 @@ def set_version(NEW_VERSION):
         NEW_VERSION_STR += " beta"
     for filename, replace in {
         "./packaging/debian/control" : {
-            r"Version: %s.*" % VERSION : r"Version: %s-r%s-1" % (NEW_VERSION, REVISION),
+            f"Version: {VERSION}.*" : f"Version: {NEW_VERSION}-r{REVISION}-1",
             },
         "./packaging/rpm/xpra-html5.spec" : {
-            r"%%define version %s" % VERSION : r"%%define version %s" % NEW_VERSION,
-            r"%%define release .*" : r"%%define release 1.r%s%%{?dist}" % REVISION,
+            f"%define version {VERSION}" : f"%define version {NEW_VERSION}",
+            "%define release .*" : f"%define release 1.r{REVISION}%{{?dist}}",
             },
         "./html5/js/Utilities.js" : {
-            r'VERSION : "%s"' % VERSION : r'VERSION : "%s"' % NEW_VERSION,
-            r"REVISION : [0-9]*" : r"REVISION : %s" % REVISION,
-            r'LOCAL_MODIFICATIONS : [0-9]*' : r'LOCAL_MODIFICATIONS : %s' % LOCAL_MODIFICATIONS,
-            r'BRANCH : "[a-zA-Z]*"' : r'BRANCH : "%s"' % BRANCH,
+            f'VERSION : "{VERSION}"' : f'VERSION : "{NEW_VERSION}"',
+            f"REVISION : [0-9]*" : f"REVISION : {REVISION}",
+            'LOCAL_MODIFICATIONS : [0-9]*' : f'LOCAL_MODIFICATIONS : {LOCAL_MODIFICATIONS}',
+            'BRANCH : "[a-zA-Z]*"' : f'BRANCH : "{BRANCH}"',
             },
         "./html5/index.html" : {
-            r"<h3>Version .*</h3>" : "<h3>Version %s</h3>" % NEW_VERSION_STR,
+            "<h3>Version .*</h3>" : f"<h3>Version {NEW_VERSION_STR}</h3>",
             },
         "./html5/connect.html" : {
-            r"<h5>Version .*</h5>" : "<h5>Version %s</h5>" % NEW_VERSION_STR,
+            "<h5>Version .*</h5>" : f"<h5>Version {NEW_VERSION_STR}</h5>",
             },
         "./setup.py" : {
-            r'VERSION = "%s"' % VERSION : r'VERSION = "%s"' % NEW_VERSION,
+            f'VERSION = "{VERSION}"' : f'VERSION = "{NEW_VERSION}"',
             },
         }.items():
         file_sub(filename, replace)
@@ -418,17 +417,17 @@ def set_version(NEW_VERSION):
     deb_date = now.strftime("%a, %d %b %Y %H:%M:%S +0700")
     utc_delta = -time.timezone*100//3600
     deb_date += " %+04d" % utc_delta
-    fdata = open("./packaging/debian/changelog", "r").read()
+    fdata = open("./packaging/debian/changelog", "r", encoding="latin1").read()
     lines = fdata.splitlines()
-    lines.insert(0, "xpra-html5 (%s-r%s-1) UNRELEASED; urgency=low" % (NEW_VERSION, REVISION))
+    lines.insert(0, f"xpra-html5 ({NEW_VERSION}-r{REVISION}-1) UNRELEASED; urgency=low")
     lines.insert(1, "  * TODO")
     lines.insert(2, "")
     # -- Antoine Martin <antoine@xpra.org>  Fri, 30 Apr 2021 12:07:59 +0700
-    lines.insert(3, " -- %s %s  %s" % (AUTHOR, AUTHOR_EMAIL, deb_date))
+    lines.insert(3, f" -- {AUTHOR} {AUTHOR_EMAIL}  {deb_date}")
     lines.insert(4, "")
     lines.append("")
     open("./packaging/debian/changelog", "w").write("\n".join(lines))
-    fdata = open("./packaging/rpm/xpra-html5.spec", "r").read()
+    fdata = open("./packaging/rpm/xpra-html5.spec", "r", encoding="latin1").read()
     lines = fdata.splitlines()
     changelog_lineno = lines.index("%changelog")
     assert changelog_lineno, "'%changelog' not found!"
@@ -463,7 +462,7 @@ def make_deb():
     assert os.path.exists("./xpra-html5.deb")
     shutil.rmtree(root)
     version = ""
-    with open("./packaging/debian/changelog", "r") as f:
+    with open("./packaging/debian/changelog", "r", encoding="latin1") as f:
         line = f.readline()
         #ie: 'xpra-html5 (4.2-r872-1) UNRELEASED; urgency=low'
         try:
@@ -473,7 +472,7 @@ def make_deb():
             pass
     if not os.path.exists("./dist"):
         os.mkdir("./dist")
-    os.rename("xpra-html5.deb", "./dist/xpra-html5-%s.deb" % version)
+    os.rename("xpra-html5.deb", f"./dist/xpra-html5-{version}.deb")
 
 def make_rpm():
     tarxz = "xpra-html5-%s.tar.xz" % VERSION
@@ -499,7 +498,7 @@ def make_rpm():
     rpms = []
     for line in out.decode().splitlines():
         rpms.append(line)
-    print("building: %s" % (rpms,))
+    print(f"building: {rpms}")
     assert Popen(["rpmbuild", "-ba", SPEC]).wait()==0
     NOARCH = RPMBUILD+"/RPMS/noarch/"
     for rpm in rpms:
@@ -507,7 +506,7 @@ def make_rpm():
             os.unlink("./dist/%s.rpm")
         except OSError:
             pass
-        rpmfile = "%s.rpm" % rpm
+        rpmfile = f"{rpm}.rpm"
         copy2(os.path.join(NOARCH, rpmfile), "./dist")
 
 def sdist():
@@ -526,13 +525,14 @@ def sdist():
 
 def main(args):
     def help():
+        cmd = args[0]
         print("invalid number of arguments, usage:")
-        print("%s sdist" % (args[0],))
-        print("%s install" % (args[0],))
-        print("%s install ROOT [INSTALL_DIR] [CONFIG_DIR] [MINIFIER]" % (args[0],))
-        print("%s deb" % (args[0],))
-        print("%s rpm" % (args[0],))
-        print("%s set-version VERSION" % (args[0],))
+        print(f"{cmd} sdist")
+        print(f"{cmd} install")
+        print(f"{cmd} install ROOT [INSTALL_DIR] [CONFIG_DIR] [MINIFIER]")
+        print(f"{cmd} deb")
+        print(f"{cmd} rpm")
+        print(f"{cmd} set-version VERSION")
         return 1
     if len(args)<2 or len(args)>=7:
         return help()
