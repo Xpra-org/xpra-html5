@@ -4,7 +4,7 @@
 # later version. See the file COPYING for details.
 
 %define version 6.0
-%define release 1.r1378%{?dist}
+%define release 1.r0%{?dist}
 %define minifier uglifyjs
 %define python python3
 
@@ -77,7 +77,7 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
-* Mon Oct 17 2022 Antoine Martin <antoine@xpra.org> 6.0-1378-1
+* Mon Oct 17 2022 Antoine Martin <antoine@xpra.org> 6.0-0-1
 - refactorings, cleanups, github CI, etc - JanCVanB
 - split decode from paint, PR202 - TijZwa
 - experimental native decoding, PR200 - TijZwa
