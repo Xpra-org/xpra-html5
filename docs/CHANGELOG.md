@@ -2,16 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
-## [6.0] 2022-09-24
+## [6.0] 2022-10-15
 
 - refactorings, cleanups, github CI, etc - JanCVanB
-- split decode from paint, PR202 - TijZwa
-- experimental native decoding, PR200 - TijZwa
-- require ES6
+- [split decode from paint](https://github.com/Xpra-org/xpra-html5/pull/202) - TijZwa
+- [experimental native decoding](https://github.com/Xpra-org/xpra-html5/pull/200) - TijZwa
+- [require ES6](https://github.com/Xpra-org/xpra-html5/issues/175)
+- [support `hjsmin` minifier](https://github.com/Xpra-org/xpra-html5/pull/174) - arrowd
+- [updated installer script](https://github.com/Xpra-org/xpra-html5/issues/190)
+- [support for chunked file transfers of large files](https://github.com/Xpra-org/xpra-html5/issues/120)
+- [modal windows should not be minimized](https://github.com/Xpra-org/xpra-html5/issues/204)
 - move to structured `hello` packet data
-- support `hjsmin` minifier - arrowd
-- updated installer script: #190
-- support for chunked file transfers (large files): #120
 
 ## [5.0] 2022-05-11
 

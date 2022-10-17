@@ -4,7 +4,7 @@
 # later version. See the file COPYING for details.
 
 %define version 6.0
-%define release 1.r1376%{?dist}
+%define release 1.r1378%{?dist}
 %define minifier uglifyjs
 %define python python3
 
@@ -77,7 +77,7 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
-* Sun Sep 25 2022 Antoine Martin <antoine@xpra.org> 6.0-1372-1
+* Mon Oct 17 2022 Antoine Martin <antoine@xpra.org> 6.0-1378-1
 - refactorings, cleanups, github CI, etc - JanCVanB
 - split decode from paint, PR202 - TijZwa
 - experimental native decoding, PR200 - TijZwa
@@ -86,6 +86,7 @@ rm -rf $RPM_BUILD_ROOT
 - support `hjsmin` minifier - arrowd
 - updated installer script: #190
 - support for chunked file transfers (large files): #120
+- modal windows should not be minimized
 
 * Wed May 11 2022 Antoine Martin <antoine@xpra.org> 5.0-1237-1
 - auto-fullscreen, alt-tabbing with window previews
