@@ -33,9 +33,11 @@ const image_coding = [
   "avif",
 ];
 const video_coding = [];
-if (XpraVideoDecoderLoader.hasNativeDecoder) {
+if (XpraVideoDecoderLoader.hasNativeDecoder()) {
   // We can support native H264 & VP8 decoding
-  video_coding.push(["h264", "vp8", "vp9"]);
+  video_coding.push("h264");
+  video_coding.push("vp8");
+  video_coding.push("vp9"); 
 } else {
   console.warn(
     "Offscreen decoding is available for images only. Please consider using Google Chrome 94+ in a secure (SSL or localhost) context h264 offscreen decoding support."
