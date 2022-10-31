@@ -3,8 +3,8 @@
 # Xpra is released under the terms of the GNU GPL v2, or, at your option, any
 # later version. See the file COPYING for details.
 
-%define version 6.0
-%define release 1.r0%{?dist}
+%define version 6.1
+%define release 1.r3%{?dist}
 %define minifier uglifyjs
 %define python python3
 
@@ -77,6 +77,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Mon Oct 31 2022 Antoine Martin <antoine@xpra.org> 6.1-3-1
+- TODO
+
 * Mon Oct 17 2022 Antoine Martin <antoine@xpra.org> 6.0-0-1
 - refactorings, cleanups, github CI, etc - JanCVanB
 - split decode from paint, PR202 - TijZwa
