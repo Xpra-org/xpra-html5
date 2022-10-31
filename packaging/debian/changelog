@@ -1,5 +1,6 @@
-xpra-html5 (6.1-r3-1) UNRELEASED; urgency=low
-  * TODO
+xpra-html5 (6.1-r0-1) UNRELEASED; urgency=low
+  * video decoder support detection
+  * initiate move of undecorated windows
 
  -- Antoine Martin antoine@xpra.org  Mon, 31 Oct 2022 16:37:57 +0700 +700
 

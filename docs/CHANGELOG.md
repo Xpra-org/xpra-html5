@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [6.1] 2022-10-31
+
+- [video decoder support detection](https://github.com/Xpra-org/xpra-html5/commit/10d97fe144a7ff054c606d8723c5c64c25e2c1a0)
+- [initiate move of undecorated windows](https://github.com/Xpra-org/xpra-html5/commit/aa23417fa8a7f74f70e944a40be9d13fe91b2451)
+
 ## [6.0] 2022-10-15
 
 - refactorings, cleanups, github CI, etc - JanCVanB
