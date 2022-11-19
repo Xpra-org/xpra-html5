@@ -41,7 +41,7 @@ const WINDOW_PREVIEW_SELECTOR = "#window_preview";
 const TRY_GPU_TRIGGER = true;
 
 class XpraClient {
-  private container: HTMLElement | null;
+  private container: HTMLElement;
   private protocol: XpraProtocol;
   connected: boolean;
   desktop_width: number;
@@ -147,13 +147,17 @@ class XpraClient {
   audio_source_ready: boolean;
   audio_source_buffer: any;
 
-  constructor(container: string) {
+  constructor(container: string | HTMLElement) {
     // the container div is the "screen" on the HTML page where we
     // are able to draw our windows in.
-    this.container = document.querySelector(`#${container}`);
-    if (!this.container) {
+    let containerEl = typeof container == "string" 
+      ? document.querySelector(`#${container}`) as HTMLElement
+      : container;
+    if (!containerEl) {
       throw new Error("invalid container element");
     }
+    this.container = containerEl;
+
     // assign callback for window resize event
     if (jQuery) {
       jQuery(window).resize(
