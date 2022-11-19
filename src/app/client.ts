@@ -1,4 +1,3 @@
-import { XpraProtocol } from '../../html5/js/protocolWorker';
 /*
  * Copyright (c) 2013-2022 Antoine Martin <antoine@xpra.org>
  * Copyright (c) 2016 David Brushinski <dbrushinski@spikes.com>
@@ -42,7 +41,7 @@ const TRY_GPU_TRIGGER = true;
 
 class XpraClient {
   private container: HTMLElement;
-  private protocol: XpraProtocol;
+  private protocol: any; // XpraProtocol
   connected: boolean;
   desktop_width: number;
   desktop_height: number;
