@@ -15,7 +15,7 @@ import { XpraProtocol } from '../../html5/js/protocolWorker';
  */
 
 // These are globally available on window
-declare const jQuery, AV, MediaSourceUtil, XpraOffscreenWorker, XpraProtocolWorkerHost, Utilities, PACKET_TYPES, default_settings;
+declare const $, jQuery, AV, MediaSourceUtil, XpraOffscreenWorker, XpraProtocolWorkerHost, Utilities, PACKET_TYPES, default_settings;
 
 const XPRA_CLIENT_FORCE_NO_WORKER = false;
 const CLIPBOARD_IMAGES = true;
@@ -50,7 +50,7 @@ class XpraClient {
   client_start_time: Date;
   capabilities: {};
   RGB_FORMATS: string[];
-  disconnect_reason: null;
+  disconnect_reason: string;
   password_prompt_fn: null;
   keycloak_prompt_fn: null;
   audio: null;
@@ -58,7 +58,7 @@ class XpraClient {
   audio_mediasource_enabled: boolean;
   audio_aurora_enabled: boolean;
   audio_codecs: {};
-  audio_framework: null;
+  audio_framework: string;
   audio_aurora_ctx: null;
   audio_codec: null;
   audio_context: AudioContext;
@@ -251,7 +251,7 @@ class XpraClient {
     // some client stuff
     this.capabilities = {};
     this.RGB_FORMATS = ["RGBX", "RGBA", "RGB"];
-    this.disconnect_reason = null;
+    this.disconnect_reason = '';
     this.password_prompt_fn = null;
     this.keycloak_prompt_fn = null;
     // audio
@@ -265,7 +265,7 @@ class XpraClient {
       AV.Decoder != undefined &&
       AV.Player.fromXpraSource != undefined;
     this.audio_codecs = {};
-    this.audio_framework = null;
+    this.audio_framework = '';
     this.audio_aurora_ctx = null;
     this.audio_codec = null;
     this.audio_context = new AudioContext();
@@ -380,7 +380,7 @@ class XpraClient {
     }
   }
 
-  send() {
+  send(...args) {
     this.debug("network", "sending a", arguments[0], "packet");
     if (this.protocol) {
       this.protocol.send.apply(this.protocol, arguments);
@@ -1819,18 +1819,18 @@ class XpraClient {
     return { x: mx, y: my, button: mbutton };
   }
 
-  on_mousedown(e, window) {
+  on_mousedown(e, window?) {
     this.mousedown_event = e;
     this.do_window_mouse_click(e, window, true);
     return window == undefined;
   }
 
-  on_mouseup(e, window) {
+  on_mouseup(e, window?) {
     this.do_window_mouse_click(e, window, false);
     return window == undefined;
   }
 
-  on_mousemove(e, window) {
+  on_mousemove(e, window?) {
     if (this.mouse_grabbed) {
       return true;
     }
