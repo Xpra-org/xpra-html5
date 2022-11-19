@@ -15,7 +15,8 @@ import { XpraProtocol } from '../../html5/js/protocolWorker';
  */
 
 // These are globally available on window
-declare const $, jQuery, AV, MediaSourceUtil, XpraOffscreenWorker, XpraProtocolWorkerHost, Utilities, PACKET_TYPES, default_settings;
+declare const $, jQuery, AV, MediaSourceUtil, XpraOffscreenWorker, XpraProtocolWorkerHost, Utilities, PACKET_TYPES, default_settings, forge;
+declare const DEAD_KEYS, KEY_TO_NAME, NUMPAD_TO_NAME, CHAR_TO_NAME, KEYSYM_TO_LAYOUT, CHARCODE_TO_NAME_SHIFTED, CHARCODE_TO_NAME;
 
 const XPRA_CLIENT_FORCE_NO_WORKER = false;
 const CLIPBOARD_IMAGES = true;
@@ -1433,10 +1434,10 @@ class XpraClient {
     event.initEvent(event_type, true, true);
     document.dispatchEvent(event);
   }
-  emit_connection_lost(event_type) {
+  emit_connection_lost(event_type?) {
     this._emit_event("connection-lost");
   }
-  emit_connection_established(event_type) {
+  emit_connection_established(event_type?) {
     this._emit_event("connection-established");
   }
 
