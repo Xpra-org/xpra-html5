@@ -59,86 +59,83 @@ class XpraClient {
 
     this.protocol = null;
 
-    this.init_settings();
     this.init_state();
   }
 
-  init_settings() {
-    //server:
-    this.host = null;
-    this.port = null;
-    this.ssl = null;
-    this.path = "";
-    this.username = "";
-    this.passwords = [];
-    this.insecure = false;
-    this.uri = "";
-    this.packet_encoder = null;
-    //connection options:
-    this.sharing = false;
-    this.open_url = true;
-    this.steal = true;
-    this.remote_logging = true;
-    this.encoding = "auto";
-    //basic set of encodings:
-    //(more may be added after checking via the DecodeWorker)
-    this.supported_encodings = [
-      "jpeg",
-      "png",
-      "png/P",
-      "png/L",
-      "rgb",
-      "rgb32",
-      "rgb24",
-      "scroll",
-      "void",
-    ];
-    //extra encodings we enable if validated via the decode worker:
-    //(we also validate jpeg and png as a sanity check)
-    this.check_encodings = [
-      "jpeg",
-      "png",
-      "png/P",
-      "png/L",
-      "rgb",
-      "rgb32",
-      "rgb24",
-      "scroll",
-      "webp",
-      "void",
-      "avif",
-    ];
-    this.debug_categories = [];
-    this.start_new_session = null;
-    this.clipboard_enabled = false;
-    this.file_transfer = false;
-    this.remote_file_size_limit = 0;
-    this.remote_file_chunks = 0;
-    this.send_chunks_in_progress = new Map();
-    this.receive_chunks_in_progress = new Map();
-    this.keyboard_layout = null;
-    this.printing = false;
-    this.key_packets = [];
-    this.clipboard_delayed_event_time = 0;
+  //server:
+  host = null;
+  port = null;
+  ssl = null;
+  path = "";
+  username = "";
+  passwords = [];
+  insecure = false;
+  uri = "";
+  packet_encoder = null;
+  //connection options:
+  sharing = false;
+  open_url = true;
+  steal = true;
+  remote_logging = true;
+  encoding = "auto";
+  //basic set of encodings:
+  //(more may be added after checking via the DecodeWorker)
+  supported_encodings = [
+    "jpeg",
+    "png",
+    "png/P",
+    "png/L",
+    "rgb",
+    "rgb32",
+    "rgb24",
+    "scroll",
+    "void",
+  ];
+  //extra encodings we enable if validated via the decode worker:
+  //(we also validate jpeg and png as a sanity check)
+  check_encodings = [
+    "jpeg",
+    "png",
+    "png/P",
+    "png/L",
+    "rgb",
+    "rgb32",
+    "rgb24",
+    "scroll",
+    "webp",
+    "void",
+    "avif",
+  ];
+  debug_categories = [];
+  start_new_session = null;
+  clipboard_enabled = false;
+  file_transfer = false;
+  remote_file_size_limit = 0;
+  remote_file_chunks = 0;
+  send_chunks_in_progress = new Map();
+  receive_chunks_in_progress = new Map();
+  keyboard_layout = null;
+  printing = false;
+  key_packets = [];
+  clipboard_delayed_event_time = 0;
 
-    this.scale = 1;
-    this.vrefresh = -1;
-    this.bandwidth_limit = 0;
-    this.reconnect = true;
-    this.reconnect_count = 5;
-    this.reconnect_in_progress = false;
-    this.reconnect_delay = 1000; //wait 1 second before retrying
-    this.reconnect_attempt = 0;
-    this.swap_keys = Utilities.isMacOS();
-    this.HELLO_TIMEOUT = 30_000;
-    this.PING_TIMEOUT = 15_000;
-    this.PING_GRACE = 2000;
-    this.PING_FREQUENCY = 5000;
-    this.INFO_FREQUENCY = 1000;
-    this.uuid = Utilities.getHexUUID();
-    this.offscreen_api = DECODE_WORKER && XpraOffscreenWorker.isAvailable();
-    this.try_gpu = TRY_GPU_TRIGGER;
-  }
+  scale = 1;
+  vrefresh = -1;
+  bandwidth_limit = 0;
+  reconnect = true;
+  reconnect_count = 5;
+  reconnect_in_progress = false;
+  reconnect_delay = 1000; //wait 1 second before retrying
+  reconnect_attempt = 0;
+  swap_keys = Utilities.isMacOS();
+  HELLO_TIMEOUT = 30_000;
+  PING_TIMEOUT = 15_000;
+  PING_GRACE = 2000;
+  PING_FREQUENCY = 5000;
+  INFO_FREQUENCY = 1000;
+  uuid = Utilities.getHexUUID();
+  offscreen_api = DECODE_WORKER && XpraOffscreenWorker.isAvailable();
+  try_gpu = TRY_GPU_TRIGGER;
 
   init_state() {
     // state
