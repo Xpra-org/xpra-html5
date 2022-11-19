@@ -16,7 +16,7 @@
 // These are globally available on window
 declare const $, jQuery, AV, MediaSourceUtil, XpraOffscreenWorker, 
   XpraProtocolWorkerHost, Utilities, PACKET_TYPES, default_settings, forge,
-  XpraProtocol, removeWindowListItem;
+  XpraProtocol, removeWindowListItem, get_event_modifiers, lz4, BrotliDecode;
 declare const DEAD_KEYS, KEY_TO_NAME, NUMPAD_TO_NAME, CHAR_TO_NAME, 
   KEYSYM_TO_LAYOUT, CHARCODE_TO_NAME_SHIFTED, CHARCODE_TO_NAME;
 
@@ -68,9 +68,9 @@ class XpraClient {
   audio_state: null;
   aurora_codecs: {};
   mediasource_codecs: {};
-  encryption: boolean;
+  encryption: string;
   encryption_key: null;
-  cipher_in_caps: null;
+  cipher_in_caps: { [key: string]: any };
   cipher_out_caps: null;
   browser_language: any;
   browser_language_change_embargo_time: number;
@@ -135,8 +135,8 @@ class XpraClient {
   num_lock_modifier: null;
   alt_modifier: null;
   control_modifier: string;
-  meta_modifier: null;
-  altgr_modifier: null;
+  meta_modifier: string;
+  altgr_modifier: string;
   altgr_state: boolean;
   capture_keyboard: boolean;
   keyboard_map: {};
@@ -226,7 +226,7 @@ class XpraClient {
   receive_chunks_in_progress = new Map();
   keyboard_layout = null;
   printing = false;
-  key_packets = [];
+  key_packets: any[] = [];
   clipboard_delayed_event_time = 0;
 
   scale = 1;
@@ -864,7 +864,7 @@ class XpraClient {
     document.addEventListener("keydown", (e) => {
       const preview_element = $(WINDOW_PREVIEW_SELECTOR);
       if (e.code === "Escape" && preview_element.is(":visible")) {
-        client.toggle_window_preview();
+        this.client.toggle_window_preview();
         return e.stopPropagation() || e.preventDefault();
       }
       if (e.code === "Tab") {
@@ -880,7 +880,7 @@ class XpraClient {
           return e.stopPropagation() || e.preventDefault();
         } else if (e.altKey) {
           // Alt+Tab shows window preview. and goes to the next window.
-          client.toggle_window_preview((e, slick) => {
+          this.client.toggle_window_preview((e, slick) => {
             const number_slides = slick.slideCount;
             const current_slide = slick.currentSlide;
             const next_index = (current_slide + 1) % number_slides;
@@ -902,9 +902,11 @@ class XpraClient {
         $(WINDOW_PREVIEW_SELECTOR).is(":visible")
       ) {
         if (e.code.startsWith("Alt")) {
-          client.toggle_window_preview();
+          this.toggle_window_preview();
         }
-        return e.stopPropagation() || e.preventDefault();
+        e.stopPropagation();
+        e.preventDefault();
+        return;
       }
       const r = this._keyb_onkeyup(e);
       if (!r) {
@@ -914,17 +916,18 @@ class XpraClient {
   }
 
   query_keyboard_map() {
-    const keyboard = navigator.keyboard;
+    // TODO: move to an import
+    const keyboard = navigator['keyboard'];
     this.keyboard_map = {};
-    if (!navigator.keyboard) {
+    if (!navigator['keyboard']) {
       return;
     }
     keyboard.getLayoutMap().then((keyboardLayoutMap) => {
-      clog("got a keyboard layout map:", keyboardLayoutMap);
-      clog("keys:", [...keyboardLayoutMap.keys()]);
+      this.clog("got a keyboard layout map:", keyboardLayoutMap);
+      this.clog("keys:", [...keyboardLayoutMap.keys()]);
       for (const key of keyboardLayoutMap.keys()) {
         const value = keyboardLayoutMap[key];
-        cdebug("keyboard", key, "=", value);
+        this.cdebug("keyboard", key, "=", value);
         this.keyboard_map[key] = value;
       }
     });
@@ -1215,7 +1218,7 @@ class XpraClient {
     }
 
     let allow_default = false;
-    if (this.clipboard_enabled && client.clipboard_direction !== "to-server") {
+    if (this.clipboard_enabled && this.clipboard_direction !== "to-server") {
       //allow some key events that need to be seen by the browser
       //for handling the clipboard:
       let clipboard_modifier_keys = [
@@ -1339,7 +1342,7 @@ class XpraClient {
 
   _get_keycodes() {
     //keycodes.append((nn(keyval), nn(name), nn(keycode), nn(group), nn(level)))
-    const keycodes = [];
+    const keycodes: any[] = [];
     let kc;
     for (const keycode in CHARCODE_TO_NAME) {
       kc = Number.parseInt(keycode);
@@ -1353,7 +1356,7 @@ class XpraClient {
   }
 
   _get_DPI() {
-    const dpi_div = document.querySelector("#dpi");
+    const dpi_div = document.querySelector("#dpi") as HTMLElement;
     if (
       dpi_div != undefined &&
       dpi_div.offsetWidth > 0 &&
@@ -2400,7 +2403,7 @@ class XpraClient {
   /*
    * Show/Hide the window preview list
    */
-  toggle_window_preview(init_callback) {
+  toggle_window_preview(init_callback?) {
     const preview_element = $(WINDOW_PREVIEW_SELECTOR);
 
     preview_element.on("init", (e, slick) => {
@@ -2535,7 +2538,7 @@ class XpraClient {
         return;
       }
       // Clicked outside window list, close it.
-      client.toggle_window_preview();
+      this.toggle_window_preview();
     }
   }
 
@@ -3063,6 +3066,8 @@ class XpraClient {
       ""
     );
     this.clog("process challenge:", digest);
+
+    // This is done to preserve client context
     const client = this;
     function call_do_process_challenge(password) {
       if (!client || !client.protocol) {
