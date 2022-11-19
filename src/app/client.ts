@@ -42,6 +42,109 @@ const TRY_GPU_TRIGGER = true;
 class XpraClient {
   private container: HTMLElement | null;
   private protocol: XpraProtocol;
+  connected: boolean;
+  desktop_width: number;
+  desktop_height: number;
+  server_remote_logging: boolean;
+  server_start_time: number;
+  client_start_time: Date;
+  capabilities: {};
+  RGB_FORMATS: string[];
+  disconnect_reason: null;
+  password_prompt_fn: null;
+  keycloak_prompt_fn: null;
+  audio: null;
+  audio_enabled: boolean;
+  audio_mediasource_enabled: boolean;
+  audio_aurora_enabled: boolean;
+  audio_codecs: {};
+  audio_framework: null;
+  audio_aurora_ctx: null;
+  audio_codec: null;
+  audio_context: AudioContext;
+  audio_state: null;
+  aurora_codecs: {};
+  mediasource_codecs: {};
+  encryption: boolean;
+  encryption_key: null;
+  cipher_in_caps: null;
+  cipher_out_caps: null;
+  browser_language: any;
+  browser_language_change_embargo_time: number;
+  key_layout: null;
+  last_keycode_pressed: number;
+  last_key_packet: never[];
+  buttons_pressed: Set<unknown>;
+  last_button_event: (number | boolean)[];
+  mousedown_event: null;
+  last_mouse_x: null;
+  last_mouse_y: null;
+  wheel_delta_x: number;
+  wheel_delta_y: number;
+  mouse_grabbed: boolean;
+  scroll_reverse_x: boolean;
+  scroll_reverse_y: string;
+  clipboard_direction: any;
+  clipboard_datatype: null;
+  clipboard_buffer: string;
+  clipboard_server_buffers: {};
+  clipboard_pending: boolean;
+  clipboard_targets: string[];
+  remote_printing: boolean;
+  remote_file_transfer: boolean;
+  remote_open_files: boolean;
+  hello_timer: null;
+  info_timer: null;
+  info_request_pending: boolean;
+  server_last_info: {};
+  ping_timeout_timer: null;
+  ping_grace_timer: null;
+  ping_timer: null;
+  last_ping_server_time: number;
+  last_ping_local_time: number;
+  last_ping_echoed_time: number;
+  server_ping_latency: number;
+  client_ping_latency: number;
+  server_load: null;
+  server_ok: boolean;
+  decode_worker: null;
+  toolbar_position: string;
+  server_display: string;
+  server_platform: string;
+  server_resize_exact: boolean;
+  server_screen_sizes: never[];
+  server_is_desktop: boolean;
+  server_is_shadow: boolean;
+  server_readonly: boolean;
+  server_connection_data: boolean;
+  xdg_menu: null;
+  id_to_window: {};
+  ui_events: number;
+  pending_redraw: never[];
+  draw_pending: number;
+  topwindow: null;
+  topindex: number;
+  focus: number;
+  packet_handlers: { [x: number]: (packet: any) => void; };
+  fullscreen: boolean;
+  client: any;
+  metadata: any;
+  num_lock_modifier: null;
+  alt_modifier: null;
+  control_modifier: string;
+  meta_modifier: null;
+  altgr_modifier: null;
+  altgr_state: boolean;
+  capture_keyboard: boolean;
+  keyboard_map: {};
+  num_lock: boolean;
+  server_precise_wheel: any;
+  server_audio_codecs: any;
+  audio_buffers: never[];
+  audio_buffers_count: number;
+  media_source: any;
+  audio_source_ready: boolean;
+  audio_source_buffer: any;
 
   constructor(container: string) {
     // the container div is the "screen" on the HTML page where we
@@ -724,6 +827,12 @@ class XpraClient {
     }
     // Re-position floating toolbar menu
     this.position_float_menu();
+  }
+  set_fullscreen(arg0: boolean) {
+    throw new Error('Method not implemented.');
+  }
+  screen_resized() {
+    throw new Error('Method not implemented.');
   }
 
   /**
