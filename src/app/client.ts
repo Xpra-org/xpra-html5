@@ -14,8 +14,11 @@
  */
 
 // These are globally available on window
-declare const $, jQuery, AV, MediaSourceUtil, XpraOffscreenWorker, XpraProtocolWorkerHost, Utilities, PACKET_TYPES, default_settings, forge;
-declare const DEAD_KEYS, KEY_TO_NAME, NUMPAD_TO_NAME, CHAR_TO_NAME, KEYSYM_TO_LAYOUT, CHARCODE_TO_NAME_SHIFTED, CHARCODE_TO_NAME;
+declare const $, jQuery, AV, MediaSourceUtil, XpraOffscreenWorker, 
+  XpraProtocolWorkerHost, Utilities, PACKET_TYPES, default_settings, forge,
+  XpraProtocol, removeWindowListItem;
+declare const DEAD_KEYS, KEY_TO_NAME, NUMPAD_TO_NAME, CHAR_TO_NAME, 
+  KEYSYM_TO_LAYOUT, CHARCODE_TO_NAME_SHIFTED, CHARCODE_TO_NAME;
 
 const XPRA_CLIENT_FORCE_NO_WORKER = false;
 const CLIPBOARD_IMAGES = true;
@@ -107,7 +110,7 @@ class XpraClient {
   client_ping_latency: number;
   server_load: null;
   server_ok: boolean;
-  decode_worker: null;
+  decode_worker: boolean | null;
   toolbar_position: string;
   server_display: string;
   server_platform: string;
@@ -213,7 +216,7 @@ class XpraClient {
     "void",
     "avif",
   ];
-  debug_categories = [];
+  debug_categories: string[] = [];
   start_new_session = null;
   clipboard_enabled = false;
   file_transfer = false;
@@ -371,6 +374,10 @@ class XpraClient {
     screen_element.mousemove((e) => this.on_mousemove(e));
 
     const div = document.querySelector("#screen");
+
+    if (!div) 
+      throw new Error("invalid or missing screen element");
+
     function on_mousescroll(e) {
       me.on_mousescroll(e);
       return e.preventDefault();
@@ -394,7 +401,7 @@ class XpraClient {
   send_log(level, arguments_) {
     if (this.remote_logging && this.server_remote_logging && this.connected) {
       try {
-        const sargs = [];
+        const sargs: string[] = [];
         for (const argument of arguments_) {
           sargs.push(unescape(encodeURIComponent(String(argument))));
         }
@@ -815,7 +822,7 @@ class XpraClient {
       ) {
         const pattern = new RegExp(`.*${default_settings.auto_fullscreen}.*`);
         if (iwin.fullscreen === false && pattern.test(iwin.metadata.title)) {
-          clog(`auto fullscreen window: ${iwin.metadata.title}`);
+          this.clog(`auto fullscreen window: ${iwin.metadata.title}`);
           iwin.set_fullscreen(true);
           iwin.screen_resized();
         }
@@ -824,7 +831,7 @@ class XpraClient {
       // Make a DESKTOP-type window fullscreen automatically.
       // This resizes things like xfdesktop according to the window size.
       if (this.fullscreen === false && this.client.is_window_desktop(iwin)) {
-        clog(`auto fullscreen desktop window: ${this.metadata.title}`);
+        this.clog(`auto fullscreen desktop window: ${this.metadata.title}`);
         this.set_fullscreen(true);
         this.screen_resized();
       }
@@ -1966,7 +1973,7 @@ class XpraClient {
     return 0;
   }
 
-  on_mousescroll(e, window) {
+  on_mousescroll(e, window?) {
     if (this.server_readonly || this.mouse_grabbed || !this.connected) {
       return false;
     }
