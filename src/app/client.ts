@@ -1630,19 +1630,11 @@ class XpraClient {
 
   _make_hello() {
     let selections;
-    if (
-      navigator.clipboard &&
-      navigator.clipboard.readText &&
-      navigator.clipboard.writeText
-    ) {
-      //we don't need the primary contents,
-      //we can use the async clipboard
-      selections = ["CLIPBOARD"];
-      this.log("using new navigator.clipboard");
-    } else {
-      selections = ["CLIPBOARD", "PRIMARY"];
-      this.log("legacy clipboard");
-    }
+
+    //we don't need the primary contents,
+    //we can use the async clipboard
+    selections = ["CLIPBOARD"];
+
     this.desktop_width = this.container.clientWidth;
     this.desktop_height = this.container.clientHeight;
     this.key_layout = this._get_keyboard_layout();
