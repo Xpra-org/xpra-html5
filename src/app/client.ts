@@ -304,7 +304,7 @@ class XpraClient {
       }
     }
   }
-  exc() {
+  exc(...args) {
     //first argument is the exception:
     const exception = arguments[0];
     let arguments_ = [...arguments];
@@ -321,31 +321,31 @@ class XpraClient {
       }
     }
   }
-  error() {
+  error(...args) {
     //logging.ERROR = 40
     this.send_log(40, arguments);
     Reflect.apply(this.cerror, this, arguments);
   }
-  cerror() {
+  cerror(...args) {
     Utilities.cerror.apply(Utilities, arguments);
   }
-  warn() {
+  warn(...args) {
     //logging.WARN = 30
     this.send_log(30, arguments);
     Reflect.apply(this.cwarn, this, arguments);
   }
-  cwarn() {
+  cwarn(...args) {
     Utilities.cwarn.apply(Utilities, arguments);
   }
-  log() {
+  log(...args) {
     //logging.INFO = 20
     this.send_log(20, arguments);
     Reflect.apply(this.clog, this, arguments);
   }
-  clog() {
+  clog(...args) {
     Utilities.clog.apply(Utilities, arguments);
   }
-  debug() {
+  debug(...args) {
     const category = arguments[0];
     const arguments_ = [...arguments];
     if (this.debug_categories.includes(category)) {
@@ -356,7 +356,7 @@ class XpraClient {
       Reflect.apply(this.cdebug, this, arguments);
     }
   }
-  cdebug() {
+  cdebug(...args) {
     Utilities.cdebug.apply(Utilities, arguments);
   }
 
