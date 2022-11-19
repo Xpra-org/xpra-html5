@@ -68,9 +68,9 @@ class XpraClient {
   audio_state: null;
   aurora_codecs: {};
   mediasource_codecs: {};
-  encryption: string;
+  encryption: boolean | string;
   encryption_key: null;
-  cipher_in_caps: { [key: string]: any };
+  cipher_in_caps: null | { [key: string]: any };
   cipher_out_caps: null;
   browser_language: any;
   browser_language_change_embargo_time: number;
@@ -80,8 +80,8 @@ class XpraClient {
   buttons_pressed: Set<unknown>;
   last_button_event: (number | boolean)[];
   mousedown_event: null;
-  last_mouse_x: null;
-  last_mouse_y: null;
+  last_mouse_x = 0;
+  last_mouse_y = 0;
   wheel_delta_x: number;
   wheel_delta_y: number;
   mouse_grabbed: boolean;
@@ -121,7 +121,15 @@ class XpraClient {
   server_readonly: boolean;
   server_connection_data: boolean;
   xdg_menu: null;
-  id_to_window: {};
+  
+  id_to_window: [{
+    focused: boolean,
+    wid: number,
+    stacking_layer: number,
+    updateFocus: () => {},
+    update_zindex: () => {}
+  }];
+
   ui_events: number;
   pending_redraw: never[];
   draw_pending: number;
@@ -135,8 +143,8 @@ class XpraClient {
   num_lock_modifier: null;
   alt_modifier: null;
   control_modifier: string;
-  meta_modifier: string;
-  altgr_modifier: string;
+  meta_modifier: string | null;
+  altgr_modifier: string | null;
   altgr_state: boolean;
   capture_keyboard: boolean;
   keyboard_map: {};
@@ -294,8 +302,8 @@ class XpraClient {
     this.buttons_pressed = new Set();
     this.last_button_event = [-1, false, -1, -1];
     this.mousedown_event = null;
-    this.last_mouse_x = null;
-    this.last_mouse_y = null;
+    this.last_mouse_x = 0;
+    this.last_mouse_y = 0;
     this.wheel_delta_x = 0;
     this.wheel_delta_y = 0;
     this.mouse_grabbed = false;
@@ -865,7 +873,9 @@ class XpraClient {
       const preview_element = $(WINDOW_PREVIEW_SELECTOR);
       if (e.code === "Escape" && preview_element.is(":visible")) {
         this.client.toggle_window_preview();
-        return e.stopPropagation() || e.preventDefault();
+        e.stopPropagation();
+        e.preventDefault();
+        return; 
       }
       if (e.code === "Tab") {
         if (preview_element.is(":visible")) {
@@ -877,7 +887,9 @@ class XpraClient {
             ? (current_slide - 1) % number_slides
             : (current_slide + 1) % number_slides;
           preview_element.slick("goTo", next_index, true);
-          return e.stopPropagation() || e.preventDefault();
+          e.stopPropagation();
+          e.preventDefault();
+          return;
         } else if (e.altKey) {
           // Alt+Tab shows window preview. and goes to the next window.
           this.client.toggle_window_preview((e, slick) => {
@@ -888,7 +900,9 @@ class XpraClient {
               slick.goTo(next_index, true);
             }, 10);
           });
-          return e.stopPropagation() || e.preventDefault();
+          e.stopPropagation();
+          e.preventDefault();
+          return;
         }
       }
       const r = this._keyb_onkeydown(e);
@@ -962,7 +976,7 @@ class XpraClient {
     const altgr = this.altgr_modifier;
     if (this.swap_keys) {
       meta = this.control_modifier;
-      control = this.meta_modifier;
+      control = this.meta_modifier as string;
     }
 
     const new_modifiers = [...modifiers];
@@ -1602,7 +1616,7 @@ class XpraClient {
       "clipboard.preferred-targets": this.clipboard_targets,
     });
 
-    if (this.encryption) {
+    if (this.encryption && typeof this.encryption == 'string') {
       const enc = this.encryption.split("-")[0];
       if (enc != "AES") {
         throw `invalid encryption specified: '${enc}'`;
@@ -1888,10 +1902,10 @@ class XpraClient {
       return;
     }
     let send_delay = 0;
-    if (client.clipboard_direction !== "to-server" && this._poll_clipboard(e)) {
+    if (this.clipboard_direction !== "to-server" && this._poll_clipboard(e)) {
       send_delay = CLIPBOARD_EVENT_DELAY;
     }
-    const mouse = this.getMouse(e, window);
+    const mouse = this.getMouse(e);
     const x = Math.round(mouse.x);
     const y = Math.round(mouse.y);
     const modifiers = this._keyb_get_modifiers(e);
@@ -1948,7 +1962,7 @@ class XpraClient {
       //IE? In any case, detection won't work:
       return 0;
     }
-    let delta = null;
+    let delta: number | null = null;
     if (e.wheelDelta) {
       // will work in most cases
       delta = e.wheelDelta;
@@ -2133,7 +2147,7 @@ class XpraClient {
         paste_data = unescape(
           encodeURIComponent(clipboardData.getData(datatype))
         );
-        cdebug("clipboard", "paste event, data=", paste_data);
+        this.cdebug("clipboard", "paste event, data=", paste_data);
         this.clipboard_buffer = paste_data;
         this.send_clipboard_token(paste_data);
       }
@@ -2162,8 +2176,8 @@ class XpraClient {
       );
       this.clipboard_pending = false;
     });
-    $("#screen").on("click", (e) => this.may_set_clipboard());
-    $("#screen").keypress(() => this.may_set_clipboard());
+    $("#screen").on("click", (e) => this.may_set_clipboard(e));
+    $("#screen").keypress((e) => this.may_set_clipboard(e));
   }
 
   may_set_clipboard(e) {
@@ -2277,7 +2291,7 @@ class XpraClient {
     if (this.clipboard_enabled === false) {
       return;
     }
-    client.debug("clipboard", "read_clipboard_text()");
+    this.debug("clipboard", "read_clipboard_text()");
     //warning: this can take a while,
     //so we may send the click before the clipboard contents...
     navigator.clipboard.readText().then(
@@ -2350,9 +2364,12 @@ class XpraClient {
     this.send([PACKET_TYPES.focus, wid, []]);
     //set the focused flag on the window specified,
     //adjust stacking order:
-    let iwin = null;
     for (const index in this.id_to_window) {
-      iwin = this.id_to_window[index];
+      const iwin = this.id_to_window[index];
+
+      if (!iwin) 
+        continue;
+
       iwin.focused = iwin.wid == wid;
       if (iwin.focused) {
         iwin.stacking_layer = top_stacking_layer;
