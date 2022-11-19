@@ -1,3 +1,4 @@
+import { XpraProtocol } from '../../html5/js/protocolWorker';
 /*
  * Copyright (c) 2013-2022 Antoine Martin <antoine@xpra.org>
  * Copyright (c) 2016 David Brushinski <dbrushinski@spikes.com>
@@ -12,6 +13,9 @@
  *	Window.js
  *	Keycodes.js
  */
+
+// These are globally available on window
+declare const jQuery, AV, MediaSourceUtil, XpraOffscreenWorker, XpraProtocolWorkerHost, Utilities, PACKET_TYPES, default_settings;
 
 const XPRA_CLIENT_FORCE_NO_WORKER = false;
 const CLIPBOARD_IMAGES = true;
@@ -36,7 +40,10 @@ const WINDOW_PREVIEW_SELECTOR = "#window_preview";
 const TRY_GPU_TRIGGER = true;
 
 class XpraClient {
-  constructor(container) {
+  private container: HTMLElement | null;
+  private protocol: XpraProtocol;
+
+  constructor(container: string) {
     // the container div is the "screen" on the HTML page where we
     // are able to draw our windows in.
     this.container = document.querySelector(`#${container}`);
@@ -44,7 +51,7 @@ class XpraClient {
       throw new Error("invalid container element");
     }
     // assign callback for window resize event
-    if (window.jQuery) {
+    if (jQuery) {
       jQuery(window).resize(
         jQuery.debounce(250, (e) => this._screen_resized(e))
       );
