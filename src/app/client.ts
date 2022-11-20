@@ -5263,7 +5263,7 @@ class XpraClient {
         data.set(chunk_, start);
         start += chunk_.length;
       }
-      this._got_file(filename, data, mimetype, printit, mimetype, options);
+      this._got_file(filename, data, printit, mimetype, options);
     }
   }
 
