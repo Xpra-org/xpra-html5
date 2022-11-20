@@ -43,6 +43,24 @@ const WINDOW_PREVIEW_SELECTOR = "#window_preview";
 // states that adding 'transform: transale3d(0,0,0);' is the strongest CSS indication for the browser to enable hardware acceleration.
 const TRY_GPU_TRIGGER = true;
 
+type XpraWindow = {
+  title
+  canvas
+  focused: boolean,
+  wid: number,
+  stacking_layer: number,
+  minimized: boolean,
+  override_redirect: unknown
+  metadata: {[key: string]: string},
+  fullscreen: boolean,
+  updateFocus: () => {},
+  update_zindex: () => {},
+  destroy: () => {},
+  set_fullscreen: (v: boolean) => {},
+  screen_resized: () => {},
+  tray: unknown
+};
+
 class XpraClient {
   private container: HTMLElement;
   private protocol: any; // XpraProtocol
@@ -55,8 +73,8 @@ class XpraClient {
   capabilities: {};
   RGB_FORMATS: string[];
   disconnect_reason: string;
-  password_prompt_fn: Function;
-  keycloak_prompt_fn: Function;
+  password_prompt_fn: Function | null;
+  keycloak_prompt_fn: Function | null;
   audio: null;
   audio_enabled: boolean;
   audio_mediasource_enabled: boolean;
@@ -98,18 +116,18 @@ class XpraClient {
   remote_file_transfer: boolean;
   remote_open_files: boolean;
   hello_timer: null;
-  info_timer: number;
+  info_timer: number | null;
   info_request_pending: boolean;
   server_last_info: {};
-  ping_timeout_timer?: number;
-  ping_grace_timer?: number;
-  ping_timer?: number;
+  ping_timeout_timer: number | null;
+  ping_grace_timer: number | null;
+  ping_timer: number | null;
   last_ping_server_time: number;
   last_ping_local_time: number;
   last_ping_echoed_time: number;
   server_ping_latency: number;
   client_ping_latency: number;
-  server_load: [number, number, number];
+  server_load: [number, number, number] | null;
   server_ok: boolean;
   decode_worker: boolean | null;
   toolbar_position: string;
@@ -122,23 +140,7 @@ class XpraClient {
   server_readonly: boolean;
   server_connection_data: boolean;
   xdg_menu: null;
-
-  id_to_window: {
-    focused: boolean,
-    wid: number,
-    stacking_layer: number,
-    minimized: boolean,
-    override_redirect: unknown
-    metadata: {[key: string]: string},
-    fullscreen: boolean,
-    updateFocus: () => {},
-    update_zindex: () => {},
-    destroy: () => {},
-    set_fullscreen: (v: boolean) => {},
-    screen_resized: () => {},
-    tray: unknown
-  }[];
-
+  id_to_window: XpraWindow[];
   ui_events: number;
   pending_redraw: never[];
   draw_pending: number;
@@ -2469,9 +2471,9 @@ class XpraClient {
     preview_element.children().remove();
 
     // Sort windows by stacking order.;
-    const windows_sorted = Object.values(client.id_to_window).filter((win) => {
+    const windows_sorted = Object.values(this.id_to_window).filter((win) => {
       // skip DESKTOP type windows.
-      return !client.is_window_desktop(win);
+      return !this.is_window_desktop(win);
     });
 
     if (windows_sorted.length === 0) {
@@ -5311,7 +5313,7 @@ class XpraClient {
   }
 
   send_file(f) {
-    clog("send_file:", f.name, ", type:", f.type, ", size:", f.size);
+    this.clog("send_file:", f.name, ", type:", f.type, ", size:", f.size);
     const fileReader = new FileReader();
     fileReader.onloadend = (event_) => {
       const u8a = new Uint8Array(event_.target.result);
