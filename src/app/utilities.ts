@@ -7,6 +7,8 @@
  *
  */
 
+declare const ArrayBufferToBase64;
+
 export const Utilities = {
   VERSION: "6.0",
   REVISION: 1285,
@@ -52,7 +54,7 @@ export const Utilities = {
   },
 
   getSecureRandomString(length_) {
-    const crypto = window.crypto || window.mscrypto;
+    const crypto = window.crypto;
     if (!crypto) {
       let s = "";
       while (s.length < length_) {
@@ -98,10 +100,6 @@ export const Utilities = {
     // mozilla property:
     if (navigator['oscpu']) {
       return navigator['oscpu'];
-    }
-    //ie:
-    if (Object.hasOwn((navigator, "cpuClass"))) {
-      return navigator.cpuClass;
     }
     return "unknown";
   },
@@ -249,8 +247,6 @@ export const Utilities = {
 
   is_64bit() {
     const _to_check: string[] = [];
-    if (Object.hasOwn((window.navigator, "cpuClass")))
-      _to_check.push(`${window.navigator.cpuClass}`.toLowerCase());
     if (window.navigator.platform)
       _to_check.push(`${window.navigator.platform}`.toLowerCase());
     if (navigator.userAgent)
@@ -497,7 +493,7 @@ export const Utilities = {
       param: /^\s*([^=]+?)\s*=\s*(.*?)\s*$/,
       comment: /^\s*[#;].*$/,
     };
-    const value = {};
+    const value: any = {};
     const lines = data.split(/[\n\r]+/);
     let section = null;
     for (const line of lines) {
