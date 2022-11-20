@@ -19,7 +19,7 @@ declare const $, jQuery, AV, MediaSourceUtil, XpraOffscreenWorker,
   XpraProtocol, XpraWindow, removeWindowListItem, get_event_modifiers, lz4, BrotliDecode;
 declare const DEAD_KEYS, KEY_TO_NAME, NUMPAD_TO_NAME, CHAR_TO_NAME, 
   KEYSYM_TO_LAYOUT, CHARCODE_TO_NAME_SHIFTED, CHARCODE_TO_NAME;
-declare const doNotification, MediaSourceConstants, addWindowListItem;
+declare const doNotification, MediaSourceConstants, addWindowListItem, closeNotification;
 declare let float_menu_width, float_menu_item_size, float_menu_padding;
 
 const XPRA_CLIENT_FORCE_NO_WORKER = false;
@@ -64,6 +64,8 @@ type XpraWindowType = {
   resume: () => {},
   update_metadata: (metadata) => {},
   initiate_moveresize: (...args) => {},
+  resize: (width: number, height: number) => {},
+  move_resize: (x: number, y: number, width: number, height: number) => {},
   x: number,
   y: number,
   png_cursor_data: [number, number, number, number, string],
@@ -138,7 +140,7 @@ class XpraClient {
   client_ping_latency: number;
   server_load: [number, number, number] | null;
   server_ok: boolean;
-  decode_worker: boolean | null;
+  decode_worker: any;
   toolbar_position: string;
   server_display: string;
   server_platform: string;
@@ -2158,7 +2160,7 @@ class XpraClient {
         );
       } else {
         let datatype = TEXT_PLAIN;
-        
+
         paste_data = unescape(
           encodeURIComponent(clipboardData.getData(datatype))
         );
@@ -3749,12 +3751,11 @@ class XpraClient {
     const icon = packet[9];
     const actions = packet[10];
     const hints = packet[11];
-    if (window.closeNotification) {
-      if (replaces_nid > 0) {
-        window.closeNotification(replaces_nid);
-      }
-      window.closeNotification(nid);
+
+    if (replaces_nid > 0) {
+      closeNotification(replaces_nid);
     }
+    closeNotification(nid);
 
     const context = this;
     function notify() {
