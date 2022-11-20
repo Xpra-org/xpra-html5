@@ -19,7 +19,7 @@ declare const $, jQuery, AV, MediaSourceUtil, XpraOffscreenWorker,
   XpraProtocol, XpraWindow, removeWindowListItem, get_event_modifiers, lz4, BrotliDecode;
 declare const DEAD_KEYS, KEY_TO_NAME, NUMPAD_TO_NAME, CHAR_TO_NAME, 
   KEYSYM_TO_LAYOUT, CHARCODE_TO_NAME_SHIFTED, CHARCODE_TO_NAME;
-declare const doNotification, MediaSourceConstants;
+declare const doNotification, MediaSourceConstants, addWindowListItem;
 declare let float_menu_width, float_menu_item_size, float_menu_padding;
 
 const XPRA_CLIENT_FORCE_NO_WORKER = false;
@@ -62,6 +62,11 @@ type XpraWindowType = {
   set_spinner: (v: boolean) => {},
   suspend: () => {},
   resume: () => {},
+  update_metadata: (metadata) => {},
+  initiate_moveresize: (...args) => {},
+  x: number,
+  y: number,
+  png_cursor_data: [number, number, number, number, string],
   tray: unknown
 };
 
@@ -94,7 +99,7 @@ class XpraClient {
   encryption: boolean | string;
   encryption_key: null;
   cipher_in_caps: null | { [key: string]: any };
-  cipher_out_caps: {[key: string]: any};
+  cipher_out_caps: null | {[key: string]: any};
   browser_language: any;
   browser_language_change_embargo_time: number;
   key_layout: null;
@@ -335,7 +340,7 @@ class XpraClient {
     if (
       CLIPBOARD_IMAGES &&
       navigator.clipboard &&
-      Object.hasOwn(navigator.clipboard, "write")
+      !!navigator.clipboard["write"]
     ) {
       this.clipboard_targets.push("image/png");
     } else {
@@ -3321,7 +3326,7 @@ class XpraClient {
     const mycanvas = document.createElement("canvas");
     mydiv.append(mycanvas);
 
-    const float_tray = document.querySelector("#float_tray");
+    const float_tray = document.querySelector("#float_tray") as HTMLElement;
     const float_menu = document.querySelector(FLOAT_MENU_SELECTOR) as HTMLElement;
     const float_menu_element = $(FLOAT_MENU_SELECTOR);
     float_menu_element.children().show();
@@ -3421,7 +3426,7 @@ class XpraClient {
     const mydiv = document.createElement("div");
     mydiv.id = String(wid);
 
-    const screen = document.querySelector("#screen");
+    const screen = document.querySelector("#screen") as HTMLElement;
     screen.append(mydiv);
     // create the XpraWindow object to own the new div
     const win = new XpraWindow(
@@ -3446,7 +3451,7 @@ class XpraClient {
     );
     if (win && !override_redirect && win.metadata["window-type"] == "NORMAL") {
       const trimmedTitle = Utilities.trimString(win.title, 30);
-      window.addWindowListItem(wid, trimmedTitle);
+      addWindowListItem(wid, trimmedTitle);
     }
     this.id_to_window[wid] = win;
     if (!override_redirect) {
@@ -3582,7 +3587,7 @@ class XpraClient {
       x = win.x + packet[4];
       y = win.y + packet[5];
     }
-    const shadow_pointer = document.querySelector("#shadow_pointer");
+    const shadow_pointer = document.querySelector("#shadow_pointer") as HTMLImageElement;
     const style = shadow_pointer.style;
     let cursor_url;
     let w;
@@ -3657,7 +3662,7 @@ class XpraClient {
   }
 
   auto_focus() {
-    let highest_window = null;
+    let highest_window: XpraWindowType | null = null;
     let highest_stacking = -1;
     for (const index in this.id_to_window) {
       const iwin = this.id_to_window[index];
@@ -3670,6 +3675,7 @@ class XpraClient {
         highest_stacking = iwin.stacking_layer;
       }
     }
+    
     if (highest_window) {
       this._window_set_focus(highest_window);
     } else {
