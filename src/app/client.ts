@@ -58,6 +58,7 @@ type XpraWindow = {
   destroy: () => {},
   set_fullscreen: (v: boolean) => {},
   screen_resized: () => {},
+  set_spinner: (v: boolean) => {},
   tray: unknown
 };
 
@@ -90,7 +91,7 @@ class XpraClient {
   encryption: boolean | string;
   encryption_key: null;
   cipher_in_caps: null | { [key: string]: any };
-  cipher_out_caps: null;
+  cipher_out_caps: {[key: string]: any};
   browser_language: any;
   browser_language_change_embargo_time: number;
   key_layout: null;
@@ -115,7 +116,7 @@ class XpraClient {
   remote_printing: boolean;
   remote_file_transfer: boolean;
   remote_open_files: boolean;
-  hello_timer: null;
+  hello_timer: number | null;
   info_timer: number | null;
   info_request_pending: boolean;
   server_last_info: {};
@@ -1482,7 +1483,7 @@ class XpraClient {
   /**
    * Hello
    */
-  _send_hello(counter) {
+  _send_hello(counter?) {
     if (this.decode_worker == undefined) {
       counter = counter || 0;
       if (counter == 0) {
@@ -2390,6 +2391,8 @@ class XpraClient {
         if (iwin.stacking_layer > old_stacking_layer) {
           iwin.stacking_layer--;
         }
+        // TODO: Is this a faulty check?
+        // @ts-ignore
         if (had_focus == index) {
           this.send_configure_window(iwin, { focused: false }, true);
         }
@@ -2585,7 +2588,7 @@ class XpraClient {
       this.disconnect_reason =
         "Did not receive hello before timeout reached, not an Xpra server?";
       this.close();
-    }, this.HELLO_TIMEOUT);
+    }, this.HELLO_TIMEOUT) as any as number;
   }
   cancel_hello_timer() {
     if (this.hello_timer) {
@@ -2782,7 +2785,7 @@ class XpraClient {
     const modifier_keycodes = hello["modifier_keycodes"];
     if (modifier_keycodes) {
       for (const modifier in modifier_keycodes) {
-        if (Object.hasOwn((modifier_keycodes, modifier))) {
+        if (!!modifier_keycodes[modifier]) {
           const mappings = modifier_keycodes[modifier];
           for (const keycode in mappings) {
             const keys = mappings[keycode];
