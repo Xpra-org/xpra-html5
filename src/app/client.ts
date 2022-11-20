@@ -2953,12 +2953,15 @@ class XpraClient {
 
   process_xdg_menu() {
     this.log("received xdg start menu data");
-    let key;
     //remove current menu:
     $("#startmenu li").remove();
     const startmenu = document.querySelector("#startmenu");
-    for (key in this.xdg_menu) {
-      const category = this.xdg_menu[key];
+
+    if (!this.xdg_menu)
+      throw new Error("Fatal state, xdg_menu may not be null.");
+
+    for (let key in this.xdg_menu as any) {
+      const category: any = this.xdg_menu[key];
       const li = document.createElement("li");
       li.className = "-hasSubmenu";
 
@@ -2968,7 +2971,7 @@ class XpraClient {
 
       const a = document.createElement("a");
       a.append(catDivLeft);
-      a.append(document.createTextNode(this.xdg_menu[key].Name));
+      a.append(document.createTextNode(this.xdg_menu[key]['Name']));
       a.href = "#";
       li.append(a);
 
@@ -2976,10 +2979,12 @@ class XpraClient {
 
       //TODO need to figure out how to do this properly
       a.addEventListener("mouseenter", function () {
-        this.parentElement.childNodes[1].className = "-visible";
+        if (this.parentElement)
+          this.parentElement.childNodes[1]['className'] = "-visible";
       });
       a.addEventListener("mouseleave", function () {
-        this.parentElement.childNodes[1].className = "";
+        if (this.parentElement)
+          this.parentElement.childNodes[1]['className'] = "";
       });
 
       const xdg_menu_cats = category.Entries;
@@ -3008,20 +3013,23 @@ class XpraClient {
         a2.addEventListener("click", function () {
           const ignore = "False";
           me.start_command(this.innerText, this.title, ignore);
+          // @ts-ignore 2531
           document.querySelector("#menu_list").className = "-hide";
         });
         a2.addEventListener("mouseenter", function () {
-          this.parentElement.parentElement.className = "-visible";
+          if (this.parentElement?.parentElement)
+            this.parentElement.parentElement.className = "-visible";
         });
         a2.addEventListener("mouseleave", function () {
-          this.parentElement.parentElement.className = "";
+          if (this.parentElement?.parentElement)
+            this.parentElement.parentElement.className = "";
         });
 
         li2.append(a2);
         ul.append(li2);
       }
       li.append(ul);
-      startmenu.append(li);
+      startmenu?.append(li);
     }
   }
 
