@@ -105,16 +105,16 @@ export const Utilities = {
   },
 
   getPlatformName() {
-    if (navigator.appVersion.includes("Win")) {
+    if (navigator.userAgent.includes("Win")) {
       return "Microsoft Windows";
     }
-    if (navigator.appVersion.includes("Mac")) {
+    if (navigator.userAgent.includes("Mac")) {
       return "Mac OSX";
     }
-    if (navigator.appVersion.includes("Linux")) {
+    if (navigator.userAgent.includes("Linux")) {
       return "Linux";
     }
-    if (navigator.appVersion.includes("X11")) {
+    if (navigator.userAgent.includes("X11")) {
       return "Posix";
     }
     return "unknown";
@@ -122,16 +122,16 @@ export const Utilities = {
 
   getPlatform() {
     //use python style strings for platforms:
-    if (navigator.appVersion.includes("Win")) {
+    if (navigator.userAgent.includes("Win")) {
       return "win32";
     }
-    if (navigator.appVersion.includes("Mac")) {
+    if (navigator.userAgent.includes("Mac")) {
       return "darwin";
     }
-    if (navigator.appVersion.includes("Linux")) {
+    if (navigator.userAgent.includes("Linux")) {
       return "linux";
     }
-    if (navigator.appVersion.includes("X11")) {
+    if (navigator.userAgent.includes("X11")) {
       return "posix";
     }
     return "unknown";
@@ -218,7 +218,7 @@ export const Utilities = {
     return navigator.userAgent.includes("Edge");
   },
   isChrome() {
-    const isChromium = Object.hasOwn(window, "chrome");
+    const isChromium = !!window["chrome"];
     const winNav = window.navigator;
     const vendorName = winNav.vendor;
     const isOpera = winNav.userAgent.includes("OPR");
@@ -321,7 +321,7 @@ export const Utilities = {
       testElement.setAttribute(event, "return;");
       isSupported = typeof testElement[event] === "function";
     }
-    testElement = null;
+    testElement.remove();
     return isSupported;
   },
 
@@ -401,14 +401,10 @@ export const Utilities = {
     document.body.append(a);
     const blob = new Blob([data], mimetype);
     const url = window.URL.createObjectURL(blob);
-    if (navigator.msSaveOrOpenBlob) {
-      navigator.msSaveOrOpenBlob(blob, filename);
-    } else {
-      a.href = url;
-      a.download = filename;
-      a.click();
-      window.URL.revokeObjectURL(url);
-    }
+    a.href = url;
+    a.download = filename;
+    a.click();
+    window.URL.revokeObjectURL(url);
   },
 
   StringToUint8(string_) {
@@ -602,22 +598,21 @@ export const Utilities = {
   },
 
   getConnectionInfo() {
-    if (!Object.hasOwn(navigator, "connection")) {
+    if (!navigator["connection"]) {
       return {};
     }
-    const c = navigator.connection;
+    const c = navigator['connection'];
     const index = {};
     if (c.type) {
       index["type"] = c.type;
     }
-    if (Object.hasOwn((c, "effectiveType"))) {
+    if (!!c["effectiveType"]) {
       index["effective-type"] = c.effectiveType;
     }
     if (!isNaN(c.downlink) && c.downlink > 0 && isFinite(c.downlink)) {
       index["downlink"] = Math.round(c.downlink * 1000 * 1000);
     }
-    if (
-      Object.hasOwn(c, "downlinkMax") &&
+    if (!!c["downlinkMax"] &&
       !isNaN(c.downlinkMax) &&
       !isNaN(c.downlinkMax) &&
       c.downlinkMax > 0 &&
