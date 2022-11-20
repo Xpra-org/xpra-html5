@@ -1636,7 +1636,7 @@ class XpraClient {
       });
     }
 
-    if (typeof BrotliDecode != "undefined" && !Utilities.isIE()) {
+    if (typeof BrotliDecode != "undefined") {
       this._update_capabilities({
         brotli: true,
       });
@@ -2287,9 +2287,6 @@ class XpraClient {
         this.debug("clipboard", "polling: no data available");
         return false;
       }
-    }
-    if (Utilities.isIE()) {
-      datatype = "Text";
     }
     const raw_clipboard_buffer = clipboardData.getData(datatype);
     if (raw_clipboard_buffer === null) {
@@ -4124,7 +4121,7 @@ class XpraClient {
           this.audio_codec in this.mediasource_codecs
         ) {
           this.audio_framework = "mediasource";
-        } else if (this.audio_aurora_enabled && !Utilities.isIE()) {
+        } else if (this.audio_aurora_enabled) {
           this.audio_framework = "aurora";
         }
         if (this.audio_framework) {
