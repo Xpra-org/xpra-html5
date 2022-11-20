@@ -1,3 +1,6 @@
+export * from "./app/client";
+
+
 
 window.addEventListener("load", () => {
     // Register ServiceWorker.

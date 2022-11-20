@@ -12,14 +12,16 @@
  *	Window.js
  *	Keycodes.js
  */
+import { DEAD_KEYS, KEY_TO_NAME, NUMPAD_TO_NAME, CHAR_TO_NAME, 
+  KEYSYM_TO_LAYOUT, CHARCODE_TO_NAME_SHIFTED, CHARCODE_TO_NAME } from "./keycodes";
+import { PACKET_TYPES } from "./constants";
+import { Utilities } from "./utilities";
 
 // These are globally available on window
 declare const $, jQuery, AV, MediaSourceUtil, XpraOffscreenWorker, 
-  XpraProtocolWorkerHost, Utilities, PACKET_TYPES, default_settings, forge,
-  XpraProtocol, XpraWindow, removeWindowListItem, get_event_modifiers, lz4, BrotliDecode,
-  streamSaver;
-declare const DEAD_KEYS, KEY_TO_NAME, NUMPAD_TO_NAME, CHAR_TO_NAME, 
-  KEYSYM_TO_LAYOUT, CHARCODE_TO_NAME_SHIFTED, CHARCODE_TO_NAME;
+XpraProtocolWorkerHost, default_settings, forge,
+XpraProtocol, XpraWindow, removeWindowListItem, get_event_modifiers, lz4, BrotliDecode,
+streamSaver;
 declare const doNotification, MediaSourceConstants, addWindowListItem, closeNotification;
 declare let float_menu_width, float_menu_item_size, float_menu_padding;
 
@@ -80,7 +82,7 @@ type XpraWindowType = {
   tray: unknown
 };
 
-class XpraClient {
+export class XpraClient {
   private container: HTMLElement;
   private protocol: any; // XpraProtocol
   connected: boolean;
@@ -859,8 +861,8 @@ class XpraClient {
         default_settings.auto_fullscreen.length > 0
       ) {
         const pattern = new RegExp(`.*${default_settings.auto_fullscreen}.*`);
-        if (iwin.fullscreen === false && pattern.test(iwin.metadata.title)) {
-          this.clog(`auto fullscreen window: ${iwin.metadata.title}`);
+        if (iwin.fullscreen === false && pattern.test(iwin.metadata['title'])) {
+          this.clog(`auto fullscreen window: ${iwin.metadata['title']}`);
           iwin.set_fullscreen(true);
           iwin.screen_resized();
         }
