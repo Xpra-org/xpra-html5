@@ -16,7 +16,8 @@
 // These are globally available on window
 declare const $, jQuery, AV, MediaSourceUtil, XpraOffscreenWorker, 
   XpraProtocolWorkerHost, Utilities, PACKET_TYPES, default_settings, forge,
-  XpraProtocol, XpraWindow, removeWindowListItem, get_event_modifiers, lz4, BrotliDecode;
+  XpraProtocol, XpraWindow, removeWindowListItem, get_event_modifiers, lz4, BrotliDecode,
+  streamSaver;
 declare const DEAD_KEYS, KEY_TO_NAME, NUMPAD_TO_NAME, CHAR_TO_NAME, 
   KEYSYM_TO_LAYOUT, CHARCODE_TO_NAME_SHIFTED, CHARCODE_TO_NAME;
 declare const doNotification, MediaSourceConstants, addWindowListItem, closeNotification;
@@ -2239,16 +2240,12 @@ class XpraClient {
     //for IE:
     let success = false;
     if (
-      Object.hasOwn(window, "clipboardData") &&
-      Object.hasOwn(window.clipboardData, "setData") &&
-      typeof window.clipboardData.setData === "function"
+      !!window["clipboardData"] &&
+      !!window["clipboardData"]["setData"] &&
+      typeof window['clipboardData'].setData === "function"
     ) {
       try {
-        if (Utilities.isIE()) {
-          window.clipboardData.setData("Text", clipboard_buffer);
-        } else {
-          window.clipboardData.setData(clipboard_datatype, clipboard_buffer);
-        }
+        window['clipboardData'].setData(clipboard_datatype, clipboard_buffer);
         success = true;
       } catch {
         success = false;
@@ -2285,7 +2282,7 @@ class XpraClient {
     let clipboardData = (e.originalEvent || e).clipboardData;
     //IE: must use window.clipboardData because the event clipboardData is null!
     if (!clipboardData) {
-      clipboardData = window.clipboardData;
+      clipboardData = window['clipboardData'];
       if (!clipboardData) {
         this.debug("clipboard", "polling: no data available");
         return false;
@@ -4752,7 +4749,7 @@ class XpraClient {
     }
 
     if (navigator.clipboard) {
-      if (Object.hasOwn((navigator.clipboard, "read"))) {
+      if (!!navigator.clipboard["read"]) {
         this.debug("clipboard", "request using read()");
         navigator.clipboard.read().then(
           (data) => {
@@ -4769,7 +4766,7 @@ class XpraClient {
                         this.send_clipboard_string(
                           request_id,
                           selection,
-                          event.target.result
+                          event.target?.result
                         )
                       );
                       fileReader.readAsText(blob);
@@ -4796,7 +4793,7 @@ class XpraClient {
                           item_type,
                           8,
                           "bytes",
-                          event.target.result
+                          event.target?.result
                         )
                       );
                       fileReader.readAsText(blob);
@@ -4826,7 +4823,7 @@ class XpraClient {
           }
         );
         return;
-      } else if (Object.hasOwn((navigator.clipboard, "readText"))) {
+      } else if (!!navigator.clipboard["readText"]) {
         this.debug("clipboard", "clipboard request using readText()");
         navigator.clipboard.readText().then(
           (text) => {
@@ -4956,7 +4953,7 @@ class XpraClient {
       );
       return;
     }
-    let digest = null;
+    let digest: any = null;
     for (const hash_function of [
       "sha512",
       "sha384",
@@ -5005,7 +5002,7 @@ class XpraClient {
       return;
     }
     //start receiving chunks:
-    let writer = null;
+    let writer: any = null;
     try {
       //try to use a stream saver:
       this.debug("file", "streamSaver=", streamSaver);
@@ -5333,7 +5330,10 @@ class XpraClient {
     this.clog("send_file:", f.name, ", type:", f.type, ", size:", f.size);
     const fileReader = new FileReader();
     fileReader.onloadend = (event_) => {
-      const u8a = new Uint8Array(event_.target.result);
+      if (!event_.target?.result)
+        throw new Error("No file to send");
+
+      const u8a = new Uint8Array(event_.target.result as any);
       this.do_send_file(f.name, f.type, f.size, u8a);
     };
     fileReader.readAsArrayBuffer(f);
