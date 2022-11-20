@@ -121,14 +121,15 @@ class XpraClient {
   server_readonly: boolean;
   server_connection_data: boolean;
   xdg_menu: null;
-  
-  id_to_window: [{
+
+  id_to_window: {
     focused: boolean,
     wid: number,
     stacking_layer: number,
+    minimized: boolean,
     updateFocus: () => {},
     update_zindex: () => {}
-  }];
+  }[];
 
   ui_events: number;
   pending_redraw: never[];
@@ -366,7 +367,7 @@ class XpraClient {
 
     this.xdg_menu = null;
     // a list of our windows
-    this.id_to_window = {};
+    this.id_to_window = [];
     this.ui_events = 0;
     this.pending_redraw = [];
     this.draw_pending = 0;
@@ -2439,7 +2440,7 @@ class XpraClient {
         "wid"
       );
       this.clog(`current wid: ${wid}`);
-      if (client.id_to_window[wid].minimized) {
+      if (this.id_to_window[wid].minimized) {
         this._window_set_focus(this.id_to_window[wid]);
       }
 
