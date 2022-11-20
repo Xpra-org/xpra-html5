@@ -127,8 +127,15 @@ class XpraClient {
     wid: number,
     stacking_layer: number,
     minimized: boolean,
+    override_redirect: unknown
+    metadata: {[key: string]: string},
+    fullscreen: boolean,
     updateFocus: () => {},
-    update_zindex: () => {}
+    update_zindex: () => {},
+    destroy: () => {},
+    set_fullscreen: (v: boolean) => {},
+    screen_resized: () => {},
+    tray: unknown
   }[];
 
   ui_events: number;
@@ -748,7 +755,7 @@ class XpraClient {
   close_windows() {
     for (const index in this.id_to_window) {
       const iwin = this.id_to_window[index];
-      window.removeWindowListItem(index);
+      removeWindowListItem(index);
       iwin.destroy();
     }
   }
@@ -3600,7 +3607,7 @@ class XpraClient {
       !win.override_redirect &&
       win.metadata["window-type"] == "NORMAL"
     ) {
-      window.removeWindowListItem(wid);
+      removeWindowListItem(wid);
     }
     try {
       delete this.id_to_window[wid];
