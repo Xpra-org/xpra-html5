@@ -19,6 +19,7 @@ declare const $, jQuery, AV, MediaSourceUtil, XpraOffscreenWorker,
   XpraProtocol, removeWindowListItem, get_event_modifiers, lz4, BrotliDecode;
 declare const DEAD_KEYS, KEY_TO_NAME, NUMPAD_TO_NAME, CHAR_TO_NAME, 
   KEYSYM_TO_LAYOUT, CHARCODE_TO_NAME_SHIFTED, CHARCODE_TO_NAME;
+declare const doNotification;
 
 const XPRA_CLIENT_FORCE_NO_WORKER = false;
 const CLIPBOARD_IMAGES = true;
@@ -3780,8 +3781,8 @@ class XpraClient {
       }
     }
 
-    if (window.doNotification) {
-      window.doNotification(
+    if (doNotification) {
+      doNotification(
         "info",
         nid,
         summary,
@@ -5329,7 +5330,7 @@ class XpraClient {
     const chunk_size = Math.min(FILE_CHUNKS_SIZE, this.remote_file_chunks || 0);
     if (chunk_size > 0 && size > chunk_size) {
       if (this.send_chunks_in_progress.size >= MAX_CONCURRENT_FILES) {
-        throw Exception(
+        throw new Error(
           `too many file transfers in progress:${this.send_chunks_in_progress.size}`
         );
       }
@@ -5460,7 +5461,7 @@ class XpraClient {
       return;
     }
     if (chunk_size <= 0) {
-      throw Exception(`invalid chunk size ${chunk_size}`);
+      throw new Error(`invalid chunk size ${chunk_size}`);
     }
     //carve out another chunk:
     const cdata = data.subarray(0, chunk_size);
@@ -5512,7 +5513,7 @@ class XpraClient {
       const summary = "Open URL";
       const body = `<a href="${url}" rel="noopener" target="_blank">${url}</a>`;
       const timeout = 10;
-      window.doNotification(
+      doNotification(
         "",
         0,
         summary,
