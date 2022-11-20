@@ -113,8 +113,8 @@ class XpraClient {
   wheel_delta_x: number;
   wheel_delta_y: number;
   mouse_grabbed: boolean;
-  scroll_reverse_x: boolean;
-  scroll_reverse_y: string;
+  scroll_reverse_x: boolean | string;
+  scroll_reverse_y: boolean | string;
   clipboard_direction: any;
   clipboard_datatype: null;
   clipboard_buffer: string;
@@ -1400,7 +1400,7 @@ class XpraClient {
     }
     //alternative:
     if ("deviceXDPI" in screen)
-      return (screen.systemXDPI + screen.systemYDPI) / 2;
+      return (screen['systemXDPI'] + screen['systemYDPI']) / 2;
     //default:
     return 96;
   }
@@ -2129,11 +2129,8 @@ class XpraClient {
 
   init_clipboard() {
     window.addEventListener("paste", (e) => {
-      let clipboardData = (e.originalEvent || e).clipboardData;
-      //IE: must use window.clipboardData because the event clipboardData is null!
-      if (!clipboardData) {
-        clipboardData = window.clipboardData;
-      }
+      let clipboardData = (e['originalEvent'] || e).clipboardData;
+
       if (
         clipboardData &&
         clipboardData.files &&
@@ -2161,9 +2158,7 @@ class XpraClient {
         );
       } else {
         let datatype = TEXT_PLAIN;
-        if (Utilities.isIE()) {
-          datatype = "Text";
-        }
+        
         paste_data = unescape(
           encodeURIComponent(clipboardData.getData(datatype))
         );
