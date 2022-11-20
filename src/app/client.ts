@@ -13,14 +13,14 @@
  *	Keycodes.js
  */
 import { DEAD_KEYS, KEY_TO_NAME, NUMPAD_TO_NAME, CHAR_TO_NAME, 
-  KEYSYM_TO_LAYOUT, CHARCODE_TO_NAME_SHIFTED, CHARCODE_TO_NAME } from "./keycodes";
+  KEYSYM_TO_LAYOUT, CHARCODE_TO_NAME_SHIFTED, CHARCODE_TO_NAME, get_event_modifiers } from "./keycodes";
 import { PACKET_TYPES } from "./constants";
 import { Utilities } from "./utilities";
 
 // These are globally available on window
 declare const $, jQuery, AV, MediaSourceUtil, XpraOffscreenWorker, 
 XpraProtocolWorkerHost, default_settings, forge,
-XpraProtocol, XpraWindow, removeWindowListItem, get_event_modifiers, lz4, BrotliDecode,
+XpraProtocol, XpraWindow, removeWindowListItem, lz4, BrotliDecode,
 streamSaver;
 declare const doNotification, MediaSourceConstants, addWindowListItem, closeNotification;
 declare let float_menu_width, float_menu_item_size, float_menu_padding;
@@ -1117,7 +1117,7 @@ export class XpraClient {
     const keycode = event.which || event.keyCode;
     if (keycode == 229) {
       //this usually fires when we have received the event via "oninput" already
-      return;
+      return null;
     }
     let keystring = event.key || String.fromCharCode(keycode);
     let unpress_now = false;
@@ -2072,7 +2072,7 @@ export class XpraClient {
           buttons,
         ]);
       }
-      return;
+      return null;
     }
     //generate a single event if we can, or add to accumulators:
     if (apx >= 40 && apx <= 160) {
@@ -2267,7 +2267,7 @@ export class XpraClient {
 
   _poll_clipboard(e) {
     if (this.clipboard_enabled === false) {
-      return;
+      return null;
     }
     //see if the clipboard contents have changed:
     if (this.clipboard_pending) {
@@ -2935,7 +2935,7 @@ export class XpraClient {
     this.server_connection_data = hello["connection-data"];
 
     if (!!navigator["connection"]) {
-      navigator['connection'].addEventListener("change", this._connection_change);
+      navigator['connection'].addEventListener("change", this._connection_change.bind(this));
       this._connection_change();
     }
 
@@ -5546,3 +5546,4 @@ export class XpraClient {
     }
   }
 }
+window['XpraClient'] = XpraClient;

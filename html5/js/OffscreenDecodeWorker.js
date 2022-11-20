@@ -16,7 +16,7 @@ importScripts("./lib/broadway/Decoder.js");
 importScripts("./VideoDecoder.js");
 importScripts("./ImageDecoder.js");
 importScripts("./RgbHelpers.js");
-importScripts("./Constants.js");
+// importScripts("./Constants.js");
 
 // WindowDecoder for each window we have control over:
 const window_decoders = new Map();
@@ -37,7 +37,7 @@ if (XpraVideoDecoderLoader.hasNativeDecoder()) {
   // We can support native H264 & VP8 decoding
   video_coding.push("h264");
   video_coding.push("vp8");
-  video_coding.push("vp9"); 
+  video_coding.push("vp9");
 } else {
   console.warn(
     "Offscreen decoding is available for images only. Please consider using Google Chrome 94+ in a secure (SSL or localhost) context h264 offscreen decoding support."

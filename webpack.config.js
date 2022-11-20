@@ -13,7 +13,7 @@ const stylesHandler = isProduction
   : "style-loader";
 
 const config = {
-  entry: "./src/index.ts",
+  entry: "./src/main.ts",
   output: {
     path: path.resolve(__dirname, "dist"),
   },
@@ -27,9 +27,11 @@ const config = {
     }),
     new CopyPlugin({
       patterns: [
-        { from: "html5/css", to: "css" },
-        { from: "html5/icons", to: "icons" },
-        { from: "html5/lib", to: "lib" },
+        // { from: "html5/css", to: "css" },
+        // { from: "html5/icons", to: "icons" },
+        // { from: "html5/lib", to: "lib" },
+        // { from: "html5/js", to: "js" },
+        { from: "html5/", to: "." },
       ],
     }),
     // Add your plugins here
