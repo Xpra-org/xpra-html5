@@ -125,7 +125,7 @@ class XpraClient {
   scroll_reverse_x: boolean | string;
   scroll_reverse_y: boolean | string;
   clipboard_direction: any;
-  clipboard_datatype: null;
+  clipboard_datatype: string | null;
   clipboard_buffer: string;
   clipboard_server_buffers: {};
   clipboard_pending: boolean;
@@ -4112,6 +4112,7 @@ class XpraClient {
       this.warn("no valid audio codecs found");
       return;
     }
+    // @ts-ignore
     if (!(this.audio_codec in this.audio_codecs)) {
       if (this.audio_codec) {
         this.warn(`invalid audio codec: ${this.audio_codec}`);
@@ -4242,6 +4243,9 @@ class XpraClient {
         return;
       }
       //ie: codec_string = "audio/mp3";
+      if (!this.audio_codec)
+        throw new Error("Invalid state, missing audio codec.");
+
       const codec_string = MediaSourceConstants.CODEC_STRING[this.audio_codec];
       if (codec_string == undefined) {
         this.error(`invalid codec '${this.audio_codec}'`);
@@ -4633,10 +4637,10 @@ class XpraClient {
     const selection = packet[1];
     let targets = [];
     let target = null;
-    let dtype = null;
+    let dtype: string | null = null;
     let dformat = null;
     let wire_encoding = null;
-    let wire_data = null;
+    let wire_data: string | null = null;
     if (packet.length >= 3) {
       targets = packet[2];
     }
@@ -4677,19 +4681,20 @@ class XpraClient {
     // when we get a click, control-C or control-X event
     // (when access to the clipboard is allowed)
     if (is_valid_target) {
-      const is_text =
-        dtype.toLowerCase().includes("text") ||
-        dtype.toLowerCase().includes("string");
+      const is_text = typeof dtype == 'string' && (
+          dtype.toLowerCase().includes("text") ||
+          dtype.toLowerCase().includes("string")
+        );
       if (is_text) {
         try {
           wire_data = Utilities.Uint8ToString(wire_data);
         } catch {}
         if (this.clipboard_buffer != wire_data) {
-          this.clipboard_datatype = dtype;
-          this.clipboard_buffer = wire_data;
+          this.clipboard_datatype = dtype as string;
+          this.clipboard_buffer = wire_data as string;
           this.clipboard_pending = true;
           if (navigator.clipboard && navigator.clipboard.writeText) {
-            navigator.clipboard.writeText(wire_data).then(
+            navigator.clipboard.writeText(wire_data as string).then(
               () => {
                 this.debug("clipboard", "writeText succeeded");
                 this.clipboard_pending = false;
@@ -4704,10 +4709,10 @@ class XpraClient {
         dformat == 8 &&
         wire_encoding == "bytes" &&
         navigator.clipboard &&
-        Object.hasOwn(navigator.clipboard, "write")
+        !!navigator.clipboard["write"]
       ) {
         this.debug("clipboard", "png image received");
-        const blob = new Blob([wire_data], { type: dtype });
+        const blob = new Blob([wire_data as any], { type: dtype });
         this.debug("clipboard", "created blob", blob);
         const item = new ClipboardItem({ "image/png": blob });
         this.debug("clipboard", "created ClipboardItem", item);
@@ -4865,7 +4870,7 @@ class XpraClient {
     );
   }
 
-  resend_clipboard_server_buffer(request_id, selection) {
+  resend_clipboard_server_buffer(request_id?, selection?) {
     const server_buffer = this.clipboard_server_buffers["CLIPBOARD"];
     this.debug("clipboard", "resend_clipboard_server_buffer:", server_buffer);
     if (!server_buffer) {
@@ -4887,7 +4892,7 @@ class XpraClient {
     );
   }
 
-  send_clipboard_string(request_id, selection, clipboard_buffer, datatype) {
+  send_clipboard_string(request_id, selection, clipboard_buffer, datatype?) {
     let packet;
     packet =
       clipboard_buffer == ""
@@ -5083,7 +5088,7 @@ class XpraClient {
     return this.receive_chunks_in_progress.size;
   }
 
-  cancel_file(chunk_id, message, chunk) {
+  cancel_file(chunk_id, message, chunk?) {
     const chunk_state = this.receive_chunks_in_progress.get(chunk_id);
     if (chunk_state) {
       //mark it as cancelled:
