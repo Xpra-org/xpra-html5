@@ -54,8 +54,8 @@ class XpraClient {
   capabilities: {};
   RGB_FORMATS: string[];
   disconnect_reason: string;
-  password_prompt_fn: null;
-  keycloak_prompt_fn: null;
+  password_prompt_fn: Function;
+  keycloak_prompt_fn: Function;
   audio: null;
   audio_enabled: boolean;
   audio_mediasource_enabled: boolean;
@@ -97,18 +97,18 @@ class XpraClient {
   remote_file_transfer: boolean;
   remote_open_files: boolean;
   hello_timer: null;
-  info_timer: null;
+  info_timer: number;
   info_request_pending: boolean;
   server_last_info: {};
-  ping_timeout_timer: null;
-  ping_grace_timer: null;
-  ping_timer: null;
+  ping_timeout_timer?: number;
+  ping_grace_timer?: number;
+  ping_timer?: number;
   last_ping_server_time: number;
   last_ping_local_time: number;
   last_ping_echoed_time: number;
   server_ping_latency: number;
   client_ping_latency: number;
-  server_load: null;
+  server_load: [number, number, number];
   server_ok: boolean;
   decode_worker: boolean | null;
   toolbar_position: string;
@@ -2718,7 +2718,7 @@ class XpraClient {
     this.emit_connection_established();
   }
 
-  _connection_change(e) {
+  _connection_change(e?) {
     const ci = Utilities.getConnectionInfo();
     this.clog(
       "connection status - change event=",
@@ -2919,8 +2919,9 @@ class XpraClient {
       this.send([PACKET_TYPES.printers, printers]);
     }
     this.server_connection_data = hello["connection-data"];
-    if (Object.hasOwn((navigator, "connection"))) {
-      navigator.connection.addEventListener("change", this._connection_change);
+
+    if (!!navigator["connection"]) {
+      navigator['connection'].addEventListener("change", this._connection_change);
       this._connection_change();
     }
 
@@ -2936,7 +2937,7 @@ class XpraClient {
 
     // start sending our own pings
     this._send_ping();
-    this.ping_timer = setInterval(this._send_ping, this.PING_FREQUENCY);
+    this.ping_timer = setInterval(this._send_ping, this.PING_FREQUENCY) as any as number;
     this.reconnect_attempt = 0;
     // Drop start_new_session to avoid creating new displays
     // on reconnect
@@ -3206,13 +3207,13 @@ class XpraClient {
     this.ping_timeout_timer = setTimeout(
       () => this._check_echo_timeout(now_ms),
       this.PING_TIMEOUT
-    );
+    ) as any as number;
     // add timeout to detect temporary ping miss for spinners
     const wait = 2000;
     this.ping_grace_timer = setTimeout(
       () => this._check_server_echo(now_ms),
       wait
-    );
+    ) as any as number;
   }
 
   _process_ping(packet) {
@@ -3255,7 +3256,7 @@ class XpraClient {
         if (this.info_timer != undefined) {
           this.send_info_request();
         }
-      }, this.INFO_FREQUENCY);
+      }, this.INFO_FREQUENCY) as any as number;
     }
   }
   send_info_request() {
