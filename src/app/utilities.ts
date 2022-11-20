@@ -7,7 +7,7 @@
  *
  */
 
-const Utilities = {
+export const Utilities = {
   VERSION: "6.0",
   REVISION: 1285,
   LOCAL_MODIFICATIONS: 3,
@@ -36,7 +36,7 @@ const Utilities = {
   },
 
   getHexUUID() {
-    const s = [];
+    const s: string[] = [];
     const hexDigits = "0123456789abcdef";
     for (let index = 0; index < 36; index++) {
       if (index == 8 || index == 13 || index == 18 || index == 23) {
@@ -95,9 +95,9 @@ const Utilities = {
   },
 
   getPlatformProcessor() {
-    //mozilla property:
-    if (navigator.oscpu) {
-      return navigator.oscpu;
+    // mozilla property:
+    if (navigator['oscpu']) {
+      return navigator['oscpu'];
     }
     //ie:
     if (Object.hasOwn((navigator, "cpuClass"))) {
@@ -248,7 +248,7 @@ const Utilities = {
   },
 
   is_64bit() {
-    const _to_check = [];
+    const _to_check: string[] = [];
     if (Object.hasOwn((window.navigator, "cpuClass")))
       _to_check.push(`${window.navigator.cpuClass}`.toLowerCase());
     if (window.navigator.platform)
@@ -421,7 +421,7 @@ const Utilities = {
 
   Uint8ToString(u8a) {
     const CHUNK_SZ = 0x80_00;
-    const c = [];
+    const c: string[] = [];
     for (let index = 0; index < u8a.length; index += CHUNK_SZ) {
       c.push(
         String.fromCharCode.apply(null, u8a.subarray(index, index + CHUNK_SZ))
@@ -559,14 +559,15 @@ const Utilities = {
   },
 
   getparam(property) {
-    let getParameter = window.location.getParameter;
+    // TODO: Remove this global override
+    let getParameter = window.location['getParameter'];
     if (!getParameter) {
       getParameter = function (key) {
-        if (!window.location.queryStringParams)
-          window.location.queryStringParams = Utilities.parseParams(
+        if (!window.location['queryStringParams'])
+          window.location['queryStringParams'] = Utilities.parseParams(
             window.location.search.slice(1)
           );
-        return window.location.queryStringParams[key];
+        return window.location['queryStringParams'][key];
       };
     }
     let value = getParameter(property);
@@ -755,14 +756,14 @@ const LANGUAGE_TO_LAYOUT = {
   //"zu": ??
 };
 
-function console_debug_safe() {
-  if (console) console.debug.apply(console, arguments);
+function console_debug_safe(...args) {
+  console?.debug.apply(console, args);
 }
 
-function console_error_safe() {
-  if (console) console.error.apply(console, arguments);
+function console_error_safe(...args) {
+  console?.error.apply(console, args);
 }
 
-function console_log_safe() {
-  if (console) console.log.apply(console, arguments);
+function console_log_safe(...args) {
+  console?.log.apply(console, args);
 }
