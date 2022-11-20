@@ -16,10 +16,11 @@
 // These are globally available on window
 declare const $, jQuery, AV, MediaSourceUtil, XpraOffscreenWorker, 
   XpraProtocolWorkerHost, Utilities, PACKET_TYPES, default_settings, forge,
-  XpraProtocol, removeWindowListItem, get_event_modifiers, lz4, BrotliDecode;
+  XpraProtocol, XpraWindow, removeWindowListItem, get_event_modifiers, lz4, BrotliDecode;
 declare const DEAD_KEYS, KEY_TO_NAME, NUMPAD_TO_NAME, CHAR_TO_NAME, 
   KEYSYM_TO_LAYOUT, CHARCODE_TO_NAME_SHIFTED, CHARCODE_TO_NAME;
-declare const doNotification;
+declare const doNotification, MediaSourceConstants;
+declare let float_menu_width, float_menu_item_size, float_menu_padding;
 
 const XPRA_CLIENT_FORCE_NO_WORKER = false;
 const CLIPBOARD_IMAGES = true;
@@ -43,7 +44,7 @@ const WINDOW_PREVIEW_SELECTOR = "#window_preview";
 // states that adding 'transform: transale3d(0,0,0);' is the strongest CSS indication for the browser to enable hardware acceleration.
 const TRY_GPU_TRIGGER = true;
 
-type XpraWindow = {
+type XpraWindowType = {
   title
   canvas
   focused: boolean,
@@ -59,6 +60,8 @@ type XpraWindow = {
   set_fullscreen: (v: boolean) => {},
   screen_resized: () => {},
   set_spinner: (v: boolean) => {},
+  suspend: () => {},
+  resume: () => {},
   tray: unknown
 };
 
@@ -141,7 +144,7 @@ class XpraClient {
   server_readonly: boolean;
   server_connection_data: boolean;
   xdg_menu: null;
-  id_to_window: XpraWindow[];
+  id_to_window: XpraWindowType[];
   ui_events: number;
   pending_redraw: never[];
   draw_pending: number;
@@ -152,8 +155,8 @@ class XpraClient {
   fullscreen: boolean;
   client: any;
   metadata: any;
-  num_lock_modifier: null;
-  alt_modifier: null;
+  num_lock_modifier: string | null;
+  alt_modifier: string | null;
   control_modifier: string;
   meta_modifier: string | null;
   altgr_modifier: string | null;
@@ -3277,7 +3280,7 @@ class XpraClient {
     this.debug("network", "info-response:", this.server_last_info);
     const event = document.createEvent("Event");
     event.initEvent("info-response", true, true);
-    event.data = this.server_last_info;
+    event['data'] = this.server_last_info;
     document.dispatchEvent(event);
   }
   stop_info_timer() {
@@ -3319,13 +3322,14 @@ class XpraClient {
     mydiv.append(mycanvas);
 
     const float_tray = document.querySelector("#float_tray");
-    const float_menu = document.querySelector(FLOAT_MENU_SELECTOR);
+    const float_menu = document.querySelector(FLOAT_MENU_SELECTOR) as HTMLElement;
     const float_menu_element = $(FLOAT_MENU_SELECTOR);
     float_menu_element.children().show();
     //increase size for tray icon
     const new_width =
       float_menu_width + float_menu_item_size - float_menu_padding + 5;
     float_menu.style.width = `${new_width}px`;
+
     float_menu_width = float_menu_element.width() + 10;
     mydiv.style.backgroundColor = "white";
 
@@ -3372,7 +3376,7 @@ class XpraClient {
   }
 
   reconfigure_all_trays() {
-    const float_menu = document.querySelector(FLOAT_MENU_SELECTOR);
+    const float_menu = document.querySelector(FLOAT_MENU_SELECTOR) as HTMLElement;
     float_menu_width = float_menu_item_size * 4 + float_menu_padding;
     for (const twid in this.id_to_window) {
       const twin = this.id_to_window[twid];
@@ -3390,7 +3394,7 @@ class XpraClient {
   }
 
   suspend() {
-    const window_ids = Object.keys(client.id_to_window).map(Number);
+    const window_ids = Object.keys(this.id_to_window).map(Number);
     this.send([PACKET_TYPES.suspend, true, window_ids]);
     for (const index in this.id_to_window) {
       const iwin = this.id_to_window[index];
@@ -3399,7 +3403,7 @@ class XpraClient {
   }
 
   resume() {
-    const window_ids = Object.keys(client.id_to_window).map(Number);
+    const window_ids = Object.keys(this.id_to_window).map(Number);
     for (const index in this.id_to_window) {
       const iwin = this.id_to_window[index];
       iwin.resume();
