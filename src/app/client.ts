@@ -66,6 +66,13 @@ type XpraWindowType = {
   initiate_moveresize: (...args) => {},
   resize: (width: number, height: number) => {},
   move_resize: (x: number, y: number, width: number, height: number) => {},
+  reset_cursor: () => {},
+  set_cursor: (...args) => {},
+  update_icon: (...args) => {},
+  eos: () => {},
+  paint: (any, callback: Function) => {},
+  paint_pending: number, 
+  may_paint_now: () => boolean,
   x: number,
   y: number,
   png_cursor_data: [number, number, number, number, string],
@@ -86,13 +93,13 @@ class XpraClient {
   disconnect_reason: string;
   password_prompt_fn: Function | null;
   keycloak_prompt_fn: Function | null;
-  audio: null;
+  audio: any;
   audio_enabled: boolean;
   audio_mediasource_enabled: boolean;
   audio_aurora_enabled: boolean;
   audio_codecs: {};
   audio_framework: string;
-  audio_aurora_ctx: null;
+  audio_aurora_ctx: any;
   audio_codec: null;
   audio_context: AudioContext;
   audio_state: null;
@@ -153,7 +160,7 @@ class XpraClient {
   xdg_menu: null;
   id_to_window: XpraWindowType[];
   ui_events: number;
-  pending_redraw: never[];
+  pending_redraw: any[];
   draw_pending: number;
   topwindow: null;
   topindex: number;
@@ -173,7 +180,7 @@ class XpraClient {
   num_lock: boolean;
   server_precise_wheel: any;
   server_audio_codecs: any;
-  audio_buffers: never[];
+  audio_buffers: any[];
   audio_buffers_count: number;
   media_source: any;
   audio_source_ready: boolean;
@@ -3815,8 +3822,8 @@ class XpraClient {
 
   _process_notify_close(packet) {
     const nid = packet[1];
-    if (window.closeNotification) {
-      window.closeNotification(nid);
+    if (closeNotification) {
+      closeNotification(nid);
     }
   }
 
@@ -3880,7 +3887,7 @@ class XpraClient {
     //ensure that the pixel data is in a byte array:
     const coding = Utilities.s(packet[6]);
     let img_data = packet[7];
-    const raw_buffers = [];
+    const raw_buffers: any[] = [];
     const now = performance.now();
     if (coding != "scroll") {
       if (!(img_data instanceof Uint8Array)) {
@@ -4206,12 +4213,10 @@ class XpraClient {
 
     //Create a MediaSource:
     this.media_source = MediaSourceUtil.getMediaSource();
-    if (this.debug) {
-      MediaSourceUtil.addMediaSourceEventDebugListeners(
-        this.media_source,
-        "audio"
-      );
-    }
+    MediaSourceUtil.addMediaSourceEventDebugListeners(
+      this.media_source,
+      "audio"
+    );
     this.media_source.addEventListener("error", (e) =>
       audio_error("audio source")
     );
@@ -4219,9 +4224,7 @@ class XpraClient {
     //Create an <audio> element:
     this.audio = document.createElement("audio");
     this.audio.setAttribute("autoplay", true);
-    if (this.debug) {
-      MediaSourceUtil.addMediaElementEventDebugListeners(this.audio, "audio");
-    }
+    MediaSourceUtil.addMediaElementEventDebugListeners(this.audio, "audio");
     this.audio.addEventListener("play", () => this.clog("audio play!"));
     this.audio.addEventListener("error", () => audio_error("audio"));
     document.body.append(this.audio);
