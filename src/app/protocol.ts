@@ -20,83 +20,6 @@ const CONNECT_TIMEOUT = 15_000;
 
 declare const forge, uintToString;
 declare const rencodeplus, rdecodelegacy, rdecodeplus, lz4, ord, BrotliDecode;
-/*
-A stub class to facilitate communication with the protocol when
-it is loaded in a worker
-*/
-export class XpraProtocolWorkerHost {
-  worker: Worker;
-  packet_handler: Function;
-
-  constructor() {
-  }
-
-  open(uri) {
-    if (this.worker) {
-      //re-use the existing worker:
-      this.worker.postMessage({ c: "o", u: uri });
-      return;
-    }
-    this.worker = new Worker("js/Protocol.js");
-    this.worker.addEventListener(
-      "message",
-      (e) => {
-        const data = e.data;
-        switch (data.c) {
-          case "r":
-            this.worker.postMessage({ c: "o", u: uri });
-            break;
-          case "p":
-            if (this.packet_handler) {
-              this.packet_handler(data.p);
-            }
-            break;
-          case "l":
-            this.log(data.t);
-            break;
-          default:
-            this.error("got unknown command from worker");
-            this.error(e.data);
-        }
-      },
-      false
-    );
-  }
-  log(t: any) {
-    throw new Error('Method not implemented.');
-  }
-  error(arg0: string) {
-    throw new Error('Method not implemented.');
-  }
-
-  close = function () {
-    this.worker.postMessage({ c: "c" });
-  };
-
-  terminate = function () {
-    this.worker.postMessage({ c: "t" });
-  };
-
-  send = function (packet) {
-    this.worker.postMessage({ c: "s", p: packet });
-  };
-
-  set_packet_handler = function (callback) {
-    this.packet_handler = callback;
-  };
-
-  set_cipher_in = function (caps, key) {
-    this.worker.postMessage({ c: "z", p: caps, k: key });
-  };
-
-  set_cipher_out = function (caps, key) {
-    this.worker.postMessage({ c: "x", p: caps, k: key });
-  };
-
-  enable_packet_encoder = function (packet_encoder) {
-    this.worker.postMessage({ c: "p", pe: packet_encoder });
-  };
-}
 
 /*
 The main Xpra wire protocol
@@ -258,7 +181,7 @@ export class XpraProtocol {
     console.log.apply(console, arguments);
   }
 
-  do_process_receive_queue() {
+  do_process_receive_queue(): any {
     if (this.header.length < 8 && this.rQ.length > 0) {
       //add from receive queue data to header until we get the 8 bytes we need:
       while (this.header.length < 8 && this.rQ.length > 0) {

@@ -1,3 +1,4 @@
+/// <reference lib="webworker" />
 /*
 If we are in a web worker, set up an instance of the protocol
 */
@@ -10,6 +11,8 @@ importScripts(
     "lib/forge.js",
     "lib/rencode.js"
 );
+
+import { XpraProtocol } from "../protocol";
 
 // make protocol instance
 const protocol = new XpraProtocol();

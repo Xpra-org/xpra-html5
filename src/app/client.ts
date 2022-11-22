@@ -17,8 +17,9 @@ import { DEAD_KEYS, KEY_TO_NAME, NUMPAD_TO_NAME, CHAR_TO_NAME,
 import { PACKET_TYPES } from "./constants";
 import { Utilities } from "./utilities";
 import { XpraWindow } from "./window";
-import { XpraProtocol, XpraProtocolWorkerHost } from './protocol';
+import { XpraProtocol } from './protocol';
 import { isOffscreenWorkerAvailable } from './util/offscreen-helper';
+import { XpraProtocolWorkerHost } from './protocol-host';
 
 // These are globally available on window
 declare const $, jQuery, AV, MediaSourceUtil, 
@@ -628,10 +629,10 @@ export class XpraClient {
     let decode_worker;
     if (this.offscreen_api) {
       this.clog("using offscreen decode worker");
-      decode_worker = new Worker("js/OffscreenDecodeWorker.js");
+      decode_worker = new Worker(new URL("./workers/offscreen-decoder.worker", import.meta.url));
     } else {
       this.clog("using decode worker");
-      decode_worker = new Worker("js/DecodeWorker.js");
+      decode_worker = new Worker(new URL("./workers/decoder.worker", import.meta.url));
     }
     decode_worker.addEventListener(
       "message",
