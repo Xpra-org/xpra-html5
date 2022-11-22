@@ -1,3 +1,4 @@
+import { Utilities } from './utilities';
 /*
  * Copyright (c) 2013-2019 Antoine Martin <antoine@xpra.org>
  * Copyright (c) 2016 David Brushinski <dbrushinski@spikes.com>
@@ -17,17 +18,17 @@
 
 const CONNECT_TIMEOUT = 15_000;
 
+declare const forge, uintToString;
+declare const rencodeplus;
 /*
 A stub class to facilitate communication with the protocol when
 it is loaded in a worker
 */
 class XpraProtocolWorkerHost {
-  worker: null;
-  packet_handler: null;
+  worker: Worker;
+  packet_handler: Function;
 
   constructor() {
-    this.worker = null;
-    this.packet_handler = null;
   }
 
   open(uri) {
@@ -104,16 +105,16 @@ class XpraProtocol {
 
   verify_connected_timer: number;
   is_worker: boolean;
-  packet_handler: null;
-  websocket: null;
-  raw_packets: never[];
-  cipher_in: null;
-  cipher_in_block_size: null;
-  cipher_out: null;
-  rQ: never[];
-  sQ: never[];
-  mQ: never[];
-  header: never[];
+  packet_handler: Function;
+  websocket: WebSocket;
+  raw_packets: any[];
+  cipher_in: any;
+  cipher_in_block_size: number;
+  cipher_out: any;
+  rQ: Uint8Array[];
+  sQ: Uint8Array[];
+  mQ: Uint8Array[];
+  header: any[];
   process_interval: number;
   packet_encoder: string;
   cipher_out_block_size: number;
@@ -121,11 +122,8 @@ class XpraProtocol {
   constructor() {
     this.verify_connected_timer = 0;
     this.is_worker = false;
-    this.packet_handler = null;
-    this.websocket = null;
     this.raw_packets = [];
     this.cipher_in = null;
-    this.cipher_in_block_size = null;
     this.cipher_out = null;
     this.rQ = []; // Receive queue
     this.sQ = []; // Send queue
@@ -184,14 +182,16 @@ class XpraProtocol {
     this.sQ = [];
     this.mQ = [];
     this.header = [];
-    this.websocket = null;
+    
+    this.websocket?.close();
+
     function handle(packet) {
       me.packet_handler(packet);
     }
     this.verify_connected_timer = setTimeout(
       () => handle(["error", "connection timed out", 0]),
       CONNECT_TIMEOUT
-    );
+    ) as any;
     // connect the socket
     try {
       this.websocket = new WebSocket(uri, "binary");
@@ -211,7 +211,7 @@ class XpraProtocol {
       handle(["close", me.close_event_str(event)])
     );
     this.websocket.onerror = (event) =>
-      handle(["error", me.close_event_str(event), event.code || 0]);
+      handle(["error", me.close_event_str(event), event['code'] || 0]);
     this.websocket.onmessage = function (e) {
       // push arraybuffer values onto the end
       me.rQ.push(new Uint8Array(e.data));
@@ -249,10 +249,10 @@ class XpraProtocol {
     while (this.websocket && this.do_process_receive_queue());
   }
 
-  error() {
+  error(...args) {
     console.error.apply(console, arguments);
   }
-  log() {
+  log(...args) {
     console.log.apply(console, arguments);
   }
 
@@ -417,7 +417,7 @@ class XpraProtocol {
       }
     } else {
       //decode raw packet string into objects:
-      let packet = null;
+      let packet: any = [];
       try {
         if (proto_flags == 0x1) {
           packet = rdecodelegacy(packet_data);
@@ -429,7 +429,8 @@ class XpraProtocol {
         for (const index in this.raw_packets) {
           packet[index] = this.raw_packets[index];
         }
-        this.raw_packets = {};
+        // TODO: this may cause problems. prev set to {}
+        this.raw_packets = [];
       } catch (error) {
         //FIXME: maybe we should error out and disconnect here?
         this.error("error decoding packet", error);
@@ -468,7 +469,7 @@ class XpraProtocol {
         throw `invalid packet encoder: ${this.packet_encoder}`;
       }
       let proto_flags = 0x10;
-      let bdata = null;
+      let bdata: any[];
       try {
         bdata = rencodeplus(packet);
       } catch (error) {
@@ -477,6 +478,7 @@ class XpraProtocol {
         this.error(error);
         continue;
       }
+
       const payload_size = bdata.length;
       // encryption
       if (this.cipher_out) {
