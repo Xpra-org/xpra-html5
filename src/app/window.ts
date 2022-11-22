@@ -23,13 +23,74 @@ function dummy() {}
  * when we receive pixels from the server.
  */
 class XpraWindow {
+  
+  div: any;
+  scale: any;
+  metadata: {};
+  override_redirect: any;
+  tray: any;
+  has_alpha: boolean;
+  client_properties: any;
+  set_focus_cb: any;
+  mouse_move_cb: any;
+  mouse_down_cb: any;
+  mouse_up_cb: any;
+  mouse_scroll_cb: any;
+  geometry_cb: any;
+  window_closed_cb: any;
+  log: () => any;
+  warn: () => any;
+  error: () => any;
+  exc: () => any;
+  debug: () => any;
+  debug_categories: any;
+  canvas: null;
+  title: null;
+  windowtype: null;
+  fullscreen: boolean;
+  saved_geometry: null;
+  minimized: boolean;
+  maximized: boolean;
+  focused: boolean;
+  decorations: boolean;
+  resizable: boolean;
+  stacking_layer: number;
+  icon: null;
+  leftoffset: number;
+  rightoffset: number;
+  topoffset: number;
+  bottomoffset: number;
+  spinnerdiv: any;
+  png_cursor_data: null;
+  pointer_down: number;
+  pointer_last_x: number;
+  pointer_last_y: number;
+  d_header: string;
+  d_closebtn: string;
+  d_maximizebtn: string;
+  d_minimizebtn: string;
+  canvas_ctx: any;
+  draw_canvas: any;
+  offscreen_canvas: any;
+  paint_queue: never[];
+  paint_pending: number;
+  offscreen_canvas_ctx: any;
+  outerH: any;
+  outerW: any;
+  outerX: number;
+  outerY: number;
+  broadway_decoder: any;
+  broadway_paint_location: number[];
+
   constructor(
-    client,
-    wid,
-    x,
-    y,
-    w,
-    h,
+    private client,
+    private wid,
+    //these values represent the internal geometry
+    //i.e. geometry as windows appear to the compositor
+    private x,
+    private y,
+    private w,
+    private h,
     metadata,
     override_redirect,
     tray,
@@ -43,20 +104,9 @@ class XpraWindow {
     window_closed_callback,
     scale
   ) {
-    // use me in jquery callbacks as we lose 'this'
-    this.client = client;
-
-    //xpra specific attributes:
-    this.wid = wid;
     //enclosing div in page DOM
     this.div = jQuery(`#${String(wid)}`);
 
-    //these values represent the internal geometry
-    //i.e. geometry as windows appear to the compositor
-    this.x = x;
-    this.y = y;
-    this.w = w;
-    this.h = h;
     // scaling for client display width override
     this.scale = scale;
 
@@ -1197,6 +1247,9 @@ class XpraWindow {
     // mouse click event is from canvas just for this window so no need to check
     // internal geometry anymore
     this.mouse_click_cb(this, button, pressed, mx, my, modifiers, buttons);
+  }
+  mouse_click_cb<XpraWindow extends XpraWindow>(arg0: this, button: any, pressed: any, mx: any, my: any, modifiers: any, buttons: any) {
+    throw new Error("Method not implemented.");
   }
 
   update_icon(width, height, encoding, img_data) {
