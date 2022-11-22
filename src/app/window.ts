@@ -12,6 +12,8 @@
  *   jQueryUI
  */
 
+import { Utilities } from "./utilities";
+
 declare const jQuery, $;
 
 const TASKBAR_HEIGHT = 0;
@@ -749,21 +751,21 @@ class XpraWindow {
       //adjust for header
       hdec = jQuery(`#head${this.wid}`).outerHeight(true);
     }
-    let min_size = null;
-    let max_size = null;
+    let min_size = 0;
+    let max_size = 0;
     const size_constraints = this.metadata["size-constraints"];
     if (size_constraints) {
       min_size = size_constraints["minimum-size"];
       max_size = size_constraints["maximum-size"];
     }
-    let minw = null;
-    let minh = null;
+    let minw = 0;
+    let minh = 0;
     if (min_size) {
       minw = min_size[0] + wdec;
       minh = min_size[1] + hdec;
     }
-    let maxw = null;
-    let maxh = null;
+    let maxw = 0;
+    let maxh = 0;
     if (max_size) {
       maxw = max_size[0] + wdec;
       maxh = max_size[1] + hdec;
@@ -1003,7 +1005,7 @@ class XpraWindow {
    * - resize the backing image
    * - fire the geometry_cb
    */
-  handle_resized(e) {
+  handle_resized(e?) {
     // this function is called on local resize only,
     // remote resize will call this.resize()
     // need to update the internal geometry
