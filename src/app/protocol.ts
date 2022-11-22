@@ -342,7 +342,7 @@ export class XpraProtocol {
       }
     } else {
       //decode raw packet string into objects:
-      let packet: any = [];
+      let packet: any;
       try {
         if (proto_flags == 0x1) {
           packet = rdecodelegacy(packet_data);
@@ -354,8 +354,8 @@ export class XpraProtocol {
         for (const index in this.raw_packets) {
           packet[index] = this.raw_packets[index];
         }
-        // TODO: this may cause problems. prev set to {}
-        this.raw_packets = [];
+        // @ts-ignore
+        this.raw_packets = {};
       } catch (error) {
         //FIXME: maybe we should error out and disconnect here?
         this.error("error decoding packet", error);
