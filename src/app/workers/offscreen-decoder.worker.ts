@@ -7,6 +7,8 @@
  *
  */
 
+import { XpraVideoDecoder, XpraVideoDecoderLoader } from '../decoders/video-decoder';
+
 /*
  * Worker for offscreen decoding.
  */
@@ -18,8 +20,7 @@ importScripts("./ImageDecoder.js");
 importScripts("./RgbHelpers.js");
 // importScripts("./Constants.js");
 
-declare const XpraVideoDecoderLoader;
-declare const XpraImageDecoder, XpraVideoDecoder;
+declare const XpraImageDecoder;
 
 // WindowDecoder for each window we have control over:
 const window_decoders = new Map<string, WindowDecoder>();
