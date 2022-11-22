@@ -56,7 +56,7 @@ function send_decode_error(packet, error) {
   self.postMessage({ error: `${error}`, packet });
 }
 
-const paint_worker = new Worker("PaintWorker.js");
+const paint_worker = new Worker(new URL("./paint.worker", import.meta.url));
 
 class WindowDecoder {
   image_decoder: any;
