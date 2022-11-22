@@ -1,3 +1,4 @@
+/// <reference lib="webworker" />
 /*
  * Copyright (c) 2021 Antoine Martin <antoine@xpra.org>
  */

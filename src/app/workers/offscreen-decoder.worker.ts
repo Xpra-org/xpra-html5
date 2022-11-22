@@ -1,3 +1,4 @@
+/// <reference lib="webworker" />
 /*
  * This file is part of Xpra.
  * Copyright (C) 2021 Tijs van der Zwaan <tijzwa@vpo.nl>

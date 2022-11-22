@@ -9,7 +9,7 @@
 
 declare const ArrayBufferToBase64;
 
-export const Utilities = window['Utilities'] = {
+export const Utilities = globalThis['Utilities'] = {
   VERSION: "6.0",
   REVISION: 1285,
   LOCAL_MODIFICATIONS: 3,
