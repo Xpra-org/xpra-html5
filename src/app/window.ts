@@ -1270,7 +1270,7 @@ class XpraWindow {
     // internal geometry anymore
     this.mouse_click_cb(this, button, pressed, mx, my, modifiers, buttons);
   }
-  mouse_click_cb<XpraWindow extends XpraWindow>(arg0: this, button: any, pressed: any, mx: any, my: any, modifiers: any, buttons: any) {
+  mouse_click_cb(arg0: this, button: any, pressed: any, mx: any, my: any, modifiers: any, buttons: any) {
     throw new Error("Method not implemented.");
   }
 
