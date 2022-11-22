@@ -58,7 +58,7 @@ class XpraWindow {
     y: number,
     w: number,
     h: number,
-  };
+  } | null;
   minimized: boolean;
   maximized: boolean;
   focused: boolean;
@@ -82,7 +82,7 @@ class XpraWindow {
     number,
     // img_data
     string
-  ];
+  ] | null;
   pointer_down: number;
   pointer_last_x: number;
   pointer_last_y: number;
@@ -93,7 +93,7 @@ class XpraWindow {
   canvas_ctx: any;
   draw_canvas: any;
   offscreen_canvas: any;
-  paint_queue: never[];
+  paint_queue: any[];
   paint_pending: number;
   offscreen_canvas_ctx: any;
   outerH: any;
