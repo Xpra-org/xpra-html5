@@ -16,21 +16,21 @@ const protocol = new XpraProtocol();
 protocol.is_worker = true;
 // we create a custom packet handler which posts packet as a message
 protocol.set_packet_handler((packet) => {
-    let raw_buffer = [];
-    if (packet[0] === "draw" && Object.hasOwn(packet[7], "buffer")) {
+    let raw_buffer: any[] = [];
+    if (packet[0] === "draw" && !!packet[7]["buffer"]) {
         //zero-copy the draw buffer
         raw_buffer = packet[7].buffer;
         packet[7] = null;
     } else if (
         packet[0] === "send-file-chunk" &&
-        Object.hasOwn(packet[3], "buffer")
+        !!packet[3]["buffer"]
     ) {
         //zero-copy the file data buffer
         raw_buffer = packet[3].buffer;
         packet[3] = null;
     }
-    postMessage({ c: "p", p: packet }, raw_buffer);
-}, null);
+    postMessage({ c: "p", p: packet }, raw_buffer as any);
+});
 // attach listeners from main thread
 self.addEventListener(
     "message",
