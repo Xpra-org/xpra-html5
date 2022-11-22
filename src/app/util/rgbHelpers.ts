@@ -2,12 +2,14 @@
  * Copyright (c) 2021 Antoine Martin <antoine@xpra.org>
  */
 
+declare const lz4;
+
 //deals with zlib or lz4 pixel compression
 //as well as converting rgb24 to rb32 and
 //re-striding the pixel data if needed so that lines are not padded
 //(that is: the rowstride must be width*4)
 //this function modifies the packet data directly
-function decode_rgb(packet) {
+export function decode_rgb(packet) {
   const width = packet[4];
   const height = packet[5];
   const coding = packet[6];
@@ -46,7 +48,7 @@ function decode_rgb(packet) {
   return uint;
 }
 
-function rgb24_to_rgb32(data, width, height, rowstride) {
+export function rgb24_to_rgb32(data: number[], width: number, height: number, rowstride: number) {
   const uint = new Uint8Array(width * height * 4);
   let source_index = 0;
   let target_index = 0;
