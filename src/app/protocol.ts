@@ -22,6 +22,9 @@ A stub class to facilitate communication with the protocol when
 it is loaded in a worker
 */
 class XpraProtocolWorkerHost {
+  worker: null;
+  packet_handler: null;
+
   constructor() {
     this.worker = null;
     this.packet_handler = null;
@@ -58,6 +61,12 @@ class XpraProtocolWorkerHost {
       false
     );
   }
+  log(t: any) {
+    throw new Error('Method not implemented.');
+  }
+  error(arg0: string) {
+    throw new Error('Method not implemented.');
+  }
 
   close = function () {
     this.worker.postMessage({ c: "c" });
@@ -92,6 +101,23 @@ class XpraProtocolWorkerHost {
 The main Xpra wire protocol
 */
 class XpraProtocol {
+  
+  verify_connected_timer: number;
+  is_worker: boolean;
+  packet_handler: null;
+  websocket: null;
+  raw_packets: never[];
+  cipher_in: null;
+  cipher_in_block_size: null;
+  cipher_out: null;
+  rQ: never[];
+  sQ: never[];
+  mQ: never[];
+  header: never[];
+  process_interval: number;
+  packet_encoder: string;
+  cipher_out_block_size: number;
+
   constructor() {
     this.verify_connected_timer = 0;
     this.is_worker = false;
