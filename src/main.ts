@@ -1,6 +1,10 @@
+import { XpraClient } from './app/client';
+import { CHAR_TO_NAME, KEYSYM_TO_LAYOUT } from './app/keycodes';
+import { Utilities } from './app/utilities';
+
 export * from "./app/client";
 
-
+declare const $, jQuery, JSZip, JSMpeg, saveAs, SimpleKeyboard;
 
 window.addEventListener("load", () => {
     // Register ServiceWorker.
@@ -75,10 +79,10 @@ const float_menu_item_size = 30;
 const float_menu_padding = 20;
 let float_menu_width = float_menu_item_size * 5 + float_menu_padding;
 
-let cdebug = function () {
+let cdebug = function (...args) {
     Utilities.clog.apply(Utilities, arguments);
 };
-let clog = function () {
+let clog = function (...args) {
     Utilities.clog.apply(Utilities, arguments);
 };
 
@@ -182,7 +186,6 @@ function hide_sessioninfo() {
 document.addEventListener(
     "info-response",
     function (e) {
-        const info = e.data;
         $("#endpoint").html(client.uri);
         $("#server_display").html(client.server_display);
         $("#server_platform").html(client.server_platform);
@@ -269,7 +272,7 @@ function generate_bugreport() {
     });
     hide_bugreport();
 }
-const password_input = document.getElementById("password");
+const password_input = document.getElementById("password") as HTMLInputElement;
 let login_callback = null;
 function login_cancel() {
     $("#login-overlay").fadeOut();
@@ -704,7 +707,8 @@ function init_client() {
                     props["debug_" + category] = true;
                 }
                 if (insecure || Utilities.hasSessionStorage()) {
-                    props["password"] = password;
+                    // TODO: password is undeclared
+                    // props["password"] = password;
                 } else {
                     props["password"] = "";
                 }
@@ -712,10 +716,10 @@ function init_client() {
                     const value = props[name];
                     add_prop(name, value);
                 }
-                window.location = url;
+                window.location.href = url;
             } else {
                 // if we didn't submit through the form, silently redirect to the connect gui
-                window.location = "connect.html";
+                window.location.href = "connect.html";
             }
         };
     }
@@ -793,7 +797,7 @@ function init_clipboard(client) {
 }
 
 function init_keyboard(client) {
-    const Keyboard = window.SimpleKeyboard.default;
+    const Keyboard = SimpleKeyboard.default;
     let kb = new Keyboard({
         onKeyPress: (button) => onKeyPress(button),
         onKeyReleased: (button) => onKeyReleased(button),
@@ -807,20 +811,20 @@ function init_keyboard(client) {
             "{enter}": "return",
         },
     });
-    window.kb = kb;
-    window.keyboardShifted = false;
+    window['kb'] = kb;
+    window['keyboardShifted'] = false;
     function onChange(input) {
         clog("Input changed", input);
     }
     function onKeyPress(button) {
         forward_key(true, button);
         if (button == "{shift}" || button == "{lock}") {
-            if (window.keyboardShifted) {
-                window.kb.setOptions({ layoutName: "default" });
+            if (window['keyboardShifted']) {
+                window['kb'].setOptions({ layoutName: "default" });
             } else {
-                window.kb.setOptions({ layoutName: "shift" });
+                window['kb'].setOptions({ layoutName: "shift" });
             }
-            window.keyboardShifted = !window.keyboardShifted;
+            window['keyboardShifted'] = !window['keyboardShifted'];
         }
     }
     function onKeyReleased(button) {
@@ -980,22 +984,22 @@ function init_audio(client) {
 
 function toggle_fullscreen() {
     const f_el =
-        Object.hasOwn(document, "requestFullScreen") ||
-        Object.hasOwn(document, "webkitRequestFullScreen") ||
-        Object.hasOwn(document, "mozRequestFullScreen") ||
-        Object.hasOwn(document, "msRequestFullscreen");
+        document["requestFullScreen"] ||
+        document["webkitRequestFullScreen"] ||
+        document["mozRequestFullScreen"] ||
+        document["msRequestFullscreen"];
     if (!f_el) {
         const elem = document.getElementById("fullscreen_button");
         var is_fullscreen =
-            document.fullScreen ||
-            document.mozFullScreen ||
-            document.webkitIsFullScreen;
+            document['fullScreen'] ||
+            document['mozFullScreen'] ||
+            document['webkitIsFullScreen'];
         if (!is_fullscreen) {
             const req =
-                elem.requestFullScreen ||
-                elem.webkitRequestFullScreen ||
-                elem.mozRequestFullScreen ||
-                elem.msRequestFullscreen;
+                elem['requestFullScreen'] ||
+                elem['webkitRequestFullScreen'] ||
+                elem['mozRequestFullScreen'] ||
+                elem['msRequestFullscreen'];
             if (req) {
                 req.call(document.body);
 
