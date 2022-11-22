@@ -24,7 +24,7 @@ declare const rencodeplus, rdecodelegacy, rdecodeplus, lz4, ord, BrotliDecode;
 A stub class to facilitate communication with the protocol when
 it is loaded in a worker
 */
-class XpraProtocolWorkerHost {
+export class XpraProtocolWorkerHost {
   worker: Worker;
   packet_handler: Function;
 
