@@ -18,6 +18,7 @@ import { PACKET_TYPES } from "./constants";
 import { Utilities } from "./utilities";
 import { XpraWindow } from "./window";
 import { XpraProtocol, XpraProtocolWorkerHost } from './protocol';
+import { isOffscreenWorkerAvailable } from './util/offscreen-helper';
 
 // These are globally available on window
 declare const $, jQuery, AV, MediaSourceUtil, 
@@ -251,7 +252,7 @@ export class XpraClient {
   PING_FREQUENCY = 5000;
   INFO_FREQUENCY = 1000;
   uuid = Utilities.getHexUUID();
-  offscreen_api = DECODE_WORKER && XpraOffscreenWorker.isAvailable();
+  offscreen_api = DECODE_WORKER && isOffscreenWorkerAvailable();
   try_gpu = TRY_GPU_TRIGGER;
 
   init_state() {

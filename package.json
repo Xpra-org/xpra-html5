@@ -9,10 +9,9 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "prepare": "husky install",
     "build": "webpack --mode=production --define-process-env-node-env=production",
-    "build:dev": "webpack --mode=development",
     "build:prod": "webpack --mode=production --define-process-env-node-env=production",
     "watch": "webpack --watch",
-    "serve": "webpack serve"
+    "dev": "webpack serve"
   },
   "repository": {
     "type": "git",
@@ -26,6 +25,7 @@
   "homepage": "https://github.com/Xpra-org/xpra-html5#readme",
   "devDependencies": {
     "@types/dom-webcodecs": "^0.1.5",
+    "@types/offscreencanvas": "^2019.7.0",
     "@webpack-cli/generators": "^3.0.0",
     "copy-webpack-plugin": "^11.0.0",
     "css-loader": "^6.7.1",
