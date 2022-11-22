@@ -46,7 +46,7 @@ class XpraWindow {
   exc: (...args) => any;
   debug: (...args) => any;
   debug_categories: any;
-  canvas: null | HTMLCanvasElement;
+  canvas: HTMLCanvasElement;
   title: null;
   windowtype: null;
   fullscreen: boolean;
@@ -133,7 +133,6 @@ class XpraWindow {
     this.debug = () => client.debug.apply(client, arguments);
     this.debug_categories = client.debug_categories;
 
-    this.canvas = null;
     this.init_canvas();
 
     //window attributes:
@@ -321,8 +320,10 @@ class XpraWindow {
   }
 
   init_canvas() {
-    this.canvas = null;
+
+    this.canvas?.remove();
     this.div.find("canvas").remove();
+    
     const canvas = document.createElement("canvas");
     if (this.client.try_gpu) {
       $(canvas).addClass("gpu-trigger");
@@ -462,7 +463,7 @@ class XpraWindow {
       this.x = Math.min(oldx, ww - min_visible);
     }
     if (oldy <= this.topoffset && oldy <= min_visible) {
-      this.y = Number.parseInt(this.topoffset);
+      this.y = Number.parseInt(this.topoffset as string);
     } else if (oldy >= wh - min_visible) {
       this.y = Math.min(oldy, wh - min_visible);
     }
