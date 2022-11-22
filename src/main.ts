@@ -1,8 +1,8 @@
+/// <reference lib="dom" />
+
 import { XpraClient } from './app/client';
 import { CHAR_TO_NAME, KEYSYM_TO_LAYOUT } from './app/keycodes';
 import { Utilities } from './app/utilities';
-
-export * from "./app/client";
 
 declare const $, jQuery, JSZip, JSMpeg, saveAs, SimpleKeyboard;
 
@@ -18,7 +18,7 @@ window.addEventListener("load", () => {
         });
 });
 
-const default_settings = {};
+const default_settings = window['default_settings'] = {};
 const getparam = function (prop) {
     let v = Utilities.getparam(prop);
     if (v == null && prop in default_settings) {
@@ -75,9 +75,9 @@ const getfloatparam = function (prop, default_value) {
     return v;
 };
 
-const float_menu_item_size = 30;
-const float_menu_padding = 20;
-let float_menu_width = float_menu_item_size * 5 + float_menu_padding;
+const float_menu_item_size = window['float_menu_item_size'] = 30;
+const float_menu_padding = window['float_menu_padding'] = 20;
+window['float_menu_width'] = float_menu_item_size * 5 + float_menu_padding;
 
 let cdebug = function (...args) {
     Utilities.clog.apply(Utilities, arguments);
@@ -351,7 +351,7 @@ function set_touchaction() {
     }
 }
 
-function init_client() {
+function init_client(): any {
     if (typeof jQuery == "undefined") {
         window.alert(
             "Incomplete Xpra HTML5 client installation: jQuery is missing, cannot continue."
@@ -1123,7 +1123,7 @@ function init_page() {
                 e.preventDefault();
                 return "...";
             }
-            
+            return "";
         },
         { capture: true }
     );
