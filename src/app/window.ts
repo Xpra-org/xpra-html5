@@ -13,9 +13,9 @@
  */
 
 import { Utilities } from "./utilities";
-import { MOVERESIZE_DIRECTION_STRING, MOVERESIZE_MOVE, MOVERESIZE_CANCEL, MOVERESIZE_DIRECTION_JS_NAME } from "./constants";
+import { MOVERESIZE_DIRECTION_STRING, MOVERESIZE_MOVE, MOVERESIZE_CANCEL, MOVERESIZE_DIRECTION_JS_NAME, DEFAULT_BOX_COLORS } from "./constants";
 
-declare const jQuery, $;
+declare const jQuery, $, detectZoom, Decoder, decode_rgb;
 
 const TASKBAR_HEIGHT = 0;
 
@@ -1335,6 +1335,10 @@ class XpraWindow {
       temporary_img.addEventListener("load", () => {
         const canvas = document.createElement("canvas");
         const context = canvas.getContext("2d");
+
+        if (!context)
+          throw new Error("Could not get canvas context!");
+
         context.imageSmoothingEnabled = false;
         canvas.width = Math.round(w * window.devicePixelRatio);
         canvas.height = Math.round(h * window.devicePixelRatio);
@@ -1560,7 +1564,7 @@ class XpraWindow {
       );
     }
 
-    function painted(skip_box) {
+    function painted(skip_box?) {
       me.paint_pending = 0;
       if (!skip_box && me.debug_categories.includes("draw")) {
         const color = DEFAULT_BOX_COLORS[coding] || "white";
