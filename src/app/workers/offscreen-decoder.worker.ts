@@ -18,8 +18,11 @@ importScripts("./ImageDecoder.js");
 importScripts("./RgbHelpers.js");
 // importScripts("./Constants.js");
 
+declare const XpraVideoDecoderLoader;
+declare const XpraImageDecoder, XpraVideoDecoder;
+
 // WindowDecoder for each window we have control over:
-const window_decoders = new Map();
+const window_decoders = new Map<string, WindowDecoder>();
 
 const image_coding = [
   "rgb",
@@ -32,7 +35,7 @@ const image_coding = [
   "webp",
   "avif",
 ];
-const video_coding = [];
+const video_coding: string[] = [];
 if (XpraVideoDecoderLoader.hasNativeDecoder()) {
   // We can support native H264 & VP8 decoding
   video_coding.push("h264");
@@ -59,8 +62,13 @@ function send_decode_error(packet, error) {
 const paint_worker = new Worker("PaintWorker.js");
 
 class WindowDecoder {
-  constructor(wid, canvas, debug) {
-    this.wid = wid;
+  image_decoder: any;
+  video_decoder: any;
+  decode_queue: any[];
+  decode_queue_draining: boolean;
+  closed: any;
+
+  constructor(private wid, canvas, debug) {
 
     paint_worker.postMessage(
       {
@@ -72,13 +80,9 @@ class WindowDecoder {
       [canvas]
     );
 
-    this.debug = debug;
-    this.init();
-  }
-  init() {
     this.image_decoder = new XpraImageDecoder();
     this.video_decoder = new XpraVideoDecoder();
-
+  
     this.decode_queue = [];
     this.decode_queue_draining = false;
   }
@@ -179,7 +183,7 @@ class WindowDecoder {
 
   eos() {
     // Add eos packet to queue to prevent closing the decoder before all packets are proceeded
-    const packet = [];
+    const packet: any[] = [];
     packet[6] = "eos";
     this.decode_queue.push(packet);
   }
@@ -198,7 +202,7 @@ class WindowDecoder {
 
 onmessage = function (e) {
   const data = e.data;
-  let wd = null;
+  let wd: WindowDecoder;
   switch (data.cmd) {
     case "check": {
       // Check if we support the given encodings.
@@ -208,13 +212,13 @@ onmessage = function (e) {
       break;
     }
     case "eos":
-      wd = window_decoders.get(data.wid);
+      wd = window_decoders.get(data.wid) as WindowDecoder;
       if (wd) {
         wd.eos();
       }
       break;
     case "remove":
-      wd = window_decoders.get(data.wid);
+      wd = window_decoders.get(data.wid) as WindowDecoder;
       if (wd) {
         wd.close();
         window_decoders.delete(data.wid);
@@ -223,7 +227,7 @@ onmessage = function (e) {
     case "decode": {
       const packet = data.packet;
       const wid = packet[1];
-      wd = window_decoders.get(wid);
+      wd = window_decoders.get(wid) as WindowDecoder;
       if (wd) {
         wd.queue_draw_packet(packet);
       } else {
