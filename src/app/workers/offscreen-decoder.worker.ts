@@ -7,6 +7,7 @@
  *
  */
 
+import { XpraImageDecoder } from '../decoders/image-decoder';
 import { XpraVideoDecoder, XpraVideoDecoderLoader } from '../decoders/video-decoder';
 
 /*
@@ -15,12 +16,6 @@ import { XpraVideoDecoder, XpraVideoDecoderLoader } from '../decoders/video-deco
 
 importScripts("./lib/lz4.js");
 importScripts("./lib/broadway/Decoder.js");
-importScripts("./VideoDecoder.js");
-importScripts("./ImageDecoder.js");
-importScripts("./RgbHelpers.js");
-// importScripts("./Constants.js");
-
-declare const XpraImageDecoder;
 
 // WindowDecoder for each window we have control over:
 const window_decoders = new Map<string, WindowDecoder>();
