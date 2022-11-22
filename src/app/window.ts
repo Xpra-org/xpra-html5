@@ -15,8 +15,9 @@
 import { Utilities } from "./utilities";
 import { MOVERESIZE_DIRECTION_STRING, MOVERESIZE_MOVE, MOVERESIZE_CANCEL, MOVERESIZE_DIRECTION_JS_NAME, DEFAULT_BOX_COLORS } from "./constants";
 import { XpraClient } from './client';
+import { decode_rgb } from './util/rgbHelpers';
 
-declare const jQuery, $, detectZoom, Decoder, decode_rgb;
+declare const jQuery, $, detectZoom, Decoder;
 
 const TASKBAR_HEIGHT = 0;
 
