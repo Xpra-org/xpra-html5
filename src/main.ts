@@ -606,7 +606,7 @@ function init_client() {
         }
         client.audio_mediasource_enabled = getboolparam("mediasource", true);
         client.audio_aurora_enabled = getboolparam("aurora", true);
-        client.audio_httpstream_enabled = getboolparam("http-stream", true);
+        // client.audio_httpstream_enabled = getboolparam("http-stream", true);
     }
 
     if (keyboard_layout) {
@@ -1024,7 +1024,7 @@ function toggle_fullscreen() {
                     "F10",
                     "F11",
                 ];
-                navigator.keyboard
+                navigator['keyboard']
                     .lock(keys)
                     .then(() => {
                         console.log("keyboard lock success");
@@ -1040,12 +1040,12 @@ function toggle_fullscreen() {
         } else {
             if (document.exitFullscreen) {
                 document.exitFullscreen();
-            } else if (document.webkitExitFullscreen) {
-                document.webkitExitFullscreen();
-            } else if (Object.hasOwn((document, "mozCancelFullScreen"))) {
-                document.mozCancelFullScreen();
-            } else if (Object.hasOwn((document, "msExitFullscreen"))) {
-                document.msExitFullscreen();
+            } else if (!!document['webkitExitFullscreen']) {
+                document['webkitExitFullscreen']();
+            } else if (!!document["mozCancelFullScreen"]) {
+                document['mozCancelFullScreen']();
+            } else if (!!document["msExitFullscreen"]) {
+                document['msExitFullscreen']();
             }
 
             $("#fullscreen").attr("src", "./icons/fullscreen.png");
@@ -1114,15 +1114,16 @@ function init_page() {
 
     addEventListener(
         "beforeunload",
-        () => {
+        (e) => {
             const aft = client.active_file_transfers();
             clog("beforeunload(", event, ") active_file_transfers()=", aft);
+
             if (aft > 0) {
-                //This text is now ignored by all browsers...
-                event.returnValue =
-                    "There are file transfers in progress.\nAre you sure you want to leave?";
+                // Signal the browser that there are active operations on the page.
+                e.preventDefault();
+                return "...";
             }
-            return event.returnValue;
+            
         },
         { capture: true }
     );
@@ -1210,9 +1211,9 @@ function init_page() {
     $(document).on(screen_change_events, function () {
         const f_el =
             document.fullscreenElement ||
-            document.mozFullScreen ||
-            document.webkitIsFullScreen ||
-            document.msFullscreenElement;
+            document['mozFullScreen'] ||
+            document['webkitIsFullScreen'] ||
+            document['msFullscreenElement'];
         clog("fullscreenchange:", f_el);
         if (f_el == null) {
             //we're not in fullscreen mode now, so show fullscreen icon again:
@@ -1249,7 +1250,7 @@ function init_page() {
             client.last_keycode_pressed > 0
         ) {
             console.log("clearing keycode: " + client.last_keycode_pressed);
-            key_packet = client.last_key_packet;
+            let key_packet = client.last_key_packet;
             // Set pressed = false to indicate key up.
             key_packet[3] = false;
             client.send(key_packet);
