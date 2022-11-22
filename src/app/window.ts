@@ -57,7 +57,7 @@ class XpraWindow {
   decorations: boolean;
   resizable: boolean;
   stacking_layer: number;
-  icon: null;
+  icon: any;
   leftoffset: number;
   rightoffset: number;
   topoffset: number | string;
@@ -323,7 +323,7 @@ class XpraWindow {
 
     this.canvas?.remove();
     this.div.find("canvas").remove();
-    
+
     const canvas = document.createElement("canvas");
     if (this.client.try_gpu) {
       $(canvas).addClass("gpu-trigger");
@@ -548,7 +548,7 @@ class XpraWindow {
 
       // Update window title
       jQuery("title").text(
-        `${location.pathname.replaceAll("/", "")}: ${this.title}`
+        `${location.pathname.replace(/\//g, "")}: ${this.title}`
       );
 
       // Update the icon
