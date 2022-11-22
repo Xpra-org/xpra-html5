@@ -19,7 +19,7 @@ import { Utilities } from './utilities';
 const CONNECT_TIMEOUT = 15_000;
 
 declare const forge, uintToString;
-declare const rencodeplus;
+declare const rencodeplus, rdecodelegacy, rdecodeplus, lz4, ord, BrotliDecode;
 /*
 A stub class to facilitate communication with the protocol when
 it is loaded in a worker
@@ -101,7 +101,7 @@ class XpraProtocolWorkerHost {
 /*
 The main Xpra wire protocol
 */
-class XpraProtocol {
+export class XpraProtocol {
 
   verify_connected_timer: number;
   is_worker: boolean;
@@ -113,7 +113,7 @@ class XpraProtocol {
   cipher_out: any;
   rQ: Uint8Array[];
   sQ: Uint8Array[];
-  mQ: Uint8Array[];
+  mQ: any[];
   header: any[];
   process_interval: number;
   packet_encoder: string;
@@ -212,12 +212,14 @@ class XpraProtocol {
     );
     this.websocket.onerror = (event) =>
       handle(["error", me.close_event_str(event), event['code'] || 0]);
+      
+    let interval = this.process_interval;
     this.websocket.onmessage = function (e) {
       // push arraybuffer values onto the end
       me.rQ.push(new Uint8Array(e.data));
       setTimeout(function () {
         me.process_receive_queue();
-      }, this.process_interval);
+      }, interval);
     };
   }
 
@@ -228,7 +230,7 @@ class XpraProtocol {
       this.websocket.onerror = null;
       this.websocket.onmessage = null;
       this.websocket.close();
-      this.websocket = null;
+      // this.websocket = null;
     }
   }
 
@@ -531,15 +533,16 @@ class XpraProtocol {
         return;
       }
 
-      const raw_buffers = [];
+      const raw_buffers: any[] = [];
       if (packet[0] === "draw" && "buffer" in packet[7]) {
         raw_buffers.push(packet[7].buffer);
       } else if (
         packet[0] === "sound-data" &&
-        Object.hasOwn(packet[2], "buffer")
+        !!packet[2]["buffer"]
       ) {
         raw_buffers.push(packet[2].buffer);
       }
+      // @ts-ignore
       postMessage({ c: "p", p: packet }, raw_buffers);
     }
   }
