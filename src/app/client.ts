@@ -17,12 +17,13 @@ import { DEAD_KEYS, KEY_TO_NAME, NUMPAD_TO_NAME, CHAR_TO_NAME,
 import { PACKET_TYPES } from "./constants";
 import { Utilities } from "./utilities";
 import { XpraWindow } from "./window";
+import { XpraProtocol, XpraProtocolWorkerHost } from './protocol';
 
 // These are globally available on window
-declare const $, jQuery, AV, MediaSourceUtil, XpraOffscreenWorker, 
-XpraProtocolWorkerHost, default_settings, forge,
-XpraProtocol, removeWindowListItem, lz4, BrotliDecode,
-streamSaver;
+declare const $, jQuery, AV, MediaSourceUtil, 
+  default_settings, forge,
+  removeWindowListItem, lz4, BrotliDecode,
+  streamSaver;
 declare const doNotification, MediaSourceConstants, addWindowListItem, closeNotification;
 declare let float_menu_width, float_menu_item_size, float_menu_padding;
 
