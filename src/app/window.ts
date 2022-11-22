@@ -12,6 +12,8 @@
  *   jQueryUI
  */
 
+declare const jQuery, $;
+
 const TASKBAR_HEIGHT = 0;
 
 function dummy() {}
@@ -23,7 +25,7 @@ function dummy() {}
  * when we receive pixels from the server.
  */
 class XpraWindow {
-  
+
   div: any;
   scale: any;
   metadata: {};
@@ -38,13 +40,13 @@ class XpraWindow {
   mouse_scroll_cb: any;
   geometry_cb: any;
   window_closed_cb: any;
-  log: () => any;
-  warn: () => any;
-  error: () => any;
-  exc: () => any;
-  debug: () => any;
+  log: (...args) => any;
+  warn: (...args) => any;
+  error: (...args) => any;
+  exc: (...args) => any;
+  debug: (...args) => any;
   debug_categories: any;
-  canvas: null;
+  canvas: null | HTMLCanvasElement;
   title: null;
   windowtype: null;
   fullscreen: boolean;
@@ -58,7 +60,7 @@ class XpraWindow {
   icon: null;
   leftoffset: number;
   rightoffset: number;
-  topoffset: number;
+  topoffset: number | string;
   bottomoffset: number;
   spinnerdiv: any;
   png_cursor_data: null;
@@ -302,7 +304,7 @@ class XpraWindow {
     }
     // adjust top offset
     this.topoffset =
-      this.topoffset + Number.parseInt(jQuery(this.d_header).css("height"), 10);
+      this.topoffset as number + Number.parseInt(jQuery(this.d_header).css("height"), 10);
     // stop propagation if we're over the window:
     jQuery(this.div).mousedown((e) => e.stopPropagation());
     //bug 2418: if we stop 'mouseup' propagation,
@@ -638,7 +640,7 @@ class XpraWindow {
    * Update our metadata cache with new key-values,
    * then call set_metadata with these new key-values.
    */
-  update_metadata(metadata, safe) {
+  update_metadata(metadata, safe = false) {
     //update our metadata cache with new key-values:
     this.debug("main", "update_metadata(", metadata, ")");
     for (const attrname in metadata) {
