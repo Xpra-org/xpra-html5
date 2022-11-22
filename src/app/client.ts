@@ -16,11 +16,12 @@ import { DEAD_KEYS, KEY_TO_NAME, NUMPAD_TO_NAME, CHAR_TO_NAME,
   KEYSYM_TO_LAYOUT, CHARCODE_TO_NAME_SHIFTED, CHARCODE_TO_NAME, get_event_modifiers } from "./keycodes";
 import { PACKET_TYPES } from "./constants";
 import { Utilities } from "./utilities";
+import { XpraWindow } from "./window";
 
 // These are globally available on window
 declare const $, jQuery, AV, MediaSourceUtil, XpraOffscreenWorker, 
 XpraProtocolWorkerHost, default_settings, forge,
-XpraProtocol, XpraWindow, removeWindowListItem, lz4, BrotliDecode,
+XpraProtocol, removeWindowListItem, lz4, BrotliDecode,
 streamSaver;
 declare const doNotification, MediaSourceConstants, addWindowListItem, closeNotification;
 declare let float_menu_width, float_menu_item_size, float_menu_padding;
@@ -46,41 +47,6 @@ const WINDOW_PREVIEW_SELECTOR = "#window_preview";
 // The article at https://www.urbaninsight.com/article/improving-html5-app-performance-gpu-accelerated-css-transitions
 // states that adding 'transform: transale3d(0,0,0);' is the strongest CSS indication for the browser to enable hardware acceleration.
 const TRY_GPU_TRIGGER = true;
-
-type XpraWindowType = {
-  title
-  canvas
-  focused: boolean,
-  wid: number,
-  stacking_layer: number,
-  minimized: boolean,
-  override_redirect: unknown
-  metadata: {[key: string]: string},
-  fullscreen: boolean,
-  updateFocus: () => {},
-  update_zindex: () => {},
-  destroy: () => {},
-  set_fullscreen: (v: boolean) => {},
-  screen_resized: () => {},
-  set_spinner: (v: boolean) => {},
-  suspend: () => {},
-  resume: () => {},
-  update_metadata: (metadata) => {},
-  initiate_moveresize: (...args) => {},
-  resize: (width: number, height: number) => {},
-  move_resize: (x: number, y: number, width: number, height: number) => {},
-  reset_cursor: () => {},
-  set_cursor: (...args) => {},
-  update_icon: (...args) => {},
-  eos: () => {},
-  paint: (any, callback: Function) => {},
-  paint_pending: number, 
-  may_paint_now: () => boolean,
-  x: number,
-  y: number,
-  png_cursor_data: [number, number, number, number, string],
-  tray: unknown
-};
 
 export class XpraClient {
   private container: HTMLElement;
@@ -161,7 +127,7 @@ export class XpraClient {
   server_readonly: boolean;
   server_connection_data: boolean;
   xdg_menu: null;
-  id_to_window: XpraWindowType[];
+  id_to_window: XpraWindow[];
   ui_events: number;
   pending_redraw: any[];
   draw_pending: number;
@@ -3431,6 +3397,7 @@ export class XpraClient {
     // create the XpraWindow object to own the new div
     const win = new XpraWindow(
       this,
+      null,
       wid,
       x,
       y,
@@ -3662,7 +3629,7 @@ export class XpraClient {
   }
 
   auto_focus() {
-    let highest_window: XpraWindowType | null = null;
+    let highest_window: XpraWindow | null = null;
     let highest_stacking = -1;
     for (const index in this.id_to_window) {
       const iwin = this.id_to_window[index];

@@ -14,6 +14,7 @@
 
 import { Utilities } from "./utilities";
 import { MOVERESIZE_DIRECTION_STRING, MOVERESIZE_MOVE, MOVERESIZE_CANCEL, MOVERESIZE_DIRECTION_JS_NAME, DEFAULT_BOX_COLORS } from "./constants";
+import { XpraClient } from './client';
 
 declare const jQuery, $, detectZoom, Decoder, decode_rgb;
 
@@ -27,7 +28,7 @@ function dummy() {}
  * The contents of the window is an image, which gets updated
  * when we receive pixels from the server.
  */
-class XpraWindow {
+export class XpraWindow {
 
   div: any;
   scale: any;
@@ -104,17 +105,18 @@ class XpraWindow {
   broadway_paint_location: number[];
 
   constructor(
-    private client,
-    private wid,
+    private client: XpraClient,
+    canvas,
+    public wid: number,
     //these values represent the internal geometry
     //i.e. geometry as windows appear to the compositor
-    private x,
-    private y,
-    private w,
-    private h,
+    public x: number,
+    public y: number,
+    private w: number,
+    private h: number,
     metadata,
-    override_redirect,
-    tray,
+    override_redirect: boolean,
+    tray: boolean,
     client_properties,
     geometry_callback,
     mouse_move_callback,
@@ -1075,7 +1077,7 @@ class XpraWindow {
     if (this.client.server_is_shadow) {
       //note: when this window is created,
       // it may not have been added to the client's list yet
-      const ids = Object.keys(this.client.id_to_window);
+      const ids = Object.keys(this.client.id_to_window) as any as number[];
       if (ids.length === 0 || ids[0] == this.wid) {
         //single window, recenter it:
         this.recenter();
@@ -1471,7 +1473,7 @@ class XpraWindow {
    * we have received from the server.
    * The image is painted into off-screen canvas.
    */
-  paint() {
+  paint(...args) {
     if (this.client.decode_worker) {
       //no need to synchronize paint packets here
       //the decode worker ensures that we get the packets
