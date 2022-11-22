@@ -13,6 +13,7 @@
  */
 
 import { Utilities } from "./utilities";
+import { MOVERESIZE_DIRECTION_STRING, MOVERESIZE_MOVE, MOVERESIZE_CANCEL, MOVERESIZE_DIRECTION_JS_NAME } from "./constants";
 
 declare const jQuery, $;
 
@@ -52,7 +53,12 @@ class XpraWindow {
   title: null;
   windowtype: null;
   fullscreen: boolean;
-  saved_geometry: null;
+  saved_geometry: {
+    x: number,
+    y: number,
+    w: number,
+    h: number,
+  };
   minimized: boolean;
   maximized: boolean;
   focused: boolean;
@@ -62,10 +68,21 @@ class XpraWindow {
   icon: any;
   leftoffset: number;
   rightoffset: number;
-  topoffset: number | string;
+  topoffset: number;
   bottomoffset: number;
   spinnerdiv: any;
-  png_cursor_data: null;
+  png_cursor_data: [
+    // width, 
+    number,
+    // height, 
+    number,
+    // xhot, 
+    number,
+    // yhot, 
+    number,
+    // img_data
+    string
+  ];
   pointer_down: number;
   pointer_last_x: number;
   pointer_last_y: number;
@@ -465,7 +482,7 @@ class XpraWindow {
       this.x = Math.min(oldx, ww - min_visible);
     }
     if (oldy <= this.topoffset && oldy <= min_visible) {
-      this.y = Number.parseInt(this.topoffset as string);
+      this.y = this.topoffset;
     } else if (oldy >= wh - min_visible) {
       this.y = Math.min(oldy, wh - min_visible);
     }
@@ -527,7 +544,7 @@ class XpraWindow {
     jQuery(this.div).css("height", this.outerH);
     // set CSS attributes to outerX and outerY
     this.outerX = this.x - this.leftoffset;
-    this.outerY = this.y - this.topoffset;
+    this.outerY = this.y - (this.topoffset as number);
     jQuery(this.div).css("left", this.outerX);
     jQuery(this.div).css("top", this.outerY);
     this.debug(
@@ -958,7 +975,7 @@ class XpraWindow {
           "_set_decorated(",
           decorated,
           ") new topoffset=",
-          self.topoffset
+          this.topoffset
         );
       }
     } else {
@@ -1073,7 +1090,7 @@ class XpraWindow {
     }
   }
 
-  recenter(force_update_geometry) {
+  recenter(force_update_geometry = false) {
     let x = this.x;
     let y = this.y;
     this.debug(
