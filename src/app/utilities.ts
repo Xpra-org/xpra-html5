@@ -411,7 +411,7 @@ export const Utilities = globalThis['Utilities'] = {
     return Uint8Array.from([...string_].map((x) => x.charCodeAt(0)));
   },
 
-  Uint8ToString(u8a) {
+  Uint8ToString(u8a: Uint8Array) {
     const CHUNK_SZ = 0x80_00;
     const c: string[] = [];
     for (let index = 0; index < u8a.length; index += CHUNK_SZ) {

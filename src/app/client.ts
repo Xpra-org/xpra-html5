@@ -4603,11 +4603,11 @@ export class XpraClient {
     }
     const selection = packet[1];
     let targets = [];
-    let target = null;
-    let dtype: string | null = null;
-    let dformat = null;
-    let wire_encoding = null;
-    let wire_data: string | null = null;
+    let target;
+    let dtype: string;
+    let dformat;
+    let wire_encoding;
+    let wire_data: Uint8Array | string;
     if (packet.length >= 3) {
       targets = packet[2];
     }
@@ -4654,7 +4654,7 @@ export class XpraClient {
         );
       if (is_text) {
         try {
-          wire_data = Utilities.Uint8ToString(wire_data);
+          wire_data = Utilities.Uint8ToString(wire_data as Uint8Array);
         } catch {}
         if (this.clipboard_buffer != wire_data) {
           this.clipboard_datatype = dtype as string;
