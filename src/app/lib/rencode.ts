@@ -39,12 +39,8 @@ var RENCODE = {
 	SLASH_CHARCODE : "/".charCodeAt(0),			//for byte strings
 };
 
-Number.isSafeInteger = Number.isSafeInteger || function (value) {
-   return Number.isInteger(value) && Math.abs(value) <= Number.MAX_SAFE_INTEGER;
-};
-
-function utf8ByteArrayToString(bytes) {
-	var out = [], pos = 0, c = 0;
+function utf8ByteArrayToString(bytes: any[]) {
+	var out: string[] = [], pos = 0, c = 0;
 	while (pos < bytes.length) {
 		var c1 = bytes[pos++];
 		if (c1 < 128) {
@@ -69,8 +65,8 @@ function utf8ByteArrayToString(bytes) {
 	return out.join('');
 }
 
-function stringToUtf8ByteArray(str) {
-	var out = [], p = 0;
+function stringToUtf8ByteArray(str: string) {
+	var out: any[] = [], p = 0;
 	for (var i = 0; i < str.length; i++) {
 		var c = str.charCodeAt(i);
 		if (c < 128) {
@@ -96,7 +92,7 @@ function stringToUtf8ByteArray(str) {
 	return out;
 }
 
-function rencode_string(str) {
+function rencode_string(str: string) {
 	const bytes = stringToUtf8ByteArray(str);
 	const len = bytes.length;
 	if (len < RENCODE.STR_FIXED_COUNT) {
@@ -121,8 +117,8 @@ function rencode_string(str) {
 	return u8a;
 }
 
-function rencode_int(i) {
-	let u8a = null;
+function rencode_int(i: number) {
+	let u8a: Uint8Array;
 	if (0 <= i && i < RENCODE.INT_POS_FIXED_COUNT) {
 		u8a = new Uint8Array([RENCODE.INT_POS_FIXED_START + i])
 	}
@@ -200,7 +196,7 @@ function rencode_uint8(a) {
 
 function rencode_list(l) {
 	const list_len = l.length;
-	const rlist = [];
+	const rlist: Uint8Array[] = [];
 	if (list_len < RENCODE.LIST_FIXED_COUNT) {
 		rlist.push(new Uint8Array([RENCODE.LIST_FIXED_START + list_len]));
 		for (let i=0; i<list_len; ++i) {
@@ -217,21 +213,21 @@ function rencode_list(l) {
 	return rencode_merge_arrays(rlist);
 }
 
-function rencode_dict(dict) {
+function rencode_dict(dict: Uint8Array[]) {
 	const dict_len = Object.keys(dict).length;
-	const rlist = [];
+	const rlist: Uint8Array[] = [];
 	if (dict_len < RENCODE.DICT_FIXED_COUNT) {
 		rlist.push(new Uint8Array([RENCODE.DICT_FIXED_START + dict_len]));
-		for(key in dict) {
-			value = dict[key];
+		for(let key in dict) {
+			let value = dict[key];
 			rlist.push(rencode(key));
 			rlist.push(rencode(value));
 		}
 	}
 	else {
 		rlist.push(new Uint8Array([RENCODE.CHR_DICT]));
-		for(key in dict) {
-			value = dict[key];
+		for(let key in dict) {
+			let value = dict[key];
 			rlist.push(rencode(key));
 			rlist.push(rencode(value));
 		}
@@ -256,12 +252,12 @@ function rencode_none() {
 //turn this flag off to use "rencodeplus" when encoding
 //this will send Uint8Array as 'binary'
 //(decoding is always supported since not having it is free)
-rencode_legacy_mode = true;
-function rencodelegacy(obj) {
+let rencode_legacy_mode = true;
+function rencodelegacy(obj: Uint8Array) {
 	rencode_legacy_mode = true;
 	return rencode(obj);
 }
-function rencode(obj) {
+function rencode(obj: any) {
 	if (obj === null || obj === undefined) {
 		return rencode_none();
 	}
@@ -275,8 +271,8 @@ function rencode(obj) {
 				//legacy rencode cannot handle bytearrays
 				const CHUNK_SZ = 0x8000;
 				const c = [];
-				for (let i=0; i < u8a.length; i+=CHUNK_SZ) {
-					c.push(String.fromCharCode.apply(null, u8a.subarray(i, i+CHUNK_SZ)));
+				for (let i=0; i < obj.length; i+=CHUNK_SZ) {
+					c.push(String.fromCharCode.apply(null, obj.subarray(i, i+CHUNK_SZ)));
 				}
 				return rencode_string(c.join(""));
 			}
@@ -287,18 +283,18 @@ function rencode(obj) {
 	switch(type) {
 		case "string":		return rencode_string(obj);
 		case "number":		return rencode_int(obj);
-		case "list":		return rencode_list(obj);
-		case "dictionary":	return rencode_dict(obj);
+		// case "list":		return rencode_list(obj);
+		// case "dictionary":	return rencode_dict(obj);
 		case "boolean":		return rencode_bool(obj?1:0);
 		default:	throw "invalid object type in source: "+type;
 	}
 }
-function rencodeplus(obj) {
+export function rencodeplus(obj: Uint8Array) {
 	rencode_legacy_mode = false;
 	return rencode(obj);
 }
 
-function rdecode_string(dec) {
+function rdecode_string(dec: DecodeBuffer): string | Uint8Array {
 	let len = 0;
 	while (dec.buf[dec.pos+len]!=RENCODE.COLON_CHARCODE && dec.buf[dec.pos+len]!=RENCODE.SLASH_CHARCODE) {
 		len++;
@@ -323,9 +319,9 @@ function rdecode_string(dec) {
 	if (rencode_legacy_mode) {
 		return Uint8ToString(sub);
 	}
-	return utf8ByteArrayToString(sub)
+	return utf8ByteArrayToString(sub as any)
 }
-function Uint8ToString(u8a){
+function Uint8ToString(u8a: Uint8Array){
 	const CHUNK_SZ = 0x8000;
 	const c = [];
 	for (let i=0; i < u8a.length; i+=CHUNK_SZ) {
@@ -333,7 +329,7 @@ function Uint8ToString(u8a){
 	}
 	return c.join("");
 }
-function rdecode_list(dec) {
+function rdecode_list(dec: DecodeBuffer) {
 	dec.pos++;
 	const list = [];
 	while (dec.buf[dec.pos]!=RENCODE.CHR_TERM) {
@@ -342,7 +338,7 @@ function rdecode_list(dec) {
 	dec.pos++;
 	return list;
 }
-function rdecode_dict(dec) {
+function rdecode_dict(dec: DecodeBuffer) {
 	dec.pos++;
 	const dict = {};
 	while (dec.buf[dec.pos]!=RENCODE.CHR_TERM) {
@@ -353,7 +349,7 @@ function rdecode_dict(dec) {
 	dec.pos++;
 	return dict;
 }
-function rdecode_int(dec) {
+function rdecode_int(dec: DecodeBuffer) {
 	dec.pos++;
 	let len = 0;
 	while (dec.buf[dec.pos+len]!=RENCODE.CHR_TERM) {
@@ -367,27 +363,27 @@ function rdecode_int(dec) {
 	}
 	return i;
 }
-function rdecode_intb(dec) {
+function rdecode_intb(dec: DecodeBuffer) {
 	//this magically makes the value signed:
 	let b = dec.buf[dec.pos+1]<<24>>24;
 	dec.pos += 2;
 	return b;
 }
-function rdecode_inth(dec) {
+function rdecode_inth(dec: DecodeBuffer) {
 	const slice = dec.buf.slice(dec.pos+1, dec.pos+3)
 	const dv = new DataView(slice.buffer);
 	const s = dv.getInt16(0);
 	dec.pos += 3;
 	return s;
 }
-function rdecode_intl(dec) {
+function rdecode_intl(dec: DecodeBuffer) {
 	const slice = dec.buf.slice(dec.pos+1, dec.pos+5)
 	const dv = new DataView(slice.buffer);
 	const s = dv.getInt32(0);
 	dec.pos += 5;
 	return s;
 }
-function rdecode_intq(dec) {
+function rdecode_intq(dec: DecodeBuffer) {
 	const slice = dec.buf.slice(dec.pos+1, dec.pos+9)
 	const dv = new DataView(slice.buffer);
 	let s = 0;
@@ -406,15 +402,15 @@ function rdecode_intq(dec) {
 	}
 	return parseInt(s);
 }
-function rdecode_true(dec) {
+function rdecode_true(dec: DecodeBuffer) {
 	dec.pos++;
 	return true;
 }
-function rdecode_false(dec) {
+function rdecode_false(dec: DecodeBuffer) {
 	dec.pos++;
 	return false;
 }
-function rdecode_none(dec) {
+function rdecode_none(dec: DecodeBuffer) {
 	dec.pos++;
 	return null;
 }
@@ -498,9 +494,10 @@ for(let i=0; i<RENCODE.INT_NEG_FIXED_COUNT; i++) {
 
 
 class DecodeBuffer {
+  buf: Uint8Array;
+  pos = 0;
   constructor(u8a) {
 	this.buf = u8a;
-	this.pos = 0;
   }
 }
 
