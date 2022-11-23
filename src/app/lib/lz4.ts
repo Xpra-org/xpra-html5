@@ -13,7 +13,7 @@
 
 // Simple hash function, from: http://burtleburtle.net/bob/hash/integer.html.
 // Chosen because it doesn't use multiply and achieves full avalanche.
-const hashU32 = function hashU32(a) {
+const hashU32 = function hashU32(a: number) {
     a = a | 0;
     a = a + 2127912214 + (a << 12) | 0;
     a = a ^ -949894596 ^ a >>> 19;
@@ -24,7 +24,7 @@ const hashU32 = function hashU32(a) {
 }
 
 // Reads a 64-bit little-endian integer from an array.
-const readU64 = function readU64(b, n) {
+const readU64 = function readU64(b: number[], n: number) {
     var x = 0;
     x |= b[n++] << 0;
     x |= b[n++] << 8;
@@ -38,7 +38,7 @@ const readU64 = function readU64(b, n) {
 }
 
 // Reads a 32-bit little-endian integer from an array.
-const readU32 = function readU32(b, n) {
+const readU32 = function readU32(b: number[], n: number) {
     var x = 0;
     x |= b[n++] << 0;
     x |= b[n++] << 8;
@@ -48,7 +48,7 @@ const readU32 = function readU32(b, n) {
 }
 
 // Writes a 32-bit little-endian integer from an array.
-const writeU32 = function writeU32(b, n, x) {
+const writeU32 = function writeU32(b: number[], n: number, x: number) {
     b[n++] = (x >> 0) & 0xff;
     b[n++] = (x >> 8) & 0xff;
     b[n++] = (x >> 16) & 0xff;
@@ -57,11 +57,11 @@ const writeU32 = function writeU32(b, n, x) {
 
 // Multiplies two numbers using 32-bit integer multiplication.
 // Algorithm from Emscripten.
-const imul = function imul(a, b) {
-    var ah = a >>> 16;
-    var al = a & 65535;
-    var bh = b >>> 16;
-    var bl = b & 65535;
+const imul = function imul(a: number, b: number) {
+    const ah = a >>> 16;
+    const al = a & 65535;
+    const bh = b >>> 16;
+    const bl = b & 65535;
 
     return al * bl + (ah * bl + al * bh << 16) | 0;
 };
