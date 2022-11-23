@@ -253,33 +253,8 @@ function makeBuffer (size) {
 }
 
 function sliceArray (array, start, end) {
-  if (typeof array.buffer !== undefined) {
-    if (Uint8Array.prototype.slice) {
-      return array.slice(start, end);
-    } else {
-      // Uint8Array#slice polyfill.
-      var len = array.length;
-
-      // Calculate start.
-      start = start | 0;
-      start = (start < 0) ? Math.max(len + start, 0) : Math.min(start, len);
-
-      // Calculate end.
-      end = (end === undefined) ? len : end | 0;
-      end = (end < 0) ? Math.max(len + end, 0) : Math.min(end, len);
-
-      // Copy into new array.
-      var arraySlice = new Uint8Array(end - start);
-      for (var i = start, n = 0; i < end;) {
-        arraySlice[n++] = array[i++];
-      }
-
-      return arraySlice;
-    }
-  } else {
-    // Assume normal array.
-    return array.slice(start, end);
-  }
+  // Assume normal array.
+  return array.slice(start, end);
 }
 
 // Implementation
