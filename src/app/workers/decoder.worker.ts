@@ -10,7 +10,6 @@ declare const Decoder;
 
 importScripts("./lib/lz4.js");
 importScripts("./lib/broadway/Decoder.js");
-importScripts("./RgbHelpers.js");
 
 const broadway_decoders = {};
 function close_broadway(wid: number) {
