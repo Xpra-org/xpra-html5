@@ -113,7 +113,7 @@ function xxh1 (h: number, src: number, index: number) {
   return rotmul32((h + imul(src[index], prime5)), 11, prime1);
 }
 
-function xxh4 (h: number, src: number[] | number, index: number) {
+function xxh4 (h: number, src: number[], index: number) {
   return xxhapply(h, readU32(src, index), prime3, 17, prime4);
 }
 
@@ -167,10 +167,6 @@ function xxh32 (seed: number, src: any, index: number, len: number) {
 
   return h >>> 0;
 }
-
-xxhash = {}
-xxhash.hash = xxh32;
-
 
 /********************************************************************************/
 // Constants
@@ -646,7 +642,7 @@ export class lz4 {
     dst[dIndex++] = bsDefault << bsShift;
   
     // Descriptor checksum.
-    dst[dIndex] = xxhash.hash(0, dst, 4, dIndex - 4) >> 8;
+    dst[dIndex] = xxh32(0, dst, 4, dIndex - 4) >> 8;
     dIndex++;
   
     // Write blocks.
