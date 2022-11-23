@@ -158,7 +158,7 @@ function rencode_int(i: number) {
 		u8a = new Uint8Array(str_len+2);
 		u8a[0] = RENCODE.CHR_INT;
 		for (let j=0; j<str_len; ++j) {
-			u8a[1+j] = str[j];
+			u8a[1+j] = str[j] as any;
 		}
 		u8a[str_len+1] = RENCODE.CHR_TERM;
 	}
@@ -386,7 +386,7 @@ function rdecode_intl(dec: DecodeBuffer) {
 function rdecode_intq(dec: DecodeBuffer) {
 	const slice = dec.buf.slice(dec.pos+1, dec.pos+9)
 	const dv = new DataView(slice.buffer);
-	let s = 0;
+	let s: any = 0;
 	if ("getBigInt64" in DataView.prototype) {
 		s = dv.getBigInt64(0);
 	}
