@@ -3,8 +3,10 @@
 import { XpraClient } from './app/client';
 import { CHAR_TO_NAME, KEYSYM_TO_LAYOUT } from './app/keycodes';
 import { Utilities } from './app/utilities';
+import JSMpeg from "jsmpeg";
+import JSZip from "jszip";
 
-declare const $, jQuery, JSZip, JSMpeg, saveAs, SimpleKeyboard;
+declare const $, jQuery, saveAs, SimpleKeyboard;
 
 window.addEventListener("load", () => {
     // Register ServiceWorker.
