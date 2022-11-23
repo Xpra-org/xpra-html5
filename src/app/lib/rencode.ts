@@ -111,7 +111,7 @@ function rencode_string(str: string) {
 	}
 	const SEPARATOR = ":";
 	u8a[len_len] = SEPARATOR.charCodeAt(0);
-	for (let i=0; i<len_str; ++i) {
+	for (let i=0; i < len; ++i) {
 		u8a[len_len+1+i] = bytes[i];
 	}
 	return u8a;
