@@ -24,7 +24,7 @@ const hashU32 = function hashU32(a: number) {
 }
 
 // Reads a 64-bit little-endian integer from an array.
-const readU64 = function readU64(b: number[], n: number) {
+const readU64 = function readU64(b: number[] | Uint8Array, n: number) {
     var x = 0;
     x |= b[n++] << 0;
     x |= b[n++] << 8;
@@ -38,7 +38,7 @@ const readU64 = function readU64(b: number[], n: number) {
 }
 
 // Reads a 32-bit little-endian integer from an array.
-const readU32 = function readU32(b: number[], n: number) {
+const readU32 = function readU32(b: number[] | Uint8Array, n: number) {
     var x = 0;
     x |= b[n++] << 0;
     x |= b[n++] << 8;
@@ -48,7 +48,7 @@ const readU32 = function readU32(b: number[], n: number) {
 }
 
 // Writes a 32-bit little-endian integer from an array.
-const writeU32 = function writeU32(b: number[], n: number, x: number) {
+const writeU32 = function writeU32(b: number[] | Uint8Array, n: number, x: number) {
     b[n++] = (x >> 0) & 0xff;
     b[n++] = (x >> 8) & 0xff;
     b[n++] = (x >> 16) & 0xff;
@@ -186,8 +186,8 @@ const runBits = 4;
 const runMask = (1 << runBits) - 1;
 
 // Shared buffers
-const blockBuf = makeBuffer(5 << 20);
-const hashTable = makeHashTable();
+const blockBuf = makeBuffer(5 << 20) as Uint8Array;
+const hashTable = makeHashTable() as any as Uint8Array;
 
 // Frame constants.
 const magicNum = 0x184D2204;
@@ -262,12 +262,12 @@ function sliceArray (array, start, end) {
 export class lz4 {
 
   // Calculates an upper bound for lz4 compression.
-  static compressBound (n) {
+  static compressBound (n: number) {
     return (n + (n / 255) + 16) | 0;
   };
   
   // Calculates an upper bound for lz4 decompression, by reading the data.
-  static decompressBound (src) {
+  static decompressBound(src: Uint8Array) {
     var sIndex = 0;
   
     // Read magic number
@@ -335,7 +335,7 @@ export class lz4 {
   static makeBuffer = makeBuffer;
   
   // Decompresses a block of Lz4.
-  static decompressBlock (src, dst, sIndex, sLength, dIndex) {
+  static decompressBlock(src: Uint8Array, dst: Uint8Array, sIndex: number, sLength: number, dIndex: number) {
     var mLength, mOffset, sEnd, n, i;
     var hasCopyWithin = dst.copyWithin !== undefined && dst.fill !== undefined;
   
@@ -409,7 +409,7 @@ export class lz4 {
   };
   
   // Compresses a block with Lz4.
-  static compressBlock (src, dst, sIndex, sLength, hashTable) {
+  static compressBlock(src: Uint8Array, dst: Uint8Array, sIndex: number, sLength: number, hashTable: Uint8Array) {
     var mIndex, mAnchor, mLength, mOffset, mStep;
     var literalCount, dIndex, sEnd, n;
   
@@ -525,7 +525,7 @@ export class lz4 {
   };
   
   // Decompresses a frame of Lz4 data.
-  static decompressFrame (src, dst) {
+  static decompressFrame (src: Uint8Array, dst: Uint8Array) {
     var useBlockSum, useContentSum, useContentSize, descriptor;
     var sIndex = 0;
     var dIndex = 0;
@@ -605,7 +605,7 @@ export class lz4 {
   };
   
   // Compresses data to an Lz4 frame.
-  static compressFrame (src, dst) {
+  static compressFrame (src: Uint8Array, dst: Uint8Array) {
     var dIndex = 0;
   
     // Write magic number.
@@ -669,7 +669,7 @@ export class lz4 {
   // Decompresses a buffer containing an Lz4 frame. maxSize is optional; if not
   // provided, a maximum size will be determined by examining the data. The
   // buffer returned will always be perfectly-sized.
-  static decompress (src, maxSize) {
+  static decompress (src: Uint8Array, maxSize: number) {
     var dst, size;
   
     if (maxSize === undefined) {
@@ -688,7 +688,7 @@ export class lz4 {
   // Compresses a buffer to an Lz4 frame. maxSize is optional; if not provided,
   // a buffer will be created based on the theoretical worst output size for a
   // given input size. The buffer returned will always be perfectly-sized.
-  static compress (src, maxSize) {
+  static compress(src: Uint8Array, maxSize: number) {
     var dst, size;
   
     if (maxSize === undefined) {
@@ -708,7 +708,7 @@ export class lz4 {
   
   /********************************************************************************/
   //convenience function added for xpra:
-  static decode (data) {
+  static decode(data: Uint8Array) {
     const length = data[0] | (data[1] << 8) | (data[2] << 16) | (data[3] << 24);
     if (length<=0) {
       throw "invalid length: "+length;
