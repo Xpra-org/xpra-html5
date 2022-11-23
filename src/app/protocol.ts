@@ -1,5 +1,6 @@
 import { Utilities } from './utilities';
 import { lz4 } from './lib/lz4';
+import { rdecodelegacy, rdecodeplus, rencodeplus } from './lib/rencode';
 /*
  * Copyright (c) 2013-2019 Antoine Martin <antoine@xpra.org>
  * Copyright (c) 2016 David Brushinski <dbrushinski@spikes.com>
@@ -20,7 +21,7 @@ import { lz4 } from './lib/lz4';
 const CONNECT_TIMEOUT = 15_000;
 
 declare const forge, uintToString;
-declare const rencodeplus, rdecodelegacy, rdecodeplus, ord, BrotliDecode;
+declare const ord, BrotliDecode;
 
 /*
 The main Xpra wire protocol
@@ -395,7 +396,7 @@ export class XpraProtocol {
         throw `invalid packet encoder: ${this.packet_encoder}`;
       }
       let proto_flags = 0x10;
-      let bdata: any[];
+      let bdata: Uint8Array;
       try {
         bdata = rencodeplus(packet);
       } catch (error) {

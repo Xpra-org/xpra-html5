@@ -516,11 +516,11 @@ function _rdecode(dec) {
 	return decode(dec);
 }
 
-function rdecodelegacy(buf) {
+export function rdecodelegacy(buf) {
 	rencode_legacy_mode = true;
 	return rdecode(buf);
 }
-function rdecodeplus(buf) {
+export function rdecodeplus(buf) {
 	rencode_legacy_mode = false;
 	return rdecode(buf);
 }
