@@ -180,32 +180,32 @@ const skipTrigger = 6;
 const hashSize = 1 << 16;
 
 // Token constants.
-var mlBits = 4;
-var mlMask = (1 << mlBits) - 1;
-var runBits = 4;
-var runMask = (1 << runBits) - 1;
+const mlBits = 4;
+const mlMask = (1 << mlBits) - 1;
+const runBits = 4;
+const runMask = (1 << runBits) - 1;
 
 // Shared buffers
-var blockBuf = makeBuffer(5 << 20);
-var hashTable = makeHashTable();
+const blockBuf = makeBuffer(5 << 20);
+const hashTable = makeHashTable();
 
 // Frame constants.
-var magicNum = 0x184D2204;
+const magicNum = 0x184D2204;
 
 // Frame descriptor flags.
-var fdContentChksum = 0x4;
-var fdContentSize = 0x8;
-var fdBlockChksum = 0x10;
-// var fdBlockIndep = 0x20;
-var fdVersion = 0x40;
-var fdVersionMask = 0xC0;
+const fdContentChksum = 0x4;
+const fdContentSize = 0x8;
+const fdBlockChksum = 0x10;
+// const fdBlockIndep = 0x20;
+const fdVersion = 0x40;
+const fdVersionMask = 0xC0;
 
 // Block sizes.
-var bsUncompressed = 0x80000000;
-var bsDefault = 7;
-var bsShift = 4;
-var bsMask = 7;
-var bsMap = {
+const bsUncompressed = 0x80000000;
+const bsDefault = 7;
+const bsShift = 4;
+const bsMask = 7;
+const bsMap = {
   4: 0x10000,
   5: 0x40000,
   6: 0x100000,
