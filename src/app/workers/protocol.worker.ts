@@ -5,12 +5,11 @@ If we are in a web worker, set up an instance of the protocol
 
 // some required imports
 // worker imports are relative to worker script path
-importScripts(
-    "lib/lz4.js",
-    "lib/brotli_decode.js",
-    "lib/forge.js",
-    "lib/rencode.js"
-);
+// importScripts(
+//     "lib/brotli_decode.js",
+//     "lib/forge.js",
+//     "lib/rencode.js"
+// );
 
 import { XpraProtocol } from "../protocol";
 

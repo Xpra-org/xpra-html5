@@ -15,8 +15,8 @@ import { XpraVideoDecoder, XpraVideoDecoderLoader } from '../decoders/video-deco
  * Worker for offscreen decoding.
  */
 
-importScripts("./lib/lz4.js");
-importScripts("./lib/broadway/Decoder.js");
+// importScripts("./lib/lz4.js");
+// importScripts("./lib/broadway/Decoder.js");
 
 // WindowDecoder for each window we have control over:
 const window_decoders = new Map<string, WindowDecoder>();

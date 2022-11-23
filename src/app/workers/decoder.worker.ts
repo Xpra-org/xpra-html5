@@ -8,7 +8,7 @@ import { decode_rgb } from '../util/rgbHelpers';
 // Broadway Decoder
 declare const Decoder;
 
-importScripts("./lib/lz4.js");
+// importScripts("./lib/lz4.js");
 importScripts("./lib/broadway/Decoder.js");
 
 const broadway_decoders = {};
