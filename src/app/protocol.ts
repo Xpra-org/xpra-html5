@@ -1,4 +1,5 @@
 import { Utilities } from './utilities';
+import { lz4 } from './lib/lz4';
 /*
  * Copyright (c) 2013-2019 Antoine Martin <antoine@xpra.org>
  * Copyright (c) 2016 David Brushinski <dbrushinski@spikes.com>
@@ -19,7 +20,7 @@ import { Utilities } from './utilities';
 const CONNECT_TIMEOUT = 15_000;
 
 declare const forge, uintToString;
-declare const rencodeplus, rdecodelegacy, rdecodeplus, lz4, ord, BrotliDecode;
+declare const rencodeplus, rdecodelegacy, rdecodeplus, ord, BrotliDecode;
 
 /*
 The main Xpra wire protocol

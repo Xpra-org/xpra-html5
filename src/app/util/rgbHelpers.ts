@@ -2,7 +2,7 @@
  * Copyright (c) 2021 Antoine Martin <antoine@xpra.org>
  */
 
-declare const lz4;
+import { lz4 } from '../lib/lz4';
 
 //deals with zlib or lz4 pixel compression
 //as well as converting rgb24 to rb32 and

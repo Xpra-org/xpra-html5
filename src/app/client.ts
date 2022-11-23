@@ -20,11 +20,12 @@ import { XpraWindow } from "./window";
 import { XpraProtocol } from './protocol';
 import { isOffscreenWorkerAvailable } from './util/offscreen-helper';
 import { XpraProtocolWorkerHost } from './protocol-host';
+import { lz4 } from './lib/lz4';
 
 // These are globally available on window
 declare const $, jQuery, AV, MediaSourceUtil, 
   default_settings, forge,
-  removeWindowListItem, lz4, BrotliDecode,
+  removeWindowListItem, BrotliDecode,
   streamSaver;
 declare const doNotification, MediaSourceConstants, addWindowListItem, closeNotification;
 declare let float_menu_width, float_menu_item_size, float_menu_padding;
