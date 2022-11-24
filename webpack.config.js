@@ -29,7 +29,7 @@ const config = {
       patterns: [
         // { from: "html5/css", to: "css" },
         // { from: "html5/icons", to: "icons" },
-        // { from: "html5/lib", to: "lib" },
+        { from: "html5/js/lib", to: "lib" },
         // { from: "html5/js", to: "js" },
         { from: "html5/", to: "." },
       ],
