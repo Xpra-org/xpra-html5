@@ -15,27 +15,28 @@
  *
  */
 
-const XpraVideoDecoderLoader = {
+export const XpraVideoDecoderLoader = {
   hasNativeDecoder() {
     return typeof VideoDecoder !== "undefined";
   },
 };
 
-class XpraVideoDecoder {
+export class XpraVideoDecoder {
+
+  initialized = false;
+  had_first_key = false;
+  draining = false;
+  decoder_queue: any[] = [];
+  decoded_frames: any[] = [];
+  erroneous_frame = false;
+  codec: string;
+  vp9_params: string;
+  frameWaitTimeout = 1;// Interval for wait loop while frame is being decoded
+  frame_threshold = 250;
+  videoDecoder: VideoDecoder;
+  last_timestamp: number;
+
   constructor() {
-    this.initialized = false;
-    this.had_first_key = false;
-    this.draining = false;
-
-    this.decoder_queue = [];
-    this.decoded_frames = [];
-    this.erroneous_frame = false;
-
-    this.codec = null;
-    this.vp9_params = null;
-    this.frameWaitTimeout = 1; // Interval for wait loop while frame is being decoded
-
-    this.frame_threshold = 250;
   }
 
   prepareVP9params(csc) {
@@ -93,7 +94,8 @@ class XpraVideoDecoder {
     const frame_timestamp = videoFrame.timestamp;
     let current_frame = this.decoder_queue.filter(
       (q) => q.p[10]["frame"] == frame_timestamp
-    );
+    ) as any;
+
     if (current_frame.length == 1) {
       // We found our frame!
       this.decoder_queue = this.decoder_queue.filter(
@@ -178,7 +180,7 @@ class XpraVideoDecoder {
 
       this.had_first_key = true;
       this.decoder_queue.push({ p: packet });
-      const init = {
+      const init: EncodedVideoChunkInit = {
         type: options["type"] == "IDR" ? "key" : "delta",
         data,
         timestamp: options["frame"],

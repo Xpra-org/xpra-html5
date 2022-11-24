@@ -1,3 +1,4 @@
+/// <reference lib="webworker" />
 /*
  * This file is part of Xpra.
  * Copyright (C) 2021 Tijs van der Zwaan <tijzwa@vpo.nl>
@@ -7,19 +8,18 @@
  *
  */
 
+import { XpraImageDecoder } from '../decoders/image-decoder';
+import { XpraVideoDecoder, XpraVideoDecoderLoader } from '../decoders/video-decoder';
+
 /*
  * Worker for offscreen decoding.
  */
 
-importScripts("./lib/lz4.js");
-importScripts("./lib/broadway/Decoder.js");
-importScripts("./VideoDecoder.js");
-importScripts("./ImageDecoder.js");
-importScripts("./RgbHelpers.js");
-importScripts("./Constants.js");
+// importScripts("./lib/lz4.js");
+// importScripts("./lib/broadway/Decoder.js");
 
 // WindowDecoder for each window we have control over:
-const window_decoders = new Map();
+const window_decoders = new Map<string, WindowDecoder>();
 
 const image_coding = [
   "rgb",
@@ -32,12 +32,12 @@ const image_coding = [
   "webp",
   "avif",
 ];
-const video_coding = [];
+const video_coding: string[] = [];
 if (XpraVideoDecoderLoader.hasNativeDecoder()) {
   // We can support native H264 & VP8 decoding
   video_coding.push("h264");
   video_coding.push("vp8");
-  video_coding.push("vp9"); 
+  video_coding.push("vp9");
 } else {
   console.warn(
     "Offscreen decoding is available for images only. Please consider using Google Chrome 94+ in a secure (SSL or localhost) context h264 offscreen decoding support."
@@ -56,11 +56,16 @@ function send_decode_error(packet, error) {
   self.postMessage({ error: `${error}`, packet });
 }
 
-const paint_worker = new Worker("PaintWorker.js");
+const paint_worker = new Worker(new URL("./paint.worker", import.meta.url));
 
 class WindowDecoder {
-  constructor(wid, canvas, debug) {
-    this.wid = wid;
+  image_decoder: any;
+  video_decoder: any;
+  decode_queue: any[];
+  decode_queue_draining: boolean;
+  closed: any;
+
+  constructor(private wid, canvas, debug) {
 
     paint_worker.postMessage(
       {
@@ -72,13 +77,9 @@ class WindowDecoder {
       [canvas]
     );
 
-    this.debug = debug;
-    this.init();
-  }
-  init() {
     this.image_decoder = new XpraImageDecoder();
     this.video_decoder = new XpraVideoDecoder();
-
+  
     this.decode_queue = [];
     this.decode_queue_draining = false;
   }
@@ -179,7 +180,7 @@ class WindowDecoder {
 
   eos() {
     // Add eos packet to queue to prevent closing the decoder before all packets are proceeded
-    const packet = [];
+    const packet: any[] = [];
     packet[6] = "eos";
     this.decode_queue.push(packet);
   }
@@ -198,7 +199,7 @@ class WindowDecoder {
 
 onmessage = function (e) {
   const data = e.data;
-  let wd = null;
+  let wd: WindowDecoder;
   switch (data.cmd) {
     case "check": {
       // Check if we support the given encodings.
@@ -208,13 +209,13 @@ onmessage = function (e) {
       break;
     }
     case "eos":
-      wd = window_decoders.get(data.wid);
+      wd = window_decoders.get(data.wid) as WindowDecoder;
       if (wd) {
         wd.eos();
       }
       break;
     case "remove":
-      wd = window_decoders.get(data.wid);
+      wd = window_decoders.get(data.wid) as WindowDecoder;
       if (wd) {
         wd.close();
         window_decoders.delete(data.wid);
@@ -223,7 +224,7 @@ onmessage = function (e) {
     case "decode": {
       const packet = data.packet;
       const wid = packet[1];
-      wd = window_decoders.get(wid);
+      wd = window_decoders.get(wid) as WindowDecoder;
       if (wd) {
         wd.queue_draw_packet(packet);
       } else {

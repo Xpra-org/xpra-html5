@@ -7,7 +7,9 @@
  *
  */
 
-const Utilities = {
+declare const ArrayBufferToBase64;
+
+export const Utilities = globalThis['Utilities'] = {
   VERSION: "7.0",
   REVISION: 1285,
   LOCAL_MODIFICATIONS: 3,
@@ -36,7 +38,7 @@ const Utilities = {
   },
 
   getHexUUID() {
-    const s = [];
+    const s: string[] = [];
     const hexDigits = "0123456789abcdef";
     for (let index = 0; index < 36; index++) {
       if (index == 8 || index == 13 || index == 18 || index == 23) {
@@ -52,7 +54,7 @@ const Utilities = {
   },
 
   getSecureRandomString(length_) {
-    const crypto = window.crypto || window.mscrypto;
+    const crypto = window.crypto;
     if (!crypto) {
       let s = "";
       while (s.length < length_) {
@@ -95,28 +97,24 @@ const Utilities = {
   },
 
   getPlatformProcessor() {
-    //mozilla property:
-    if (navigator.oscpu) {
-      return navigator.oscpu;
-    }
-    //ie:
-    if (Object.hasOwn((navigator, "cpuClass"))) {
-      return navigator.cpuClass;
+    // mozilla property:
+    if (navigator['oscpu']) {
+      return navigator['oscpu'];
     }
     return "unknown";
   },
 
   getPlatformName() {
-    if (navigator.appVersion.includes("Win")) {
+    if (navigator.userAgent.includes("Win")) {
       return "Microsoft Windows";
     }
-    if (navigator.appVersion.includes("Mac")) {
+    if (navigator.userAgent.includes("Mac")) {
       return "Mac OSX";
     }
-    if (navigator.appVersion.includes("Linux")) {
+    if (navigator.userAgent.includes("Linux")) {
       return "Linux";
     }
-    if (navigator.appVersion.includes("X11")) {
+    if (navigator.userAgent.includes("X11")) {
       return "Posix";
     }
     return "unknown";
@@ -124,16 +122,16 @@ const Utilities = {
 
   getPlatform() {
     //use python style strings for platforms:
-    if (navigator.appVersion.includes("Win")) {
+    if (navigator.userAgent.includes("Win")) {
       return "win32";
     }
-    if (navigator.appVersion.includes("Mac")) {
+    if (navigator.userAgent.includes("Mac")) {
       return "darwin";
     }
-    if (navigator.appVersion.includes("Linux")) {
+    if (navigator.userAgent.includes("Linux")) {
       return "linux";
     }
-    if (navigator.appVersion.includes("X11")) {
+    if (navigator.userAgent.includes("X11")) {
       return "posix";
     }
     return "unknown";
@@ -220,7 +218,7 @@ const Utilities = {
     return navigator.userAgent.includes("Edge");
   },
   isChrome() {
-    const isChromium = Object.hasOwn(window, "chrome");
+    const isChromium = !!window["chrome"];
     const winNav = window.navigator;
     const vendorName = winNav.vendor;
     const isOpera = winNav.userAgent.includes("OPR");
@@ -248,9 +246,7 @@ const Utilities = {
   },
 
   is_64bit() {
-    const _to_check = [];
-    if (Object.hasOwn((window.navigator, "cpuClass")))
-      _to_check.push(`${window.navigator.cpuClass}`.toLowerCase());
+    const _to_check: string[] = [];
     if (window.navigator.platform)
       _to_check.push(`${window.navigator.platform}`.toLowerCase());
     if (navigator.userAgent)
@@ -325,7 +321,7 @@ const Utilities = {
       testElement.setAttribute(event, "return;");
       isSupported = typeof testElement[event] === "function";
     }
-    testElement = null;
+    testElement.remove();
     return isSupported;
   },
 
@@ -405,23 +401,19 @@ const Utilities = {
     document.body.append(a);
     const blob = new Blob([data], mimetype);
     const url = window.URL.createObjectURL(blob);
-    if (navigator.msSaveOrOpenBlob) {
-      navigator.msSaveOrOpenBlob(blob, filename);
-    } else {
-      a.href = url;
-      a.download = filename;
-      a.click();
-      window.URL.revokeObjectURL(url);
-    }
+    a.href = url;
+    a.download = filename;
+    a.click();
+    window.URL.revokeObjectURL(url);
   },
 
   StringToUint8(string_) {
     return Uint8Array.from([...string_].map((x) => x.charCodeAt(0)));
   },
 
-  Uint8ToString(u8a) {
+  Uint8ToString(u8a: Uint8Array) {
     const CHUNK_SZ = 0x80_00;
-    const c = [];
+    const c: string[] = [];
     for (let index = 0; index < u8a.length; index += CHUNK_SZ) {
       c.push(
         String.fromCharCode.apply(null, u8a.subarray(index, index + CHUNK_SZ))
@@ -497,7 +489,7 @@ const Utilities = {
       param: /^\s*([^=]+?)\s*=\s*(.*?)\s*$/,
       comment: /^\s*[#;].*$/,
     };
-    const value = {};
+    const value: any = {};
     const lines = data.split(/[\n\r]+/);
     let section = null;
     for (const line of lines) {
@@ -559,14 +551,15 @@ const Utilities = {
   },
 
   getparam(property) {
-    let getParameter = window.location.getParameter;
+    // TODO: Remove this global override
+    let getParameter = window.location['getParameter'];
     if (!getParameter) {
       getParameter = function (key) {
-        if (!window.location.queryStringParams)
-          window.location.queryStringParams = Utilities.parseParams(
+        if (!window.location['queryStringParams'])
+          window.location['queryStringParams'] = Utilities.parseParams(
             window.location.search.slice(1)
           );
-        return window.location.queryStringParams[key];
+        return window.location['queryStringParams'][key];
       };
     }
     let value = getParameter(property);
@@ -605,22 +598,21 @@ const Utilities = {
   },
 
   getConnectionInfo() {
-    if (!Object.hasOwn(navigator, "connection")) {
+    if (!navigator["connection"]) {
       return {};
     }
-    const c = navigator.connection;
+    const c = navigator['connection'];
     const index = {};
     if (c.type) {
       index["type"] = c.type;
     }
-    if (Object.hasOwn((c, "effectiveType"))) {
+    if (!!c["effectiveType"]) {
       index["effective-type"] = c.effectiveType;
     }
     if (!isNaN(c.downlink) && c.downlink > 0 && isFinite(c.downlink)) {
       index["downlink"] = Math.round(c.downlink * 1000 * 1000);
     }
-    if (
-      Object.hasOwn(c, "downlinkMax") &&
+    if (!!c["downlinkMax"] &&
       !isNaN(c.downlinkMax) &&
       !isNaN(c.downlinkMax) &&
       c.downlinkMax > 0 &&
@@ -755,14 +747,14 @@ const LANGUAGE_TO_LAYOUT = {
   //"zu": ??
 };
 
-function console_debug_safe() {
-  if (console) console.debug.apply(console, arguments);
+function console_debug_safe(...args) {
+  console?.debug.apply(console, args);
 }
 
-function console_error_safe() {
-  if (console) console.error.apply(console, arguments);
+function console_error_safe(...args) {
+  console?.error.apply(console, args);
 }
 
-function console_log_safe() {
-  if (console) console.log.apply(console, arguments);
+function console_log_safe(...args) {
+  console?.log.apply(console, args);
 }

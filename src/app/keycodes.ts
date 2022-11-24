@@ -9,7 +9,7 @@
 /**
  * Map javascript key names to the X11 naming convention the server expects:
  */
-KEY_TO_NAME = {
+export const KEY_TO_NAME = {
   Escape: "Escape",
   Tab: "Tab",
   CapsLock: "Caps_Lock",
@@ -37,11 +37,11 @@ KEY_TO_NAME = {
   End: "End",
   PageDown: "Next",
 };
-DEAD_KEYS = {
+export const DEAD_KEYS = {
   "`": "dead_grave",
   "'": "dead_acute",
 };
-NUMPAD_TO_NAME = {
+export const NUMPAD_TO_NAME = {
   //Num pad:
   NumpadDivide: "KP_Divide",
   NumpadMultiply: "KP_Multiply",
@@ -76,7 +76,7 @@ for (let index = 1; index <= 20; index++) {
  * 		sed 's/#define XKB_KEY_//g; s/ *0x.*U+/ 0x/g' | \
  * 		awk '{print "\""$1"\" : "$2","}'
  */
-KEYSYM_TO_UNICODE = {
+export const KEYSYM_TO_UNICODE = {
   space: 0x00_20,
   exclam: 0x00_21,
   quotedbl: 0x00_22,
@@ -1622,7 +1622,7 @@ KEYSYM_TO_UNICODE = {
   Sinh_kunddaliya: 0x0d_f4,
 };
 
-CHAR_TO_NAME = {
+export const CHAR_TO_NAME = {
   " ": "space",
 };
 for (const keysym in KEYSYM_TO_UNICODE) {
@@ -1632,7 +1632,7 @@ for (const keysym in KEYSYM_TO_UNICODE) {
 }
 
 //some keysyms require specific layouts
-KEYSYM_TO_LAYOUT = {
+export const KEYSYM_TO_LAYOUT = {
   kana: "jp",
   Farsi: "ir",
   Arabic: "ar",
@@ -1652,7 +1652,7 @@ KEYSYM_TO_LAYOUT = {
  *
  * TODO: some values are missing..
  */
-CHARCODE_TO_NAME = {
+export const CHARCODE_TO_NAME = {
   8: "BackSpace",
   9: "Tab",
   12: "KP_Begin",
@@ -1739,7 +1739,8 @@ CHARCODE_TO_NAME[219] = "backtick";
 CHARCODE_TO_NAME[221] = "dead_acute";
 CHARCODE_TO_NAME[220] = "dead_circumflex";
 CHARCODE_TO_NAME[187] = "dead_acute";
-CHARCODE_TO_NAME_SHIFTED = {};
+
+export const CHARCODE_TO_NAME_SHIFTED = {};
 CHARCODE_TO_NAME_SHIFTED[187] = "dead_grave";
 CHARCODE_TO_NAME_SHIFTED[221] = "dead_grave";
 
@@ -1749,8 +1750,8 @@ CHARCODE_TO_NAME_SHIFTED[221] = "dead_grave";
  * @param event
  * @returns {Array} of strings
  */
-function get_event_modifiers(event) {
-  const modifiers = [];
+export function get_event_modifiers(event) {
+  const modifiers: string[] = [];
   if (event.getModifierState) {
     if (event.getModifierState("Control")) modifiers.push("control");
     if (event.getModifierState("Alt")) modifiers.push("alt");
@@ -1762,10 +1763,11 @@ function get_event_modifiers(event) {
     //Fn
     //AltGraph
   } else if (event.modifiers) {
-    if (event.modifiers & Event.ALT_MASK) modifiers.push("alt");
-    if (event.modifiers & Event.CONTROL_MASK) modifiers.push("control");
-    if (event.modifiers & Event.SHIFT_MASK) modifiers.push("shift");
-    if (event.modifiers & Event.META_MASK) modifiers.push("meta");
+    // TODO: Event.SHIFT_MASK is not in ES2020 spec
+    if (event.modifiers & Event['ALT_MASK']) modifiers.push("alt");
+    if (event.modifiers & Event['CONTROL_MASK']) modifiers.push("control");
+    if (event.modifiers & Event['SHIFT_MASK']) modifiers.push("shift");
+    if (event.modifiers & Event['META_MASK']) modifiers.push("meta");
   } else {
     if (event.altKey) modifiers.push("alt");
     if (event.ctrlKey) modifiers.push("control");

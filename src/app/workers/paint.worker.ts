@@ -1,3 +1,4 @@
+import { DEFAULT_BOX_COLORS } from '../constants';
 /*
  * This file is part of Xpra.
  * Copyright (C) 2022 Tijs van der Zwaan <tijzwa@vpo.nl>
@@ -13,6 +14,10 @@
 const KEEP_STILLS = false; // Keep a screenshot of each window for repaint. This seems to affect performance.
 
 class XpraPaintWorker {
+  offscreen_canvas: Map<any, any>;
+  offscreen_canvas_still: Map<any, any>;
+  debug: boolean;
+
   constructor() {
     this.offscreen_canvas = new Map();
     this.offscreen_canvas_still = new Map();
@@ -101,6 +106,9 @@ class XpraPaintWorker {
 
     //Call update_still in callback
     if (KEEP_STILLS) setTimeout(() => this.update_still(wid), 0);
+  }
+  canvas(canvas: any, sx: any, sy: any, sw: any, sh: any, arg5: any, arg6: any, sw1: any, sh1: any) {
+    throw new Error('Method not implemented.');
   }
 
   paint_box(coding, context, px, py, pw, ph) {

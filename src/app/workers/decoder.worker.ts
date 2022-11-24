@@ -1,13 +1,18 @@
+/// <reference lib="webworker" />
 /*
  * Copyright (c) 2021 Antoine Martin <antoine@xpra.org>
  */
 
-importScripts("./lib/lz4.js");
+import { decode_rgb } from '../util/rgbHelpers';
+
+// Broadway Decoder
+declare const Decoder;
+
+// importScripts("./lib/lz4.js");
 importScripts("./lib/broadway/Decoder.js");
-importScripts("./RgbHelpers.js");
 
 const broadway_decoders = {};
-function close_broadway(wid) {
+function close_broadway(wid: number) {
   try {
     delete broadway_decoders[wid];
   } catch {
@@ -149,7 +154,7 @@ function decode_draw_packet(packet, start) {
       }
       const blob = new Blob([data.buffer], { type: `image/${coding}` });
       hold();
-      createImageBitmap(blob, bitmap_options).then(
+      createImageBitmap(blob, bitmap_options as any).then(
         function (bitmap) {
           packet[6] = `bitmap:${coding}`;
           packet[7] = bitmap;
@@ -167,7 +172,7 @@ function decode_draw_packet(packet, start) {
       const data = packet[7];
       const frame = options["frame"] || 0;
       if (frame == 0) {
-        close_broadway();
+        close_broadway(wid);
       }
       let decoder = broadway_decoders[wid];
       if (
@@ -175,7 +180,7 @@ function decode_draw_packet(packet, start) {
         (decoder._enc_size[0] != enc_width ||
           decoder._enc_size[1] != enc_height)
       ) {
-        close_broadway();
+        close_broadway(wid);
         decoder = null;
       }
       if (!decoder) {
@@ -366,7 +371,7 @@ onmessage = function (e) {
           235, 174, 186, 235, 192,
         ],
       };
-      const errors = [];
+      const errors: string[] = [];
       const formats = ["rgb24", "rgb32"];
       const done = (format) => {
         delete CHECKS[format];

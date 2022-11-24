@@ -1,3 +1,6 @@
+import { Utilities } from './utilities';
+import { lz4 } from './lib/lz4';
+import { rdecodelegacy, rdecodeplus, rencodeplus } from './lib/rencode';
 /*
  * Copyright (c) 2013-2019 Antoine Martin <antoine@xpra.org>
  * Copyright (c) 2016 David Brushinski <dbrushinski@spikes.com>
@@ -17,89 +20,35 @@
 
 const CONNECT_TIMEOUT = 15_000;
 
-/*
-A stub class to facilitate communication with the protocol when
-it is loaded in a worker
-*/
-class XpraProtocolWorkerHost {
-  constructor() {
-    this.worker = null;
-    this.packet_handler = null;
-  }
-
-  open(uri) {
-    if (this.worker) {
-      //re-use the existing worker:
-      this.worker.postMessage({ c: "o", u: uri });
-      return;
-    }
-    this.worker = new Worker("js/Protocol.js");
-    this.worker.addEventListener(
-      "message",
-      (e) => {
-        const data = e.data;
-        switch (data.c) {
-          case "r":
-            this.worker.postMessage({ c: "o", u: uri });
-            break;
-          case "p":
-            if (this.packet_handler) {
-              this.packet_handler(data.p);
-            }
-            break;
-          case "l":
-            this.log(data.t);
-            break;
-          default:
-            this.error("got unknown command from worker");
-            this.error(e.data);
-        }
-      },
-      false
-    );
-  }
-
-  close = function () {
-    this.worker.postMessage({ c: "c" });
-  };
-
-  terminate = function () {
-    this.worker.postMessage({ c: "t" });
-  };
-
-  send = function (packet) {
-    this.worker.postMessage({ c: "s", p: packet });
-  };
-
-  set_packet_handler = function (callback) {
-    this.packet_handler = callback;
-  };
-
-  set_cipher_in = function (caps, key) {
-    this.worker.postMessage({ c: "z", p: caps, k: key });
-  };
-
-  set_cipher_out = function (caps, key) {
-    this.worker.postMessage({ c: "x", p: caps, k: key });
-  };
-
-  enable_packet_encoder = function (packet_encoder) {
-    this.worker.postMessage({ c: "p", pe: packet_encoder });
-  };
-}
+declare const forge, uintToString;
+declare const ord, BrotliDecode;
 
 /*
 The main Xpra wire protocol
 */
-class XpraProtocol {
+export class XpraProtocol {
+
+  verify_connected_timer: number;
+  is_worker: boolean;
+  packet_handler: Function;
+  websocket: WebSocket;
+  raw_packets: any[];
+  cipher_in: any;
+  cipher_in_block_size: number;
+  cipher_out: any;
+  rQ: Uint8Array[];
+  sQ: Uint8Array[];
+  mQ: any[];
+  header: any[];
+  process_interval: number;
+  packet_encoder: string;
+  cipher_out_block_size: number;
+
   constructor() {
     this.verify_connected_timer = 0;
     this.is_worker = false;
-    this.packet_handler = null;
-    this.websocket = null;
     this.raw_packets = [];
     this.cipher_in = null;
-    this.cipher_in_block_size = null;
     this.cipher_out = null;
     this.rQ = []; // Receive queue
     this.sQ = []; // Send queue
@@ -158,14 +107,16 @@ class XpraProtocol {
     this.sQ = [];
     this.mQ = [];
     this.header = [];
-    this.websocket = null;
+    
+    this.websocket?.close();
+
     function handle(packet) {
       me.packet_handler(packet);
     }
     this.verify_connected_timer = setTimeout(
       () => handle(["error", "connection timed out", 0]),
       CONNECT_TIMEOUT
-    );
+    ) as any;
     // connect the socket
     try {
       this.websocket = new WebSocket(uri, "binary");
@@ -185,13 +136,15 @@ class XpraProtocol {
       handle(["close", me.close_event_str(event)])
     );
     this.websocket.onerror = (event) =>
-      handle(["error", me.close_event_str(event), event.code || 0]);
+      handle(["error", me.close_event_str(event), event['code'] || 0]);
+      
+    let interval = this.process_interval;
     this.websocket.onmessage = function (e) {
       // push arraybuffer values onto the end
       me.rQ.push(new Uint8Array(e.data));
       setTimeout(function () {
         me.process_receive_queue();
-      }, this.process_interval);
+      }, interval);
     };
   }
 
@@ -202,7 +155,7 @@ class XpraProtocol {
       this.websocket.onerror = null;
       this.websocket.onmessage = null;
       this.websocket.close();
-      this.websocket = null;
+      // this.websocket = null;
     }
   }
 
@@ -223,14 +176,14 @@ class XpraProtocol {
     while (this.websocket && this.do_process_receive_queue());
   }
 
-  error() {
+  error(...args) {
     console.error.apply(console, arguments);
   }
-  log() {
+  log(...args) {
     console.log.apply(console, arguments);
   }
 
-  do_process_receive_queue() {
+  do_process_receive_queue(): any {
     if (this.header.length < 8 && this.rQ.length > 0) {
       //add from receive queue data to header until we get the 8 bytes we need:
       while (this.header.length < 8 && this.rQ.length > 0) {
@@ -391,7 +344,7 @@ class XpraProtocol {
       }
     } else {
       //decode raw packet string into objects:
-      let packet = null;
+      let packet: any;
       try {
         if (proto_flags == 0x1) {
           packet = rdecodelegacy(packet_data);
@@ -403,6 +356,7 @@ class XpraProtocol {
         for (const index in this.raw_packets) {
           packet[index] = this.raw_packets[index];
         }
+        // @ts-ignore
         this.raw_packets = {};
       } catch (error) {
         //FIXME: maybe we should error out and disconnect here?
@@ -442,7 +396,7 @@ class XpraProtocol {
         throw `invalid packet encoder: ${this.packet_encoder}`;
       }
       let proto_flags = 0x10;
-      let bdata = null;
+      let bdata: Uint8Array;
       try {
         bdata = rencodeplus(packet);
       } catch (error) {
@@ -451,6 +405,7 @@ class XpraProtocol {
         this.error(error);
         continue;
       }
+
       const payload_size = bdata.length;
       // encryption
       if (this.cipher_out) {
@@ -503,15 +458,16 @@ class XpraProtocol {
         return;
       }
 
-      const raw_buffers = [];
+      const raw_buffers: any[] = [];
       if (packet[0] === "draw" && "buffer" in packet[7]) {
         raw_buffers.push(packet[7].buffer);
       } else if (
         packet[0] === "sound-data" &&
-        Object.hasOwn(packet[2], "buffer")
+        !!packet[2]["buffer"]
       ) {
         raw_buffers.push(packet[2].buffer);
       }
+      // @ts-ignore
       postMessage({ c: "p", p: packet }, raw_buffers);
     }
   }
@@ -595,79 +551,3 @@ class XpraProtocol {
   }
 }
 
-/*
-If we are in a web worker, set up an instance of the protocol
-*/
-if (
-  !(
-    typeof window == "object" &&
-    typeof document == "object" &&
-    window.document === document
-  )
-) {
-  // some required imports
-  // worker imports are relative to worker script path
-  importScripts(
-    "lib/lz4.js",
-    "lib/brotli_decode.js",
-    "lib/forge.js",
-    "lib/rencode.js"
-  );
-  // make protocol instance
-  const protocol = new XpraProtocol();
-  protocol.is_worker = true;
-  // we create a custom packet handler which posts packet as a message
-  protocol.set_packet_handler((packet) => {
-    let raw_buffer = [];
-    if (packet[0] === "draw" && Object.hasOwn(packet[7], "buffer")) {
-      //zero-copy the draw buffer
-      raw_buffer = packet[7].buffer;
-      packet[7] = null;
-    } else if (
-      packet[0] === "send-file-chunk" &&
-      Object.hasOwn(packet[3], "buffer")
-    ) {
-      //zero-copy the file data buffer
-      raw_buffer = packet[3].buffer;
-      packet[3] = null;
-    }
-    postMessage({ c: "p", p: packet }, raw_buffer);
-  }, null);
-  // attach listeners from main thread
-  self.addEventListener(
-    "message",
-    (e) => {
-      const data = e.data;
-      switch (data.c) {
-        case "o":
-          protocol.open(data.u);
-          break;
-        case "s":
-          protocol.send(data.p);
-          break;
-        case "p":
-          protocol.enable_packet_encoder(data.pe);
-          break;
-        case "x":
-          protocol.set_cipher_out(data.p, data.k);
-          break;
-        case "z":
-          protocol.set_cipher_in(data.p, data.k);
-          break;
-        case "c":
-          // close the connection
-          protocol.close();
-          break;
-        case "t":
-          // terminate the worker
-          self.close();
-          break;
-        default:
-          postMessage({ c: "l", t: "got unknown command from host" });
-      }
-    },
-    false
-  );
-  // tell host we are ready
-  postMessage({ c: "r" });
-}

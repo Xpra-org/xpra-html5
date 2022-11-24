@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <!--
+			Copyright (c) 2013-2022 Antoine Martin <antoine@xpra.org>
+			Copyright (c) 2014 Joshua Higgins <josh@kxes.net>
+			Licensed under MPL 2.0
+		-->
+
+    <title>xpra websockets client</title>
+    <meta charset="utf-8" />
+    <meta name="description" content="xpra websockets client" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <link
+      rel="shortcut icon"
+      type="image/png"
+      href="favicon.png"
+      id="favicon"
+    />
+
+    <link rel="stylesheet" href="css/client.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="css/spinner.css" />
+
+    <script type="text/javascript" src="js/lib/jquery.js"></script>
+    <script type="text/javascript" src="js/lib/jquery-ui.js"></script>
+    <script
+      type="text/javascript"
+      src="js/lib/jquery.ba-throttle-debounce.js"
+    ></script>
+    <script
+      type="text/javascript"
+      src="js/lib/jquery-transform-draggable.js"
+    ></script>
+
+    <!-- <script type="text/javascript" src="js/lib/rencode.js"></script> -->
+    <!-- <script type="text/javascript" src="js/lib/lz4.js"></script> -->
+    <script type="text/javascript" src="js/lib/brotli_decode.js"></script>
+    <script type="text/javascript" src="js/lib/forge.js"></script>
+
+    <!-- <script type="text/javascript" src="js/lib/jsmpeg.js"></script> -->
+    <script type="text/javascript" src="js/lib/broadway/Decoder.js"></script>
+    <script type="text/javascript" src="js/lib/aurora/aurora.js"></script>
+    <!--
+		<script type="text/javascript" src="js/lib/aurora/mp3.js"></script>
+		<script type="text/javascript" src="js/lib/aurora/flac.js"></script>
+		<script type="text/javascript" src="js/lib/aurora/aac.js"></script>
+		-->
+    <script type="text/javascript" src="js/lib/aurora/aurora-xpra.js"></script>
+
+    <script
+      type="text/javascript"
+      src="js/lib/web-streams-ponyfill.es6.js"
+    ></script>
+    <script type="text/javascript" src="js/lib/StreamSaver.js"></script>
+    <script type="text/javascript" src="js/lib/FileSaver.js"></script>
+    <!-- <script type="text/javascript" src="js/lib/jszip.js"></script> -->
+    <script type="text/javascript" src="js/lib/detect-zoom.js"></script>
+
+    <!-- <script type="text/javascript" src="js/Protocol.js"></script> -->
+    <!-- <script type="text/javascript" src="js/Window.js"></script> -->
+    <script type="text/javascript" src="js/Notifications.js"></script>
+    <script type="text/javascript" src="js/MediaSourceUtil.js"></script>
+    <!-- <script type="text/javascript" src="js/RgbHelpers.js"></script> -->
+    <!-- <script type="text/javascript" src="js/VideoDecoder.js"></script> -->
+    <!-- <script
+      type="text/javascript"
+      src="js/OffscreenDecodeWorkerHelper.js"
+    ></script> -->
+
+    <link rel="stylesheet" type="text/css" href="css/menu.css" />
+    <script type="application/javascript" src="js/Menu.js"></script>
+    <script type="application/javascript" src="js/MenuCustom.js"></script>
+    <link rel="stylesheet" type="text/css" href="css/menu-skin.css" />
+    <link rel="stylesheet" type="text/css" href="css/icon.css" />
+
+    <!-- slick carousel for window preview feature -->
+    <link rel="stylesheet" type="text/css" href="css/slick.css" />
+    <script type="text/javascript" src="js/lib/slick.js"></script>
+
+    <!-- simple-keyboard -->
+    <script
+      type="application/javascript"
+      src="js/lib/simple-keyboard.js"
+    ></script>
+    <link rel="stylesheet" href="css/simple-keyboard.css" />
+  </head>
+
+  <body>
+    <div
+      id="dpi"
+      style="
+        width: 1in;
+        height: 1in;
+        left: -100%;
+        top: -100%;
+        position: absolute;
+      "
+    ></div>
+
+    <div id="progress" class="overlay" style="display: none">
+      <p id="progress-label"></p>
+      <p id="progress-details"></p>
+      <progress id="progress-bar" max="100" value="10"></progress>
+    </div>
+
+    <div id="login-overlay">
+      <div id="login-box">
+        <div id="login-innerbox">
+          <span id="login-header"></span>
+          <br />
+          <div id="password-box">
+            <input
+              title="Password"
+              type="password"
+              id="password"
+              autocomplete="current-password"
+              placeholder="Password"
+              size="16"
+              maxlength="256"
+            />
+          </div>
+          <br />
+          <div id="login-buttons">
+            <a class="login-button" role="button" onclick="login_cancel();"
+              >Cancel</a
+            >
+            <a class="login-button" role="button" onclick="login_connect();"
+              >Connect</a
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="screen" style="width: 100%; height: 100%">
+      <div id="float_menu">
+        <ul class="Menu -horizontal">
+          <li class="-hasSubmenu -noChevron">
+            <a href="#" title="Xpra" class="noDrag" data-icon="menu"></a>
+            <ul id="menu_list">
+              <li class="-hasSubmenu" id="startmenuentry" style="display: none">
+                <a data-icon="apps" href="#">Start</a>
+                <ul id="startmenu"></ul>
+              </li>
+              <li class="-hasSubmenu">
+                <a href="#" data-icon="kitchen">Server</a>
+                <ul>
+                  <li id="clock_menu_entry">
+                    <a
+                      href="#"
+                      data-icon="access_time"
+                      onclick="return false"
+                      id="clock_menu_text"
+                    ></a>
+                  </li>
+                  <li>
+                    <a
+                      href="#"
+                      data-icon="cloud_upload"
+                      onclick="upload_file(event); return false"
+                      >Upload file</a
+                    >
+                  </li>
+                  <li>
+                    <a
+                      href="#"
+                      data-icon="exit_to_app"
+                      onclick="confirm_shutdown_server(event); return false"
+                      >Shutdown Server</a
+                    >
+                  </li>
+                </ul>
+              </li>
+              <!--
+							<li class="-hasSubmenu">
+								<a href="#" data-icon="list">Features</a>
+								<ul>
+									<li><a href="#" data-icon="message">Notifications</a></li>
+								</ul>
+							</li>
+							-->
+              <li class="-hasSubmenu">
+                <a href="#" data-icon="info">Information</a>
+                <ul>
+                  <li>
+                    <a
+                      href="#"
+                      data-icon="info"
+                      onclick="show_about(event); return false"
+                      >About Xpra</a
+                    >
+                  </li>
+                  <li>
+                    <a
+                      href="#"
+                      data-icon="trending_up"
+                      onclick="show_sessioninfo(event); return false"
+                      >Session Info</a
+                    >
+                  </li>
+                  <li>
+                    <a
+                      href="#"
+                      data-icon="bug_report"
+                      onclick="show_bugreport(event); return false"
+                      >Bug Report</a
+                    >
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <a href="#" data-icon="refresh" onclick="location.reload()"
+                  >Reload</a
+                >
+              </li>
+              <li>
+                <a
+                  href="#"
+                  data-icon="exit_to_app"
+                  onclick="client.disconnect_reason='User request'; client.close(); return false"
+                  >Disconnect</a
+                >
+              </li>
+            </ul>
+          </li>
+          <li class="-hasSubmenu -noChevron">
+            <a href="#" title="Open Windows" data-icon="filter"></a>
+            <ul id="open_windows_list"></ul>
+          </li>
+          <li class="-hasSubmenu -noChevron">
+            <a
+              href="#"
+              id="fullscreen_button"
+              title="Fullscreen"
+              data-icon="fullscreen"
+            ></a>
+          </li>
+          <li class="-hasSubmenu -noChevron">
+            <a
+              href="#"
+              id="keyboard_button"
+              title="Keyboard"
+              data-icon="keyboard"
+            ></a>
+          </li>
+          <li class="-hasSubmenu -noChevron">
+            <a
+              href="#"
+              id="sound_button"
+              title="Audio"
+              data-icon="volume_off"
+            ></a>
+          </li>
+        </ul>
+        <div id="float_tray" class="menu-divright"></div>
+      </div>
+      <img id="shadow_pointer" alt="shadow pointer" />
+    </div>
+
+    <div id="window_preview"></div>
+
+    <div class="notifications"></div>
+
+    <form id="upload_form">
+      <input type="file" id="upload" style="display: none" />
+    </form>
+
+    <div id="about">
+      <h2>Xpra HTML5 Client</h2>
+      <h3>Version 7.0</h3>
+      <span>
+        Copyright (c) 2013-2022 Antoine Martin &lt;antoine@xpra.org&gt;
+        <br />
+        Copyright (c) 2014 Joshua Higgins &lt;josh@kxes.net&gt;
+      </span>
+      <br />
+      <br />
+      <span class="info">
+        This code is available under the
+        <a href="./LICENSE">Mozilla Public License Version 2.0</a>
+        <br />
+        For more information, see
+        <a rel="noopener" href="https://github.com/Xpra-org/xpra-html5"
+          >xpra HTML5 project</a
+        >.
+      </span>
+    </div>
+
+    <div id="sessioninfo">
+      <h2>Session Information</h2>
+      <h3>Connection Data</h3>
+      <table id="sessiondata">
+        <caption>
+          Session Connection Data Information
+        </caption>
+        <tr>
+          <th scope="row">Server Endpoint</th>
+          <td id="endpoint"></td>
+        </tr>
+        <tr>
+          <th scope="row">Server Display</th>
+          <td id="server_display"></td>
+        </tr>
+        <!-- <tr>
+				<th>Server Hostname</th>
+				<td id="server_hostname"></td>
+			</tr> -->
+        <tr>
+          <th scope="row">Server Platform</th>
+          <td id="server_platform"></td>
+        </tr>
+        <tr>
+          <th scope="row">Server Load</th>
+          <td id="server_load"></td>
+        </tr>
+        <!-- <tr>
+				<th>Session Started</th>
+				<td id="session_started"></td>
+			</tr> -->
+        <tr>
+          <th scope="row">Session Connected</th>
+          <td id="session_connected"></td>
+        </tr>
+        <tr>
+          <th scope="row">Server Latency</th>
+          <td id="server_latency"></td>
+        </tr>
+        <tr>
+          <th scope="row">Client Latency</th>
+          <td id="client_latency"></td>
+        </tr>
+      </table>
+    </div>
+
+    <div id="bugreport">
+      <h2>Xpra Bug Report</h2>
+      <br />
+      <form>
+        Summary:
+        <input
+          id="bugreport_summary"
+          type="text"
+          size="64"
+          maxlength="128"
+          value=""
+        />
+        <br />
+        Description:
+        <br />
+        <textarea id="bugreport_description" cols="80" rows="6"></textarea>
+        <br />
+        <button id="bugreport_cancel" type="button" onclick="hide_bugreport()">
+          Cancel
+        </button>
+        <button
+          id="bugreport_submit"
+          type="button"
+          onclick="generate_bugreport()"
+          disabled
+        >
+          Generate Report
+        </button>
+      </form>
+    </div>
+
+    <div>
+      <textarea
+        id="pasteboard"
+        readonly
+        style="display: block; position: absolute; left: -99em"
+      ></textarea>
+    </div>
+
+    <div
+      class="simple-keyboard"
+      style="display: block; position: fixed; bottom: 0; width: 100%"
+    ></div>
+  </body>
+</html>
