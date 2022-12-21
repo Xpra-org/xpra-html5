@@ -40,7 +40,7 @@ if (XpraVideoDecoderLoader.hasNativeDecoder()) {
   video_coding.push("vp9"); 
 } else {
   console.warn(
-    "Offscreen decoding is available for images only. Please consider using Google Chrome 94+ in a secure (SSL or localhost) context h264 offscreen decoding support."
+    "Offscreen decoding is available for images only. Please consider using Google Chrome 94+ in a secure (SSL or localhost) context for h264 offscreen decoding support."
   );
 }
 
