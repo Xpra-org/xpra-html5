@@ -30,12 +30,9 @@ class XpraImageDecoder {
         premultiplyAlpha: "none",
       };
       if ("scaled_size" in options) {
-        bitmap_options.set("resizeWidth", width);
-        bitmap_options.set("resizeHeight", height);
-        bitmap_options.set(
-          "resizeQuality",
-          options["scaling-quality"] || "medium"
-        );
+        bitmap_options.resizeWidth = width;
+        bitmap_options.resizeHeight = height;
+        bitmap_options.resizeQuality = options["scaling-quality"] || "medium";
       }
 
       const blob = new Blob([packet[7].buffer], {
