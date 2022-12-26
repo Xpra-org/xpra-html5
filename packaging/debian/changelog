@@ -1,3 +1,10 @@
+xpra-html5 (6.2-r0-1) UNRELEASED; urgency=low
+  * Firefox canvas flicker
+  * handling of throttle requests
+  * set bitmap options
+
+ -- Antoine Martin antoine@xpra.org  Mon, 26 Dec 2022 19:34:05 +0700 +700
+
 xpra-html5 (6.1-r0-1) UNRELEASED; urgency=low
   * video decoder support detection
   * initiate move of undecorated windows

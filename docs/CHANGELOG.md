@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [6.2] 2022-12-26
+
+- [Firefox canvas flicker](https://github.com/Xpra-org/xpra-html5/commit/07ac69ea34751d52a6e9520d29fd9bc66ccb5e44)
+- [handling of throttle requests](https://github.com/Xpra-org/xpra-html5/commit/8ed5af60d4a0919422bf1006abc3b557f9c0d650)
+- [set bitmap options](https://github.com/Xpra-org/xpra-html5/commit/40c73b259228cb6e9209527899aa3a4868c179fd)
+
 ## [6.1] 2022-10-31
 
 - [video decoder support detection](https://github.com/Xpra-org/xpra-html5/commit/10d97fe144a7ff054c606d8723c5c64c25e2c1a0)

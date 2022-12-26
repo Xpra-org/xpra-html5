@@ -3,8 +3,8 @@
 # Xpra is released under the terms of the GNU GPL v2, or, at your option, any
 # later version. See the file COPYING for details.
 
-%define version 6.1
-%define release 1.r0%{?dist}
+%define version 6.2
+%define release 1.r4%{?dist}
 %define minifier uglifyjs
 %define python python3
 
@@ -77,6 +77,11 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Mon Dec 26 2022 Antoine Martin <antoine@xpra.org> 6.2-0-1
+- Firefox canvas flicker
+- handling of throttle requests
+- set bitmap options
+
 * Mon Oct 31 2022 Antoine Martin <antoine@xpra.org> 6.1-0-1
 - video decoder support detection
 - initiate move of undecorated windows
