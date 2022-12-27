@@ -514,6 +514,7 @@ def sdist():
           url = "https://xpra.org/",
           download_url = "https://xpra.org/src/",
           description = "HTML5 client for xpra",
+          py_modules=[],
     )
 
 
