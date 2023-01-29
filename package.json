@@ -119,9 +119,5 @@
       "unicorn/prevent-abbreviations": "warn"
     }
   },
-  "prettier": {},
-  "dependencies": {
-    "jsmpeg": "^1.0.0",
-    "jszip": "^3.10.1"
-  }
+  "prettier": {}
 }

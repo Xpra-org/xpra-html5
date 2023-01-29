@@ -3,8 +3,8 @@
 import { XpraClient } from './app/client';
 import { CHAR_TO_NAME, KEYSYM_TO_LAYOUT } from './app/keycodes';
 import { Utilities } from './app/utilities';
-import JSMpeg from "jsmpeg";
-import JSZip from "jszip";
+// import JSMpeg from "jsmpeg";
+// import JSZip from "jszip";
 
 declare const $, jQuery, saveAs, SimpleKeyboard;
 
@@ -241,39 +241,39 @@ function show_bugreport(event) {
     document.addEventListener("info-response", enable_bugreport_submit);
     client.send_info_request();
 }
-function generate_bugreport() {
-    client.capture_keyboard = true;
-    const zip = new JSZip();
-    zip.file(
-        "Summary.txt",
-        "" +
-        $("#bugreport_summary").val() +
-        "\n\n" +
-        $("#bugreport_description").val()
-    );
-    zip.file(
-        "Server-Info.txt",
-        "" + JSON.stringify(client.server_last_info)
-    );
-    //screenshot:
-    const canvas = document.createElement("canvas");
-    canvas.width = client.desktop_width;
-    canvas.height = client.desktop_height;
-    const ctx = canvas.getContext("2d");
-    for (let i in client.id_to_window) {
-        const iwin = client.id_to_window[i];
-        ctx.drawImage(iwin.draw_canvas, iwin.x, iwin.y);
-    }
-    const png_base64 = canvas.toDataURL("image/png");
-    zip.file(
-        "screenshot.png",
-        Utilities.convertDataURIToBinary(png_base64)
-    );
-    zip.generateAsync({ type: "blob" }).then(function (content) {
-        saveAs(content, "bugreport.zip");
-    });
-    hide_bugreport();
-}
+// function generate_bugreport() {
+//     client.capture_keyboard = true;
+//     const zip = new JSZip();
+//     zip.file(
+//         "Summary.txt",
+//         "" +
+//         $("#bugreport_summary").val() +
+//         "\n\n" +
+//         $("#bugreport_description").val()
+//     );
+//     zip.file(
+//         "Server-Info.txt",
+//         "" + JSON.stringify(client.server_last_info)
+//     );
+//     //screenshot:
+//     const canvas = document.createElement("canvas");
+//     canvas.width = client.desktop_width;
+//     canvas.height = client.desktop_height;
+//     const ctx = canvas.getContext("2d");
+//     for (let i in client.id_to_window) {
+//         const iwin = client.id_to_window[i];
+//         ctx.drawImage(iwin.draw_canvas, iwin.x, iwin.y);
+//     }
+//     const png_base64 = canvas.toDataURL("image/png");
+//     zip.file(
+//         "screenshot.png",
+//         Utilities.convertDataURIToBinary(png_base64)
+//     );
+//     zip.generateAsync({ type: "blob" }).then(function (content) {
+//         saveAs(content, "bugreport.zip");
+//     });
+//     hide_bugreport();
+// }
 const password_input = document.getElementById("password") as HTMLInputElement;
 let login_callback = null;
 function login_cancel() {
@@ -558,11 +558,11 @@ function init_client(): any {
         client.check_encodings.push("vp8");
         client.check_encodings.push("vp9");
 
-        if (JSMpeg && JSMpeg.Renderer && JSMpeg.Decoder) {
-            //TODO: should be moved to 'check_encodings'
-            //and added to the decode worker:
-            client.supported_encodings.push("mpeg1");
-        }
+        // if (JSMpeg && JSMpeg.Renderer && JSMpeg.Decoder) {
+        //     //TODO: should be moved to 'check_encodings'
+        //     //and added to the decode worker:
+        //     client.supported_encodings.push("mpeg1");
+        // }
         if (mediasource_video) {
             client.supported_encodings.push(
                 "vp8+webm",
