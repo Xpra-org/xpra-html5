@@ -1662,6 +1662,12 @@ export class XpraClient {
         "encoding.scrolling.preference": 20,
       });
     }
+    
+    let video_max_size = [1024, 768];
+    if (this.offscreen_api) {
+      video_max_size = [4096, 4096];
+    }
+
     this._update_capabilities({
       auto_refresh_delay: 500,
       randr_notify: true,
@@ -1705,7 +1711,7 @@ export class XpraClient {
       //video stuff:
       "encoding.color-gamut": Utilities.getColorGamut(),
       "encoding.video_scaling": true,
-      "encoding.video_max_size": [1024, 768],
+      "encoding.video_max_size": video_max_size,
       "encoding.eos": true,
       "encoding.full_csc_modes": {
         mpeg1: ["YUV420P"],

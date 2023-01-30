@@ -40,7 +40,7 @@ if (XpraVideoDecoderLoader.hasNativeDecoder()) {
   video_coding.push("vp9");
 } else {
   console.warn(
-    "Offscreen decoding is available for images only. Please consider using Google Chrome 94+ in a secure (SSL or localhost) context h264 offscreen decoding support."
+    "Offscreen decoding is available for images only. Please consider using Google Chrome 94+ in a secure (SSL or localhost) context for h264 offscreen decoding support."
   );
 }
 
@@ -146,6 +146,11 @@ class WindowDecoder {
       this.decode_error(packet, `unsupported encoding: '${coding}'`);
     }
 
+    // Hold throttle packages for 500 ms to prevent flooding of the VideoDecoder
+    if (packet[6] == "throttle") {
+      await new Promise(r => setTimeout(r, 500));
+    }
+
     // Fake packet to send back
     const options = packet[10] || {};
     const decode_time = Math.round(1000 * (performance.now() - start));
@@ -163,19 +168,21 @@ class WindowDecoder {
     self.postMessage({ draw: clonepacket, start });
 
     // Paint the packet on screen refresh (if we can use requestAnimationFrame in the worker)
-    paint_worker.postMessage(
-      {
-        cmd: "paint",
-        image: packet[7],
-        wid: packet[1],
-        coding: packet[6],
-        x: packet[2],
-        y: packet[3],
-        w: packet[4],
-        h: packet[5],
-      },
-      [packet[7]]
-    );
+    if (packet[6] != "throttle") {
+      paint_worker.postMessage(
+        {
+          cmd: "paint",
+          image: packet[7],
+          wid: packet[1],
+          coding: packet[6],
+          x: packet[2],
+          y: packet[3],
+          w: packet[4],
+          h: packet[5],
+        },
+        [packet[7]]
+      );
+    }
   }
 
   eos() {
