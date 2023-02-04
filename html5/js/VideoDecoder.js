@@ -29,7 +29,7 @@ class XpraVideoDecoder {
 
     this.decoder_queue = [];
     this.decoded_frames = [];
-    this.erroneous_frame = false;
+    this.erroneous_frame = null;
 
     this.codec = null;
     this.vp9_params = null;
@@ -141,8 +141,8 @@ class XpraVideoDecoder {
 
   _on_decoder_error(error) {
     // TODO: Handle error? Or just assume we will catch up?
-    console.error(`Error decoding frame: ${error}`);
-    this.erroneous_frame = true;
+    this.erroneous_frame = `Error decoding frame: ${error}`;
+    console.error(this.erroneous_frame);
   }
 
   queue_frame(packet) {
@@ -192,17 +192,18 @@ class XpraVideoDecoder {
       while (frame_out.length === 0) {
         // Await our frame
         await new Promise((r) => setTimeout(r, this.frameWaitTimeout));
-        if (this.erroneous_frame) {
+        if (this.erroneous_frame != null) {
           // The last frame was erroneous, break the wait loop
           break;
         }
         frame_out = this.decoded_frames.filter((p) => p[8] == packet_sequence);
       }
 
-      if (this.erroneous_frame) {
+      if (this.erroneous_frame != null) {
         // Last frame was erroneous. Reject the promise and reset the state.
-        this.erroneous_frame = false;
-        reject(new Error("decoder error"));
+        const msg = this.erroneous_frame;
+        this.erroneous_frame = null;
+        reject(new Error(msg));
       }
       // Remove the frame from decoded frames list
       this.decoded_frames = this.decoded_frames.filter(

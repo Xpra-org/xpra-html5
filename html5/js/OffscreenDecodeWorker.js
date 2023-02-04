@@ -37,7 +37,7 @@ if (XpraVideoDecoderLoader.hasNativeDecoder()) {
   // We can support native H264 & VP8 decoding
   video_coding.push("h264");
   video_coding.push("vp8");
-  video_coding.push("vp9"); 
+  video_coding.push("vp9");
 } else {
   console.warn(
     "Offscreen decoding is available for images only. Please consider using Google Chrome 94+ in a secure (SSL or localhost) context for h264 offscreen decoding support."
@@ -140,14 +140,16 @@ class WindowDecoder {
       if (!this.video_decoder.initialized) {
         this.video_decoder.init(coding);
       }
-      await this.video_decoder.queue_frame(packet);
+      packet = await this.video_decoder.queue_frame(packet).catch((err) => {
+        this.decode_error(packet, err);
+      });
     } else {
       this.decode_error(packet, `unsupported encoding: '${coding}'`);
     }
 
     // Hold throttle packages for 500 ms to prevent flooding of the VideoDecoder
     if (packet[6] == "throttle") {
-      await new Promise(r => setTimeout(r, 500));
+      await new Promise((r) => setTimeout(r, 500));
     }
 
     // Fake packet to send back
