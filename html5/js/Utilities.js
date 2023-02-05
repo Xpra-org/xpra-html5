@@ -169,7 +169,6 @@ const Utilities = {
 
   getKeyboardLayout() {
     let v = Utilities.getFirstBrowserLanguage();
-    Utilities.debug("getFirstBrowserLanguage()=", v);
     if (v == undefined) {
       return "us";
     }
@@ -188,7 +187,6 @@ const Utilities = {
         layout = temporary;
       }
     }
-    Utilities.debug("getKeyboardLayout()=", layout);
     return layout;
   },
 
