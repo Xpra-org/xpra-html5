@@ -35,6 +35,17 @@ const WINDOW_PREVIEW_SELECTOR = "#window_preview";
 // states that adding 'transform: transale3d(0,0,0);' is the strongest CSS indication for the browser to enable hardware acceleration.
 const TRY_GPU_TRIGGER = true;
 
+function truncate(input) {
+  if (!input) {
+    return input;
+  }
+  const s = input.toString();
+  if (s.length > 5) {
+    return s.substring(0, 5) + "...";
+  }
+  return s;
+}
+
 class XpraClient {
   constructor(container) {
     // the container div is the "screen" on the HTML page where we
@@ -1527,7 +1538,7 @@ class XpraClient {
         "encoding.scrolling.preference": 20,
       });
     }
-    
+
     let video_max_size = [1024, 768];
     if (this.offscreen_api) {
       video_max_size = [4096, 4096];
@@ -2059,7 +2070,7 @@ class XpraClient {
       "pending=",
       this.clipboard_pending,
       "buffer=",
-      this.clipboard_buffer
+      truncate(this.clipboard_buffer)
     );
     if (!this.clipboard_pending) {
       return;
