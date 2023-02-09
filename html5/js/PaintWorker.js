@@ -70,6 +70,7 @@ class XpraPaintWorker {
       context.drawImage(image, x, y, width, height);
       this.paint_box(coding, context, x, y, width, height);
     } else if (coding == "scroll") {
+      let canvas = this.offscreen_canvas.get(wid);
       context.imageSmoothingEnabled = false;
       for (let index = 0, stop = image.length; index < stop; ++index) {
         const scroll_data = image[index];
@@ -80,7 +81,7 @@ class XpraPaintWorker {
         const xdelta = scroll_data[4];
         const ydelta = scroll_data[5];
         context.drawImage(
-          this.canvas,
+          canvas,
           sx,
           sy,
           sw,
