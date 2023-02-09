@@ -37,7 +37,8 @@ if (XpraVideoDecoderLoader.hasNativeDecoder()) {
   // We can support native H264 & VP8 decoding
   video_coding.push("h264");
   video_coding.push("vp8");
-  video_coding.push("vp9");
+  // Disabled VP9 for now
+  //video_coding.push("vp9");
 } else {
   console.warn(
     "Offscreen decoding is available for images only. Please consider using Google Chrome 94+ in a secure (SSL or localhost) context for h264 offscreen decoding support."
@@ -136,7 +137,6 @@ class WindowDecoder {
         const csc = packet[10]["csc"];
         this.video_decoder.prepareVP9params(csc);
       }
-
       if (!this.video_decoder.initialized) {
         this.video_decoder.init(coding);
       }
