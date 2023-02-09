@@ -1621,12 +1621,12 @@ class XpraClient {
       "encoding.h264+mp4.YUV420P.level": "3.0",
       //prefer unmuxed VPX
       "encoding.vp8.score-delta": 70,
-      "encoding.vp9.score-delta": 60,
+      "encoding.h264.score-delta": 80,
+      "encoding.vp9.score-delta": -20,
       "encoding.h264+mp4.score-delta": 50,
       "encoding.h264+mp4.": 50,
       "encoding.mpeg4+mp4.score-delta": 40,
       "encoding.vp8+webm.score-delta": 40,
-      "encoding.h264.score-delta": -20,
 
       "sound.receive": true,
       "sound.send": false,

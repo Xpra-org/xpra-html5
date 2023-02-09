@@ -39,7 +39,6 @@ class XpraVideoDecoder {
   }
 
   prepareVP9params(csc) {
-    console.log(csc);
     // Check if we have the right VP9 params before init.
     // This is needed because we can only set the params when the video decoder is created.
     // We close the decoder when the coding changes.
@@ -79,7 +78,7 @@ class XpraVideoDecoder {
   resolveCodec(coding) {
     if (coding == "h264") return "avc1.42C01E";
     if (coding == "vp8") return "vp8";
-    if (coding == "vp9") return `$vp09${this.vp9_params}`;
+    if (coding == "vp9") return `vp09${this.vp9_params}`;
     throw `No codec defined for coding ${coding}`;
   }
 
