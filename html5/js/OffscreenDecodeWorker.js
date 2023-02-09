@@ -181,7 +181,8 @@ class WindowDecoder {
           w: packet[4],
           h: packet[5],
         },
-        [packet[7]]
+        // Scroll does not hold a transferable type
+        coding == "scroll" ? [] : [packet[7]]
       );
     }
   }
