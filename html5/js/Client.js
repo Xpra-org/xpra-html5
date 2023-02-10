@@ -1608,7 +1608,6 @@ class XpraClient {
           "YUV444P",
         ],
         vp8: ["YUV420P"],
-        vp9: ["YUV420P", "YUV444P", "YUV444P10"],
       },
       //this is a workaround for server versions between 2.5.0 to 2.5.2 only:
       "encoding.x264.YUV420P.profile": "baseline",
@@ -1622,7 +1621,6 @@ class XpraClient {
       //prefer unmuxed VPX
       "encoding.vp8.score-delta": 70,
       "encoding.h264.score-delta": 80,
-      "encoding.vp9.score-delta": -20,
       "encoding.h264+mp4.score-delta": 50,
       "encoding.h264+mp4.": 50,
       "encoding.mpeg4+mp4.score-delta": 40,
