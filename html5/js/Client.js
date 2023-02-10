@@ -3612,7 +3612,7 @@ class XpraClient {
       let icon_url = "";
       if (icon && icon[0] == "png") {
         icon_url = `data:image/png;base64,${Utilities.ToBase64(icon[3])}`;
-        this.clog("notification icon_url=", icon_url);
+        context.clog("notification icon_url=", icon_url);
       }
       const notification = new Notification(summary, {
         body,
