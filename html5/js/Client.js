@@ -4120,7 +4120,7 @@ class XpraClient {
   }
 
   close_audio() {
-    if (this.connected) {
+    if (this.connected && this.audio_enabled) {
       this._send_sound_stop();
     }
     if (this.audio_framework == "mediasource") {
