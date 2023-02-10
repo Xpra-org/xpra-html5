@@ -41,7 +41,7 @@ function truncate(input) {
   }
   const s = input.toString();
   if (s.length > 5) {
-    return s.slice(0, 5) + "...";
+    return s.slice(0, 5) + "..."; // eslint-disable-line prefer-template
   }
   return s;
 }
