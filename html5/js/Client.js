@@ -3191,7 +3191,6 @@ class XpraClient {
     mycanvas.height = h;
     this.id_to_window[wid] = new XpraWindow(
       this,
-      mycanvas,
       wid,
       x,
       y,
