@@ -41,7 +41,7 @@ function truncate(input) {
   }
   const s = input.toString();
   if (s.length > 5) {
-    return s.substring(0, 5) + "...";
+    return s.slice(0, 5) + "...";
   }
   return s;
 }
@@ -2706,7 +2706,7 @@ class XpraClient {
     // stuff that must be done after hello
     if (this.audio_enabled) {
       if (!hello["sound.send"]) {
-        this.error("server does not support speaker forwarding");
+        this.warn("server does not support speaker forwarding");
         this.audio_enabled = false;
       } else {
         this.server_audio_codecs = hello["sound.encoders"];

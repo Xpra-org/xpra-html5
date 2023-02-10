@@ -35,8 +35,7 @@ const image_coding = [
 const video_coding = [];
 if (XpraVideoDecoderLoader.hasNativeDecoder()) {
   // We can support native H264 & VP8 decoding
-  video_coding.push("h264");
-  video_coding.push("vp8");
+  video_coding.push("h264", "vp8");
 } else {
   console.warn(
     "Offscreen decoding is available for images only. Please consider using Google Chrome 94+ in a secure (SSL or localhost) context for h264 offscreen decoding support."
@@ -133,8 +132,8 @@ class WindowDecoder {
       if (!this.video_decoder.initialized) {
         this.video_decoder.init(coding);
       }
-      packet = await this.video_decoder.queue_frame(packet).catch((err) => {
-        this.decode_error(packet, err);
+      packet = await this.video_decoder.queue_frame(packet).catch((error) => {
+        this.decode_error(packet, error);
       });
     } else {
       this.decode_error(packet, `unsupported encoding: '${coding}'`);

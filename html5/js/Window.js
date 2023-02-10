@@ -49,6 +49,7 @@ class XpraWindow {
     //xpra specific attributes:
     this.wid = wid;
     //enclosing div in page DOM
+    console.log("wid=" + wid + ", str: " + String(wid));
     this.div = jQuery(`#${String(wid)}`);
 
     //these values represent the internal geometry
