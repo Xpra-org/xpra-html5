@@ -4846,7 +4846,7 @@ class XpraClient {
     try {
       //try to use a stream saver:
       this.debug("file", "streamSaver=", streamSaver);
-      streamSaver.mitm = "../mitm.html";
+      streamSaver.mitm = "./mitm.html";
       const fileStream = streamSaver.createWriteStream(basefilename, {
         size: filesize,
       });
