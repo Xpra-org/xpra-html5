@@ -3266,7 +3266,7 @@ class XpraClient {
   _new_window(wid, x, y, w, h, metadata, override_redirect, client_properties) {
     // each window needs their own DIV that contains a canvas
     const mydiv = document.createElement("div");
-    mydiv.id = String(wid);
+    mydiv.id = "WINDOW_"+wid;
 
     const screen = document.querySelector("#screen");
     screen.append(mydiv);

@@ -49,7 +49,7 @@ class XpraWindow {
     //xpra specific attributes:
     this.wid = wid;
     //enclosing div in page DOM
-    this.div = jQuery(`#${String(wid)}`);
+    this.div = document.getElementById("WINDOW_"+wid);
 
     //these values represent the internal geometry
     //i.e. geometry as windows appear to the compositor
@@ -270,7 +270,7 @@ class XpraWindow {
 
   init_canvas() {
     this.canvas = null;
-    this.div.find("canvas").remove();
+    jQuery(this.div).find("canvas").remove();
     const canvas = document.createElement("canvas");
     if (this.client.try_gpu) {
       $(canvas).addClass("gpu-trigger");
