@@ -85,7 +85,7 @@ class XpraWindow {
     this.init_canvas();
 
     //window attributes:
-    this.title = null;
+    this.title = "";
     this.windowtype = null;
     this.fullscreen = false;
     this.saved_geometry = null;
