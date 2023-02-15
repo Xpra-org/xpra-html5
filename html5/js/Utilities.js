@@ -81,9 +81,9 @@ const Utilities = {
   },
 
   trimString(string_, trimLength) {
-	if (!string_) {
-		return "";
-	}
+    if (!string_) {
+      return "";
+    }
     return string_.length > trimLength
       ? `${string_.slice(0, Math.max(0, trimLength - 3))}...`
       : string_;

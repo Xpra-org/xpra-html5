@@ -49,7 +49,7 @@ class XpraWindow {
     //xpra specific attributes:
     this.wid = wid;
     //enclosing div in page DOM
-    this.div = document.getElementById("WINDOW_"+wid);
+    this.div = document.querySelector("#WINDOW_"+wid);
 
     //these values represent the internal geometry
     //i.e. geometry as windows appear to the compositor
@@ -1291,8 +1291,7 @@ class XpraWindow {
     }
   }
 
-  eos() {
-  }
+  eos() {}
 
   /**
    * This function draws the contents of the off-screen canvas to the visible
