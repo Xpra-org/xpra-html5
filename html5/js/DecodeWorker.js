@@ -7,8 +7,7 @@ importScripts("./RgbHelpers.js");
 
 const on_hold = new Map();
 
-function decode_eos(wid) {
-}
+function decode_eos(wid) {}
 
 function decode_draw_packet(packet, start) {
   const wid = packet[1];
