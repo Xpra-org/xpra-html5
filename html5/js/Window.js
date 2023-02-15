@@ -1292,7 +1292,6 @@ class XpraWindow {
   }
 
   eos() {
-    this._close_broadway();
   }
 
   /**
@@ -1312,93 +1311,6 @@ class XpraWindow {
       );
     }
     this.canvas_ctx.drawImage(this.draw_canvas, 0, 0);
-  }
-
-  /**
-   * The following function inits the Broadway h264 decoder
-   */
-  _init_broadway(enc_width, enc_height, width, height) {
-    this.broadway_decoder = new Decoder({
-      rgb: true,
-      size: { width: enc_width, height: enc_height },
-    });
-    this.log("broadway decoder initialized");
-    this.broadway_paint_location = [0, 0];
-    this.broadway_decoder.onPictureDecoded = (
-      buffer,
-      p_width,
-      p_height,
-      infos
-    ) => {
-      this._broadway_paint(
-        buffer,
-        enc_width,
-        enc_height,
-        width,
-        height,
-        p_width,
-        p_height,
-        infos
-      );
-    };
-  }
-
-  _broadway_paint(
-    buffer,
-    enc_width,
-    enc_height,
-    width,
-    height,
-    p_width,
-    p_height,
-    infos
-  ) {
-    this.debug(
-      "draw",
-      "broadway picture decoded: ",
-      buffer.length,
-      "bytes, size ",
-      p_width,
-      "x",
-      `${p_height}, paint location: `,
-      this.broadway_paint_location,
-      "with infos=",
-      infos
-    );
-    if (!this.broadway_decoder) {
-      return;
-    }
-    const img = this.offscreen_canvas_ctx.createImageData(p_width, p_height);
-    img.data.set(buffer);
-    const x = this.broadway_paint_location[0];
-    const y = this.broadway_paint_location[1];
-    this.offscreen_canvas_ctx.putImageData(
-      img,
-      x,
-      y,
-      0,
-      0,
-      enc_width,
-      enc_height
-    );
-    if (enc_width != width || enc_height != height) {
-      //scale it:
-      this.offscreen_canvas_ctx.drawImage(
-        this.offscreen_canvas,
-        x,
-        y,
-        enc_width,
-        enc_height,
-        x,
-        y,
-        width,
-        height
-      );
-    }
-  }
-
-  _close_broadway() {
-    this.broadway_decoder = null;
   }
 
   /**
@@ -1569,20 +1481,8 @@ class XpraWindow {
         const paint_coding = coding.split("/")[0]; //ie: "png/P" -> "png"
         image.src = this.construct_base64_image_url(paint_coding, img_data);
       } else if (coding == "h264") {
-        const frame = options["frame"] || 0;
-        if (frame == 0) {
-          this._close_broadway();
-        }
-        if (!this.broadway_decoder) {
-          this._init_broadway(enc_width, enc_height, width, height);
-        }
-        this.broadway_paint_location = [x, y];
-        // we can pass a buffer full of NALs to decode() directly
-        // as long as they are framed properly with the NAL header
-        this.broadway_decoder.decode(img_data);
-        // broadway decoding is synchronous:
-        // (and already painted via the onPictureDecoded callback)
-        painted();
+        paint_error("h264 decoding is only supported via the decode workers");
+        this.may_paint_now();
       } else if (coding == "scroll") {
         for (let index = 0, stop = img_data.length; index < stop; ++index) {
           const scroll_data = img_data[index];
@@ -1630,7 +1530,6 @@ class XpraWindow {
    */
   destroy() {
     // remove div
-    this._close_broadway();
     this.div.remove();
   }
 }

@@ -514,6 +514,7 @@ class XpraClient {
     if (this.offscreen_api) {
       this.clog("using offscreen decode worker");
       decode_worker = new Worker("js/OffscreenDecodeWorker.js");
+      this.check_encodings.push("h264");
     } else {
       this.clog("using decode worker");
       decode_worker = new Worker("js/DecodeWorker.js");

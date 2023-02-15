@@ -40,7 +40,6 @@
     <script type="text/javascript" src="js/lib/forge.js"></script>
 
     <script type="text/javascript" src="js/lib/jsmpeg.js"></script>
-    <script type="text/javascript" src="js/lib/broadway/Decoder.js"></script>
     <script type="text/javascript" src="js/lib/aurora/aurora.js"></script>
     <!--
 		<script type="text/javascript" src="js/lib/aurora/mp3.js"></script>
@@ -916,8 +915,6 @@
         }
 
         if (video) {
-          // broadway h264 decoder:
-          client.check_encodings.push("h264");
           // VPX checks. Will only succeed if we can use VideoDecoder.js
           client.check_encodings.push("vp8");
           client.check_encodings.push("vp9");

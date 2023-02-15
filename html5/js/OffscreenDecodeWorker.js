@@ -12,7 +12,6 @@
  */
 
 importScripts("./lib/lz4.js");
-importScripts("./lib/broadway/Decoder.js");
 importScripts("./VideoDecoder.js");
 importScripts("./ImageDecoder.js");
 importScripts("./RgbHelpers.js");
