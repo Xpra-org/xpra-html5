@@ -1269,8 +1269,12 @@ class XpraClient {
     const wmm = Math.round((screen_size[0] * 25.4) / dpi);
     const hmm = Math.round((screen_size[1] * 25.4) / dpi);
     const monitor = ["Canvas", 0, 0, screen_size[0], screen_size[1], wmm, hmm];
+    let name = "HTML";
+    if (navigator.userAgentData && navigator.userAgentData.brands) {
+      name = navigator.userAgentData.brands[0].brand+" "+navigator.userAgentData.brands[0].version;
+    }
     const screen = [
-      "HTML",
+      name,
       screen_size[0],
       screen_size[1],
       wmm,
