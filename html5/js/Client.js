@@ -623,18 +623,22 @@ class XpraClient {
   }
 
   redraw_windows() {
-    for (const index in this.id_to_window) {
-      const iwin = this.id_to_window[index];
-      this.request_redraw(iwin);
+    for (const wid in this.id_to_window) {
+      const win = this.id_to_window[wid];
+      this.request_redraw(win);
     }
   }
 
   close_windows() {
-    for (const index in this.id_to_window) {
-      const iwin = this.id_to_window[index];
-      window.removeWindowListItem(index);
-      iwin.destroy();
+    for (const wid in this.id_to_window) {
+      const win = this.id_to_window[index];
+      this.close_window(win, wid);
     }
+  }
+
+  close_window(win, wid) {
+    window.removeWindowListItem(wid);
+    win.destroy();
   }
 
   close_protocol() {
@@ -1795,7 +1799,7 @@ class XpraClient {
     }
     // dont call set focus unless the focus has actually changed
     if (wid > 0 && this.focus != wid) {
-      this._window_set_focus(window);
+      this.set_focus(window);
     }
     let button = mouse.button;
     const lbe = this.last_button_event;
@@ -2197,7 +2201,7 @@ class XpraClient {
   /**
    * Focus
    */
-  _window_set_focus(win) {
+  set_focus(win) {
     if (win == undefined || this.server_readonly || !this.connected) {
       return;
     }
@@ -2302,8 +2306,9 @@ class XpraClient {
       const wid = $(".slick-current .window-preview-item-container").data(
         "wid"
       );
-      if (!this.id_to_window[wid].minimized) {
-        this._window_set_focus(this.id_to_window[wid]);
+      const win = this.id_to_window[wid];
+      if (!win.minimized) {
+        win.focus();
       }
     });
 
@@ -2316,8 +2321,9 @@ class XpraClient {
         "wid"
       );
       this.clog(`current wid: ${wid}`);
-      if (client.id_to_window[wid].minimized) {
-        this._window_set_focus(this.id_to_window[wid]);
+      const win = this.id_to_window[wid];
+      if (win.minimized) {
+        win.focus();
       }
 
       // Clear the list of window elements.
@@ -3287,13 +3293,16 @@ class XpraClient {
       (event, window) => this.on_mousedown(event, window),
       (event, window) => this.on_mouseup(event, window),
       (event, window) => this.on_mousescroll(event, window),
-      (window) => this._window_set_focus(window),
+      (window) => this.set_focus(window),
       (window) => this.send([PACKET_TYPES.close_window, window.wid]),
       this.scale
     );
-    if (win && !override_redirect && win.metadata["window-type"] == "NORMAL") {
+    if (this.server_is_desktop || this.server_is_shadow) {
+      window.noWindowList();
+    }
+    else if (win && !override_redirect && win.metadata["window-type"] == "NORMAL") {
       const trimmedTitle = Utilities.trimString(win.title, 30);
-      window.addWindowListItem(wid, trimmedTitle);
+      window.addWindowListItem(win, wid, trimmedTitle);
     }
     this.id_to_window[wid] = win;
     if (!override_redirect) {
@@ -3307,7 +3316,7 @@ class XpraClient {
         geom.h,
         win.client_properties,
       ]);
-      this._window_set_focus(win);
+      this.set_focus(win);
     }
   }
 
@@ -3518,7 +3527,7 @@ class XpraClient {
       }
     }
     if (highest_window) {
-      this._window_set_focus(highest_window);
+      this.set_focus(highest_window);
     } else {
       this.focus = 0;
       this.send([PACKET_TYPES.focus, 0, []]);
@@ -3528,9 +3537,7 @@ class XpraClient {
   _process_raise_window(packet) {
     const wid = packet[1];
     const win = this.id_to_window[wid];
-    if (win != undefined) {
-      this._window_set_focus(win);
-    }
+    this.set_focus(win);
   }
 
   _process_window_resized(packet) {

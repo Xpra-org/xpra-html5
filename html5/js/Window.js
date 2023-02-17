@@ -198,12 +198,12 @@ class XpraWindow {
     jQuery(this.div).draggable({ cancel: "canvas" });
     jQuery(`#head${String(this.wid)}`).click((event_) => {
       if (!this.minimized) {
-        this.set_focus_cb(this);
+        this.focus();
       }
     });
     jQuery(this.div).on("dragstart", (event_) => {
       this.client.release_buttons(event_, this);
-      this.set_focus_cb(this);
+      this.focus();
       this.client.mouse_grabbed = true;
     });
     jQuery(this.div).on("dragstop", (event_, ui) => {
@@ -228,7 +228,7 @@ class XpraWindow {
     });
     jQuery(this.div).on("resizestop", (event_, ui) => {
       this.handle_resized(ui);
-      this.set_focus_cb(this);
+      this.focus();
       this.client.mouse_grabbed = false;
       //workaround for the window going blank,
       //just force a refresh:
@@ -263,7 +263,7 @@ class XpraWindow {
         !this.minimized &&
         $(e.target).parents(".windowbuttons").length === 0
       ) {
-        this.set_focus_cb(this);
+        this.focus();
       }
     });
   }
@@ -500,6 +500,10 @@ class XpraWindow {
       ", height=",
       this.outerH
     );
+  }
+
+  focus() {
+    this.set_focus_cb(this);
   }
 
   updateFocus() {
@@ -800,7 +804,7 @@ class XpraWindow {
     this.saved_geometry = null;
     // then call local resized callback
     this.handle_resized();
-    this.set_focus_cb(this);
+    this.focus();
   }
 
   /**
@@ -817,7 +821,7 @@ class XpraWindow {
     this.max_save_restore(maximized);
     this.maximized = maximized;
     this.handle_resized();
-    this.set_focus_cb(this);
+    this.focus();
     // this will take care of disabling the "draggable" code:
     this.apply_size_constraints();
   }
@@ -869,7 +873,7 @@ class XpraWindow {
       ]);
       //force focus switch:
       this.client.focus = -1;
-      this.client._window_set_focus(this);
+      this.client.set_focus(this);
     }
   }
 
@@ -896,7 +900,7 @@ class XpraWindow {
     this.fullscreen = fullscreen;
     this.updateCSSGeometry();
     this.handle_resized();
-    this.set_focus_cb(this);
+    this.focus();
   }
 
   _set_decorated(decorated) {

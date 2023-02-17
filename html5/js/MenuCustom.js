@@ -26,7 +26,11 @@ SOFTWARE.
 const MENU_CONTENT_LEFT_CLASS_NAME = "menu-content-left";
 const MENU_CONTENT_RIGHT_CLASS_NAME = "menu-content-right";
 
-function addWindowListItem(wid, title) {
+function noWindowList() {
+    document.querySelector("#open_windows").remove();
+}
+
+function addWindowListItem(win, wid, title) {
   const li = document.createElement("li");
   li.className = "windowlist-li";
   li.id = `windowlistitem${wid}`;
@@ -34,19 +38,18 @@ function addWindowListItem(wid, title) {
   const a = document.createElement("a");
 
   a.id = `windowlistitemlink${wid}`;
-
   a.addEventListener("mouseover", function (e) {
     if (e.ctrlKey) {
-      client._window_set_focus(client.id_to_window[wid]);
+      client._window_set_focus(win);
     }
   });
   a.addEventListener("click", function (e) {
     // Skip handling minimize, maximize, close events.
     if ($(e.target).hasClass(MENU_CONTENT_RIGHT_CLASS_NAME)) return;
-    if (client.id_to_window[wid].minimized) {
-      client.id_to_window[wid].toggle_minimized();
+    if (win.minimized) {
+      win.toggle_minimized();
     } else {
-      client._window_set_focus(client.id_to_window[wid]);
+      client.set_focus(win);
     }
     this.parentElement.parentElement.className = "-hide";
   });
@@ -79,7 +82,7 @@ function addWindowListItem(wid, title) {
   img2.title = "Close";
   img2.className = MENU_CONTENT_RIGHT_CLASS_NAME;
   img2.addEventListener("click", function (e) {
-    client._window_closed(client.id_to_window[wid]);
+    client.close_window(win);
     e.stopPropagation();
     hideWindowList();
   });
@@ -88,7 +91,7 @@ function addWindowListItem(wid, title) {
   img3.src = "icons/maximize.png";
   img3.title = "Maximize";
   img3.addEventListener("click", function (e) {
-    client.id_to_window[wid].toggle_maximized();
+    win.toggle_maximized();
     e.stopPropagation();
     hideWindowList();
   });
@@ -98,7 +101,7 @@ function addWindowListItem(wid, title) {
   img4.src = "icons/minimize.png";
   img4.title = "Minimize";
   img4.addEventListener("click", function (e) {
-    client.id_to_window[wid].toggle_minimized();
+    win.toggle_minimized();
     e.stopPropagation();
     hideWindowList();
   });
