@@ -631,14 +631,15 @@ class XpraClient {
 
   close_windows() {
     for (const wid in this.id_to_window) {
-      const win = this.id_to_window[index];
-      this.close_window(win, wid);
+      const win = this.id_to_window[wid];
+      this.close_window(win);
     }
   }
 
-  close_window(win, wid) {
-    window.removeWindowListItem(wid);
+  close_window(win) {
+    window.removeWindowListItem(win.wid);
     win.destroy();
+    this.send([PACKET_TYPES.close_window, win.wid])
   }
 
   close_protocol() {
@@ -708,8 +709,8 @@ class XpraClient {
     this.send(packet);
     // call the screen_resized function on all open windows
     for (const index in this.id_to_window) {
-      const iwin = this.id_to_window[index];
-      iwin.screen_resized();
+      const win = this.id_to_window[index];
+      win.screen_resized();
 
       // Force fullscreen on a a given window name from the provided settings
       if (
@@ -718,16 +719,16 @@ class XpraClient {
         default_settings.auto_fullscreen.length > 0
       ) {
         const pattern = new RegExp(`.*${default_settings.auto_fullscreen}.*`);
-        if (iwin.fullscreen === false && pattern.test(iwin.metadata.title)) {
-          clog(`auto fullscreen window: ${iwin.metadata.title}`);
-          iwin.set_fullscreen(true);
-          iwin.screen_resized();
+        if (win.fullscreen === false && pattern.test(win.metadata.title)) {
+          clog(`auto fullscreen window: ${win.metadata.title}`);
+          win.set_fullscreen(true);
+          win.screen_resized();
         }
       }
 
       // Make a DESKTOP-type window fullscreen automatically.
       // This resizes things like xfdesktop according to the window size.
-      if (this.fullscreen === false && this.client.is_window_desktop(iwin)) {
+      if (this.fullscreen === false && this.client.is_window_desktop(win)) {
         clog(`auto fullscreen desktop window: ${this.metadata.title}`);
         this.set_fullscreen(true);
         this.screen_resized();
@@ -1303,8 +1304,8 @@ class XpraClient {
         this.clog("server connection is OK");
       }
       for (const index in this.id_to_window) {
-        const iwin = this.id_to_window[index];
-        iwin.set_spinner(this.server_ok);
+        const win = this.id_to_window[index];
+        win.set_spinner(this.server_ok);
       }
     }
   }
@@ -1723,18 +1724,18 @@ class XpraClient {
     return { x: mx, y: my, button: mbutton };
   }
 
-  on_mousedown(e, window) {
+  on_mousedown(e, win) {
     this.mousedown_event = e;
-    this.do_window_mouse_click(e, window, true);
-    return window == undefined;
+    this.do_window_mouse_click(e, win, true);
+    return win == undefined;
   }
 
-  on_mouseup(e, window) {
-    this.do_window_mouse_click(e, window, false);
-    return window == undefined;
+  on_mouseup(e, win) {
+    this.do_window_mouse_click(e, win, false);
+    return win == undefined;
   }
 
-  on_mousemove(e, window) {
+  on_mousemove(e, win) {
     if (this.mouse_grabbed) {
       return true;
     }
@@ -1748,30 +1749,30 @@ class XpraClient {
     const modifiers = this._keyb_get_modifiers(e);
     const buttons = [];
     let wid = 0;
-    if (window) {
-      wid = window.wid;
+    if (win) {
+      wid = win.wid;
     }
     this.send([PACKET_TYPES.pointer_position, wid, [x, y], modifiers, buttons]);
-    if (window) {
+    if (win) {
       e.preventDefault();
     }
-    return window == undefined;
+    return win == undefined;
   }
 
-  release_buttons(e, window) {
+  release_buttons(e, win) {
     const mouse = this.getMouse(e);
     const x = Math.round(mouse.x);
     const y = Math.round(mouse.y);
     const modifiers = this._keyb_get_modifiers(e);
-    const wid = window.wid;
+    const wid = win.wid;
     const pressed = false;
     for (const button of this.buttons_pressed) {
       this.send_button_action(wid, button, pressed, x, y, modifiers);
     }
   }
 
-  do_window_mouse_click(e, window, pressed) {
-    if (window) {
+  do_window_mouse_click(e, win, pressed) {
+    if (win) {
       e.preventDefault();
     }
     if (this.server_readonly || this.mouse_grabbed || !this.connected) {
@@ -1789,17 +1790,17 @@ class XpraClient {
     if (client.clipboard_direction !== "to-server" && this._poll_clipboard(e)) {
       send_delay = CLIPBOARD_EVENT_DELAY;
     }
-    const mouse = this.getMouse(e, window);
+    const mouse = this.getMouse(e, win);
     const x = Math.round(mouse.x);
     const y = Math.round(mouse.y);
     const modifiers = this._keyb_get_modifiers(e);
     let wid = 0;
-    if (window) {
-      wid = window.wid;
+    if (win) {
+      wid = win.wid;
     }
     // dont call set focus unless the focus has actually changed
     if (wid > 0 && this.focus != wid) {
-      this.set_focus(window);
+      this.set_focus(win);
     }
     let button = mouse.button;
     const lbe = this.last_button_event;
@@ -1841,7 +1842,7 @@ class XpraClient {
   }
 
   // Source: https://deepmikoto.com/coding/1--javascript-detect-mouse-wheel-direction
-  detect_vertical_scroll_direction(e, window) {
+  detect_vertical_scroll_direction(e) {
     if (!e) {
       //IE? In any case, detection won't work:
       return 0;
@@ -1866,7 +1867,7 @@ class XpraClient {
     return 0;
   }
 
-  on_mousescroll(e, window) {
+  on_mousescroll(e, win) {
     if (this.server_readonly || this.mouse_grabbed || !this.connected) {
       return false;
     }
@@ -1876,8 +1877,8 @@ class XpraClient {
     const modifiers = this._keyb_get_modifiers(e);
     const buttons = [];
     let wid = 0;
-    if (window) {
-      wid = window.wid;
+    if (win) {
+      wid = win.wid;
     }
     const wheel = Utilities.normalizeWheel(e);
     this.debug("mouse", "normalized wheel event:", wheel);
@@ -1890,7 +1891,7 @@ class XpraClient {
     if (
       this.scroll_reverse_y === true ||
       (this.scroll_reverse_x == "auto" &&
-        this.detect_vertical_scroll_direction(e, window) < 0 &&
+        this.detect_vertical_scroll_direction(e) < 0 &&
         py > 0)
     ) {
       py = -py;
@@ -2232,8 +2233,8 @@ class XpraClient {
         win.metadata["class-instance"].includes(auto_fullscreen_desktop_class)
       ) {
         for (const index in this.id_to_window) {
-          const iwin = this.id_to_window[index];
-          if (iwin.wid != win.wid && !iwin.minimized) {
+          const otherwin = this.id_to_window[index];
+          if (otherwin.wid != win.wid && !otherwin.minimized) {
             return;
           }
         }
@@ -3250,16 +3251,16 @@ class XpraClient {
     const window_ids = Object.keys(client.id_to_window).map(Number);
     this.send([PACKET_TYPES.suspend, true, window_ids]);
     for (const index in this.id_to_window) {
-      const iwin = this.id_to_window[index];
-      iwin.suspend();
+      const win = this.id_to_window[index];
+      win.suspend();
     }
   }
 
   resume() {
     const window_ids = Object.keys(client.id_to_window).map(Number);
     for (const index in this.id_to_window) {
-      const iwin = this.id_to_window[index];
-      iwin.resume();
+      const win = this.id_to_window[index];
+      win.resume();
     }
     this.send([PACKET_TYPES.resume, true, window_ids]);
     this.redraw_windows();
@@ -3294,7 +3295,7 @@ class XpraClient {
       (event, window) => this.on_mouseup(event, window),
       (event, window) => this.on_mousescroll(event, window),
       (window) => this.set_focus(window),
-      (window) => this.send([PACKET_TYPES.close_window, window.wid]),
+      (window) => this.close_window(window),
       this.scale
     );
     if (this.server_is_desktop || this.server_is_shadow) {
@@ -3516,14 +3517,14 @@ class XpraClient {
     let highest_window = null;
     let highest_stacking = -1;
     for (const index in this.id_to_window) {
-      const iwin = this.id_to_window[index];
+      const win = this.id_to_window[index];
       if (
-        !iwin.minimized &&
-        iwin.stacking_layer > highest_stacking &&
-        !iwin.tray
+        !win.minimized &&
+        win.stacking_layer > highest_stacking &&
+        !win.tray
       ) {
-        highest_window = iwin;
-        highest_stacking = iwin.stacking_layer;
+        highest_window = win;
+        highest_stacking = win.stacking_layer;
       }
     }
     if (highest_window) {
@@ -3677,8 +3678,8 @@ class XpraClient {
    */
   reset_cursor() {
     for (const wid in this.id_to_window) {
-      const window = this.id_to_window[wid];
-      window.reset_cursor();
+      const win = this.id_to_window[wid];
+      win.reset_cursor();
     }
   }
 
@@ -3699,8 +3700,8 @@ class XpraClient {
     const yhot = packet[7];
     const img_data = packet[9];
     for (const wid in this.id_to_window) {
-      const window = this.id_to_window[wid];
-      window.set_cursor(encoding, w, h, xhot, yhot, img_data);
+      const win = this.id_to_window[wid];
+      win.set_cursor(encoding, w, h, xhot, yhot, img_data);
     }
   }
 
