@@ -27,7 +27,7 @@ const MENU_CONTENT_LEFT_CLASS_NAME = "menu-content-left";
 const MENU_CONTENT_RIGHT_CLASS_NAME = "menu-content-right";
 
 function noWindowList() {
-    document.querySelector("#open_windows").remove();
+  document.querySelector("#open_windows").remove();
 }
 
 function addWindowListItem(win, wid, title) {

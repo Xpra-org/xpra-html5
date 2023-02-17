@@ -639,7 +639,7 @@ class XpraClient {
   close_window(win) {
     window.removeWindowListItem(win.wid);
     win.destroy();
-    this.send([PACKET_TYPES.close_window, win.wid])
+    this.send([PACKET_TYPES.close_window, win.wid]);
   }
 
   close_protocol() {
@@ -3273,7 +3273,7 @@ class XpraClient {
   _new_window(wid, x, y, w, h, metadata, override_redirect, client_properties) {
     // each window needs their own DIV that contains a canvas
     const mydiv = document.createElement("div");
-    mydiv.id = "WINDOW_"+wid;
+    mydiv.id = "WINDOW_" + wid;
 
     const screen = document.querySelector("#screen");
     screen.append(mydiv);
