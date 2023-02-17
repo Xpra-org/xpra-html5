@@ -4,7 +4,7 @@
 # later version. See the file COPYING for details.
 
 %define version 7.0
-%define release 1.r1380%{?dist}
+%define release 1.r1416%{?dist}
 %define minifier uglifyjs
 %define python python3
 
@@ -77,7 +77,7 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
-* Mon Oct 17 2022 Antoine Martin <antoine@xpra.org> 7.0-1380-1
+* Fri Feb 17 2023 Antoine Martin <antoine@xpra.org> 7.0-1416-1
 - TODO
 
 * Mon Oct 17 2022 Antoine Martin <antoine@xpra.org> 6.0-1378-1

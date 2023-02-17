@@ -1,7 +1,7 @@
-xpra-html5 (7.0-r1380-1) UNRELEASED; urgency=low
+xpra-html5 (7.0-r1416-1) UNRELEASED; urgency=low
   * TODO
 
- -- Antoine Martin antoine@xpra.org  Mon, 17 Oct 2022 15:57:20 +0700 +700
+ -- Antoine Martin antoine@xpra.org  Fri, 17 Feb 2023 23:50:23 +0700 +700
 
 xpra-html5 (6.0-r1378-1) UNRELEASED; urgency=low
   * refactorings, cleanups, github CI, etc - JanCVanB
