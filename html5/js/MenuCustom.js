@@ -82,7 +82,7 @@ function addWindowListItem(win, wid, title) {
   img2.title = "Close";
   img2.className = MENU_CONTENT_RIGHT_CLASS_NAME;
   img2.addEventListener("click", function (e) {
-    client.close_window(win);
+    client.close_window(win, wid);
     e.stopPropagation();
     hideWindowList();
   });
