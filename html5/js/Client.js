@@ -3453,14 +3453,12 @@ class XpraClient {
     let h;
     let xhot;
     let yhot;
-    if (win.png_cursor_data) {
-      w = win.png_cursor_data[0];
-      h = win.png_cursor_data[1];
-      xhot = win.png_cursor_data[2];
-      yhot = win.png_cursor_data[3];
-      cursor_url = `data:image/png;base64,${window.btoa(
-        win.png_cursor_data[4]
-      )}`;
+    if (win.cursor_data) {
+      cursor_url = win.cursor_data[0];
+      xhot = win.cursor_data[1];
+      yhot = win.cursor_data[2];
+      w = win.cursor_data[3];
+      h = win.cursor_data[4];
     } else {
       w = 32;
       h = 32;

@@ -151,7 +151,7 @@ class XpraWindow {
     );
     this.spinnerdiv = jQuery(`#spinner${String(wid)}`);
 
-    this.png_cursor_data = null;
+    this.cursor_data = null;
     this.pointer_down = -1;
     this.pointer_last_x = 0;
     this.pointer_last_y = 0;
@@ -1246,7 +1246,7 @@ class XpraWindow {
 
   reset_cursor() {
     jQuery(`#${String(this.wid)}`).css("cursor", "default");
-    this.png_cursor_data = null;
+    this.cursor_data = null;
   }
 
   set_cursor(encoding, w, h, xhot, yhot, img_data) {
@@ -1254,18 +1254,19 @@ class XpraWindow {
       this.warn("received an invalid cursor encoding:", encoding);
       return;
     }
-    this.png_cursor_data = [w, h, xhot, yhot, img_data];
     let array = img_data;
     if (typeof img_data === "string") {
       array = Utilities.StringToUint8(img_data);
     }
     const window_element = jQuery(`#${String(this.wid)}`);
     const cursor_url = this.construct_base64_image_url(encoding, array);
+    const me = this;
     function set_cursor_url(url, x, y) {
       const url_string = `url('${url}')`;
       window_element.css("cursor", `${url_string}, default`);
       //CSS3 with hotspot:
       window_element.css("cursor", `${url_string} ${x} ${y}, auto`);
+      me.cursor_data = [url, x, y, w, h];
     }
     let zoom = detectZoom.zoom();
     //prefer fractional zoom values if possible:
@@ -1286,12 +1287,14 @@ class XpraWindow {
         set_cursor_url(
           scaled_cursor_url,
           Math.round(xhot * window.devicePixelRatio),
-          Math.round(yhot * window.devicePixelRatio)
+          Math.round(yhot * window.devicePixelRatio),
+          Math.round(canvas.width),
+          Math.round(canvas.height),
         );
       });
       temporary_img.src = cursor_url;
     } else {
-      set_cursor_url(cursor_url, xhot, yhot);
+      set_cursor_url(cursor_url, xhot, yhot, w, h);
     }
   }
 
