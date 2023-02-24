@@ -434,7 +434,7 @@ XpraProtocol.prototype.do_process_receive_queue = function() {
 		catch (e) {
 			//FIXME: maybe we should error out and disconnect here?
 			this.error("error decoding packet", e);
-			this.error("packet="+packet);
+			this.error("packet="+packet_data);
 			this.raw_packets = [];
 			return this.rQ.length>0;
 		}
