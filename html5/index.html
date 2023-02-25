@@ -625,7 +625,7 @@
 				const insecure = getboolparam("insecure", false);
 				const ignore_audio_blacklist = getboolparam("ignore_audio_blacklist", false);
 				const keyboard = getboolparam("keyboard", Utilities.isMobile());
-				const clipboard = getboolparam("clipboard", true);
+				const clipboard = getboolparam("clipboard", !(Utilities.isMacOS() && ssl));
 				const printing = getboolparam("printing", true);
 				const file_transfer = getboolparam("file_transfer", true);
 				const steal = getboolparam("steal", true);
