@@ -3361,6 +3361,7 @@ XpraClient.prototype._process_window_icon = function(packet, ctx) {
 XpraClient.prototype._process_draw = function(packet, ctx) {
 	//ensure that the pixel data is in a byte array:
 	const coding = Utilities.s(packet[6]);
+	packet[6] = coding;
 	let img_data = packet[7];
 	const raw_buffers = [];
 	const now = performance.now();
