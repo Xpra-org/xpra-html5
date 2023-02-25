@@ -3716,7 +3716,7 @@ XpraClient.prototype._send_sound_stop = function() {
 };
 
 XpraClient.prototype.close_audio = function() {
-	if (this.connected) {
+	if (this.connected && this.audio_enabled) {
 		this._send_sound_stop();
 	}
 	if (this.audio_framework=="mediasource") {
