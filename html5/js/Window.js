@@ -342,6 +342,20 @@ XpraWindow.prototype.register_canvas_pointer_events = function(canvas) {
 	canvas.addEventListener("pointerout", function(ev) {
 		me.debug("mouse", "pointerout:", ev);
 	});
+	//wheel events on a window:
+	const me = this;
+	function on_mousescroll(e) {
+		me.on_mousescroll(e);
+		e.stopPropagation();
+		return e.preventDefault();
+	}
+	if (Utilities.isEventSupported("wheel")) {
+		canvas.addEventListener("wheel", on_mousescroll, false);
+	} else if (Utilities.isEventSupported("mousewheel")) {
+		canvas.addEventListener("mousewheel", on_mousescroll, false);
+	} else if (Utilities.isEventSupported("DOMMouseScroll")) {
+		canvas.addEventListener("DOMMouseScroll", on_mousescroll, false); // for Firefox
+	}
 }
 
 XpraWindow.prototype.set_spinner = function(state) {
