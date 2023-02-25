@@ -1103,7 +1103,11 @@ XpraClient.prototype._get_screen_sizes = function() {
 	const wmm = Math.round(screen_size[0]*25.4/dpi);
 	const hmm = Math.round(screen_size[1]*25.4/dpi);
 	const monitor = ["Canvas", 0, 0, screen_size[0], screen_size[1], wmm, hmm];
-	const screen = ["HTML", screen_size[0], screen_size[1],
+        let name = "HTML";
+        if (navigator.userAgentData && navigator.userAgentData.brands) {
+            name = navigator.userAgentData.brands[0].brand+" "+navigator.userAgentData.brands[0].version;
+        }
+	const screen = [name, screen_size[0], screen_size[1],
 				wmm, hmm,
 				[monitor],
 				0, 0, screen_size[0], screen_size[1]
