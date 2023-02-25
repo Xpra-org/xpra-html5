@@ -136,14 +136,15 @@ XpraWindow.prototype.add_window_decorations = function() {
 	jQuery(this.div).addClass("border");
 	// add a title bar to this window if we need to
 	// create header
-	jQuery(this.div).prepend('<div id="head' + String(wid) + '" class="windowhead"> '+
+	let head = '<div id="head' + String(wid) + '" class="windowhead"> '+
 			'<span class="windowicon"><img class="windowicon" id="windowicon' + String(wid) + '" /></span> '+
 			'<span class="windowtitle" id="title' + String(wid) + '">' + this.title + '</span> '+
-			'<span class="windowbuttons"> '+
-			'<span id="minimize' + String(wid) + '"><img src="icons/minimize.png" /></span> '+
-			'<span id="maximize' + String(wid) + '"><img src="icons/maximize.png" /></span> '+
+			'<span class="windowbuttons"> ';
+	if (!jQuery(this.div).hasClass("modal")) {
+		head += '<span id="minimize' + String(wid) + '"><img src="icons/minimize.png" /></span> ';
+	head += 	'<span id="maximize' + String(wid) + '"><img src="icons/maximize.png" /></span> '+
 			'<span id="close' + String(wid) + '"><img src="icons/close.png" /></span> '+
-			'</span></div>');
+			'</span></div>';
 	// make draggable
 	if (this.scale!==1) {
 		jQuery(this.div).draggable({ transform: true });
