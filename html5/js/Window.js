@@ -146,6 +146,7 @@ XpraWindow.prototype.add_window_decorations = function() {
 	head += 	'<span id="maximize' + String(wid) + '"><img src="icons/maximize.png" /></span> '+
 			'<span id="close' + String(wid) + '"><img src="icons/close.png" /></span> '+
 			'</span></div>';
+	jQuery(this.div).prepend(head);
 	// make draggable
 	if (this.scale!==1) {
 		jQuery(this.div).draggable({ transform: true });
