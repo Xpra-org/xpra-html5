@@ -115,6 +115,9 @@ const Utilities = {
 	},
 
 	trimString: function(str, trimLength){
+		if (!str) {
+			return "";
+		}
 		return str.length>trimLength ?
 			str.substring(0, trimLength-3)+"..." :
 			str;
