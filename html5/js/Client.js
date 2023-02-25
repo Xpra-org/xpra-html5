@@ -23,6 +23,18 @@ const rencode_ok = rencode && rencode_selftest();
 const SHOW_START_MENU = true;
 
 
+function truncate(input) {
+  if (!input) {
+    return input;
+  }
+  const s = input.toString();
+  if (s.length > 5) {
+    return s.substring(0, 5) + "...";
+  }
+  return s;
+}
+
+
 function XpraClient(container) {
 	// the container div is the "screen" on the HTML page where we
 	// are able to draw our windows in.
@@ -1798,7 +1810,7 @@ XpraClient.prototype.init_clipboard = function() {
 }
 
 XpraClient.prototype.may_set_clipboard = function(e) {
-	this.cdebug("clipboard", "pending=", this.clipboard_pending, "buffer=", this.clipboard_buffer);
+	this.cdebug("clipboard", "pending=", this.clipboard_pending, "buffer=", truncate(this.clipboard_buffer));
 	if (!this.clipboard_pending) {
 		return;
 	}
