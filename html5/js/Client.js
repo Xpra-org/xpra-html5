@@ -1735,7 +1735,7 @@ XpraClient.prototype.init_clipboard = function() {
 		if (!clipboardData) {
 			clipboardData = window.clipboardData;
 		}
-		if (clipboardData && clipboardData.files) {
+		if (clipboardData && clipboardData.files && clipboardData.files.length > 0) {
 			const files = clipboardData.files;
 			me.clog("paste got", files.length, "files");
 			for (let i = 0; i < files.length; i++) {
