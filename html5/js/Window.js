@@ -142,6 +142,7 @@ XpraWindow.prototype.add_window_decorations = function() {
 			'<span class="windowbuttons"> ';
 	if (!jQuery(this.div).hasClass("modal")) {
 		head += '<span id="minimize' + String(wid) + '"><img src="icons/minimize.png" /></span> ';
+	}
 	head += 	'<span id="maximize' + String(wid) + '"><img src="icons/maximize.png" /></span> '+
 			'<span id="close' + String(wid) + '"><img src="icons/close.png" /></span> '+
 			'</span></div>';
@@ -343,7 +344,6 @@ XpraWindow.prototype.register_canvas_pointer_events = function(canvas) {
 		me.debug("mouse", "pointerout:", ev);
 	});
 	//wheel events on a window:
-	const me = this;
 	function on_mousescroll(e) {
 		me.on_mousescroll(e);
 		e.stopPropagation();
@@ -356,7 +356,7 @@ XpraWindow.prototype.register_canvas_pointer_events = function(canvas) {
 	} else if (Utilities.isEventSupported("DOMMouseScroll")) {
 		canvas.addEventListener("DOMMouseScroll", on_mousescroll, false); // for Firefox
 	}
-}
+};
 
 XpraWindow.prototype.set_spinner = function(state) {
 	if (state) {
