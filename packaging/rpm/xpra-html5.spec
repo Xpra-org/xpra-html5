@@ -77,7 +77,7 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
-* Sun Mar 05 2023 Antoine Martin <antoine@xpra.org> 5.1-28-1
+* Sun Mar 05 2023 Antoine Martin <antoine@xpra.org> 5.1-0-1
 - missing wheel events in non-seamless modes
 - workaround for older browsers without hasOwn (ie: Safari)
 - workaround debilitating Safari clipboard implementation
