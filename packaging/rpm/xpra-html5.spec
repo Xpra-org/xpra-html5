@@ -77,8 +77,25 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
-* Thu Jun 02 2022 Antoine Martin <antoine@xpra.org> 5.1-1285-1
-- TODO
+* Sun Mar 05 2023 Antoine Martin <antoine@xpra.org> 5.1-28-1
+- missing wheel events in non-seamless modes
+- workaround for older browsers without hasOwn (ie: Safari)
+- workaround debilitating Safari clipboard implementation
+- broken legacy clipboard
+- windows movement compatibility with Xpra 3.1.x
+- don't allow modal windows to be minimized
+- build fixes for RHEL and clones
+- setuptools and Debian repo build script fixes
+- only send 'sound-stop' if audio is enabled
+- `rencode` draw compatibility fix
+- avoid errors when windows don't have a title
+- provide a more useful screen name to the server
+- truncate large clipboard buffers in debug output
+- log the actual packet data with network errors
+- decode worker always supports rgb
+- fix brotli decompression
+- minor codestyle tweaks
+- clarify installation instructions
 
 * Wed May 11 2022 Antoine Martin <antoine@xpra.org> 5.0-1237-1
 - auto-fullscreen, alt-tabbing with window previews

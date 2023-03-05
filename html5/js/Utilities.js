@@ -11,9 +11,9 @@
 
 const Utilities = {
 	VERSION : "5.1",
-	REVISION : 1285,
-	LOCAL_MODIFICATIONS : 3,
-	BRANCH : "master",
+	REVISION : 28,
+	LOCAL_MODIFICATIONS : 1,
+	BRANCH : "v5.x",
 
 	exc : function() {
 		if (console) {

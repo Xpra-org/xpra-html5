@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.1] 2023-03-05
+* missing wheel events in non-seamless modes
+* workaround for older browsers without hasOwn (ie: Safari)
+* workaround debilitating Safari clipboard implementation
+* broken legacy clipboard
+* windows movement compatibility with Xpra 3.1.x
+* don't allow modal windows to be minimized
+* build fixes for RHEL and clones
+* setuptools and Debian repo build script fixes
+* only send 'sound-stop' if audio is enabled
+* `rencode` draw compatibility fix
+* avoid errors when windows don't have a title
+* provide a more useful screen name to the server
+* truncate large clipboard buffers in debug output
+* log the actual packet data with network errors
+* decode worker always supports rgb
+* fix brotli decompression
+* minor codestyle tweaks
+* clarify installation instructions
+
 ## [5.0] 2022-05-11
 * auto-fullscreen, alt-tabbing with window previews
 * decode images using an offscreen worker thread
