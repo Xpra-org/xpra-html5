@@ -1,6 +1,6 @@
 #!/bin/bash
 
-XPRA_HTML5_TAR_XZ=`ls ../pkgs/xpra-html5-* | sort -V | tail -n 1`
+XPRA_HTML5_TAR_XZ=`ls ../pkgs/xpra-html5-5* | sort -V | tail -n 1`
 if [ -z "${XPRA_HTML5_TAR_XZ}" ]; then
 	echo "no xpra-html5 source found"
 	exit 0
