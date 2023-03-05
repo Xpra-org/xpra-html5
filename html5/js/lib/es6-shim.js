@@ -26,6 +26,10 @@ THE SOFTWARE.
 
 var console = console || { log: function(){},  debug: function(){}, warn: function(){}};
 
+if (!"hasOwn" in Object) {
+	Object.hasOwn = Object.call.bind(Object.hasOwnProperty);
+}
+
 if (!String.prototype.startsWith) {
 	String.prototype.startsWith = function(searchString, position){
 		position = position || 0;
