@@ -22,6 +22,9 @@ import { isOffscreenWorkerAvailable } from './util/offscreen-helper';
 import { XpraProtocolWorkerHost } from './protocol-host';
 import { lz4 } from './lib/lz4';
 
+// Import packet types
+import { XpraAckFileChunkPacket, XpraBellPacket, XpraChallengePacket, XpraClipboardRequestPacket, XpraClipboardTokenPacket, XpraClosePacket, XpraConfigureOverrideRedirectPacket, XpraCursorPacket, XpraDesktopSizePacket, XpraDrawPacket, XpraEncodingsPacket, XpraEosPacket, XpraErrorPacket, XpraHelloPacket, XpraInfoResponsePacket, XpraInitiateMoveResizePacket, XpraKeyboardPacket, XpraLostWindowPacket, XpraNewOverrideRedirectPacket, XpraNewTrayPacket, XpraNewWindowPacket, XpraNotifyClosePacket, XpraNotifyShowPacket, XpraOpenUrlPacket, XpraPingEchoPacket, XpraPingPacket, XpraPointerPositionPacket, XpraRaiseWindowPacket, XpraSendFileChunkPacket, XpraSendFilePacket, XpraSetClipboardEnabledPacket, XpraSettingChangePacket, XpraSoundDataPacket, XpraStartupCompletePacket, XpraWindowIconPacket, XpraWindowMetadataPacket, XpraWindowMoveResizePacket, XpraWindowPacket, XpraWindowResizedPacket } from './types';
+
 // These are globally available on window
 declare const $, jQuery, AV, MediaSourceUtil, 
   default_settings, forge,
@@ -89,7 +92,7 @@ export class XpraClient {
   last_key_packet: never[];
   buttons_pressed: Set<unknown>;
   last_button_event: (number | boolean)[];
-  mousedown_event: null;
+  mousedown_event: Event;
   last_mouse_x = 0;
   last_mouse_y = 0;
   wheel_delta_x: number;
@@ -130,7 +133,7 @@ export class XpraClient {
   server_is_shadow: boolean;
   server_readonly: boolean;
   server_connection_data: boolean;
-  xdg_menu: null;
+  xdg_menu: Object;
   id_to_window: XpraWindow[];
   ui_events: number;
   pending_redraw: any[];
@@ -954,7 +957,7 @@ export class XpraClient {
     }
   }
 
-  _keyb_get_modifiers(event) {
+  _keyb_get_modifiers(event: KeyboardEvent) {
     /**
      * Returns the modifiers set for the current event.
      * We get the list of modifiers using "get_event_modifiers"
@@ -965,7 +968,7 @@ export class XpraClient {
     return this.translate_modifiers(modifiers);
   }
 
-  translate_modifiers(modifiers) {
+  translate_modifiers(modifiers: string[]) {
     /**
      * We translate "alt" and "meta" into their keymap name.
      * (usually "mod1")
@@ -1070,7 +1073,7 @@ export class XpraClient {
     return this.do_keyb_process(pressed, event || window.event);
   }
 
-  do_keyb_process(pressed, event) {
+  do_keyb_process(pressed, event: KeyboardEvent) {
     if (this.server_readonly) {
       return true;
     }
@@ -1083,13 +1086,13 @@ export class XpraClient {
      * And send the event to the server.
      */
 
-    let keyname = event.code || "";
-    const keycode = event.which || event.keyCode;
+    let keyname: string = event.code || "";
+    const keycode: number = event.which || event.keyCode;
     if (keycode == 229) {
       //this usually fires when we have received the event via "oninput" already
       return null;
     }
-    let keystring = event.key || String.fromCharCode(keycode);
+    let keystring: string = event.key || String.fromCharCode(keycode);
     let unpress_now = false;
     this.debug(
       "keyboard",
@@ -1288,7 +1291,7 @@ export class XpraClient {
     }
 
     if (this.topwindow != undefined) {
-      let packet = [
+      let packet: XpraKeyboardPacket = [
         "key-action",
         this.topwindow,
         keyname,
@@ -2581,7 +2584,7 @@ export class XpraClient {
     }
   }
 
-  _process_error(packet) {
+  _process_error(packet: XpraErrorPacket) {
     const code = Number.parseInt(packet[2]);
     let reconnect =
       this.reconnect || this.reconnect_attempt < this.reconnect_count;
@@ -2655,7 +2658,7 @@ export class XpraClient {
     }, this.reconnect_delay);
   }
 
-  _process_close(packet) {
+  _process_close(packet: XpraClosePacket) {
     this.clog(
       "websocket closed: ",
       packet[1],
@@ -2703,7 +2706,7 @@ export class XpraClient {
     this.callback_close(this.disconnect_reason);
   }
 
-  _process_startup_complete(packet) {
+  _process_startup_complete(packet: XpraStartupCompletePacket) {
     this.log("startup complete");
     this.emit_connection_established();
   }
@@ -2723,7 +2726,7 @@ export class XpraClient {
     }
   }
 
-  _process_hello(packet) {
+  _process_hello(packet: XpraHelloPacket) {
     this.cancel_hello_timer();
     const hello = packet[1];
     this.clog("received hello capabilities", hello);
@@ -2801,7 +2804,7 @@ export class XpraClient {
     this.log("got hello: server version", version, "accepted our connection");
     //figure out "alt" and "meta" keys:
     if ("modifier_keycodes" in hello) {
-      const modifier_keycodes = hello["modifier_keycodes"];
+      const modifier_keycodes = hello["modifier_keycodes"] as Object;
       for (const keycode_index in modifier_keycodes) {
         const keys = modifier_keycodes[keycode_index];
         for (const key_index in keys) {
@@ -2937,7 +2940,7 @@ export class XpraClient {
     this.connected = true;
   }
 
-  _process_encodings(packet) {
+  _process_encodings(packet: XpraEncodingsPacket) {
     const caps = packet[1];
     this.log("update encodings:", Object.keys(caps));
   }
@@ -3024,7 +3027,7 @@ export class XpraClient {
     }
   }
 
-  _process_setting_change(packet) {
+  _process_setting_change(packet: XpraSettingChangePacket) {
     const setting = packet[1];
     const value = packet[2];
     if (setting == "xdg-menu" && SHOW_START_MENU) {
@@ -3062,7 +3065,7 @@ export class XpraClient {
     //this hook can be overriden
   }
 
-  _process_challenge(packet) {
+  _process_challenge(packet: XpraChallengePacket) {
     if (this.encryption) {
       if (packet.length >= 3) {
         this.cipher_out_caps = packet[2];
@@ -3206,7 +3209,7 @@ export class XpraClient {
     ) as any as number;
   }
 
-  _process_ping(packet) {
+  _process_ping(packet: XpraPingPacket) {
     const echotime = packet[1];
     this.last_ping_server_time = echotime;
     if (packet.length > 2) {
@@ -3224,7 +3227,7 @@ export class XpraClient {
     this.send([PACKET_TYPES.ping_echo, echotime, l1, l2, l3, 0, sid]);
   }
 
-  _process_ping_echo(packet) {
+  _process_ping_echo(packet: XpraPingEchoPacket) {
     this.last_ping_echoed_time = packet[1];
     const l1 = packet[2];
     const l2 = packet[3];
@@ -3255,7 +3258,7 @@ export class XpraClient {
       this.info_request_pending = true;
     }
   }
-  _process_info_response(packet) {
+  _process_info_response(packet: XpraInfoResponsePacket) {
     this.info_request_pending = false;
     this.server_last_info = packet[1];
     this.debug("network", "info-response:", this.server_last_info);
@@ -3294,7 +3297,7 @@ export class XpraClient {
     float_menu_element.offset({ top, left });
   }
 
-  _process_new_tray(packet) {
+  _process_new_tray(packet: XpraNewTrayPacket) {
     const wid = packet[1];
     const metadata = packet[4];
     const mydiv = document.createElement("div");
@@ -3397,7 +3400,7 @@ export class XpraClient {
   /**
    * Windows
    */
-  _new_window(wid, x, y, w, h, metadata, override_redirect, client_properties) {
+  _new_window(wid: number, x: number, y: number, w: number, h: number, metadata, override_redirect: boolean, client_properties) {
     // each window needs their own DIV that contains a canvas
     const mydiv = document.createElement("div");
     mydiv.id = String(wid);
@@ -3446,7 +3449,7 @@ export class XpraClient {
     }
   }
 
-  _new_window_common(packet, override_redirect) {
+  _new_window_common(packet: XpraWindowPacket, override_redirect: boolean) {
     const wid = packet[1];
     let x = packet[2];
     let y = packet[3];
@@ -3509,15 +3512,15 @@ export class XpraClient {
     this.send(packet);
   }
 
-  _process_new_window(packet) {
-    this._new_window_common(packet, false);
+  _process_new_window(packet: XpraNewWindowPacket) {
+    this._new_window_common(packet as any as XpraWindowPacket, false);
   }
 
-  _process_new_override_redirect(packet) {
-    this._new_window_common(packet, true);
+  _process_new_override_redirect(packet: XpraNewOverrideRedirectPacket) {
+    this._new_window_common(packet as any as XpraWindowPacket, true);
   }
 
-  _process_window_metadata(packet) {
+  _process_window_metadata(packet: XpraWindowMetadataPacket) {
     const wid = packet[1];
     const metadata = packet[2];
     const win = this.id_to_window[wid];
@@ -3526,7 +3529,7 @@ export class XpraClient {
     }
   }
 
-  _process_initiate_moveresize(packet) {
+  _process_initiate_moveresize(packet: XpraInitiateMoveResizePacket) {
     const wid = packet[1];
     const win = this.id_to_window[wid];
     if (!win) {
@@ -3554,7 +3557,7 @@ export class XpraClient {
     );
   }
 
-  _process_pointer_position(packet) {
+  _process_pointer_position(packet: XpraPointerPositionPacket) {
     const wid = packet[1];
     let x = packet[2];
     let y = packet[3];
@@ -3577,7 +3580,7 @@ export class XpraClient {
       xhot = win.png_cursor_data[2];
       yhot = win.png_cursor_data[3];
       cursor_url = `data:image/png;base64,${window.btoa(
-        win.png_cursor_data[4]
+        win.png_cursor_data[4] as string
       )}`;
     } else {
       w = 32;
@@ -3600,7 +3603,7 @@ export class XpraClient {
     //this hook can be overriden
   }
 
-  _process_lost_window(packet) {
+  _process_lost_window(packet: XpraLostWindowPacket) {
     const wid = packet[1];
     const win = this.id_to_window[wid];
     if (
@@ -3661,7 +3664,7 @@ export class XpraClient {
     }
   }
 
-  _process_raise_window(packet) {
+  _process_raise_window(packet: XpraRaiseWindowPacket) {
     const wid = packet[1];
     const win = this.id_to_window[wid];
     if (win != undefined) {
@@ -3669,7 +3672,7 @@ export class XpraClient {
     }
   }
 
-  _process_window_resized(packet) {
+  _process_window_resized(packet: XpraWindowResizedPacket) {
     const wid = packet[1];
     const width = packet[2];
     const height = packet[3];
@@ -3679,22 +3682,22 @@ export class XpraClient {
     }
   }
 
-  _process_window_move_resize(packet) {
+  _process_window_move_resize(packet: XpraWindowMoveResizePacket) {
     const [, wid, x, y, width, height] = packet;
     this.id_to_window[wid]?.move_resize(x, y, width, height);
   }
 
-  _process_configure_override_redirect(packet) {
+  _process_configure_override_redirect(packet: XpraConfigureOverrideRedirectPacket) {
     const [, wid, x, y, width, height] = packet;
     this.id_to_window[wid]?.move_resize(x, y, width, height);
   }
 
-  _process_desktop_size(packet) {
+  _process_desktop_size(packet: XpraDesktopSizePacket) {
     //we don't use this yet,
     //we could use this to clamp the windows to a certain area
   }
 
-  _process_bell(packet) {
+  _process_bell(packet: XpraBellPacket) {
     const percent = packet[3];
     const pitch = packet[4];
     const duration = packet[5];
@@ -3721,7 +3724,7 @@ export class XpraClient {
   /**
    * Notifications
    */
-  _process_notify_show(packet) {
+  _process_notify_show(packet: XpraNotifyShowPacket) {
     //TODO: add UI switch to disable notifications
     const nid = packet[2];
     const replaces_nid = packet[4];
@@ -3793,7 +3796,7 @@ export class XpraClient {
     context._new_ui_event();
   }
 
-  _process_notify_close(packet) {
+  _process_notify_close(packet: XpraNotifyClosePacket) {
     const nid = packet[1];
     if (closeNotification) {
       closeNotification(nid);
@@ -3810,7 +3813,7 @@ export class XpraClient {
     }
   }
 
-  _process_cursor(packet) {
+  _process_cursor(packet: XpraCursorPacket) {
     if (packet.length < 9) {
       this.reset_cursor();
       return;
@@ -3832,7 +3835,7 @@ export class XpraClient {
     }
   }
 
-  _process_window_icon(packet) {
+  _process_window_icon(packet: XpraWindowIconPacket) {
     const wid = packet[1];
     const w = packet[2];
     const h = packet[3];
@@ -3856,7 +3859,7 @@ export class XpraClient {
   /**
    * Window Painting
    */
-  _process_draw(packet) {
+  _process_draw(packet: XpraDrawPacket) {
     //ensure that the pixel data is in a byte array:
     const coding = Utilities.s(packet[6]);
     let img_data = packet[7];
@@ -3881,7 +3884,7 @@ export class XpraClient {
     }
   }
 
-  _process_eos(packet) {
+  _process_eos(packet: XpraEosPacket) {
     this.do_process_draw(packet, 0);
     const wid = packet[1];
     if (this.decode_worker) {
@@ -4316,7 +4319,7 @@ export class XpraClient {
     }
   }
 
-  _process_sound_data(packet) {
+  _process_sound_data(packet: XpraSoundDataPacket) {
     try {
       const codec = Utilities.s(packet[1]);
       const buf = packet[2];
@@ -4356,7 +4359,7 @@ export class XpraClient {
     //can be overriden
   }
 
-  add_sound_data(codec, buf, metadata) {
+  add_sound_data(codec: string, buf: Uint8Array, metadata: Object) {
     let MIN_START_BUFFERS = 4;
     const MAX_BUFFERS = 250;
     const CONCAT = true;
@@ -4603,16 +4606,16 @@ export class XpraClient {
     this.send(packet);
   }
 
-  _process_clipboard_token(packet) {
+  _process_clipboard_token(packet: XpraClipboardTokenPacket) {
     if (!this.clipboard_enabled) {
       return;
     }
     const selection = packet[1];
     let targets = [];
-    let target;
+    let target: string;
     let dtype: string;
-    let dformat;
-    let wire_encoding;
+    let dformat: number;
+    let wire_encoding: string;
     let wire_data: Uint8Array | string;
     if (packet.length >= 3) {
       targets = packet[2];
@@ -4699,7 +4702,7 @@ export class XpraClient {
     }
   }
 
-  _process_set_clipboard_enabled(packet) {
+  _process_set_clipboard_enabled(packet: XpraSetClipboardEnabledPacket) {
     if (!this.clipboard_enabled) {
       return;
     }
@@ -4709,7 +4712,7 @@ export class XpraClient {
     );
   }
 
-  _process_clipboard_request(packet) {
+  _process_clipboard_request(packet: XpraClipboardRequestPacket) {
     // we shouldn't be handling clipboard requests
     // unless we have support for navigator.clipboard:
     const request_id = packet[1];
@@ -4910,7 +4913,7 @@ export class XpraClient {
   /**
    * File transfers and printing
    */
-  _process_send_file(packet) {
+  _process_send_file(packet: XpraSendFilePacket) {
     const basefilename = Utilities.s(packet[1]);
     const mimetype = Utilities.s(packet[2]);
     const printit = packet[3];
@@ -5088,7 +5091,7 @@ export class XpraClient {
     this.send([PACKET_TYPES.ack_file_chunk, chunk_id, false, message, chunk]);
   }
 
-  _process_send_file_chunk(packet) {
+  _process_send_file_chunk(packet: XpraSendFileChunkPacket) {
     const chunk_id = Utilities.s(packet[1]);
     const chunk = packet[2];
     const file_data = packet[3];
@@ -5411,7 +5414,7 @@ export class XpraClient {
     this.send_chunks_in_progress.delete(chunk_id);
   }
 
-  _process_ack_file_chunk(packet) {
+  _process_ack_file_chunk(packet: XpraAckFileChunkPacket) {
     //the other end received our send-file or send-file-chunk,
     //send some more file data
     this.debug("file", "ack-file-chunk: ", packet);
@@ -5490,7 +5493,7 @@ export class XpraClient {
     this.send(packet);
   }
 
-  _process_open_url(packet) {
+  _process_open_url(packet: XpraOpenUrlPacket) {
     const url = packet[1];
     if (!this.open_url) {
       this.cwarn("Warning: received a request to open URL", url);
