@@ -21,16 +21,15 @@ import { XpraProtocol } from './protocol';
 import { isOffscreenWorkerAvailable } from './util/offscreen-helper';
 import { XpraProtocolWorkerHost } from './protocol-host';
 import { lz4 } from './lib/lz4';
+import { MediaSourceUtil, MediaSourceConstants } from './util/media-source-util';
 
 // Import packet types
 import { XpraAckFileChunkPacket, XpraBellPacket, XpraChallengePacket, XpraClipboardRequestPacket, XpraClipboardTokenPacket, XpraClosePacket, XpraConfigureOverrideRedirectPacket, XpraCursorPacket, XpraDesktopSizePacket, XpraDrawPacket, XpraEncodingsPacket, XpraEosPacket, XpraErrorPacket, XpraHelloPacket, XpraInfoResponsePacket, XpraInitiateMoveResizePacket, XpraKeyboardPacket, XpraLostWindowPacket, XpraNewOverrideRedirectPacket, XpraNewTrayPacket, XpraNewWindowPacket, XpraNotifyClosePacket, XpraNotifyShowPacket, XpraOpenUrlPacket, XpraPingEchoPacket, XpraPingPacket, XpraPointerPositionPacket, XpraRaiseWindowPacket, XpraSendFileChunkPacket, XpraSendFilePacket, XpraSetClipboardEnabledPacket, XpraSettingChangePacket, XpraSoundDataPacket, XpraStartupCompletePacket, XpraWindowIconPacket, XpraWindowMetadataPacket, XpraWindowMoveResizePacket, XpraWindowPacket, XpraWindowResizedPacket } from './types';
 
 // These are globally available on window
-declare const $, jQuery, AV, MediaSourceUtil, 
-  default_settings, forge,
-  removeWindowListItem, BrotliDecode,
-  streamSaver;
-declare const doNotification, MediaSourceConstants, addWindowListItem, closeNotification;
+declare const $, jQuery, AV,  default_settings, forge,
+  removeWindowListItem, BrotliDecode, streamSaver;
+declare const doNotification, addWindowListItem, closeNotification;
 declare let float_menu_width, float_menu_item_size, float_menu_padding;
 
 const XPRA_CLIENT_FORCE_NO_WORKER = false;
@@ -76,7 +75,7 @@ export class XpraClient {
   audio_codecs: {};
   audio_framework: string;
   audio_aurora_ctx: any;
-  audio_codec: null;
+  audio_codec: string;
   audio_context: AudioContext;
   audio_state: null;
   aurora_codecs: {};

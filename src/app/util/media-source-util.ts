@@ -4,7 +4,7 @@
  *
  */
 
-const MediaSourceConstants = {
+export const MediaSourceConstants = {
   CODEC_DESCRIPTION: {
     mp4a: "mpeg4: aac",
     "aac+mpeg4": "mpeg4: aac",
@@ -101,7 +101,7 @@ const MediaSourceConstants = {
   },
 };
 
-const MediaSourceUtil = {
+export const MediaSourceUtil = {
   getMediaSourceClass() {
     return window.MediaSource || window.WebKitMediaSource;
   },
