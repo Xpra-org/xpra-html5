@@ -9,6 +9,10 @@
  *   LICENSE file in the root directory of this source tree.
  *
  */
+if (!Object.hasOwn) {
+    Object.hasOwn = Object.call.bind(Object.hasOwnProperty);
+}
+
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
