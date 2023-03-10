@@ -7,6 +7,10 @@
  *
  */
 
+if (!Object.hasOwn) {
+    Object.hasOwn = Object.call.bind(Object.hasOwnProperty);
+}
+
 const Utilities = {
   VERSION: "7.0",
   REVISION: 1285,

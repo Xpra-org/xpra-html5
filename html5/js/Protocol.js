@@ -17,6 +17,10 @@
 
 const CONNECT_TIMEOUT = 15_000;
 
+if (!Object.hasOwn) {
+    Object.hasOwn = Object.call.bind(Object.hasOwnProperty);
+}
+
 /*
 A stub class to facilitate communication with the protocol when
 it is loaded in a worker
