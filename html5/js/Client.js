@@ -3833,7 +3833,7 @@ XpraClient.prototype.add_sound_data = function(codec, buf, metadata) {
 		//push metadata first:
 		for (let i = 0; i < metadata.length; i++) {
 			this.debug("audio", "metadata[", i, "]=", metadata[i], ", length=", metadata[i].length, ", type=", Object.prototype.toString.call(metadata[i]));
-			this.audio_buffers.push(Utilities.StringToUint8(metadata[i]));
+			this.audio_buffers.push(Utilities.u(metadata[i]));
 		}
 		//since we have the metadata, we should be good to go:
 		MIN_START_BUFFERS = 1;

@@ -447,10 +447,18 @@ const Utilities = {
 
 	s : function(v){
 		const type = typeof v;
-	    if (type === 'object' && v.constructor===Uint8Array) {
+		if (type === 'object' && v.constructor===Uint8Array) {
 			return Utilities.Uint8ToString(v);
 		}
 		return v.toString();
+	},
+
+	u : function(v){
+		const type = typeof v;
+		if (type === 'object' && v.constructor===Uint8Array) {
+			return v;
+		}
+		return StringToUint8(v.toString());
 	},
 
 	ArrayBufferToBase64 : function(uintArray) {
