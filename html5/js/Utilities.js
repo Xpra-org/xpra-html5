@@ -443,6 +443,14 @@ const Utilities = {
     return v.toString();
   },
 
+  u : function(v){
+    const type = typeof v;
+      if (type === 'object' && v.constructor===Uint8Array) {
+        return v;
+      }
+     return StringToUint8(v.toString());
+  },
+
   ArrayBufferToBase64(uintArray) {
     // apply in chunks of 10400 to avoid call stack overflow
     // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/apply

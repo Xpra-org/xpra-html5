@@ -4263,7 +4263,7 @@ class XpraClient {
           ", type=",
           Object.prototype.toString.call(metadatum)
         );
-        this.audio_buffers.push(Utilities.StringToUint8(metadatum));
+        this.audio_buffers.push(Utilities.u(metadatum));
       }
       //since we have the metadata, we should be good to go:
       MIN_START_BUFFERS = 1;
