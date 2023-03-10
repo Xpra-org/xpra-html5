@@ -331,15 +331,12 @@
 			let vrefresh = -1;
 			function animation_cb(now) {
 				let l = animation_times.push(now);
-				if (l > 100) {
-					animation_times.shift();
-				}
 				let t0 = animation_times[0];
 				if (now>t0) {
 					fps = Math.floor(1000 * (l-1) / (now - t0));
 				}
 				cdebug("draw", "animation_cb", now, "fps", fps, "vrefresh", vrefresh);
-				if (vrefresh<0) {
+				if (vrefresh<0 && l<100) {
 					window.requestAnimationFrame(animation_cb);
 				}
 			};
