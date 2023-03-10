@@ -36,6 +36,13 @@ function send_decode_error(packet, error) {
     self.postMessage({'error': ""+error, 'packet' : packet});
 }
 
+function s(v){
+    const type = typeof v;
+    if (type === 'object' && v.constructor===Uint8Array) {
+        return String.fromCharCode.apply(null, v);
+    }
+    return v.toString();
+}
 
 class WindowDecoder {
 
@@ -352,8 +359,9 @@ class WindowDecoder {
             y = packet[3],
             width = packet[4],
             height = packet[5],
-            coding_fmt = packet[6],
+            coding_fmt = s(packet[6]),
             data = packet[7];
+        packet[6] = coding_fmt;
 
         const canvas = this.back_buffer || this.canvas;
         let ctx = canvas.getContext("2d");
