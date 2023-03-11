@@ -779,7 +779,7 @@
         //Safari and navigator.clipboard don't mix well:
         //(only enabled with ssl contexts)
         //https://github.com/Xpra-org/xpra-html5/issues/226
-        const clipboard = getboolparam("clipboard", !(Utilities.isMacOS() && ssl));
+        const clipboard = getboolparam("clipboard", !(Utilities.isSafari() && ssl));
         const printing = getboolparam("printing", true);
         const file_transfer = getboolparam("file_transfer", true);
         const steal = getboolparam("steal", true);
