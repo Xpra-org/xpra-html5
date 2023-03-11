@@ -595,7 +595,9 @@
       }
       function hide_bugreport() {
         $("#bugreport").hide();
-        enable_clipboard_autofocus();
+        if (client.clipboard_enabled) {
+          enable_clipboard_autofocus();
+        }
       }
       function show_bugreport(event) {
         //stop capturing input, so we can interact with the bugreport form:
@@ -1500,7 +1502,9 @@
         );
         client.on_connect = function () {
           init_float_menu();
-          enable_clipboard_autofocus();
+          if (client.clipboard_enabled) {
+            enable_clipboard_autofocus();
+          }
           client.capture_keyboard = true;
         };
         const blocked_hosts = (getparam("blocked-hosts") || "").split(",");
@@ -1594,8 +1598,10 @@
         // disable right click menu:
         window.oncontextmenu = function (e) {
           if (
-            client.clipboard_direction === "to-client" ||
-            client.clipboard_direction === "both"
+            client.clipboard_enabled && (
+              client.clipboard_direction === "to-client" ||
+              client.clipboard_direction === "both"
+            )
           ) {
             client._poll_clipboard(e);
           }
