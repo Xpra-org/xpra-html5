@@ -2,7 +2,7 @@
  * Copyright (c) 2021 Antoine Martin <antoine@xpra.org>
  */
 
-var RENCODE = {
+const RENCODE = {
 	DEFAULT_FLOAT_BITS : 32,
 	MAX_INT_LENGTH : 64,
 

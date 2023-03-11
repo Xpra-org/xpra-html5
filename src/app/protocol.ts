@@ -249,7 +249,7 @@ export class XpraProtocol {
       this.protocol_error(`invalid packet index: ${index}`);
       return false;
     }
-    let packet_size = [4, 5, 6, 7].reduce(
+    let packet_size: number = [4, 5, 6, 7].reduce(
       (accumulator, value) => accumulator * 0x1_00 + this.header[value],
       0
     );

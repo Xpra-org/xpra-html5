@@ -1750,7 +1750,7 @@ CHARCODE_TO_NAME_SHIFTED[221] = "dead_grave";
  * @param event
  * @returns {Array} of strings
  */
-export function get_event_modifiers(event) {
+export function get_event_modifiers(event: KeyboardEvent) {
   const modifiers: string[] = [];
   if (event.getModifierState) {
     if (event.getModifierState("Control")) modifiers.push("control");
@@ -1762,12 +1762,12 @@ export function get_event_modifiers(event) {
     //ScrollLock
     //Fn
     //AltGraph
-  } else if (event.modifiers) {
+  } else if (event['modifiers']) {
     // TODO: Event.SHIFT_MASK is not in ES2020 spec
-    if (event.modifiers & Event['ALT_MASK']) modifiers.push("alt");
-    if (event.modifiers & Event['CONTROL_MASK']) modifiers.push("control");
-    if (event.modifiers & Event['SHIFT_MASK']) modifiers.push("shift");
-    if (event.modifiers & Event['META_MASK']) modifiers.push("meta");
+    if (event['modifiers'] & Event['ALT_MASK']) modifiers.push("alt");
+    if (event['modifiers'] & Event['CONTROL_MASK']) modifiers.push("control");
+    if (event['modifiers'] & Event['SHIFT_MASK']) modifiers.push("shift");
+    if (event['modifiers'] & Event['META_MASK']) modifiers.push("meta");
   } else {
     if (event.altKey) modifiers.push("alt");
     if (event.ctrlKey) modifiers.push("control");

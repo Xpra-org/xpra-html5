@@ -185,9 +185,9 @@ export class XpraClient {
   }
 
   //server:
-  host = null;
-  port = null;
-  ssl = null;
+  host: string = null;
+  port: number = null;
+  ssl: boolean = null;
   path = "";
   username = "";
   passwords = [];
@@ -5487,7 +5487,7 @@ export class XpraClient {
     ]);
   }
 
-  start_command(name, command, ignore) {
+  start_command(name: string, command: string, ignore: string) {
     const packet = ["start-command", name, command, ignore];
     this.send(packet);
   }

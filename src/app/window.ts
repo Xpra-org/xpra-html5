@@ -83,7 +83,7 @@ export class XpraWindow {
     // yhot, 
     number,
     // img_data
-    string
+    string | Uint8Array
   ] | null;
   pointer_down: number;
   pointer_last_x: number;
@@ -92,12 +92,12 @@ export class XpraWindow {
   d_closebtn: string;
   d_maximizebtn: string;
   d_minimizebtn: string;
-  canvas_ctx: any;
-  draw_canvas: any;
-  offscreen_canvas: any;
+  canvas_ctx: CanvasRenderingContext2D;
+  draw_canvas: HTMLCanvasElement;
+  offscreen_canvas: HTMLCanvasElement;
   paint_queue: any[];
   paint_pending: number;
-  offscreen_canvas_ctx: any;
+  offscreen_canvas_ctx: CanvasRenderingContext2D;
   outerH: any;
   outerW: any;
   outerX: number;
@@ -373,7 +373,7 @@ export class XpraWindow {
     this.register_canvas_pointer_events(this.canvas);
   }
 
-  transfer_canvas(canvas) {
+  transfer_canvas(canvas: HTMLCanvasElement) {
     const offscreen_handle = canvas.transferControlToOffscreen();
     this.client.decode_worker.postMessage(
       {
@@ -1204,10 +1204,10 @@ export class XpraWindow {
   }
 
   initiate_moveresize(
-    mousedown_event,
-    x_root,
-    y_root,
-    direction,
+    mousedown_event: Event,
+    x_root: number,
+    y_root: number,
+    direction: number,
     button,
     source_indication
   ) {
@@ -1220,7 +1220,8 @@ export class XpraWindow {
       source_indication,
     ]);
     if (direction == MOVERESIZE_MOVE && mousedown_event) {
-      const e = mousedown_event;
+      const e = mousedown_event as any;
+      // TODO: Should not assign to an event
       e.type = "mousedown.draggable";
       e.target = this.div[0];
       this.div.trigger(e);
@@ -1309,7 +1310,7 @@ export class XpraWindow {
     this.png_cursor_data = null;
   }
 
-  set_cursor(encoding, w, h, xhot, yhot, img_data) {
+  set_cursor(encoding: "png", w: number, h: number, xhot: number, yhot: number, img_data: string | Uint8Array) {
     if (encoding != "png") {
       this.warn("received an invalid cursor encoding:", encoding);
       return;

@@ -538,7 +538,7 @@ export const Utilities = globalThis['Utilities'] = {
     return headers;
   },
 
-  parseParams(q) {
+  parseParams(q: string) {
     const parameters = {};
     let e;
     const a = /\+/g; // Regex for replacing addition symbol with a space
@@ -550,7 +550,7 @@ export const Utilities = globalThis['Utilities'] = {
     return parameters;
   },
 
-  getparam(property) {
+  getparam(property: string) {
     // TODO: Remove this global override
     let getParameter = window.location['getParameter'];
     if (!getParameter) {
