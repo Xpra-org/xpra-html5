@@ -4,7 +4,7 @@
 # later version. See the file COPYING for details.
 
 %define version 7.0
-%define release 1.r1416%{?dist}
+%define release 1.r1424%{?dist}
 %define minifier uglifyjs
 %define python python3
 
@@ -77,8 +77,25 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
-* Fri Feb 17 2023 Antoine Martin <antoine@xpra.org> 7.0-1416-1
-- TODO
+* Sun Mar 12 2023 Antoine Martin <antoine@xpra.org> 7.0-1424-1
+- unable to move undecorated / CSD windows
+- throttle video decoder to prevent flooding
+- disable offscreen decode worker with Firefox to prevent flickering
+- workaround for setuptools breakage in version 61 and later
+- native video decoding is fast enough not to require much downscaling](https://github.com/Xpra-org/xpra-html5/commit/ed4b0d72f40864cea4fb4b91b5c400085eb44fa8)
+- propagate error messages
+- truncate large clipboard buffers in log messages
+- `scroll` draw packets can hang the connection
+- prefer h264 and remove vp9
+- spurious audio stop errors
+- make stream download URL easier to embed
+- missing scroll wheel events
+- avoid errors if the window's title is unset
+- remove support for software video decoding
+- don't enable clipboard with Safari and SSL
+- provide more useful screen name to the server
+- cursor display and scaling issues
+- workaround for older versions of Safari
 
 * Mon Oct 17 2022 Antoine Martin <antoine@xpra.org> 6.0-1378-1
 - refactorings, cleanups, github CI, etc - JanCVanB

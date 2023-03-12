@@ -1,7 +1,24 @@
-xpra-html5 (7.0-r1416-1) UNRELEASED; urgency=low
-  * TODO
+xpra-html5 (7.0-r1424-1) UNRELEASED; urgency=low
+  * unable to move undecorated / CSD windows
+  * throttle video decoder to prevent flooding
+  * disable offscreen decode worker with Firefox to prevent flickering
+  * workaround for setuptools breakage in version 61 and later
+  * native video decoding is fast enough not to require much downscaling](https://github.com/Xpra-org/xpra-html5/commit/ed4b0d72f40864cea4fb4b91b5c400085eb44fa8)
+  * propagate error messages
+  * truncate large clipboard buffers in log messages
+  * `scroll` draw packets can hang the connection
+  * prefer h264 and remove vp9
+  * spurious audio stop errors
+  * make stream download URL easier to embed
+  * missing scroll wheel events
+  * avoid errors if the window's title is unset
+  * remove support for software video decoding
+  * don't enable clipboard with Safari and SSL
+  * provide more useful screen name to the server
+  * cursor display and scaling issues
+  * workaround for older versions of Safari
 
- -- Antoine Martin antoine@xpra.org  Fri, 17 Feb 2023 23:50:23 +0700 +700
+ -- Antoine Martin antoine@xpra.org  Sun, 12 Mar 2023 22:22:28 +0700 +700
 
 xpra-html5 (6.0-r1378-1) UNRELEASED; urgency=low
   * refactorings, cleanups, github CI, etc - JanCVanB
