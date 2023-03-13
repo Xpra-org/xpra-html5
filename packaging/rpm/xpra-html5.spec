@@ -4,7 +4,7 @@
 # later version. See the file COPYING for details.
 
 %define version 7.0
-%define release 1.r1424%{?dist}
+%define release 1.r0%{?dist}
 %define minifier uglifyjs
 %define python python3
 
@@ -77,7 +77,7 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
-* Sun Mar 12 2023 Antoine Martin <antoine@xpra.org> 7.0-1424-1
+* Mon Mar 13 2023 Antoine Martin <antoine@xpra.org> 7.0-0-1
 - unable to move undecorated / CSD windows
 - throttle video decoder to prevent flooding
 - disable offscreen decode worker with Firefox to prevent flickering
