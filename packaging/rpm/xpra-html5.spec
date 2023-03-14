@@ -3,8 +3,8 @@
 # Xpra is released under the terms of the GNU GPL v2, or, at your option, any
 # later version. See the file COPYING for details.
 
-%define version 7.0
-%define release 1.r0%{?dist}
+%define version 7.1
+%define release 1.r2%{?dist}
 %define minifier uglifyjs
 %define python python3
 
@@ -77,6 +77,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Tue Mar 14 2023 Antoine Martin <antoine@xpra.org> 7.1-2-1
+- TODO
+
 * Mon Mar 13 2023 Antoine Martin <antoine@xpra.org> 7.0-0-1
 - unable to move undecorated / CSD windows
 - throttle video decoder to prevent flooding
