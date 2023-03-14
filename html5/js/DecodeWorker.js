@@ -105,15 +105,11 @@ function decode_draw_packet(packet, start) {
 
   let options = {};
   if (packet.length > 10) options = packet[10];
-  let enc_width = width;
-  let enc_height = height;
   const bitmap_options = {
     premultiplyAlpha: "none",
   };
   const scaled_size = options["scaled_size"];
   if (scaled_size) {
-    enc_width = scaled_size[0];
-    enc_height = scaled_size[1];
     delete options["scaled-size"];
     bitmap_options["resizeWidth"] = width;
     bitmap_options["resizeHeight"] = height;
