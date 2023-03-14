@@ -43,7 +43,6 @@ if (XpraVideoDecoderLoader.hasNativeDecoder()) {
 
 const all_encodings = new Set([
   "void",
-  "scroll",
   ...image_coding,
   ...video_coding,
 ]);
