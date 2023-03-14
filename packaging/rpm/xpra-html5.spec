@@ -3,7 +3,7 @@
 # Xpra is released under the terms of the GNU GPL v2, or, at your option, any
 # later version. See the file COPYING for details.
 
-%define version 5.1
+%define version 5.2
 %define release 1.r1275%{?dist}
 %define minifier uglifyjs
 %define python python3
@@ -77,6 +77,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Tue Mar 14 2023 Antoine Martin <antoine@xpra.org> 5.2-6-1
+- TODO
+
 * Sun Mar 05 2023 Antoine Martin <antoine@xpra.org> 5.1-0-1
 - missing wheel events in non-seamless modes
 - workaround for older browsers without hasOwn (ie: Safari)
