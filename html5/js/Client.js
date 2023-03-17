@@ -544,6 +544,14 @@ XpraClient.prototype.redraw_windows = function() {
 	}
 };
 
+XpraClient.prototype.remove_windows = function() {
+	for (const wid in this.id_to_window) {
+		const win = this.id_to_window[wid];
+		window.removeWindowListItem(win.wid);
+		win.destroy();
+    }
+}
+
 XpraClient.prototype.close_windows = function() {
 	for (const i in this.id_to_window) {
 		const iwin = this.id_to_window[i];
@@ -2230,7 +2238,7 @@ XpraClient.prototype.do_reconnect = function() {
 	const protocol = this.protocol;
 	setTimeout(function(){
 		try {
-			me.close_windows();
+			me.remove_windows();
 			me.close_audio();
 			me.clear_timers();
 			me.init_state();
@@ -2264,8 +2272,11 @@ XpraClient.prototype._process_close = function(packet, ctx) {
 };
 
 XpraClient.prototype.close = function() {
+	if (this.reconnect_in_progress) {
+		return;
+	}
 	this.emit_connection_lost();
-	this.close_windows();
+	this.remove_windows();
 	this.close_audio();
 	this.clear_timers();
 	this.close_protocol();
