@@ -2542,6 +2542,7 @@ class XpraClient {
       try {
         this.remove_windows();
         this.close_audio();
+        this.cancel_all_files();
         this.clear_timers();
         this.init_state();
         if (protocol) {
@@ -2581,10 +2582,13 @@ class XpraClient {
   }
 
   close() {
+    if (this.reconnect_in_progress) {
+      return;
+    }
     this.clog("client closed");
     this.cancel_all_files();
     this.emit_connection_lost();
-    this.close_windows();
+    this.remove_windows();
     this.close_audio();
     this.clear_timers();
     this.close_protocol();
