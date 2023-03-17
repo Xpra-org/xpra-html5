@@ -629,6 +629,14 @@ class XpraClient {
     }
   }
 
+  remove_windows() {
+    for (const wid in this.id_to_window) {
+      const win = this.id_to_window[wid];
+      window.removeWindowListItem(win.wid);
+      win.destroy();
+    }
+  }
+
   close_windows() {
     for (const wid in this.id_to_window) {
       const win = this.id_to_window[wid];
@@ -2532,7 +2540,7 @@ class XpraClient {
     const protocol = this.protocol;
     setTimeout(() => {
       try {
-        this.close_windows();
+        this.remove_windows();
         this.close_audio();
         this.clear_timers();
         this.init_state();
