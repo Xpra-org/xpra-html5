@@ -15,7 +15,7 @@
 import { Utilities } from "./utilities";
 import { MOVERESIZE_DIRECTION_STRING, MOVERESIZE_MOVE, MOVERESIZE_CANCEL, MOVERESIZE_DIRECTION_JS_NAME, DEFAULT_BOX_COLORS } from "./constants";
 import { XpraClient } from './client';
-import { decode_rgb } from './util/rgbHelpers';
+import { decode_rgb } from './util/rgb-helpers';
 
 declare const jQuery, $, detectZoom, Decoder;
 
