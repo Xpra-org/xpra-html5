@@ -38,22 +38,12 @@ export class XpraProtocolWorkerHost {
               this.packet_handler(data.p);
             }
             break;
-          case "l":
-            this.log(data.t);
-            break;
           default:
-            this.error("got unknown command from worker");
-            this.error(e.data);
+            throw new Error("got unknown command from worker");
         }
       },
       false
     );
-  }
-  log(t: any) {
-    throw new Error('Method not implemented.');
-  }
-  error(arg0: string) {
-    throw new Error('Method not implemented.');
   }
 
   close = function () {
