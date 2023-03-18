@@ -4,7 +4,10 @@
  *
  */
 
-const MediaSourceConstants = {
+import { Utilities } from '../utilities';
+declare const AV;
+
+export const MediaSourceConstants = {
   CODEC_DESCRIPTION: {
     mp4a: "mpeg4: aac",
     "aac+mpeg4": "mpeg4: aac",
@@ -101,9 +104,9 @@ const MediaSourceConstants = {
   },
 };
 
-const MediaSourceUtil = {
+export const MediaSourceUtil = {
   getMediaSourceClass() {
-    return window.MediaSource || window.WebKitMediaSource;
+    return window.MediaSource || window['WebKitMediaSource'];
   },
 
   getMediaSource() {
@@ -138,7 +141,7 @@ const MediaSourceUtil = {
     return codecs_supported;
   },
 
-  getMediaSourceAudioCodecs(ignore_blacklist) {
+  getMediaSourceAudioCodecs(ignore_blacklist?) {
     const media_source_class = MediaSourceUtil.getMediaSourceClass();
     if (!media_source_class) {
       Utilities.log("audio forwarding: no media source API support");
@@ -160,15 +163,15 @@ const MediaSourceUtil = {
         }
         let blacklist = [];
         if (Utilities.isFirefox() || Utilities.isSafari()) {
-          blacklist += ["opus+mka", "vorbis+mka"];
+          blacklist.push("opus+mka", "vorbis+mka");
           if (Utilities.isSafari()) {
             //this crashes Safari!
-            blacklist += ["wav"];
+            blacklist.push("wav");
           }
         } else if (Utilities.isChrome()) {
           blacklist = ["aac+mpeg4"];
           if (Utilities.isMacOS()) {
-            blacklist += ["opus+mka"];
+            blacklist.push("opus+mka");
           }
         }
         if (blacklist.includes(codec_option)) {

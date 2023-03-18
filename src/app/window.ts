@@ -12,6 +12,13 @@
  *   jQueryUI
  */
 
+import { Utilities } from "./utilities";
+import { MOVERESIZE_DIRECTION_STRING, MOVERESIZE_MOVE, MOVERESIZE_CANCEL, MOVERESIZE_DIRECTION_JS_NAME, DEFAULT_BOX_COLORS } from "./constants";
+import { XpraClient } from './client';
+import { decode_rgb } from './util/rgb-helpers';
+
+declare const jQuery, $, detectZoom, Decoder;
+
 const TASKBAR_HEIGHT = 0;
 
 function dummy() {}
@@ -22,17 +29,96 @@ function dummy() {}
  * The contents of the window is an image, which gets updated
  * when we receive pixels from the server.
  */
-class XpraWindow {
+export class XpraWindow {
+
+  div: any;
+  scale: any;
+  metadata: {
+    title: string
+  };
+  override_redirect: any;
+  tray: any;
+  has_alpha: boolean;
+  client_properties: any;
+  set_focus_cb: any;
+  mouse_move_cb: any;
+  mouse_down_cb: any;
+  mouse_up_cb: any;
+  mouse_scroll_cb: any;
+  geometry_cb: any;
+  window_closed_cb: any;
+  log: (...args) => any;
+  warn: (...args) => any;
+  error: (...args) => any;
+  exc: (...args) => any;
+  debug: (...args) => any;
+  debug_categories: any;
+  canvas: HTMLCanvasElement;
+  title: string;
+  windowtype: null;
+  fullscreen: boolean;
+  saved_geometry: {
+    x: number,
+    y: number,
+    w: number,
+    h: number,
+  } | null;
+  minimized: boolean;
+  maximized: boolean;
+  focused: boolean;
+  decorations: boolean;
+  resizable: boolean;
+  stacking_layer: number;
+  icon: any;
+  leftoffset: number;
+  rightoffset: number;
+  topoffset: number;
+  bottomoffset: number;
+  spinnerdiv: any;
+  cursor_data: [
+    // url
+    string,
+    // width, 
+    number,
+    // height, 
+    number,
+    // xhot, 
+    number,
+    // yhot, 
+    number
+  ] | null;
+  pointer_down: number;
+  pointer_last_x: number;
+  pointer_last_y: number;
+  d_header: string;
+  d_closebtn: string;
+  d_maximizebtn: string;
+  d_minimizebtn: string;
+  canvas_ctx: CanvasRenderingContext2D;
+  draw_canvas: HTMLCanvasElement;
+  offscreen_canvas: HTMLCanvasElement;
+  paint_queue: any[];
+  paint_pending: number;
+  offscreen_canvas_ctx: CanvasRenderingContext2D;
+  outerH: any;
+  outerW: any;
+  outerX: number;
+  outerY: number;
+  broadway_decoder: any;
+  broadway_paint_location: number[];
+
   constructor(
-    client,
-    wid,
-    x,
-    y,
-    w,
-    h,
+    private client: XpraClient,
+    public wid: number,
+    //these values represent the internal geometry
+    //i.e. geometry as windows appear to the compositor
+    public x: number,
+    public y: number,
+    private w: number,
+    private h: number,
     metadata,
-    override_redirect,
-    tray,
+    override_redirect: boolean,
+    tray: boolean,
     client_properties,
     geometry_callback,
     mouse_move_callback,
@@ -43,24 +129,13 @@ class XpraWindow {
     window_closed_callback,
     scale
   ) {
-    // use me in jquery callbacks as we lose 'this'
-    this.client = client;
-
-    //xpra specific attributes:
-    this.wid = wid;
     //enclosing div in page DOM
     this.div = document.getElementById(String(wid));
 
-    //these values represent the internal geometry
-    //i.e. geometry as windows appear to the compositor
-    this.x = x;
-    this.y = y;
-    this.w = w;
-    this.h = h;
     // scaling for client display width override
     this.scale = scale;
 
-    this.metadata = {};
+    this.metadata = { title: null };
     this.override_redirect = override_redirect;
     this.tray = tray;
     this.has_alpha = false;
@@ -81,7 +156,6 @@ class XpraWindow {
     this.debug = () => client.debug.apply(client, arguments);
     this.debug_categories = client.debug_categories;
 
-    this.canvas = null;
     this.init_canvas();
 
     //window attributes:
@@ -252,7 +326,7 @@ class XpraWindow {
     }
     // adjust top offset
     this.topoffset =
-      this.topoffset + Number.parseInt(jQuery(this.d_header).css("height"), 10);
+      this.topoffset as number + Number.parseInt(jQuery(this.d_header).css("height"), 10);
     // stop propagation if we're over the window:
     jQuery(this.div).mousedown((e) => e.stopPropagation());
     //bug 2418: if we stop 'mouseup' propagation,
@@ -298,7 +372,7 @@ class XpraWindow {
     this.register_canvas_pointer_events(this.canvas);
   }
 
-  transfer_canvas(canvas) {
+  transfer_canvas(canvas: HTMLCanvasElement) {
     const offscreen_handle = canvas.transferControlToOffscreen();
     this.client.decode_worker.postMessage(
       {
@@ -424,7 +498,7 @@ class XpraWindow {
       this.x = Math.min(oldx, ww - min_visible);
     }
     if (oldy <= this.topoffset && oldy <= min_visible) {
-      this.y = Number.parseInt(this.topoffset);
+      this.y = this.topoffset;
     } else if (oldy >= wh - min_visible) {
       this.y = Math.min(oldy, wh - min_visible);
     }
@@ -486,7 +560,7 @@ class XpraWindow {
     jQuery(this.div).css("height", this.outerH);
     // set CSS attributes to outerX and outerY
     this.outerX = this.x - this.leftoffset;
-    this.outerY = this.y - this.topoffset;
+    this.outerY = this.y - (this.topoffset as number);
     jQuery(this.div).css("left", this.outerX);
     jQuery(this.div).css("top", this.outerY);
     this.debug(
@@ -513,7 +587,7 @@ class XpraWindow {
 
       // Update window title
       jQuery("title").text(
-        `${location.pathname.replaceAll("/", "")}: ${this.title}`
+        `${location.pathname.replace(/\//g, "")}: ${this.title}`
       );
 
       // Update the icon
@@ -606,7 +680,7 @@ class XpraWindow {
    * Update our metadata cache with new key-values,
    * then call set_metadata with these new key-values.
    */
-  update_metadata(metadata, safe) {
+  update_metadata(metadata, safe = false) {
     //update our metadata cache with new key-values:
     this.debug("main", "update_metadata(", metadata, ")");
     for (const attrname in metadata) {
@@ -714,21 +788,21 @@ class XpraWindow {
       //adjust for header
       hdec = jQuery(`#head${this.wid}`).outerHeight(true);
     }
-    let min_size = null;
-    let max_size = null;
+    let min_size = 0;
+    let max_size = 0;
     const size_constraints = this.metadata["size-constraints"];
     if (size_constraints) {
       min_size = size_constraints["minimum-size"];
       max_size = size_constraints["maximum-size"];
     }
-    let minw = null;
-    let minh = null;
+    let minw = 0;
+    let minh = 0;
     if (min_size) {
       minw = min_size[0] + wdec;
       minh = min_size[1] + hdec;
     }
-    let maxw = null;
-    let maxh = null;
+    let maxw = 0;
+    let maxh = 0;
     if (max_size) {
       maxw = max_size[0] + wdec;
       maxh = max_size[1] + hdec;
@@ -921,7 +995,7 @@ class XpraWindow {
           "_set_decorated(",
           decorated,
           ") new topoffset=",
-          self.topoffset
+          this.topoffset
         );
       }
     } else {
@@ -968,7 +1042,7 @@ class XpraWindow {
    * - resize the backing image
    * - fire the geometry_cb
    */
-  handle_resized(e) {
+  handle_resized(e?) {
     // this function is called on local resize only,
     // remote resize will call this.resize()
     // need to update the internal geometry
@@ -1021,7 +1095,7 @@ class XpraWindow {
     if (this.client.server_is_shadow) {
       //note: when this window is created,
       // it may not have been added to the client's list yet
-      const ids = Object.keys(this.client.id_to_window);
+      const ids = Object.keys(this.client.id_to_window) as any as number[];
       if (ids.length === 0 || ids[0] == this.wid) {
         //single window, recenter it:
         this.recenter();
@@ -1036,7 +1110,7 @@ class XpraWindow {
     }
   }
 
-  recenter(force_update_geometry) {
+  recenter(force_update_geometry = false) {
     let x = this.x;
     let y = this.y;
     this.debug(
@@ -1147,10 +1221,10 @@ class XpraWindow {
   }
 
   initiate_moveresize(
-    mousedown_event,
-    x_root,
-    y_root,
-    direction,
+    mousedown_event: Event,
+    x_root: number,
+    y_root: number,
+    direction: number,
     button,
     source_indication
   ) {
@@ -1163,10 +1237,12 @@ class XpraWindow {
       source_indication,
     ]);
     if (direction == MOVERESIZE_MOVE && mousedown_event) {
-      const e = mousedown_event;
+      const e = mousedown_event as any;
+      // TODO: Should not assign to an event
       e.type = "mousedown.draggable";
       e.target = this.div[0];
-      this.div.trigger(e);
+      // TODO: trigger is undefined -- this needs to be fixed
+      // this.div.trigger(e);
     } else if (direction == MOVERESIZE_CANCEL) {
       jQuery(this.div).draggable("disable");
       jQuery(this.div).draggable("enable");
@@ -1216,6 +1292,9 @@ class XpraWindow {
     // internal geometry anymore
     this.mouse_click_cb(this, button, pressed, mx, my, modifiers, buttons);
   }
+  mouse_click_cb(arg0: this, button: any, pressed: any, mx: any, my: any, modifiers: any, buttons: any) {
+    throw new Error("Method not implemented.");
+  }
 
   update_icon(width, height, encoding, img_data) {
     // Cache the icon.
@@ -1249,7 +1328,7 @@ class XpraWindow {
     this.cursor_data = null;
   }
 
-  set_cursor(encoding, w, h, xhot, yhot, img_data) {
+  set_cursor(encoding: "png", w: number, h: number, xhot: number, yhot: number, img_data: string | Uint8Array) {
     if (encoding != "png") {
       this.warn("received an invalid cursor encoding:", encoding);
       return;
@@ -1261,7 +1340,7 @@ class XpraWindow {
     const window_element = jQuery(`#${String(this.wid)}`);
     const cursor_url = this.construct_base64_image_url(encoding, array);
     const me = this;
-    function set_cursor_url(url, x, y) {
+    function set_cursor_url(url: string, x: number, y: number, canvasWidth: number, canvasHeight: number) {
       const url_string = `url('${url}')`;
       window_element.css("cursor", `${url_string}, default`);
       //CSS3 with hotspot:
@@ -1279,6 +1358,10 @@ class XpraWindow {
       temporary_img.addEventListener("load", () => {
         const canvas = document.createElement("canvas");
         const context = canvas.getContext("2d");
+
+        if (!context)
+          throw new Error("Could not get canvas context!");
+
         context.imageSmoothingEnabled = false;
         canvas.width = Math.round(w * window.devicePixelRatio);
         canvas.height = Math.round(h * window.devicePixelRatio);
@@ -1324,7 +1407,7 @@ class XpraWindow {
    * we have received from the server.
    * The image is painted into off-screen canvas.
    */
-  paint() {
+  paint(...args) {
     if (this.client.decode_worker) {
       //no need to synchronize paint packets here
       //the decode worker ensures that we get the packets
@@ -1417,7 +1500,7 @@ class XpraWindow {
       );
     }
 
-    function painted(skip_box) {
+    function painted(skip_box?) {
       me.paint_pending = 0;
       if (!skip_box && me.debug_categories.includes("draw")) {
         const color = DEFAULT_BOX_COLORS[coding] || "white";

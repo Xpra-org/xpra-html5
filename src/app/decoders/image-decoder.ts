@@ -7,7 +7,9 @@
  *
  */
 
-class XpraImageDecoder {
+import { decode_rgb } from '../util/rgb-helpers';
+
+export class XpraImageDecoder {
   async convertToBitmap(packet) {
     const width = packet[4];
     const height = packet[5];
@@ -26,7 +28,7 @@ class XpraImageDecoder {
     } else {
       const paint_coding = coding.split("/")[0]; //ie: "png/P" -> "png"
       const options = packet[10];
-      const bitmap_options = {
+      const bitmap_options: ImageBitmapOptions = {
         premultiplyAlpha: "none",
       };
       if ("scaled_size" in options) {

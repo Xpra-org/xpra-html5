@@ -12,6 +12,25 @@
  *	Window.js
  *	Keycodes.js
  */
+import { DEAD_KEYS, KEY_TO_NAME, NUMPAD_TO_NAME, CHAR_TO_NAME, 
+  KEYSYM_TO_LAYOUT, CHARCODE_TO_NAME_SHIFTED, CHARCODE_TO_NAME, get_event_modifiers } from "./keycodes";
+import { PACKET_TYPES } from "./constants";
+import { Utilities } from "./utilities";
+import { XpraWindow } from "./window";
+import { XpraProtocol } from './protocol';
+import { isOffscreenWorkerAvailable } from './util/offscreen-helper';
+import { XpraProtocolWorkerHost } from './protocol-host';
+import { lz4 } from './lib/lz4';
+import { MediaSourceUtil, MediaSourceConstants } from './util/media-source-util';
+
+// Import packet types
+import { XpraAckFileChunkPacket, XpraBellPacket, XpraChallengePacket, XpraClipboardRequestPacket, XpraClipboardTokenPacket, XpraClosePacket, XpraConfigureOverrideRedirectPacket, XpraCursorPacket, XpraDesktopSizePacket, XpraDrawPacket, XpraEncodingsPacket, XpraEosPacket, XpraErrorPacket, XpraHelloPacket, XpraInfoResponsePacket, XpraInitiateMoveResizePacket, XpraKeyboardPacket, XpraLostWindowPacket, XpraNewOverrideRedirectPacket, XpraNewTrayPacket, XpraNewWindowPacket, XpraNotifyClosePacket, XpraNotifyShowPacket, XpraOpenUrlPacket, XpraPingEchoPacket, XpraPingPacket, XpraPointerPositionPacket, XpraRaiseWindowPacket, XpraSendFileChunkPacket, XpraSendFilePacket, XpraSetClipboardEnabledPacket, XpraSettingChangePacket, XpraSoundDataPacket, XpraStartupCompletePacket, XpraWindowIconPacket, XpraWindowMetadataPacket, XpraWindowMoveResizePacket, XpraWindowPacket, XpraWindowResizedPacket } from './types';
+
+// These are globally available on window
+declare const $, jQuery, AV,  default_settings, forge,
+  removeWindowListItem, noWindowList, BrotliDecode, streamSaver;
+declare const doNotification, addWindowListItem, closeNotification;
+declare let float_menu_width, float_menu_item_size, float_menu_padding;
 
 const XPRA_CLIENT_FORCE_NO_WORKER = false;
 const CLIPBOARD_IMAGES = true;
@@ -46,16 +65,126 @@ function truncate(input) {
   return s;
 }
 
-class XpraClient {
-  constructor(container) {
+export class XpraClient {
+  private container: HTMLElement;
+  private protocol: any; // XpraProtocol
+  connected: boolean;
+  desktop_width: number;
+  desktop_height: number;
+  server_remote_logging: boolean;
+  server_start_time: number;
+  client_start_time: Date;
+  capabilities: {};
+  RGB_FORMATS: string[];
+  disconnect_reason: string;
+  password_prompt_fn: Function | null;
+  keycloak_prompt_fn: Function | null;
+  audio: any;
+  audio_enabled: boolean;
+  audio_mediasource_enabled: boolean;
+  audio_aurora_enabled: boolean;
+  audio_codecs: {};
+  audio_framework: string;
+  audio_aurora_ctx: any;
+  audio_codec: string;
+  audio_context: AudioContext;
+  audio_state: null;
+  aurora_codecs: {};
+  mediasource_codecs: {};
+  encryption: boolean | string;
+  encryption_key: null;
+  cipher_in_caps: null | { [key: string]: any };
+  cipher_out_caps: null | {[key: string]: any};
+  browser_language: any;
+  browser_language_change_embargo_time: number;
+  key_layout: null;
+  last_keycode_pressed: number;
+  last_key_packet: never[];
+  buttons_pressed: Set<unknown>;
+  last_button_event: (number | boolean)[];
+  mousedown_event: Event;
+  last_mouse_x = 0;
+  last_mouse_y = 0;
+  wheel_delta_x: number;
+  wheel_delta_y: number;
+  mouse_grabbed: boolean;
+  scroll_reverse_x: boolean | string;
+  scroll_reverse_y: boolean | string;
+  clipboard_direction: any;
+  clipboard_datatype: string | null;
+  clipboard_buffer: string;
+  clipboard_server_buffers: {};
+  clipboard_pending: boolean;
+  clipboard_targets: string[];
+  remote_printing: boolean;
+  remote_file_transfer: boolean;
+  remote_open_files: boolean;
+  hello_timer: number | null;
+  info_timer: number | null;
+  info_request_pending: boolean;
+  server_last_info: {};
+  ping_timeout_timer: number | null;
+  ping_grace_timer: number | null;
+  ping_timer: number | null;
+  last_ping_server_time: number;
+  last_ping_local_time: number;
+  last_ping_echoed_time: number;
+  server_ping_latency: number;
+  client_ping_latency: number;
+  server_load: [number, number, number] | null;
+  server_ok: boolean;
+  decode_worker: any;
+  toolbar_position: string;
+  server_display: string;
+  server_platform: string;
+  server_resize_exact: boolean;
+  server_screen_sizes: never[];
+  server_is_desktop: boolean;
+  server_is_shadow: boolean;
+  server_readonly: boolean;
+  server_connection_data: boolean;
+  xdg_menu: Object;
+  id_to_window: XpraWindow[];
+  ui_events: number;
+  pending_redraw: any[];
+  draw_pending: number;
+  topwindow: null;
+  topindex: number;
+  focus: number;
+  packet_handlers: { [x: number]: (packet: any) => void; };
+  fullscreen: boolean;
+  client: any;
+  metadata: any;
+  num_lock_modifier: string | null;
+  alt_modifier: string | null;
+  control_modifier: string;
+  meta_modifier: string | null;
+  altgr_modifier: string | null;
+  altgr_state: boolean;
+  capture_keyboard: boolean;
+  keyboard_map: {};
+  num_lock: boolean;
+  server_precise_wheel: any;
+  server_audio_codecs: any;
+  audio_buffers: any[];
+  audio_buffers_count: number;
+  media_source: any;
+  audio_source_ready: boolean;
+  audio_source_buffer: any;
+
+  constructor(container: string | HTMLElement) {
     // the container div is the "screen" on the HTML page where we
     // are able to draw our windows in.
-    this.container = document.querySelector(`#${container}`);
-    if (!this.container) {
+    let containerEl = typeof container == "string" 
+      ? document.querySelector(`#${container}`) as HTMLElement
+      : container;
+    if (!containerEl) {
       throw new Error("invalid container element");
     }
+    this.container = containerEl;
+
     // assign callback for window resize event
-    if (window.jQuery) {
+    if (jQuery) {
       jQuery(window).resize(
         jQuery.debounce(250, (e) => this._screen_resized(e))
       );
@@ -63,86 +192,83 @@ class XpraClient {
 
     this.protocol = null;
 
-    this.init_settings();
     this.init_state();
   }
 
-  init_settings() {
-    //server:
-    this.host = null;
-    this.port = null;
-    this.ssl = null;
-    this.path = "";
-    this.username = "";
-    this.passwords = [];
-    this.insecure = false;
-    this.uri = "";
-    this.packet_encoder = null;
-    //connection options:
-    this.sharing = false;
-    this.open_url = true;
-    this.steal = true;
-    this.remote_logging = true;
-    this.encoding = "auto";
-    //basic set of encodings:
-    //(more may be added after checking via the DecodeWorker)
-    this.supported_encodings = [
-      "jpeg",
-      "png",
-      "png/P",
-      "png/L",
-      "rgb",
-      "rgb32",
-      "rgb24",
-      "scroll",
-      "void",
-    ];
-    //extra encodings we enable if validated via the decode worker:
-    //(we also validate jpeg and png as a sanity check)
-    this.check_encodings = [
-      "jpeg",
-      "png",
-      "png/P",
-      "png/L",
-      "rgb",
-      "rgb32",
-      "rgb24",
-      "scroll",
-      "webp",
-      "void",
-      "avif",
-    ];
-    this.debug_categories = [];
-    this.start_new_session = null;
-    this.clipboard_enabled = false;
-    this.file_transfer = false;
-    this.remote_file_size_limit = 0;
-    this.remote_file_chunks = 0;
-    this.send_chunks_in_progress = new Map();
-    this.receive_chunks_in_progress = new Map();
-    this.keyboard_layout = null;
-    this.printing = false;
-    this.key_packets = [];
-    this.clipboard_delayed_event_time = 0;
+  //server:
+  host: string = null;
+  port: number = null;
+  ssl: boolean = null;
+  path = "";
+  username = "";
+  passwords = [];
+  insecure = false;
+  uri = "";
+  packet_encoder = null;
+  //connection options:
+  sharing = false;
+  open_url = true;
+  steal = true;
+  remote_logging = true;
+  encoding = "auto";
+  //basic set of encodings:
+  //(more may be added after checking via the DecodeWorker)
+  supported_encodings = [
+    "jpeg",
+    "png",
+    "png/P",
+    "png/L",
+    "rgb",
+    "rgb32",
+    "rgb24",
+    "scroll",
+    "void",
+  ];
+  //extra encodings we enable if validated via the decode worker:
+  //(we also validate jpeg and png as a sanity check)
+  check_encodings = [
+    "jpeg",
+    "png",
+    "png/P",
+    "png/L",
+    "rgb",
+    "rgb32",
+    "rgb24",
+    "scroll",
+    "webp",
+    "void",
+    "avif",
+  ];
+  debug_categories: string[] = [];
+  start_new_session = null;
+  clipboard_enabled = false;
+  file_transfer = false;
+  remote_file_size_limit = 0;
+  remote_file_chunks = 0;
+  send_chunks_in_progress = new Map();
+  receive_chunks_in_progress = new Map();
+  keyboard_layout = null;
+  printing = false;
+  key_packets: any[] = [];
+  clipboard_delayed_event_time = 0;
 
-    this.scale = 1;
-    this.vrefresh = -1;
-    this.bandwidth_limit = 0;
-    this.reconnect = true;
-    this.reconnect_count = 5;
-    this.reconnect_in_progress = false;
-    this.reconnect_delay = 1000; //wait 1 second before retrying
-    this.reconnect_attempt = 0;
-    this.swap_keys = Utilities.isMacOS();
-    this.HELLO_TIMEOUT = 30_000;
-    this.PING_TIMEOUT = 15_000;
-    this.PING_GRACE = 2000;
-    this.PING_FREQUENCY = 5000;
-    this.INFO_FREQUENCY = 1000;
-    this.uuid = Utilities.getHexUUID();
-    this.offscreen_api = DECODE_WORKER && XpraOffscreenWorker.isAvailable();
-    this.try_gpu = TRY_GPU_TRIGGER;
-  }
+  scale = 1;
+  vrefresh = -1;
+  bandwidth_limit = 0;
+  reconnect = true;
+  reconnect_count = 5;
+  reconnect_in_progress = false;
+  reconnect_delay = 1000; //wait 1 second before retrying
+  reconnect_attempt = 0;
+  swap_keys = Utilities.isMacOS();
+  HELLO_TIMEOUT = 30_000;
+  PING_TIMEOUT = 15_000;
+  PING_GRACE = 2000;
+  PING_FREQUENCY = 5000;
+  INFO_FREQUENCY = 1000;
+  uuid = Utilities.getHexUUID();
+  offscreen_api = DECODE_WORKER && isOffscreenWorkerAvailable();
+  try_gpu = TRY_GPU_TRIGGER;
 
   init_state() {
     // state
@@ -155,7 +281,7 @@ class XpraClient {
     // some client stuff
     this.capabilities = {};
     this.RGB_FORMATS = ["RGBX", "RGBA", "RGB"];
-    this.disconnect_reason = null;
+    this.disconnect_reason = '';
     this.password_prompt_fn = null;
     this.keycloak_prompt_fn = null;
     // audio
@@ -169,7 +295,7 @@ class XpraClient {
       AV.Decoder != undefined &&
       AV.Player.fromXpraSource != undefined;
     this.audio_codecs = {};
-    this.audio_framework = null;
+    this.audio_framework = '';
     this.audio_aurora_ctx = null;
     this.audio_codec = null;
     this.audio_context = new AudioContext();
@@ -191,8 +317,8 @@ class XpraClient {
     this.buttons_pressed = new Set();
     this.last_button_event = [-1, false, -1, -1];
     this.mousedown_event = null;
-    this.last_mouse_x = null;
-    this.last_mouse_y = null;
+    this.last_mouse_x = 0;
+    this.last_mouse_y = 0;
     this.wheel_delta_x = 0;
     this.wheel_delta_y = 0;
     this.mouse_grabbed = false;
@@ -209,7 +335,7 @@ class XpraClient {
     if (
       CLIPBOARD_IMAGES &&
       navigator.clipboard &&
-      Object.hasOwn(navigator.clipboard, "write")
+      !!navigator.clipboard["write"]
     ) {
       this.clipboard_targets.push("image/png");
     } else {
@@ -255,7 +381,7 @@ class XpraClient {
 
     this.xdg_menu = null;
     // a list of our windows
-    this.id_to_window = {};
+    this.id_to_window = [];
     this.ui_events = 0;
     this.pending_redraw = [];
     this.draw_pending = 0;
@@ -271,6 +397,10 @@ class XpraClient {
     screen_element.mousemove((e) => this.on_mousemove(e));
 
     const div = document.querySelector("#screen");
+
+    if (!div) 
+      throw new Error("invalid or missing screen element");
+
     function on_mousescroll(e) {
       me.on_mousescroll(e);
       return e.preventDefault();
@@ -284,7 +414,7 @@ class XpraClient {
     }
   }
 
-  send() {
+  send(...args) {
     this.debug("network", "sending a", arguments[0], "packet");
     if (this.protocol) {
       this.protocol.send.apply(this.protocol, arguments);
@@ -294,7 +424,7 @@ class XpraClient {
   send_log(level, arguments_) {
     if (this.remote_logging && this.server_remote_logging && this.connected) {
       try {
-        const sargs = [];
+        const sargs: string[] = [];
         for (const argument of arguments_) {
           sargs.push(unescape(encodeURIComponent(String(argument))));
         }
@@ -308,7 +438,7 @@ class XpraClient {
       }
     }
   }
-  exc() {
+  exc(...args) {
     //first argument is the exception:
     const exception = arguments[0];
     let arguments_ = [...arguments];
@@ -325,31 +455,31 @@ class XpraClient {
       }
     }
   }
-  error() {
+  error(...args) {
     //logging.ERROR = 40
     this.send_log(40, arguments);
     Reflect.apply(this.cerror, this, arguments);
   }
-  cerror() {
+  cerror(...args) {
     Utilities.cerror.apply(Utilities, arguments);
   }
-  warn() {
+  warn(...args) {
     //logging.WARN = 30
     this.send_log(30, arguments);
     Reflect.apply(this.cwarn, this, arguments);
   }
-  cwarn() {
+  cwarn(...args) {
     Utilities.cwarn.apply(Utilities, arguments);
   }
-  log() {
+  log(...args) {
     //logging.INFO = 20
     this.send_log(20, arguments);
     Reflect.apply(this.clog, this, arguments);
   }
-  clog() {
+  clog(...args) {
     Utilities.clog.apply(Utilities, arguments);
   }
-  debug() {
+  debug(...args) {
     const category = arguments[0];
     const arguments_ = [...arguments];
     if (this.debug_categories.includes(category)) {
@@ -360,7 +490,7 @@ class XpraClient {
       Reflect.apply(this.cdebug, this, arguments);
     }
   }
-  cdebug() {
+  cdebug(...args) {
     Utilities.cdebug.apply(Utilities, arguments);
   }
 
@@ -513,10 +643,10 @@ class XpraClient {
     let decode_worker;
     if (this.offscreen_api) {
       this.clog("using offscreen decode worker");
-      decode_worker = new Worker("js/OffscreenDecodeWorker.js");
+      decode_worker = new Worker(new URL("./workers/offscreen-decoder.worker", import.meta.url));
     } else {
       this.clog("using decode worker");
-      decode_worker = new Worker("js/DecodeWorker.js");
+      decode_worker = new Worker(new URL("./workers/decoder.worker", import.meta.url));
     }
     decode_worker.addEventListener(
       "message",
@@ -632,7 +762,7 @@ class XpraClient {
   remove_windows() {
     for (const wid in this.id_to_window) {
       const win = this.id_to_window[wid];
-      window.removeWindowListItem(win.wid);
+      removeWindowListItem(win.wid);
       win.destroy();
     }
   }
@@ -645,7 +775,7 @@ class XpraClient {
   }
 
   close_window(win) {
-    window.removeWindowListItem(win.wid);
+    removeWindowListItem(win.wid);
     win.destroy();
     this.send([PACKET_TYPES.close_window, win.wid]);
   }
@@ -728,7 +858,7 @@ class XpraClient {
       ) {
         const pattern = new RegExp(`.*${default_settings.auto_fullscreen}.*`);
         if (win.fullscreen === false && pattern.test(win.metadata.title)) {
-          clog(`auto fullscreen window: ${win.metadata.title}`);
+          this.clog(`auto fullscreen window: ${win.metadata.title}`);
           win.set_fullscreen(true);
           win.screen_resized();
         }
@@ -737,13 +867,19 @@ class XpraClient {
       // Make a DESKTOP-type window fullscreen automatically.
       // This resizes things like xfdesktop according to the window size.
       if (this.fullscreen === false && this.client.is_window_desktop(win)) {
-        clog(`auto fullscreen desktop window: ${this.metadata.title}`);
+        this.clog(`auto fullscreen desktop window: ${this.metadata.title}`);
         this.set_fullscreen(true);
         this.screen_resized();
       }
     }
     // Re-position floating toolbar menu
     this.position_float_menu();
+  }
+  set_fullscreen(arg0: boolean) {
+    throw new Error('Method not implemented.');
+  }
+  screen_resized() {
+    throw new Error('Method not implemented.');
   }
 
   /**
@@ -764,8 +900,10 @@ class XpraClient {
     document.addEventListener("keydown", (e) => {
       const preview_element = $(WINDOW_PREVIEW_SELECTOR);
       if (e.code === "Escape" && preview_element.is(":visible")) {
-        client.toggle_window_preview();
-        return e.stopPropagation() || e.preventDefault();
+        this.client.toggle_window_preview();
+        e.stopPropagation();
+        e.preventDefault();
+        return; 
       }
       if (e.code === "Tab") {
         if (preview_element.is(":visible")) {
@@ -777,10 +915,12 @@ class XpraClient {
             ? (current_slide - 1) % number_slides
             : (current_slide + 1) % number_slides;
           preview_element.slick("goTo", next_index, true);
-          return e.stopPropagation() || e.preventDefault();
+          e.stopPropagation();
+          e.preventDefault();
+          return;
         } else if (e.altKey) {
           // Alt+Tab shows window preview. and goes to the next window.
-          client.toggle_window_preview((e, slick) => {
+          this.client.toggle_window_preview((e, slick) => {
             const number_slides = slick.slideCount;
             const current_slide = slick.currentSlide;
             const next_index = (current_slide + 1) % number_slides;
@@ -788,7 +928,9 @@ class XpraClient {
               slick.goTo(next_index, true);
             }, 10);
           });
-          return e.stopPropagation() || e.preventDefault();
+          e.stopPropagation();
+          e.preventDefault();
+          return;
         }
       }
       const r = this._keyb_onkeydown(e);
@@ -802,9 +944,11 @@ class XpraClient {
         $(WINDOW_PREVIEW_SELECTOR).is(":visible")
       ) {
         if (e.code.startsWith("Alt")) {
-          client.toggle_window_preview();
+          this.toggle_window_preview();
         }
-        return e.stopPropagation() || e.preventDefault();
+        e.stopPropagation();
+        e.preventDefault();
+        return;
       }
       const r = this._keyb_onkeyup(e);
       if (!r) {
@@ -814,17 +958,18 @@ class XpraClient {
   }
 
   query_keyboard_map() {
-    const keyboard = navigator.keyboard;
+    // TODO: move to an import
+    const keyboard = navigator['keyboard'];
     this.keyboard_map = {};
-    if (!navigator.keyboard) {
+    if (!navigator['keyboard']) {
       return;
     }
     keyboard.getLayoutMap().then((keyboardLayoutMap) => {
-      clog("got a keyboard layout map:", keyboardLayoutMap);
-      clog("keys:", [...keyboardLayoutMap.keys()]);
+      this.clog("got a keyboard layout map:", keyboardLayoutMap);
+      this.clog("keys:", [...keyboardLayoutMap.keys()]);
       for (const key of keyboardLayoutMap.keys()) {
         const value = keyboardLayoutMap[key];
-        cdebug("keyboard", key, "=", value);
+        this.cdebug("keyboard", key, "=", value);
         this.keyboard_map[key] = value;
       }
     });
@@ -835,7 +980,7 @@ class XpraClient {
     }
   }
 
-  _keyb_get_modifiers(event) {
+  _keyb_get_modifiers(event: KeyboardEvent) {
     /**
      * Returns the modifiers set for the current event.
      * We get the list of modifiers using "get_event_modifiers"
@@ -846,7 +991,7 @@ class XpraClient {
     return this.translate_modifiers(modifiers);
   }
 
-  translate_modifiers(modifiers) {
+  translate_modifiers(modifiers: string[]) {
     /**
      * We translate "alt" and "meta" into their keymap name.
      * (usually "mod1")
@@ -859,7 +1004,7 @@ class XpraClient {
     const altgr = this.altgr_modifier;
     if (this.swap_keys) {
       meta = this.control_modifier;
-      control = this.meta_modifier;
+      control = this.meta_modifier as string;
     }
 
     const new_modifiers = [...modifiers];
@@ -951,7 +1096,7 @@ class XpraClient {
     return this.do_keyb_process(pressed, event || window.event);
   }
 
-  do_keyb_process(pressed, event) {
+  do_keyb_process(pressed, event: KeyboardEvent) {
     if (this.server_readonly) {
       return true;
     }
@@ -964,13 +1109,13 @@ class XpraClient {
      * And send the event to the server.
      */
 
-    let keyname = event.code || "";
-    const keycode = event.which || event.keyCode;
+    let keyname: string = event.code || "";
+    const keycode: number = event.which || event.keyCode;
     if (keycode == 229) {
       //this usually fires when we have received the event via "oninput" already
-      return;
+      return null;
     }
-    let keystring = event.key || String.fromCharCode(keycode);
+    let keystring: string = event.key || String.fromCharCode(keycode);
     let unpress_now = false;
     this.debug(
       "keyboard",
@@ -1115,7 +1260,7 @@ class XpraClient {
     }
 
     let allow_default = false;
-    if (this.clipboard_enabled && client.clipboard_direction !== "to-server") {
+    if (this.clipboard_enabled && this.clipboard_direction !== "to-server") {
       //allow some key events that need to be seen by the browser
       //for handling the clipboard:
       let clipboard_modifier_keys = [
@@ -1169,7 +1314,7 @@ class XpraClient {
     }
 
     if (this.topwindow != undefined) {
-      let packet = [
+      let packet: XpraKeyboardPacket = [
         "key-action",
         this.topwindow,
         keyname,
@@ -1239,7 +1384,7 @@ class XpraClient {
 
   _get_keycodes() {
     //keycodes.append((nn(keyval), nn(name), nn(keycode), nn(group), nn(level)))
-    const keycodes = [];
+    const keycodes: any[] = [];
     let kc;
     for (const keycode in CHARCODE_TO_NAME) {
       kc = Number.parseInt(keycode);
@@ -1253,7 +1398,7 @@ class XpraClient {
   }
 
   _get_DPI() {
-    const dpi_div = document.querySelector("#dpi");
+    const dpi_div = document.querySelector("#dpi") as HTMLElement;
     if (
       dpi_div != undefined &&
       dpi_div.offsetWidth > 0 &&
@@ -1263,7 +1408,7 @@ class XpraClient {
     }
     //alternative:
     if ("deviceXDPI" in screen)
-      return (screen.systemXDPI + screen.systemYDPI) / 2;
+      return (screen['systemXDPI'] + screen['systemYDPI']) / 2;
     //default:
     return 96;
   }
@@ -1278,8 +1423,9 @@ class XpraClient {
     const hmm = Math.round((screen_size[1] * 25.4) / dpi);
     const monitor = ["Canvas", 0, 0, screen_size[0], screen_size[1], wmm, hmm];
     let name = "HTML";
-    if (navigator.userAgentData) {
-      const brands = navigator.userAgentData.brands;
+    // TODO: this is deprecated
+    if (navigator['userAgentData']) {
+      const brands = navigator['userAgentData'].brands;
       if (brands.length>0) {
         name = brands[0].brand + " " + brands[0].version;
       }
@@ -1351,17 +1497,17 @@ class XpraClient {
     event.initEvent(event_type, true, true);
     document.dispatchEvent(event);
   }
-  emit_connection_lost(event_type) {
+  emit_connection_lost(event_type?) {
     this._emit_event("connection-lost");
   }
-  emit_connection_established(event_type) {
+  emit_connection_established(event_type?) {
     this._emit_event("connection-established");
   }
 
   /**
    * Hello
    */
-  _send_hello(counter) {
+  _send_hello(counter?) {
     if (this.decode_worker == undefined) {
       counter = counter || 0;
       if (counter == 0) {
@@ -1496,7 +1642,7 @@ class XpraClient {
       });
     }
 
-    if (typeof BrotliDecode != "undefined" && !Utilities.isIE()) {
+    if (typeof BrotliDecode != "undefined") {
       this._update_capabilities({
         brotli: true,
       });
@@ -1506,7 +1652,7 @@ class XpraClient {
       "clipboard.preferred-targets": this.clipboard_targets,
     });
 
-    if (this.encryption) {
+    if (this.encryption && typeof this.encryption == 'string') {
       const enc = this.encryption.split("-")[0];
       if (enc != "AES") {
         throw `invalid encryption specified: '${enc}'`;
@@ -1534,19 +1680,11 @@ class XpraClient {
 
   _make_hello() {
     let selections;
-    if (
-      navigator.clipboard &&
-      navigator.clipboard.readText &&
-      navigator.clipboard.writeText
-    ) {
-      //we don't need the primary contents,
-      //we can use the async clipboard
-      selections = ["CLIPBOARD"];
-      this.log("using new navigator.clipboard");
-    } else {
-      selections = ["CLIPBOARD", "PRIMARY"];
-      this.log("legacy clipboard");
-    }
+
+    //we don't need the primary contents,
+    //we can use the async clipboard
+    selections = ["CLIPBOARD"];
+
     this.desktop_width = this.container.clientWidth;
     this.desktop_height = this.container.clientHeight;
     this.key_layout = this._get_keyboard_layout();
@@ -1701,7 +1839,7 @@ class XpraClient {
   /**
    * Mouse handlers
    */
-  getMouse(e) {
+  getMouse(e, win?) {
     // get mouse position take into account scroll
     let mx = e.clientX + jQuery(document).scrollLeft();
     let my = e.clientY + jQuery(document).scrollTop();
@@ -1739,18 +1877,18 @@ class XpraClient {
     return { x: mx, y: my, button: mbutton };
   }
 
-  on_mousedown(e, win) {
+  on_mousedown(e, win?) {
     this.mousedown_event = e;
     this.do_window_mouse_click(e, win, true);
     return win == undefined;
   }
 
-  on_mouseup(e, win) {
+  on_mouseup(e, win?) {
     this.do_window_mouse_click(e, win, false);
     return win == undefined;
   }
 
-  on_mousemove(e, win) {
+  on_mousemove(e, win?) {
     if (this.mouse_grabbed) {
       return true;
     }
@@ -1802,7 +1940,7 @@ class XpraClient {
       return;
     }
     let send_delay = 0;
-    if (client.clipboard_direction !== "to-server" && this._poll_clipboard(e)) {
+    if (this.clipboard_direction !== "to-server" && this._poll_clipboard(e)) {
       send_delay = CLIPBOARD_EVENT_DELAY;
     }
     const mouse = this.getMouse(e, win);
@@ -1862,7 +2000,7 @@ class XpraClient {
       //IE? In any case, detection won't work:
       return 0;
     }
-    let delta = null;
+    let delta: number | null = null;
     if (e.wheelDelta) {
       // will work in most cases
       delta = e.wheelDelta;
@@ -1882,7 +2020,7 @@ class XpraClient {
     return 0;
   }
 
-  on_mousescroll(e, win) {
+  on_mousescroll(e, win?) {
     if (this.server_readonly || this.mouse_grabbed || !this.connected) {
       return false;
     }
@@ -1940,7 +2078,7 @@ class XpraClient {
           buttons,
         ]);
       }
-      return;
+      return null;
     }
     //generate a single event if we can, or add to accumulators:
     if (apx >= 40 && apx <= 160) {
@@ -2009,11 +2147,8 @@ class XpraClient {
 
   init_clipboard() {
     window.addEventListener("paste", (e) => {
-      let clipboardData = (e.originalEvent || e).clipboardData;
-      //IE: must use window.clipboardData because the event clipboardData is null!
-      if (!clipboardData) {
-        clipboardData = window.clipboardData;
-      }
+      let clipboardData = (e['originalEvent'] || e).clipboardData;
+
       if (
         clipboardData &&
         clipboardData.files &&
@@ -2041,13 +2176,11 @@ class XpraClient {
         );
       } else {
         let datatype = TEXT_PLAIN;
-        if (Utilities.isIE()) {
-          datatype = "Text";
-        }
+
         paste_data = unescape(
           encodeURIComponent(clipboardData.getData(datatype))
         );
-        cdebug("clipboard", "paste event, data=", paste_data);
+        this.cdebug("clipboard", "paste event, data=", paste_data);
         this.clipboard_buffer = paste_data;
         this.send_clipboard_token(paste_data);
       }
@@ -2076,8 +2209,8 @@ class XpraClient {
       );
       this.clipboard_pending = false;
     });
-    $("#screen").on("click", (e) => this.may_set_clipboard());
-    $("#screen").keypress(() => this.may_set_clipboard());
+    $("#screen").on("click", (e) => this.may_set_clipboard(e));
+    $("#screen").keypress((e) => this.may_set_clipboard(e));
   }
 
   may_set_clipboard(e) {
@@ -2115,16 +2248,12 @@ class XpraClient {
     //for IE:
     let success = false;
     if (
-      Object.hasOwn(window, "clipboardData") &&
-      Object.hasOwn(window.clipboardData, "setData") &&
-      typeof window.clipboardData.setData === "function"
+      !!window["clipboardData"] &&
+      !!window["clipboardData"]["setData"] &&
+      typeof window['clipboardData'].setData === "function"
     ) {
       try {
-        if (Utilities.isIE()) {
-          window.clipboardData.setData("Text", clipboard_buffer);
-        } else {
-          window.clipboardData.setData(clipboard_datatype, clipboard_buffer);
-        }
+        window['clipboardData'].setData(clipboard_datatype, clipboard_buffer);
         success = true;
       } catch {
         success = false;
@@ -2144,7 +2273,7 @@ class XpraClient {
 
   _poll_clipboard(e) {
     if (this.clipboard_enabled === false) {
-      return;
+      return null;
     }
     //see if the clipboard contents have changed:
     if (this.clipboard_pending) {
@@ -2161,14 +2290,11 @@ class XpraClient {
     let clipboardData = (e.originalEvent || e).clipboardData;
     //IE: must use window.clipboardData because the event clipboardData is null!
     if (!clipboardData) {
-      clipboardData = window.clipboardData;
+      clipboardData = window['clipboardData'];
       if (!clipboardData) {
         this.debug("clipboard", "polling: no data available");
         return false;
       }
-    }
-    if (Utilities.isIE()) {
-      datatype = "Text";
     }
     const raw_clipboard_buffer = clipboardData.getData(datatype);
     if (raw_clipboard_buffer === null) {
@@ -2191,7 +2317,7 @@ class XpraClient {
     if (this.clipboard_enabled === false) {
       return;
     }
-    client.debug("clipboard", "read_clipboard_text()");
+    this.debug("clipboard", "read_clipboard_text()");
     //warning: this can take a while,
     //so we may send the click before the clipboard contents...
     navigator.clipboard.readText().then(
@@ -2264,9 +2390,12 @@ class XpraClient {
     this.send([PACKET_TYPES.focus, wid, []]);
     //set the focused flag on the window specified,
     //adjust stacking order:
-    let iwin = null;
     for (const index in this.id_to_window) {
-      iwin = this.id_to_window[index];
+      const iwin = this.id_to_window[index];
+
+      if (!iwin) 
+        continue;
+
       iwin.focused = iwin.wid == wid;
       if (iwin.focused) {
         iwin.stacking_layer = top_stacking_layer;
@@ -2276,6 +2405,8 @@ class XpraClient {
         if (iwin.stacking_layer > old_stacking_layer) {
           iwin.stacking_layer--;
         }
+        // TODO: Is this a faulty check?
+        // @ts-ignore
         if (had_focus == index) {
           this.send_configure_window(iwin, { focused: false }, true);
         }
@@ -2309,7 +2440,7 @@ class XpraClient {
   /*
    * Show/Hide the window preview list
    */
-  toggle_window_preview(init_callback) {
+  toggle_window_preview(init_callback?) {
     const preview_element = $(WINDOW_PREVIEW_SELECTOR);
 
     preview_element.on("init", (e, slick) => {
@@ -2359,9 +2490,9 @@ class XpraClient {
     preview_element.children().remove();
 
     // Sort windows by stacking order.;
-    const windows_sorted = Object.values(client.id_to_window).filter((win) => {
+    const windows_sorted = Object.values(this.id_to_window).filter((win) => {
       // skip DESKTOP type windows.
-      return !client.is_window_desktop(win);
+      return !this.is_window_desktop(win);
     });
 
     if (windows_sorted.length === 0) {
@@ -2446,7 +2577,7 @@ class XpraClient {
         return;
       }
       // Clicked outside window list, close it.
-      client.toggle_window_preview();
+      this.toggle_window_preview();
     }
   }
 
@@ -2473,7 +2604,7 @@ class XpraClient {
       this.disconnect_reason =
         "Did not receive hello before timeout reached, not an Xpra server?";
       this.close();
-    }, this.HELLO_TIMEOUT);
+    }, this.HELLO_TIMEOUT) as any as number;
   }
   cancel_hello_timer() {
     if (this.hello_timer) {
@@ -2482,7 +2613,7 @@ class XpraClient {
     }
   }
 
-  _process_error(packet) {
+  _process_error(packet: XpraErrorPacket) {
     const code = Number.parseInt(packet[2]);
     let reconnect =
       this.reconnect || this.reconnect_attempt < this.reconnect_count;
@@ -2557,7 +2688,7 @@ class XpraClient {
     }, this.reconnect_delay);
   }
 
-  _process_close(packet) {
+  _process_close(packet: XpraClosePacket) {
     this.clog(
       "websocket closed: ",
       packet[1],
@@ -2608,12 +2739,12 @@ class XpraClient {
     this.callback_close(this.disconnect_reason);
   }
 
-  _process_startup_complete(packet) {
+  _process_startup_complete(packet: XpraStartupCompletePacket) {
     this.log("startup complete");
     this.emit_connection_established();
   }
 
-  _connection_change(e) {
+  _connection_change(e?) {
     const ci = Utilities.getConnectionInfo();
     this.clog(
       "connection status - change event=",
@@ -2628,7 +2759,7 @@ class XpraClient {
     }
   }
 
-  _process_hello(packet) {
+  _process_hello(packet: XpraHelloPacket) {
     this.cancel_hello_timer();
     const hello = packet[1];
     this.clog("received hello capabilities", hello);
@@ -2674,7 +2805,7 @@ class XpraClient {
     const modifier_keycodes = hello["modifier_keycodes"];
     if (modifier_keycodes) {
       for (const modifier in modifier_keycodes) {
-        if (Object.hasOwn((modifier_keycodes, modifier))) {
+        if (!!modifier_keycodes[modifier]) {
           const mappings = modifier_keycodes[modifier];
           for (const keycode in mappings) {
             const keys = mappings[keycode];
@@ -2706,7 +2837,7 @@ class XpraClient {
     this.log("got hello: server version", version, "accepted our connection");
     //figure out "alt" and "meta" keys:
     if ("modifier_keycodes" in hello) {
-      const modifier_keycodes = hello["modifier_keycodes"];
+      const modifier_keycodes = hello["modifier_keycodes"] as Object;
       for (const keycode_index in modifier_keycodes) {
         const keys = modifier_keycodes[keycode_index];
         for (const key_index in keys) {
@@ -2814,8 +2945,9 @@ class XpraClient {
       this.send([PACKET_TYPES.printers, printers]);
     }
     this.server_connection_data = hello["connection-data"];
-    if (Object.hasOwn((navigator, "connection"))) {
-      navigator.connection.addEventListener("change", this._connection_change);
+
+    if (!!navigator["connection"]) {
+      navigator['connection'].addEventListener("change", this._connection_change.bind(this));
       this._connection_change();
     }
 
@@ -2831,7 +2963,7 @@ class XpraClient {
 
     // start sending our own pings
     this._send_ping();
-    this.ping_timer = setInterval(this._send_ping, this.PING_FREQUENCY);
+    this.ping_timer = setInterval(this._send_ping, this.PING_FREQUENCY) as any as number;
     this.reconnect_attempt = 0;
     // Drop start_new_session to avoid creating new displays
     // on reconnect
@@ -2841,19 +2973,22 @@ class XpraClient {
     this.connected = true;
   }
 
-  _process_encodings(packet) {
+  _process_encodings(packet: XpraEncodingsPacket) {
     const caps = packet[1];
     this.log("update encodings:", Object.keys(caps));
   }
 
   process_xdg_menu() {
     this.log("received xdg start menu data");
-    let key;
     //remove current menu:
     $("#startmenu li").remove();
     const startmenu = document.querySelector("#startmenu");
-    for (key in this.xdg_menu) {
-      const category = this.xdg_menu[key];
+
+    if (!this.xdg_menu)
+      throw new Error("Fatal state, xdg_menu may not be null.");
+
+    for (let key in this.xdg_menu as any) {
+      const category: any = this.xdg_menu[key];
       const li = document.createElement("li");
       li.className = "-hasSubmenu";
 
@@ -2863,7 +2998,7 @@ class XpraClient {
 
       const a = document.createElement("a");
       a.append(catDivLeft);
-      a.append(document.createTextNode(this.xdg_menu[key].Name));
+      a.append(document.createTextNode(this.xdg_menu[key]['Name']));
       a.href = "#";
       li.append(a);
 
@@ -2871,10 +3006,12 @@ class XpraClient {
 
       //TODO need to figure out how to do this properly
       a.addEventListener("mouseenter", function () {
-        this.parentElement.childNodes[1].className = "-visible";
+        if (this.parentElement)
+          this.parentElement.childNodes[1]['className'] = "-visible";
       });
       a.addEventListener("mouseleave", function () {
-        this.parentElement.childNodes[1].className = "";
+        if (this.parentElement)
+          this.parentElement.childNodes[1]['className'] = "";
       });
 
       const xdg_menu_cats = category.Entries;
@@ -2903,24 +3040,27 @@ class XpraClient {
         a2.addEventListener("click", function () {
           const ignore = "False";
           me.start_command(this.innerText, this.title, ignore);
+          // @ts-ignore 2531
           document.querySelector("#menu_list").className = "-hide";
         });
         a2.addEventListener("mouseenter", function () {
-          this.parentElement.parentElement.className = "-visible";
+          if (this.parentElement?.parentElement)
+            this.parentElement.parentElement.className = "-visible";
         });
         a2.addEventListener("mouseleave", function () {
-          this.parentElement.parentElement.className = "";
+          if (this.parentElement?.parentElement)
+            this.parentElement.parentElement.className = "";
         });
 
         li2.append(a2);
         ul.append(li2);
       }
       li.append(ul);
-      startmenu.append(li);
+      startmenu?.append(li);
     }
   }
 
-  _process_setting_change(packet) {
+  _process_setting_change(packet: XpraSettingChangePacket) {
     const setting = packet[1];
     const value = packet[2];
     if (setting == "xdg-menu" && SHOW_START_MENU) {
@@ -2958,7 +3098,7 @@ class XpraClient {
     //this hook can be overriden
   }
 
-  _process_challenge(packet) {
+  _process_challenge(packet: XpraChallengePacket) {
     if (this.encryption) {
       if (packet.length >= 3) {
         this.cipher_out_caps = packet[2];
@@ -2978,6 +3118,8 @@ class XpraClient {
       ""
     );
     this.clog("process challenge:", digest);
+
+    // This is done to preserve client context
     const client = this;
     function call_do_process_challenge(password) {
       if (!client || !client.protocol) {
@@ -3091,16 +3233,16 @@ class XpraClient {
     this.ping_timeout_timer = setTimeout(
       () => this._check_echo_timeout(now_ms),
       this.PING_TIMEOUT
-    );
+    ) as any as number;
     // add timeout to detect temporary ping miss for spinners
     const wait = 2000;
     this.ping_grace_timer = setTimeout(
       () => this._check_server_echo(now_ms),
       wait
-    );
+    ) as any as number;
   }
 
-  _process_ping(packet) {
+  _process_ping(packet: XpraPingPacket) {
     const echotime = packet[1];
     this.last_ping_server_time = echotime;
     if (packet.length > 2) {
@@ -3118,7 +3260,7 @@ class XpraClient {
     this.send([PACKET_TYPES.ping_echo, echotime, l1, l2, l3, 0, sid]);
   }
 
-  _process_ping_echo(packet) {
+  _process_ping_echo(packet: XpraPingEchoPacket) {
     this.last_ping_echoed_time = packet[1];
     const l1 = packet[2];
     const l2 = packet[3];
@@ -3140,7 +3282,7 @@ class XpraClient {
         if (this.info_timer != undefined) {
           this.send_info_request();
         }
-      }, this.INFO_FREQUENCY);
+      }, this.INFO_FREQUENCY) as any as number;
     }
   }
   send_info_request() {
@@ -3149,13 +3291,13 @@ class XpraClient {
       this.info_request_pending = true;
     }
   }
-  _process_info_response(packet) {
+  _process_info_response(packet: XpraInfoResponsePacket) {
     this.info_request_pending = false;
     this.server_last_info = packet[1];
     this.debug("network", "info-response:", this.server_last_info);
     const event = document.createEvent("Event");
     event.initEvent("info-response", true, true);
-    event.data = this.server_last_info;
+    event['data'] = this.server_last_info;
     document.dispatchEvent(event);
   }
   stop_info_timer() {
@@ -3188,7 +3330,7 @@ class XpraClient {
     float_menu_element.offset({ top, left });
   }
 
-  _process_new_tray(packet) {
+  _process_new_tray(packet: XpraNewTrayPacket) {
     const wid = packet[1];
     const metadata = packet[4];
     const mydiv = document.createElement("div");
@@ -3196,14 +3338,15 @@ class XpraClient {
     const mycanvas = document.createElement("canvas");
     mydiv.append(mycanvas);
 
-    const float_tray = document.querySelector("#float_tray");
-    const float_menu = document.querySelector(FLOAT_MENU_SELECTOR);
+    const float_tray = document.querySelector("#float_tray") as HTMLElement;
+    const float_menu = document.querySelector(FLOAT_MENU_SELECTOR) as HTMLElement;
     const float_menu_element = $(FLOAT_MENU_SELECTOR);
     float_menu_element.children().show();
     //increase size for tray icon
     const new_width =
       float_menu_width + float_menu_item_size - float_menu_padding + 5;
     float_menu.style.width = `${new_width}px`;
+
     float_menu_width = float_menu_element.width() + 10;
     mydiv.style.backgroundColor = "white";
 
@@ -3249,7 +3392,7 @@ class XpraClient {
   }
 
   reconfigure_all_trays() {
-    const float_menu = document.querySelector(FLOAT_MENU_SELECTOR);
+    const float_menu = document.querySelector(FLOAT_MENU_SELECTOR) as HTMLElement;
     float_menu_width = float_menu_item_size * 4 + float_menu_padding;
     for (const twid in this.id_to_window) {
       const twin = this.id_to_window[twid];
@@ -3267,7 +3410,7 @@ class XpraClient {
   }
 
   suspend() {
-    const window_ids = Object.keys(client.id_to_window).map(Number);
+    const window_ids = Object.keys(this.id_to_window).map(Number);
     this.send([PACKET_TYPES.suspend, true, window_ids]);
     for (const index in this.id_to_window) {
       const win = this.id_to_window[index];
@@ -3276,7 +3419,7 @@ class XpraClient {
   }
 
   resume() {
-    const window_ids = Object.keys(client.id_to_window).map(Number);
+    const window_ids = Object.keys(this.id_to_window).map(Number);
     for (const index in this.id_to_window) {
       const win = this.id_to_window[index];
       win.resume();
@@ -3289,12 +3432,12 @@ class XpraClient {
   /**
    * Windows
    */
-  _new_window(wid, x, y, w, h, metadata, override_redirect, client_properties) {
+  _new_window(wid: number, x: number, y: number, w: number, h: number, metadata, override_redirect: boolean, client_properties) {
     // each window needs their own DIV that contains a canvas
     const mydiv = document.createElement("div");
     mydiv.id = String(wid);
 
-    const screen = document.querySelector("#screen");
+    const screen = document.querySelector("#screen") as HTMLElement;
     screen.append(mydiv);
     // create the XpraWindow object to own the new div
     const win = new XpraWindow(
@@ -3318,11 +3461,11 @@ class XpraClient {
       this.scale
     );
     if (this.server_is_desktop || this.server_is_shadow) {
-      window.noWindowList();
+      noWindowList();
     }
     else if (win && !override_redirect && win.metadata["window-type"] == "NORMAL") {
       const trimmedTitle = Utilities.trimString(win.title, 30);
-      window.addWindowListItem(win, wid, trimmedTitle);
+      addWindowListItem(win, wid, trimmedTitle);
     }
     this.id_to_window[wid] = win;
     if (!override_redirect) {
@@ -3340,7 +3483,7 @@ class XpraClient {
     }
   }
 
-  _new_window_common(packet, override_redirect) {
+  _new_window_common(packet: XpraWindowPacket, override_redirect: boolean) {
     const wid = packet[1];
     let x = packet[2];
     let y = packet[3];
@@ -3403,15 +3546,15 @@ class XpraClient {
     this.send(packet);
   }
 
-  _process_new_window(packet) {
-    this._new_window_common(packet, false);
+  _process_new_window(packet: XpraNewWindowPacket) {
+    this._new_window_common(packet as any as XpraWindowPacket, false);
   }
 
-  _process_new_override_redirect(packet) {
-    this._new_window_common(packet, true);
+  _process_new_override_redirect(packet: XpraNewOverrideRedirectPacket) {
+    this._new_window_common(packet as any as XpraWindowPacket, true);
   }
 
-  _process_window_metadata(packet) {
+  _process_window_metadata(packet: XpraWindowMetadataPacket) {
     const wid = packet[1];
     const metadata = packet[2];
     const win = this.id_to_window[wid];
@@ -3420,7 +3563,7 @@ class XpraClient {
     }
   }
 
-  _process_initiate_moveresize(packet) {
+  _process_initiate_moveresize(packet: XpraInitiateMoveResizePacket) {
     const wid = packet[1];
     const win = this.id_to_window[wid];
     if (!win) {
@@ -3448,7 +3591,7 @@ class XpraClient {
     );
   }
 
-  _process_pointer_position(packet) {
+  _process_pointer_position(packet: XpraPointerPositionPacket) {
     const wid = packet[1];
     let x = packet[2];
     let y = packet[3];
@@ -3458,7 +3601,7 @@ class XpraClient {
       x = win.x + packet[4];
       y = win.y + packet[5];
     }
-    const shadow_pointer = document.querySelector("#shadow_pointer");
+    const shadow_pointer = document.querySelector("#shadow_pointer") as HTMLImageElement;
     const style = shadow_pointer.style;
     let cursor_url;
     let w;
@@ -3492,7 +3635,7 @@ class XpraClient {
     //this hook can be overriden
   }
 
-  _process_lost_window(packet) {
+  _process_lost_window(packet: XpraLostWindowPacket) {
     const wid = packet[1];
     const win = this.id_to_window[wid];
     if (
@@ -3500,7 +3643,7 @@ class XpraClient {
       !win.override_redirect &&
       win.metadata["window-type"] == "NORMAL"
     ) {
-      window.removeWindowListItem(wid);
+      removeWindowListItem(wid);
     }
     try {
       delete this.id_to_window[wid];
@@ -3531,7 +3674,7 @@ class XpraClient {
   }
 
   auto_focus() {
-    let highest_window = null;
+    let highest_window: XpraWindow | null = null;
     let highest_stacking = -1;
     for (const index in this.id_to_window) {
       const win = this.id_to_window[index];
@@ -3544,6 +3687,7 @@ class XpraClient {
         highest_stacking = win.stacking_layer;
       }
     }
+    
     if (highest_window) {
       this.set_focus(highest_window);
     } else {
@@ -3552,13 +3696,13 @@ class XpraClient {
     }
   }
 
-  _process_raise_window(packet) {
+  _process_raise_window(packet: XpraRaiseWindowPacket) {
     const wid = packet[1];
     const win = this.id_to_window[wid];
     this.set_focus(win);
   }
 
-  _process_window_resized(packet) {
+  _process_window_resized(packet: XpraWindowResizedPacket) {
     const wid = packet[1];
     const width = packet[2];
     const height = packet[3];
@@ -3568,22 +3712,22 @@ class XpraClient {
     }
   }
 
-  _process_window_move_resize(packet) {
+  _process_window_move_resize(packet: XpraWindowMoveResizePacket) {
     const [, wid, x, y, width, height] = packet;
     this.id_to_window[wid]?.move_resize(x, y, width, height);
   }
 
-  _process_configure_override_redirect(packet) {
+  _process_configure_override_redirect(packet: XpraConfigureOverrideRedirectPacket) {
     const [, wid, x, y, width, height] = packet;
     this.id_to_window[wid]?.move_resize(x, y, width, height);
   }
 
-  _process_desktop_size(packet) {
+  _process_desktop_size(packet: XpraDesktopSizePacket) {
     //we don't use this yet,
     //we could use this to clamp the windows to a certain area
   }
 
-  _process_bell(packet) {
+  _process_bell(packet: XpraBellPacket) {
     const percent = packet[3];
     const pitch = packet[4];
     const duration = packet[5];
@@ -3610,7 +3754,7 @@ class XpraClient {
   /**
    * Notifications
    */
-  _process_notify_show(packet) {
+  _process_notify_show(packet: XpraNotifyShowPacket) {
     //TODO: add UI switch to disable notifications
     const nid = packet[2];
     const replaces_nid = packet[4];
@@ -3620,12 +3764,11 @@ class XpraClient {
     const icon = packet[9];
     const actions = packet[10];
     const hints = packet[11];
-    if (window.closeNotification) {
-      if (replaces_nid > 0) {
-        window.closeNotification(replaces_nid);
-      }
-      window.closeNotification(nid);
+
+    if (replaces_nid > 0) {
+      closeNotification(replaces_nid);
     }
+    closeNotification(nid);
 
     const context = this;
     function notify() {
@@ -3662,8 +3805,8 @@ class XpraClient {
       }
     }
 
-    if (window.doNotification) {
-      window.doNotification(
+    if (doNotification) {
+      doNotification(
         "info",
         nid,
         summary,
@@ -3683,10 +3826,10 @@ class XpraClient {
     context._new_ui_event();
   }
 
-  _process_notify_close(packet) {
+  _process_notify_close(packet: XpraNotifyClosePacket) {
     const nid = packet[1];
-    if (window.closeNotification) {
-      window.closeNotification(nid);
+    if (closeNotification) {
+      closeNotification(nid);
     }
   }
 
@@ -3700,7 +3843,7 @@ class XpraClient {
     }
   }
 
-  _process_cursor(packet) {
+  _process_cursor(packet: XpraCursorPacket) {
     if (packet.length < 9) {
       this.reset_cursor();
       return;
@@ -3722,7 +3865,7 @@ class XpraClient {
     }
   }
 
-  _process_window_icon(packet) {
+  _process_window_icon(packet: XpraWindowIconPacket) {
     const wid = packet[1];
     const w = packet[2];
     const h = packet[3];
@@ -3746,11 +3889,11 @@ class XpraClient {
   /**
    * Window Painting
    */
-  _process_draw(packet) {
+  _process_draw(packet: XpraDrawPacket) {
     //ensure that the pixel data is in a byte array:
     const coding = Utilities.s(packet[6]);
     let img_data = packet[7];
-    const raw_buffers = [];
+    const raw_buffers: any[] = [];
     const now = performance.now();
     if (coding != "scroll") {
       if (!(img_data instanceof Uint8Array)) {
@@ -3771,7 +3914,7 @@ class XpraClient {
     }
   }
 
-  _process_eos(packet) {
+  _process_eos(packet: XpraEosPacket) {
     this.do_process_draw(packet, 0);
     const wid = packet[1];
     if (this.decode_worker) {
@@ -3975,6 +4118,7 @@ class XpraClient {
       this.warn("no valid audio codecs found");
       return;
     }
+    // @ts-ignore
     if (!(this.audio_codec in this.audio_codecs)) {
       if (this.audio_codec) {
         this.warn(`invalid audio codec: ${this.audio_codec}`);
@@ -3989,7 +4133,7 @@ class XpraClient {
           this.audio_codec in this.mediasource_codecs
         ) {
           this.audio_framework = "mediasource";
-        } else if (this.audio_aurora_enabled && !Utilities.isIE()) {
+        } else if (this.audio_aurora_enabled) {
           this.audio_framework = "aurora";
         }
         if (this.audio_framework) {
@@ -4076,12 +4220,10 @@ class XpraClient {
 
     //Create a MediaSource:
     this.media_source = MediaSourceUtil.getMediaSource();
-    if (this.debug) {
-      MediaSourceUtil.addMediaSourceEventDebugListeners(
-        this.media_source,
-        "audio"
-      );
-    }
+    MediaSourceUtil.addMediaSourceEventDebugListeners(
+      this.media_source,
+      "audio"
+    );
     this.media_source.addEventListener("error", (e) =>
       audio_error("audio source")
     );
@@ -4089,9 +4231,7 @@ class XpraClient {
     //Create an <audio> element:
     this.audio = document.createElement("audio");
     this.audio.setAttribute("autoplay", true);
-    if (this.debug) {
-      MediaSourceUtil.addMediaElementEventDebugListeners(this.audio, "audio");
-    }
+    MediaSourceUtil.addMediaElementEventDebugListeners(this.audio, "audio");
     this.audio.addEventListener("play", () => this.clog("audio play!"));
     this.audio.addEventListener("error", () => audio_error("audio"));
     document.body.append(this.audio);
@@ -4109,6 +4249,9 @@ class XpraClient {
         return;
       }
       //ie: codec_string = "audio/mp3";
+      if (!this.audio_codec)
+        throw new Error("Invalid state, missing audio codec.");
+
       const codec_string = MediaSourceConstants.CODEC_STRING[this.audio_codec];
       if (codec_string == undefined) {
         this.error(`invalid codec '${this.audio_codec}'`);
@@ -4206,7 +4349,7 @@ class XpraClient {
     }
   }
 
-  _process_sound_data(packet) {
+  _process_sound_data(packet: XpraSoundDataPacket) {
     try {
       const codec = Utilities.s(packet[1]);
       const buf = packet[2];
@@ -4246,7 +4389,7 @@ class XpraClient {
     //can be overriden
   }
 
-  add_sound_data(codec, buf, metadata) {
+  add_sound_data(codec: string, buf: Uint8Array, metadata: Object) {
     let MIN_START_BUFFERS = 4;
     const MAX_BUFFERS = 250;
     const CONCAT = true;
@@ -4493,17 +4636,17 @@ class XpraClient {
     this.send(packet);
   }
 
-  _process_clipboard_token(packet) {
+  _process_clipboard_token(packet: XpraClipboardTokenPacket) {
     if (!this.clipboard_enabled) {
       return;
     }
     const selection = packet[1];
     let targets = [];
-    let target = null;
-    let dtype = null;
-    let dformat = null;
-    let wire_encoding = null;
-    let wire_data = null;
+    let target: string;
+    let dtype: string;
+    let dformat: number;
+    let wire_encoding: string;
+    let wire_data: Uint8Array | string;
     if (packet.length >= 3) {
       targets = packet[2];
     }
@@ -4544,19 +4687,20 @@ class XpraClient {
     // when we get a click, control-C or control-X event
     // (when access to the clipboard is allowed)
     if (is_valid_target) {
-      const is_text =
-        dtype.toLowerCase().includes("text") ||
-        dtype.toLowerCase().includes("string");
+      const is_text = typeof dtype == 'string' && (
+          dtype.toLowerCase().includes("text") ||
+          dtype.toLowerCase().includes("string")
+        );
       if (is_text) {
         try {
-          wire_data = Utilities.Uint8ToString(wire_data);
+          wire_data = Utilities.Uint8ToString(wire_data as Uint8Array);
         } catch {}
         if (this.clipboard_buffer != wire_data) {
-          this.clipboard_datatype = dtype;
-          this.clipboard_buffer = wire_data;
+          this.clipboard_datatype = dtype as string;
+          this.clipboard_buffer = wire_data as string;
           this.clipboard_pending = true;
           if (navigator.clipboard && navigator.clipboard.writeText) {
-            navigator.clipboard.writeText(wire_data).then(
+            navigator.clipboard.writeText(wire_data as string).then(
               () => {
                 this.debug("clipboard", "writeText succeeded");
                 this.clipboard_pending = false;
@@ -4571,10 +4715,10 @@ class XpraClient {
         dformat == 8 &&
         wire_encoding == "bytes" &&
         navigator.clipboard &&
-        Object.hasOwn(navigator.clipboard, "write")
+        !!navigator.clipboard["write"]
       ) {
         this.debug("clipboard", "png image received");
-        const blob = new Blob([wire_data], { type: dtype });
+        const blob = new Blob([wire_data as any], { type: dtype });
         this.debug("clipboard", "created blob", blob);
         const item = new ClipboardItem({ "image/png": blob });
         this.debug("clipboard", "created ClipboardItem", item);
@@ -4588,7 +4732,7 @@ class XpraClient {
     }
   }
 
-  _process_set_clipboard_enabled(packet) {
+  _process_set_clipboard_enabled(packet: XpraSetClipboardEnabledPacket) {
     if (!this.clipboard_enabled) {
       return;
     }
@@ -4598,7 +4742,7 @@ class XpraClient {
     );
   }
 
-  _process_clipboard_request(packet) {
+  _process_clipboard_request(packet: XpraClipboardRequestPacket) {
     // we shouldn't be handling clipboard requests
     // unless we have support for navigator.clipboard:
     const request_id = packet[1];
@@ -4614,7 +4758,7 @@ class XpraClient {
     }
 
     if (navigator.clipboard) {
-      if (Object.hasOwn((navigator.clipboard, "read"))) {
+      if (!!navigator.clipboard["read"]) {
         this.debug("clipboard", "request using read()");
         navigator.clipboard.read().then(
           (data) => {
@@ -4631,7 +4775,7 @@ class XpraClient {
                         this.send_clipboard_string(
                           request_id,
                           selection,
-                          event.target.result
+                          event.target?.result
                         )
                       );
                       fileReader.readAsText(blob);
@@ -4658,7 +4802,7 @@ class XpraClient {
                           item_type,
                           8,
                           "bytes",
-                          event.target.result
+                          event.target?.result
                         )
                       );
                       fileReader.readAsText(blob);
@@ -4688,7 +4832,7 @@ class XpraClient {
           }
         );
         return;
-      } else if (Object.hasOwn((navigator.clipboard, "readText"))) {
+      } else if (!!navigator.clipboard["readText"]) {
         this.debug("clipboard", "clipboard request using readText()");
         navigator.clipboard.readText().then(
           (text) => {
@@ -4732,7 +4876,7 @@ class XpraClient {
     );
   }
 
-  resend_clipboard_server_buffer(request_id, selection) {
+  resend_clipboard_server_buffer(request_id?, selection?) {
     const server_buffer = this.clipboard_server_buffers["CLIPBOARD"];
     this.debug("clipboard", "resend_clipboard_server_buffer:", server_buffer);
     if (!server_buffer) {
@@ -4754,7 +4898,7 @@ class XpraClient {
     );
   }
 
-  send_clipboard_string(request_id, selection, clipboard_buffer, datatype) {
+  send_clipboard_string(request_id, selection, clipboard_buffer, datatype?) {
     let packet;
     packet =
       clipboard_buffer == ""
@@ -4799,7 +4943,7 @@ class XpraClient {
   /**
    * File transfers and printing
    */
-  _process_send_file(packet) {
+  _process_send_file(packet: XpraSendFilePacket) {
     const basefilename = Utilities.s(packet[1]);
     const mimetype = Utilities.s(packet[2]);
     const printit = packet[3];
@@ -4818,7 +4962,7 @@ class XpraClient {
       );
       return;
     }
-    let digest = null;
+    let digest: any = null;
     for (const hash_function of [
       "sha512",
       "sha384",
@@ -4867,7 +5011,7 @@ class XpraClient {
       return;
     }
     //start receiving chunks:
-    let writer = null;
+    let writer: any = null;
     try {
       //try to use a stream saver:
       this.debug("file", "streamSaver=", streamSaver);
@@ -4950,7 +5094,7 @@ class XpraClient {
     return this.receive_chunks_in_progress.size;
   }
 
-  cancel_file(chunk_id, message, chunk) {
+  cancel_file(chunk_id, message, chunk?) {
     const chunk_state = this.receive_chunks_in_progress.get(chunk_id);
     if (chunk_state) {
       //mark it as cancelled:
@@ -4977,7 +5121,7 @@ class XpraClient {
     this.send([PACKET_TYPES.ack_file_chunk, chunk_id, false, message, chunk]);
   }
 
-  _process_send_file_chunk(packet) {
+  _process_send_file_chunk(packet: XpraSendFileChunkPacket) {
     const chunk_id = Utilities.s(packet[1]);
     const chunk = packet[2];
     const file_data = packet[3];
@@ -5125,7 +5269,7 @@ class XpraClient {
         data.set(chunk_, start);
         start += chunk_.length;
       }
-      this._got_file(filename, data, mimetype, printit, mimetype, options);
+      this._got_file(filename, data, printit, mimetype, options);
     }
   }
 
@@ -5192,10 +5336,13 @@ class XpraClient {
   }
 
   send_file(f) {
-    clog("send_file:", f.name, ", type:", f.type, ", size:", f.size);
+    this.clog("send_file:", f.name, ", type:", f.type, ", size:", f.size);
     const fileReader = new FileReader();
     fileReader.onloadend = (event_) => {
-      const u8a = new Uint8Array(event_.target.result);
+      if (!event_.target?.result)
+        throw new Error("No file to send");
+
+      const u8a = new Uint8Array(event_.target.result as any);
       this.do_send_file(f.name, f.type, f.size, u8a);
     };
     fileReader.readAsArrayBuffer(f);
@@ -5211,7 +5358,7 @@ class XpraClient {
     const chunk_size = Math.min(FILE_CHUNKS_SIZE, this.remote_file_chunks || 0);
     if (chunk_size > 0 && size > chunk_size) {
       if (this.send_chunks_in_progress.size >= MAX_CONCURRENT_FILES) {
-        throw Exception(
+        throw new Error(
           `too many file transfers in progress:${this.send_chunks_in_progress.size}`
         );
       }
@@ -5297,7 +5444,7 @@ class XpraClient {
     this.send_chunks_in_progress.delete(chunk_id);
   }
 
-  _process_ack_file_chunk(packet) {
+  _process_ack_file_chunk(packet: XpraAckFileChunkPacket) {
     //the other end received our send-file or send-file-chunk,
     //send some more file data
     this.debug("file", "ack-file-chunk: ", packet);
@@ -5342,7 +5489,7 @@ class XpraClient {
       return;
     }
     if (chunk_size <= 0) {
-      throw Exception(`invalid chunk size ${chunk_size}`);
+      throw new Error(`invalid chunk size ${chunk_size}`);
     }
     //carve out another chunk:
     const cdata = data.subarray(0, chunk_size);
@@ -5371,12 +5518,12 @@ class XpraClient {
     ]);
   }
 
-  start_command(name, command, ignore) {
+  start_command(name: string, command: string, ignore: string) {
     const packet = ["start-command", name, command, ignore];
     this.send(packet);
   }
 
-  _process_open_url(packet) {
+  _process_open_url(packet: XpraOpenUrlPacket) {
     const url = packet[1];
     if (!this.open_url) {
       this.cwarn("Warning: received a request to open URL", url);
@@ -5394,7 +5541,7 @@ class XpraClient {
       const summary = "Open URL";
       const body = `<a href="${url}" rel="noopener" target="_blank">${url}</a>`;
       const timeout = 10;
-      window.doNotification(
+      doNotification(
         "",
         0,
         summary,
@@ -5409,3 +5556,4 @@ class XpraClient {
     }
   }
 }
+window['XpraClient'] = XpraClient;

@@ -40,7 +40,7 @@ function addWindowListItem(win, wid, title) {
   a.id = `windowlistitemlink${wid}`;
   a.addEventListener("mouseover", function (e) {
     if (e.ctrlKey) {
-      client._window_set_focus(win);
+      window["client"]._window_set_focus(win);
     }
   });
   a.addEventListener("click", function (e) {
@@ -49,7 +49,7 @@ function addWindowListItem(win, wid, title) {
     if (win.minimized) {
       win.toggle_minimized();
     } else {
-      client.set_focus(win);
+      window["client"].set_focus(win);
     }
     this.parentElement.parentElement.className = "-hide";
   });
@@ -82,7 +82,7 @@ function addWindowListItem(win, wid, title) {
   img2.title = "Close";
   img2.className = MENU_CONTENT_RIGHT_CLASS_NAME;
   img2.addEventListener("click", function (e) {
-    client.close_window(win, wid);
+    window["client"].close_window(win, wid);
     e.stopPropagation();
     hideWindowList();
   });
@@ -132,11 +132,11 @@ $(function () {
     scroll: false,
   });
   float_menu.on("dragstart", function (event_, ui) {
-    client.mouse_grabbed = true;
+    window["client"].mouse_grabbed = true;
   });
   float_menu.on("dragstop", function (event_, ui) {
-    client.mouse_grabbed = false;
-    client.toolbar_position = "custom";
-    client.reconfigure_all_trays();
+    window["client"].mouse_grabbed = false;
+    window["client"].toolbar_position = "custom";
+    window["client"].reconfigure_all_trays();
   });
 });
