@@ -28,7 +28,7 @@ import { XpraAckFileChunkPacket, XpraBellPacket, XpraChallengePacket, XpraClipbo
 
 // These are globally available on window
 declare const $, jQuery, AV,  default_settings, forge,
-  removeWindowListItem, BrotliDecode, streamSaver;
+  removeWindowListItem, noWindowList, BrotliDecode, streamSaver;
 declare const doNotification, addWindowListItem, closeNotification;
 declare let float_menu_width, float_menu_item_size, float_menu_padding;
 
@@ -53,6 +53,17 @@ const WINDOW_PREVIEW_SELECTOR = "#window_preview";
 // The article at https://www.urbaninsight.com/article/improving-html5-app-performance-gpu-accelerated-css-transitions
 // states that adding 'transform: transale3d(0,0,0);' is the strongest CSS indication for the browser to enable hardware acceleration.
 const TRY_GPU_TRIGGER = true;
+
+function truncate(input) {
+  if (!input) {
+    return input;
+  }
+  const s = input.toString();
+  if (s.length > 5) {
+    return s.slice(0, 5) + "..."; // eslint-disable-line prefer-template
+  }
+  return s;
+}
 
 export class XpraClient {
   private container: HTMLElement;
@@ -742,18 +753,31 @@ export class XpraClient {
   }
 
   redraw_windows() {
-    for (const index in this.id_to_window) {
-      const iwin = this.id_to_window[index];
-      this.request_redraw(iwin);
+    for (const wid in this.id_to_window) {
+      const win = this.id_to_window[wid];
+      this.request_redraw(win);
+    }
+  }
+
+  remove_windows() {
+    for (const wid in this.id_to_window) {
+      const win = this.id_to_window[wid];
+      removeWindowListItem(win.wid);
+      win.destroy();
     }
   }
 
   close_windows() {
-    for (const index in this.id_to_window) {
-      const iwin = this.id_to_window[index];
-      removeWindowListItem(index);
-      iwin.destroy();
+    for (const wid in this.id_to_window) {
+      const win = this.id_to_window[wid];
+      this.close_window(win);
     }
+  }
+
+  close_window(win) {
+    removeWindowListItem(win.wid);
+    win.destroy();
+    this.send([PACKET_TYPES.close_window, win.wid]);
   }
 
   close_protocol() {
@@ -823,8 +847,8 @@ export class XpraClient {
     this.send(packet);
     // call the screen_resized function on all open windows
     for (const index in this.id_to_window) {
-      const iwin = this.id_to_window[index];
-      iwin.screen_resized();
+      const win = this.id_to_window[index];
+      win.screen_resized();
 
       // Force fullscreen on a a given window name from the provided settings
       if (
@@ -833,16 +857,16 @@ export class XpraClient {
         default_settings.auto_fullscreen.length > 0
       ) {
         const pattern = new RegExp(`.*${default_settings.auto_fullscreen}.*`);
-        if (iwin.fullscreen === false && pattern.test(iwin.metadata['title'])) {
-          this.clog(`auto fullscreen window: ${iwin.metadata['title']}`);
-          iwin.set_fullscreen(true);
-          iwin.screen_resized();
+        if (win.fullscreen === false && pattern.test(win.metadata.title)) {
+          this.clog(`auto fullscreen window: ${win.metadata.title}`);
+          win.set_fullscreen(true);
+          win.screen_resized();
         }
       }
 
       // Make a DESKTOP-type window fullscreen automatically.
       // This resizes things like xfdesktop according to the window size.
-      if (this.fullscreen === false && this.client.is_window_desktop(iwin)) {
+      if (this.fullscreen === false && this.client.is_window_desktop(win)) {
         this.clog(`auto fullscreen desktop window: ${this.metadata.title}`);
         this.set_fullscreen(true);
         this.screen_resized();
@@ -1398,8 +1422,16 @@ export class XpraClient {
     const wmm = Math.round((screen_size[0] * 25.4) / dpi);
     const hmm = Math.round((screen_size[1] * 25.4) / dpi);
     const monitor = ["Canvas", 0, 0, screen_size[0], screen_size[1], wmm, hmm];
+    let name = "HTML";
+    // TODO: this is deprecated
+    if (navigator['userAgentData']) {
+      const brands = navigator['userAgentData'].brands;
+      if (brands.length>0) {
+        name = brands[0].brand + " " + brands[0].version;
+      }
+    }
     const screen = [
-      "HTML",
+      name,
       screen_size[0],
       screen_size[1],
       wmm,
@@ -1433,8 +1465,8 @@ export class XpraClient {
         this.clog("server connection is OK");
       }
       for (const index in this.id_to_window) {
-        const iwin = this.id_to_window[index];
-        iwin.set_spinner(this.server_ok);
+        const win = this.id_to_window[index];
+        win.set_spinner(this.server_ok);
       }
     }
   }
@@ -1664,7 +1696,7 @@ export class XpraClient {
         "encoding.scrolling.preference": 20,
       });
     }
-    
+
     let video_max_size = [1024, 768];
     if (this.offscreen_api) {
       video_max_size = [4096, 4096];
@@ -1734,10 +1766,7 @@ export class XpraClient {
           "YUV444P",
         ],
         vp8: ["YUV420P"],
-        vp9: ["YUV420P", "YUV444P", "YUV444P10"],
       },
-      //this is a workaround for server versions between 2.5.0 to 2.5.2 only:
-      "encoding.x264.YUV420P.profile": "baseline",
       "encoding.h264.YUV420P.profile": "baseline",
       "encoding.h264.YUV420P.level": "2.1",
       "encoding.h264.cabac": false,
@@ -1747,12 +1776,11 @@ export class XpraClient {
       "encoding.h264+mp4.YUV420P.level": "3.0",
       //prefer unmuxed VPX
       "encoding.vp8.score-delta": 70,
-      "encoding.vp9.score-delta": 60,
+      "encoding.h264.score-delta": 80,
       "encoding.h264+mp4.score-delta": 50,
       "encoding.h264+mp4.": 50,
       "encoding.mpeg4+mp4.score-delta": 40,
       "encoding.vp8+webm.score-delta": 40,
-      "encoding.h264.score-delta": -20,
 
       "sound.receive": true,
       "sound.send": false,
@@ -1811,7 +1839,7 @@ export class XpraClient {
   /**
    * Mouse handlers
    */
-  getMouse(e) {
+  getMouse(e, win?) {
     // get mouse position take into account scroll
     let mx = e.clientX + jQuery(document).scrollLeft();
     let my = e.clientY + jQuery(document).scrollTop();
@@ -1849,18 +1877,18 @@ export class XpraClient {
     return { x: mx, y: my, button: mbutton };
   }
 
-  on_mousedown(e, window?) {
+  on_mousedown(e, win?) {
     this.mousedown_event = e;
-    this.do_window_mouse_click(e, window, true);
-    return window == undefined;
+    this.do_window_mouse_click(e, win, true);
+    return win == undefined;
   }
 
-  on_mouseup(e, window?) {
-    this.do_window_mouse_click(e, window, false);
-    return window == undefined;
+  on_mouseup(e, win?) {
+    this.do_window_mouse_click(e, win, false);
+    return win == undefined;
   }
 
-  on_mousemove(e, window?) {
+  on_mousemove(e, win?) {
     if (this.mouse_grabbed) {
       return true;
     }
@@ -1874,30 +1902,30 @@ export class XpraClient {
     const modifiers = this._keyb_get_modifiers(e);
     const buttons = [];
     let wid = 0;
-    if (window) {
-      wid = window.wid;
+    if (win) {
+      wid = win.wid;
     }
     this.send([PACKET_TYPES.pointer_position, wid, [x, y], modifiers, buttons]);
-    if (window) {
+    if (win) {
       e.preventDefault();
     }
-    return window == undefined;
+    return win == undefined;
   }
 
-  release_buttons(e, window) {
+  release_buttons(e, win) {
     const mouse = this.getMouse(e);
     const x = Math.round(mouse.x);
     const y = Math.round(mouse.y);
     const modifiers = this._keyb_get_modifiers(e);
-    const wid = window.wid;
+    const wid = win.wid;
     const pressed = false;
     for (const button of this.buttons_pressed) {
       this.send_button_action(wid, button, pressed, x, y, modifiers);
     }
   }
 
-  do_window_mouse_click(e, window, pressed) {
-    if (window) {
+  do_window_mouse_click(e, win, pressed) {
+    if (win) {
       e.preventDefault();
     }
     if (this.server_readonly || this.mouse_grabbed || !this.connected) {
@@ -1915,17 +1943,17 @@ export class XpraClient {
     if (this.clipboard_direction !== "to-server" && this._poll_clipboard(e)) {
       send_delay = CLIPBOARD_EVENT_DELAY;
     }
-    const mouse = this.getMouse(e);
+    const mouse = this.getMouse(e, win);
     const x = Math.round(mouse.x);
     const y = Math.round(mouse.y);
     const modifiers = this._keyb_get_modifiers(e);
     let wid = 0;
-    if (window) {
-      wid = window.wid;
+    if (win) {
+      wid = win.wid;
     }
     // dont call set focus unless the focus has actually changed
     if (wid > 0 && this.focus != wid) {
-      this._window_set_focus(window);
+      this.set_focus(win);
     }
     let button = mouse.button;
     const lbe = this.last_button_event;
@@ -1967,7 +1995,7 @@ export class XpraClient {
   }
 
   // Source: https://deepmikoto.com/coding/1--javascript-detect-mouse-wheel-direction
-  detect_vertical_scroll_direction(e, window) {
+  detect_vertical_scroll_direction(e) {
     if (!e) {
       //IE? In any case, detection won't work:
       return 0;
@@ -1992,7 +2020,7 @@ export class XpraClient {
     return 0;
   }
 
-  on_mousescroll(e, window?) {
+  on_mousescroll(e, win?) {
     if (this.server_readonly || this.mouse_grabbed || !this.connected) {
       return false;
     }
@@ -2002,8 +2030,8 @@ export class XpraClient {
     const modifiers = this._keyb_get_modifiers(e);
     const buttons = [];
     let wid = 0;
-    if (window) {
-      wid = window.wid;
+    if (win) {
+      wid = win.wid;
     }
     const wheel = Utilities.normalizeWheel(e);
     this.debug("mouse", "normalized wheel event:", wheel);
@@ -2016,7 +2044,7 @@ export class XpraClient {
     if (
       this.scroll_reverse_y === true ||
       (this.scroll_reverse_x == "auto" &&
-        this.detect_vertical_scroll_direction(e, window) < 0 &&
+        this.detect_vertical_scroll_direction(e) < 0 &&
         py > 0)
     ) {
       py = -py;
@@ -2191,7 +2219,7 @@ export class XpraClient {
       "pending=",
       this.clipboard_pending,
       "buffer=",
-      this.clipboard_buffer
+      truncate(this.clipboard_buffer)
     );
     if (!this.clipboard_pending) {
       return;
@@ -2315,7 +2343,7 @@ export class XpraClient {
   /**
    * Focus
    */
-  _window_set_focus(win) {
+  set_focus(win) {
     if (win == undefined || this.server_readonly || !this.connected) {
       return;
     }
@@ -2346,8 +2374,8 @@ export class XpraClient {
         win.metadata["class-instance"].includes(auto_fullscreen_desktop_class)
       ) {
         for (const index in this.id_to_window) {
-          const iwin = this.id_to_window[index];
-          if (iwin.wid != win.wid && !iwin.minimized) {
+          const otherwin = this.id_to_window[index];
+          if (otherwin.wid != win.wid && !otherwin.minimized) {
             return;
           }
         }
@@ -2425,8 +2453,9 @@ export class XpraClient {
       const wid = $(".slick-current .window-preview-item-container").data(
         "wid"
       );
-      if (!this.id_to_window[wid].minimized) {
-        this._window_set_focus(this.id_to_window[wid]);
+      const win = this.id_to_window[wid];
+      if (!win.minimized) {
+        win.focus();
       }
     });
 
@@ -2439,8 +2468,9 @@ export class XpraClient {
         "wid"
       );
       this.clog(`current wid: ${wid}`);
-      if (this.id_to_window[wid].minimized) {
-        this._window_set_focus(this.id_to_window[wid]);
+      const win = this.id_to_window[wid];
+      if (win.minimized) {
+        win.focus();
       }
 
       // Clear the list of window elements.
@@ -2641,8 +2671,9 @@ export class XpraClient {
     const protocol = this.protocol;
     setTimeout(() => {
       try {
-        this.close_windows();
+        this.remove_windows();
         this.close_audio();
+        this.cancel_all_files();
         this.clear_timers();
         this.init_state();
         if (protocol) {
@@ -2682,10 +2713,13 @@ export class XpraClient {
   }
 
   close() {
+    if (this.reconnect_in_progress) {
+      return;
+    }
     this.clog("client closed");
     this.cancel_all_files();
     this.emit_connection_lost();
-    this.close_windows();
+    this.remove_windows();
     this.close_audio();
     this.clear_timers();
     this.close_protocol();
@@ -2829,7 +2863,7 @@ export class XpraClient {
     // stuff that must be done after hello
     if (this.audio_enabled) {
       if (!hello["sound.send"]) {
-        this.error("server does not support speaker forwarding");
+        this.warn("server does not support speaker forwarding");
         this.audio_enabled = false;
       } else {
         this.server_audio_codecs = hello["sound.encoders"];
@@ -3326,7 +3360,6 @@ export class XpraClient {
     mycanvas.height = h;
     this.id_to_window[wid] = new XpraWindow(
       this,
-      mycanvas,
       wid,
       x,
       y,
@@ -3380,16 +3413,16 @@ export class XpraClient {
     const window_ids = Object.keys(this.id_to_window).map(Number);
     this.send([PACKET_TYPES.suspend, true, window_ids]);
     for (const index in this.id_to_window) {
-      const iwin = this.id_to_window[index];
-      iwin.suspend();
+      const win = this.id_to_window[index];
+      win.suspend();
     }
   }
 
   resume() {
     const window_ids = Object.keys(this.id_to_window).map(Number);
     for (const index in this.id_to_window) {
-      const iwin = this.id_to_window[index];
-      iwin.resume();
+      const win = this.id_to_window[index];
+      win.resume();
     }
     this.send([PACKET_TYPES.resume, true, window_ids]);
     this.redraw_windows();
@@ -3409,7 +3442,6 @@ export class XpraClient {
     // create the XpraWindow object to own the new div
     const win = new XpraWindow(
       this,
-      null,
       wid,
       x,
       y,
@@ -3424,13 +3456,16 @@ export class XpraClient {
       (event, window) => this.on_mousedown(event, window),
       (event, window) => this.on_mouseup(event, window),
       (event, window) => this.on_mousescroll(event, window),
-      (window) => this._window_set_focus(window),
-      (window) => this.send([PACKET_TYPES.close_window, window.wid]),
+      (window) => this.set_focus(window),
+      (window) => this.close_window(window),
       this.scale
     );
-    if (win && !override_redirect && win.metadata["window-type"] == "NORMAL") {
+    if (this.server_is_desktop || this.server_is_shadow) {
+      noWindowList();
+    }
+    else if (win && !override_redirect && win.metadata["window-type"] == "NORMAL") {
       const trimmedTitle = Utilities.trimString(win.title, 30);
-      addWindowListItem(wid, trimmedTitle);
+      addWindowListItem(win, wid, trimmedTitle);
     }
     this.id_to_window[wid] = win;
     if (!override_redirect) {
@@ -3444,7 +3479,7 @@ export class XpraClient {
         geom.h,
         win.client_properties,
       ]);
-      this._window_set_focus(win);
+      this.set_focus(win);
     }
   }
 
@@ -3573,14 +3608,12 @@ export class XpraClient {
     let h;
     let xhot;
     let yhot;
-    if (win.png_cursor_data) {
-      w = win.png_cursor_data[0];
-      h = win.png_cursor_data[1];
-      xhot = win.png_cursor_data[2];
-      yhot = win.png_cursor_data[3];
-      cursor_url = `data:image/png;base64,${window.btoa(
-        win.png_cursor_data[4] as string
-      )}`;
+    if (win.cursor_data) {
+      cursor_url = win.cursor_data[0];
+      xhot = win.cursor_data[1];
+      yhot = win.cursor_data[2];
+      w = win.cursor_data[3];
+      h = win.cursor_data[4];
     } else {
       w = 32;
       h = 32;
@@ -3644,19 +3677,19 @@ export class XpraClient {
     let highest_window: XpraWindow | null = null;
     let highest_stacking = -1;
     for (const index in this.id_to_window) {
-      const iwin = this.id_to_window[index];
+      const win = this.id_to_window[index];
       if (
-        !iwin.minimized &&
-        iwin.stacking_layer > highest_stacking &&
-        !iwin.tray
+        !win.minimized &&
+        win.stacking_layer > highest_stacking &&
+        !win.tray
       ) {
-        highest_window = iwin;
-        highest_stacking = iwin.stacking_layer;
+        highest_window = win;
+        highest_stacking = win.stacking_layer;
       }
     }
     
     if (highest_window) {
-      this._window_set_focus(highest_window);
+      this.set_focus(highest_window);
     } else {
       this.focus = 0;
       this.send([PACKET_TYPES.focus, 0, []]);
@@ -3666,9 +3699,7 @@ export class XpraClient {
   _process_raise_window(packet: XpraRaiseWindowPacket) {
     const wid = packet[1];
     const win = this.id_to_window[wid];
-    if (win != undefined) {
-      this._window_set_focus(win);
-    }
+    this.set_focus(win);
   }
 
   _process_window_resized(packet: XpraWindowResizedPacket) {
@@ -3744,7 +3775,7 @@ export class XpraClient {
       let icon_url = "";
       if (icon && icon[0] == "png") {
         icon_url = `data:image/png;base64,${Utilities.ToBase64(icon[3])}`;
-        this.clog("notification icon_url=", icon_url);
+        context.clog("notification icon_url=", icon_url);
       }
       const notification = new Notification(summary, {
         body,
@@ -3807,8 +3838,8 @@ export class XpraClient {
    */
   reset_cursor() {
     for (const wid in this.id_to_window) {
-      const window = this.id_to_window[wid];
-      window.reset_cursor();
+      const win = this.id_to_window[wid];
+      win.reset_cursor();
     }
   }
 
@@ -3829,8 +3860,8 @@ export class XpraClient {
     const yhot = packet[7];
     const img_data = packet[9];
     for (const wid in this.id_to_window) {
-      const window = this.id_to_window[wid];
-      window.set_cursor(encoding, w, h, xhot, yhot, img_data);
+      const win = this.id_to_window[wid];
+      win.set_cursor(encoding, w, h, xhot, yhot, img_data);
     }
   }
 
@@ -4257,7 +4288,7 @@ export class XpraClient {
   }
 
   close_audio() {
-    if (this.connected) {
+    if (this.connected && this.audio_enabled) {
       this._send_sound_stop();
     }
     if (this.audio_framework == "mediasource") {
@@ -4387,7 +4418,7 @@ export class XpraClient {
           ", type=",
           Object.prototype.toString.call(metadatum)
         );
-        this.audio_buffers.push(Utilities.StringToUint8(metadatum));
+        this.audio_buffers.push(Utilities.u(metadatum));
       }
       //since we have the metadata, we should be good to go:
       MIN_START_BUFFERS = 1;
@@ -4984,7 +5015,7 @@ export class XpraClient {
     try {
       //try to use a stream saver:
       this.debug("file", "streamSaver=", streamSaver);
-      streamSaver.mitm = "../mitm.html";
+      streamSaver.mitm = "./mitm.html";
       const fileStream = streamSaver.createWriteStream(basefilename, {
         size: filesize,
       });

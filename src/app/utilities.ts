@@ -83,6 +83,9 @@ export const Utilities = globalThis['Utilities'] = {
   },
 
   trimString(string_, trimLength) {
+    if (!string_) {
+      return "";
+    }
     return string_.length > trimLength
       ? `${string_.slice(0, Math.max(0, trimLength - 3))}...`
       : string_;
@@ -167,7 +170,6 @@ export const Utilities = globalThis['Utilities'] = {
 
   getKeyboardLayout() {
     let v = Utilities.getFirstBrowserLanguage();
-    Utilities.debug("getFirstBrowserLanguage()=", v);
     if (v == undefined) {
       return "us";
     }
@@ -186,7 +188,6 @@ export const Utilities = globalThis['Utilities'] = {
         layout = temporary;
       }
     }
-    Utilities.debug("getKeyboardLayout()=", layout);
     return layout;
   },
 
@@ -428,6 +429,14 @@ export const Utilities = globalThis['Utilities'] = {
       return Utilities.Uint8ToString(v);
     }
     return v.toString();
+  },
+
+  u : function(v){
+    const type = typeof v;
+      if (type === 'object' && v.constructor===Uint8Array) {
+        return v;
+      }
+     return Utilities.StringToUint8(v.toString());
   },
 
   ArrayBufferToBase64(uintArray) {

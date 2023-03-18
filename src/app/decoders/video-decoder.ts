@@ -28,7 +28,7 @@ export class XpraVideoDecoder {
   draining = false;
   decoder_queue: any[] = [];
   decoded_frames: any[] = [];
-  erroneous_frame = false;
+  erroneous_frame: boolean | string = false;
   codec: string;
   vp9_params: string;
   frameWaitTimeout = 1;// Interval for wait loop while frame is being decoded
@@ -40,7 +40,6 @@ export class XpraVideoDecoder {
   }
 
   prepareVP9params(csc) {
-    console.log(csc);
     // Check if we have the right VP9 params before init.
     // This is needed because we can only set the params when the video decoder is created.
     // We close the decoder when the coding changes.
@@ -80,7 +79,7 @@ export class XpraVideoDecoder {
   resolveCodec(coding) {
     if (coding == "h264") return "avc1.42C01E";
     if (coding == "vp8") return "vp8";
-    if (coding == "vp9") return `$vp09${this.vp9_params}`;
+    if (coding == "vp9") return `vp09${this.vp9_params}`;
     throw `No codec defined for coding ${coding}`;
   }
 
@@ -143,8 +142,8 @@ export class XpraVideoDecoder {
 
   _on_decoder_error(error) {
     // TODO: Handle error? Or just assume we will catch up?
-    console.error(`Error decoding frame: ${error}`);
-    this.erroneous_frame = true;
+    this.erroneous_frame = `Error decoding frame: ${error}`;
+    console.error(this.erroneous_frame);
   }
 
   queue_frame(packet) {
@@ -194,17 +193,18 @@ export class XpraVideoDecoder {
       while (frame_out.length === 0) {
         // Await our frame
         await new Promise((r) => setTimeout(r, this.frameWaitTimeout));
-        if (this.erroneous_frame) {
+        if (this.erroneous_frame != null) {
           // The last frame was erroneous, break the wait loop
           break;
         }
         frame_out = this.decoded_frames.filter((p) => p[8] == packet_sequence);
       }
 
-      if (this.erroneous_frame) {
+      if (typeof this.erroneous_frame == "string") {
         // Last frame was erroneous. Reject the promise and reset the state.
-        this.erroneous_frame = false;
-        reject(new Error("decoder error"));
+        const msg = this.erroneous_frame;
+        this.erroneous_frame = null;
+        reject(new Error(msg));
       }
       // Remove the frame from decoded frames list
       this.decoded_frames = this.decoded_frames.filter(

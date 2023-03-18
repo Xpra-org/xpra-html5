@@ -7,7 +7,7 @@
  *
  */
 
-import { decode_rgb } from '../util/rgbHelpers';
+import { decode_rgb } from '../util/rgb-helpers';
 
 export class XpraImageDecoder {
   async convertToBitmap(packet) {

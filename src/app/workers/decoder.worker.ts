@@ -3,7 +3,7 @@
  * Copyright (c) 2021 Antoine Martin <antoine@xpra.org>
  */
 
-import { decode_rgb } from '../util/rgbHelpers';
+import { decode_rgb } from '../util/rgb-helpers';
 
 // Broadway Decoder
 declare const Decoder;
@@ -22,9 +22,7 @@ function close_broadway(wid: number) {
 
 const on_hold = new Map();
 
-function decode_eos(wid) {
-  close_broadway(wid);
-}
+function decode_eos(wid) {}
 
 function decode_draw_packet(packet, start) {
   const wid = packet[1];
@@ -122,15 +120,11 @@ function decode_draw_packet(packet, start) {
 
   let options = {};
   if (packet.length > 10) options = packet[10];
-  let enc_width = width;
-  let enc_height = height;
   const bitmap_options = {
     premultiplyAlpha: "none",
   };
   const scaled_size = options["scaled_size"];
   if (scaled_size) {
-    enc_width = scaled_size[0];
-    enc_height = scaled_size[1];
     delete options["scaled-size"];
     bitmap_options["resizeWidth"] = width;
     bitmap_options["resizeHeight"] = height;
@@ -168,43 +162,6 @@ function decode_draw_packet(packet, start) {
           release();
         }
       );
-    } else if (coding == "h264") {
-      const data = packet[7];
-      const frame = options["frame"] || 0;
-      if (frame == 0) {
-        close_broadway(wid);
-      }
-      let decoder = broadway_decoders[wid];
-      if (
-        decoder &&
-        (decoder._enc_size[0] != enc_width ||
-          decoder._enc_size[1] != enc_height)
-      ) {
-        close_broadway(wid);
-        decoder = null;
-      }
-      if (!decoder) {
-        decoder = new Decoder({
-          rgb: true,
-          size: { width: enc_width, height: enc_height },
-        });
-        decoder._enc_size = [enc_width, enc_height];
-        broadway_decoders[wid] = decoder;
-      }
-      let count = 0;
-      decoder.onPictureDecoded = function (buffer, p_width, p_height, infos) {
-        count++;
-        //forward it as rgb32:
-        send_rgb32_back(buffer, p_width, p_height, bitmap_options);
-      };
-      // we can pass a buffer full of NALs to decode() directly
-      // as long as they are framed properly with the NAL header
-      decoder.decode(data);
-      // broadway decoding is actually synchronous
-      // and onPictureDecoded is called from decode(data) above.
-      if (count == 0) {
-        decode_error(`no ${coding} picture decoded`);
-      }
     } else {
       //pass-through:
       send_back([]);
@@ -233,18 +190,6 @@ function check_image_decode(
     const timer = setTimeout(function () {
       fail_callback(format, `timeout, no ${format} picture decoded`);
     }, 2000);
-    if (format == "h264") {
-      const decoder = new Decoder({
-        rgb: true,
-        size: { width: 64, height: 64 },
-      });
-      decoder.onPictureDecoded = function (buffer, p_width, p_height, infos) {
-        clearTimeout(timer);
-        success_callback(format);
-      };
-      decoder.decode(image_bytes);
-      return;
-    }
     const data = new Uint8Array(image_bytes);
     const blob = new Blob([data], { type: `image/${format}` });
     createImageBitmap(blob, {
@@ -324,51 +269,6 @@ onmessage = function (e) {
           228, 229, 230, 231, 232, 233, 234, 242, 243, 244, 245, 246, 247, 248,
           249, 250, 255, 218, 0, 12, 3, 1, 0, 2, 17, 3, 17, 0, 63, 0, 247, 250,
           40, 162, 128, 63, 255, 217,
-        ],
-        h264: [
-          0, 0, 0, 1, 103, 66, 192, 10, 218, 16, 154, 16, 0, 0, 3, 0, 16, 0, 0,
-          3, 3, 40, 241, 34, 106, 0, 0, 0, 1, 104, 206, 1, 119, 32, 0, 0, 1, 6,
-          5, 255, 255, 78, 220, 69, 233, 189, 230, 217, 72, 183, 150, 44, 216,
-          32, 217, 35, 238, 239, 120, 50, 54, 52, 32, 45, 32, 99, 111, 114, 101,
-          32, 49, 54, 49, 32, 45, 32, 72, 46, 50, 54, 52, 47, 77, 80, 69, 71,
-          45, 52, 32, 65, 86, 67, 32, 99, 111, 100, 101, 99, 32, 45, 32, 67,
-          111, 112, 121, 108, 101, 102, 116, 32, 50, 48, 48, 51, 45, 50, 48, 50,
-          49, 32, 45, 32, 104, 116, 116, 112, 58, 47, 47, 119, 119, 119, 46,
-          118, 105, 100, 101, 111, 108, 97, 110, 46, 111, 114, 103, 47, 120, 50,
-          54, 52, 46, 104, 116, 109, 108, 32, 45, 32, 111, 112, 116, 105, 111,
-          110, 115, 58, 32, 99, 97, 98, 97, 99, 61, 48, 32, 114, 101, 102, 61,
-          49, 32, 100, 101, 98, 108, 111, 99, 107, 61, 48, 58, 48, 58, 48, 32,
-          97, 110, 97, 108, 121, 115, 101, 61, 48, 58, 48, 32, 109, 101, 61,
-          100, 105, 97, 32, 115, 117, 98, 109, 101, 61, 48, 32, 112, 115, 121,
-          61, 49, 32, 112, 115, 121, 95, 114, 100, 61, 49, 46, 48, 48, 58, 48,
-          46, 48, 48, 32, 109, 105, 120, 101, 100, 95, 114, 101, 102, 61, 48,
-          32, 109, 101, 95, 114, 97, 110, 103, 101, 61, 49, 54, 32, 99, 104,
-          114, 111, 109, 97, 95, 109, 101, 61, 49, 32, 116, 114, 101, 108, 108,
-          105, 115, 61, 48, 32, 56, 120, 56, 100, 99, 116, 61, 48, 32, 99, 113,
-          109, 61, 48, 32, 100, 101, 97, 100, 122, 111, 110, 101, 61, 50, 49,
-          44, 49, 49, 32, 102, 97, 115, 116, 95, 112, 115, 107, 105, 112, 61,
-          49, 32, 99, 104, 114, 111, 109, 97, 95, 113, 112, 95, 111, 102, 102,
-          115, 101, 116, 61, 48, 32, 116, 104, 114, 101, 97, 100, 115, 61, 49,
-          32, 108, 111, 111, 107, 97, 104, 101, 97, 100, 95, 116, 104, 114, 101,
-          97, 100, 115, 61, 49, 32, 115, 108, 105, 99, 101, 100, 95, 116, 104,
-          114, 101, 97, 100, 115, 61, 48, 32, 110, 114, 61, 48, 32, 100, 101,
-          99, 105, 109, 97, 116, 101, 61, 49, 32, 105, 110, 116, 101, 114, 108,
-          97, 99, 101, 100, 61, 48, 32, 98, 108, 117, 114, 97, 121, 95, 99, 111,
-          109, 112, 97, 116, 61, 48, 32, 99, 111, 110, 115, 116, 114, 97, 105,
-          110, 101, 100, 95, 105, 110, 116, 114, 97, 61, 48, 32, 98, 102, 114,
-          97, 109, 101, 115, 61, 48, 32, 119, 101, 105, 103, 104, 116, 112, 61,
-          48, 32, 107, 101, 121, 105, 110, 116, 61, 105, 110, 102, 105, 110,
-          105, 116, 101, 32, 107, 101, 121, 105, 110, 116, 95, 109, 105, 110,
-          61, 53, 51, 54, 56, 55, 48, 57, 49, 51, 32, 115, 99, 101, 110, 101,
-          99, 117, 116, 61, 48, 32, 105, 110, 116, 114, 97, 95, 114, 101, 102,
-          114, 101, 115, 104, 61, 48, 32, 114, 99, 61, 99, 114, 102, 32, 109,
-          98, 116, 114, 101, 101, 61, 48, 32, 99, 114, 102, 61, 52, 57, 46, 53,
-          32, 113, 99, 111, 109, 112, 61, 48, 46, 54, 48, 32, 113, 112, 109,
-          105, 110, 61, 48, 32, 113, 112, 109, 97, 120, 61, 54, 57, 32, 113,
-          112, 115, 116, 101, 112, 61, 52, 32, 105, 112, 95, 114, 97, 116, 105,
-          111, 61, 49, 46, 52, 48, 32, 97, 113, 61, 48, 0, 128, 0, 0, 1, 101,
-          136, 132, 42, 38, 40, 0, 23, 147, 147, 147, 174, 186, 235, 174, 186,
-          235, 174, 186, 235, 192,
         ],
       };
       const errors: string[] = [];

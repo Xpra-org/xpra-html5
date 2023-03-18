@@ -377,6 +377,7 @@ export class XpraProtocol {
       } catch (error) {
         //FIXME: maybe we should error out and disconnect here?
         this.error(`error processing packet ${packet[0]}: ${error}`);
+        this.error(` packet data: ${packet_data}`)
       }
     }
     return this.rQ.length > 0;

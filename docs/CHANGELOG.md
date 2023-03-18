@@ -2,9 +2,27 @@
 
 All notable changes to this project will be documented in this file.
 
-## [7.0] 2022-10-15
+## [7.0] 2023-03-12
 
-- TODO
+- [unable to move undecorated / CSD windows](https://github.com/Xpra-org/xpra-html5/issues/210)
+- [throttle video decoder to prevent flooding](https://github.com/Xpra-org/xpra-html5/commit/8ed5af60d4a0919422bf1006abc3b557f9c0d650)
+- [disable offscreen decode worker with Firefox to prevent flickering](https://github.com/Xpra-org/xpra-html5/commit/07ac69ea34751d52a6e9520d29fd9bc66ccb5e44)
+- [workaround for setuptools breakage in version 61 and later](https://github.com/Xpra-org/xpra-html5/commit/017148e0cefa020b9b0a7590b0bb5637c68b4888)
+- [native video decoding is fast enough not to require much downscaling](https://github.com/Xpra-org/xpra-html5/commit/ed4b0d72f40864cea4fb4b91b5c400085eb44fa8)
+- [propagate error messages](https://github.com/Xpra-org/xpra-html5/commit/8a11f5230a2657bb40d91f31ce515d1be325386b)
+- [truncate large clipboard buffers in log messages](https://github.com/Xpra-org/xpra-html5/commit/2038a3d6d5b24498db5496def57b7eca315b0000)
+- [`scroll` draw packets can hang the connection](https://github.com/Xpra-org/xpra-html5/issues/217)
+- [disable VP9, prefer h264](https://github.com/Xpra-org/xpra-html5/commit/4d06ef7c96f68bee3bde39e4815c0c8825fdc936) / [remove vp9](https://github.com/Xpra-org/xpra-html5/commit/017ffd205fe98f013998632b1e294e751a91ab9d)
+- [spurious audio stop errors](https://github.com/Xpra-org/xpra-html5/commit/fc35147cb1e6107436d57f223cd56395f69e5cc6)
+- [make stream download URL easier to embed](https://github.com/Xpra-org/xpra-html5/commit/953523e66c1a2e16d9ae1d4c67e070f0e95f9ad6)
+- [missing scroll wheel events](https://github.com/Xpra-org/xpra-html5/commit/ff246e3bd05a6fb51f3099f578452d2fa90e1c72)
+- [avoid errors if the window's title is unset](https://github.com/Xpra-org/xpra-html5/commit/3cda0e8864d1cf341b8e5f7bf36b3bb7d97d5667)
+- [remove support for software video decoding](https://github.com/Xpra-org/xpra-html5/commit/dfc60dbec94a39e28ec9e14acd476631fa2ccd13)
+- [don't enable clipboard with Safari and SSL](https://github.com/Xpra-org/xpra-html5/issues/226)
+- [provide more useful screen name to the server](https://github.com/Xpra-org/xpra-html5/commit/1661e424fb510390938c058bd5856c215a938d6a)
+- [cursor display and scaling issues](https://github.com/Xpra-org/xpra-html5/commit/96132fa6791e1890b344ad910a190ad9cfd421b4)
+- [workaround for older versions of Safari](https://github.com/Xpra-org/xpra-html5/commit/8b8cdd32d939c8bdaf6b54b7578ff9c5f88ee3d7)
+- [audio metadata corruption](https://github.com/Xpra-org/xpra-html5/commit/01714767bec0aac5ed17ee00c2ab6b4de254d2c1)
 
 ## [6.0] 2022-10-15
 

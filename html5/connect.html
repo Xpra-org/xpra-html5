@@ -44,7 +44,7 @@
       <form class="form-signin" action="./index.html">
         <img src="icons/xpra-logo.png" alt="xpra logo" />
         <h2 class="form-signin-heading">Xpra HTML5 Client</h2>
-        <h5>Version 7.0 beta</h5>
+        <h5>Version 8.0 beta</h5>
 
         <div
           id="alert-disconnect"
@@ -1554,7 +1554,6 @@
         ];
         const default_on = [
           "steal",
-          "clipboard",
           "printing",
           "file_transfer",
           "reconnect",
@@ -1563,6 +1562,9 @@
           "exit_with_children",
           "exit_with_client",
         ];
+        if (!(Utilities.isSafari() && ssl)) {
+          default_on.push("clipboard");
+        }
         //even on 64-bit, video decoding is too slow
         if (Utilities.isMacOS()) {
           default_on.push("swap_keys");

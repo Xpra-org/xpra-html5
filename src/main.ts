@@ -226,7 +226,9 @@ function enable_bugreport_submit() {
 }
 function hide_bugreport() {
     $("#bugreport").hide();
-    enable_clipboard_autofocus();
+    if (client.clipboard_enabled) {
+        enable_clipboard_autofocus();
+    }
 }
 function show_bugreport(event) {
     //stop capturing input, so we can interact with the bugreport form:
@@ -388,7 +390,7 @@ function init_client(): any {
     const shadow_display = getparam("shadow_display") || "";
     const submit = getboolparam("submit", true);
     const server = getparam("server") || window.location.hostname;
-    const port = getparam("port") || window.location.port;
+    const port = 3300//getparam("port") || window.location.port;
     const ssl = getboolparam("ssl", https);
     const path = getparam("path") || window.location.pathname;
     const encryption = getparam("encryption") || null;
@@ -407,7 +409,10 @@ function init_client(): any {
         false
     );
     const keyboard = getboolparam("keyboard", Utilities.isMobile());
-    const clipboard = getboolparam("clipboard", true);
+    //Safari and navigator.clipboard don't mix well:
+    //(only enabled with ssl contexts)
+    //https://github.com/Xpra-org/xpra-html5/issues/226
+    const clipboard = getboolparam("clipboard", !(Utilities.isSafari() && ssl));
     const printing = getboolparam("printing", true);
     const file_transfer = getboolparam("file_transfer", true);
     const steal = getboolparam("steal", true);
@@ -512,7 +517,7 @@ function init_client(): any {
     clog("debug enabled for:", debug_categories);
 
     // create the client
-    const client = new XpraClient("screen");
+    const client = window['client'] = new XpraClient("screen");
     client.debug_categories = debug_categories;
     client.remote_logging = remote_logging;
     client.sharing = sharing;
@@ -552,9 +557,8 @@ function init_client(): any {
     }
 
     if (video) {
-        // broadway h264 decoder:
-        client.check_encodings.push("h264");
         // VPX checks. Will only succeed if we can use VideoDecoder.js
+        client.check_encodings.push("h264");
         client.check_encodings.push("vp8");
         client.check_encodings.push("vp9");
 
@@ -1131,7 +1135,9 @@ function init_page() {
     );
     client.on_connect = function () {
         init_float_menu();
-        enable_clipboard_autofocus();
+        if (client.clipboard_enabled) {
+            enable_clipboard_autofocus();
+        }
         client.capture_keyboard = true;
     };
     const blocked_hosts = (getparam("blocked-hosts") || "").split(",");
@@ -1225,8 +1231,10 @@ function init_page() {
     // disable right click menu:
     window.oncontextmenu = function (e) {
         if (
-            client.clipboard_direction === "to-client" ||
-            client.clipboard_direction === "both"
+            client.clipboard_enabled && (
+                client.clipboard_direction === "to-client" ||
+                client.clipboard_direction === "both"
+            )
         ) {
             client._poll_clipboard(e);
         }

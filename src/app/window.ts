@@ -33,7 +33,9 @@ export class XpraWindow {
 
   div: any;
   scale: any;
-  metadata: {};
+  metadata: {
+    title: string
+  };
   override_redirect: any;
   tray: any;
   has_alpha: boolean;
@@ -52,7 +54,7 @@ export class XpraWindow {
   debug: (...args) => any;
   debug_categories: any;
   canvas: HTMLCanvasElement;
-  title: null;
+  title: string;
   windowtype: null;
   fullscreen: boolean;
   saved_geometry: {
@@ -73,7 +75,9 @@ export class XpraWindow {
   topoffset: number;
   bottomoffset: number;
   spinnerdiv: any;
-  png_cursor_data: [
+  cursor_data: [
+    // url
+    string,
     // width, 
     number,
     // height, 
@@ -81,9 +85,7 @@ export class XpraWindow {
     // xhot, 
     number,
     // yhot, 
-    number,
-    // img_data
-    string | Uint8Array
+    number
   ] | null;
   pointer_down: number;
   pointer_last_x: number;
@@ -107,7 +109,6 @@ export class XpraWindow {
 
   constructor(
     private client: XpraClient,
-    canvas,
     public wid: number,
     //these values represent the internal geometry
     //i.e. geometry as windows appear to the compositor
@@ -129,12 +130,12 @@ export class XpraWindow {
     scale
   ) {
     //enclosing div in page DOM
-    this.div = jQuery(`#${String(wid)}`);
+    this.div = document.getElementById(String(wid));
 
     // scaling for client display width override
     this.scale = scale;
 
-    this.metadata = {};
+    this.metadata = { title: null };
     this.override_redirect = override_redirect;
     this.tray = tray;
     this.has_alpha = false;
@@ -158,7 +159,7 @@ export class XpraWindow {
     this.init_canvas();
 
     //window attributes:
-    this.title = null;
+    this.title = "";
     this.windowtype = null;
     this.fullscreen = false;
     this.saved_geometry = null;
@@ -224,7 +225,7 @@ export class XpraWindow {
     );
     this.spinnerdiv = jQuery(`#spinner${String(wid)}`);
 
-    this.png_cursor_data = null;
+    this.cursor_data = null;
     this.pointer_down = -1;
     this.pointer_last_x = 0;
     this.pointer_last_y = 0;
@@ -271,12 +272,12 @@ export class XpraWindow {
     jQuery(this.div).draggable({ cancel: "canvas" });
     jQuery(`#head${String(this.wid)}`).click((event_) => {
       if (!this.minimized) {
-        this.set_focus_cb(this);
+        this.focus();
       }
     });
     jQuery(this.div).on("dragstart", (event_) => {
       this.client.release_buttons(event_, this);
-      this.set_focus_cb(this);
+      this.focus();
       this.client.mouse_grabbed = true;
     });
     jQuery(this.div).on("dragstop", (event_, ui) => {
@@ -301,7 +302,7 @@ export class XpraWindow {
     });
     jQuery(this.div).on("resizestop", (event_, ui) => {
       this.handle_resized(ui);
-      this.set_focus_cb(this);
+      this.focus();
       this.client.mouse_grabbed = false;
       //workaround for the window going blank,
       //just force a refresh:
@@ -336,16 +337,14 @@ export class XpraWindow {
         !this.minimized &&
         $(e.target).parents(".windowbuttons").length === 0
       ) {
-        this.set_focus_cb(this);
+        this.focus();
       }
     });
   }
 
   init_canvas() {
-
-    this.canvas?.remove();
-    this.div.find("canvas").remove();
-
+    this.canvas = null;
+    jQuery(this.div).find("canvas").remove();
     const canvas = document.createElement("canvas");
     if (this.client.try_gpu) {
       $(canvas).addClass("gpu-trigger");
@@ -451,6 +450,20 @@ export class XpraWindow {
     canvas.addEventListener("pointerout", (event_) => {
       this.debug("mouse", "pointerout:", event_);
     });
+    //wheel events on a window:
+    const me = this;
+    function on_mousescroll(e) {
+      me.on_mousescroll(e);
+      e.stopPropagation();
+      return e.preventDefault();
+    }
+    if (Utilities.isEventSupported("wheel")) {
+      canvas.addEventListener("wheel", on_mousescroll, false);
+    } else if (Utilities.isEventSupported("mousewheel")) {
+      canvas.addEventListener("mousewheel", on_mousescroll, false);
+    } else if (Utilities.isEventSupported("DOMMouseScroll")) {
+      canvas.addEventListener("DOMMouseScroll", on_mousescroll, false); // for Firefox
+    }
   }
 
   set_spinner(state) {
@@ -561,6 +574,10 @@ export class XpraWindow {
       ", height=",
       this.outerH
     );
+  }
+
+  focus() {
+    this.set_focus_cb(this);
   }
 
   updateFocus() {
@@ -861,7 +878,7 @@ export class XpraWindow {
     this.saved_geometry = null;
     // then call local resized callback
     this.handle_resized();
-    this.set_focus_cb(this);
+    this.focus();
   }
 
   /**
@@ -878,7 +895,7 @@ export class XpraWindow {
     this.max_save_restore(maximized);
     this.maximized = maximized;
     this.handle_resized();
-    this.set_focus_cb(this);
+    this.focus();
     // this will take care of disabling the "draggable" code:
     this.apply_size_constraints();
   }
@@ -930,7 +947,7 @@ export class XpraWindow {
       ]);
       //force focus switch:
       this.client.focus = -1;
-      this.client._window_set_focus(this);
+      this.client.set_focus(this);
     }
   }
 
@@ -957,7 +974,7 @@ export class XpraWindow {
     this.fullscreen = fullscreen;
     this.updateCSSGeometry();
     this.handle_resized();
-    this.set_focus_cb(this);
+    this.focus();
   }
 
   _set_decorated(decorated) {
@@ -1224,7 +1241,8 @@ export class XpraWindow {
       // TODO: Should not assign to an event
       e.type = "mousedown.draggable";
       e.target = this.div[0];
-      this.div.trigger(e);
+      // TODO: trigger is undefined -- this needs to be fixed
+      // this.div.trigger(e);
     } else if (direction == MOVERESIZE_CANCEL) {
       jQuery(this.div).draggable("disable");
       jQuery(this.div).draggable("enable");
@@ -1307,7 +1325,7 @@ export class XpraWindow {
 
   reset_cursor() {
     jQuery(`#${String(this.wid)}`).css("cursor", "default");
-    this.png_cursor_data = null;
+    this.cursor_data = null;
   }
 
   set_cursor(encoding: "png", w: number, h: number, xhot: number, yhot: number, img_data: string | Uint8Array) {
@@ -1315,18 +1333,19 @@ export class XpraWindow {
       this.warn("received an invalid cursor encoding:", encoding);
       return;
     }
-    this.png_cursor_data = [w, h, xhot, yhot, img_data];
     let array = img_data;
     if (typeof img_data === "string") {
       array = Utilities.StringToUint8(img_data);
     }
     const window_element = jQuery(`#${String(this.wid)}`);
     const cursor_url = this.construct_base64_image_url(encoding, array);
-    function set_cursor_url(url, x, y) {
+    const me = this;
+    function set_cursor_url(url: string, x: number, y: number, canvasWidth: number, canvasHeight: number) {
       const url_string = `url('${url}')`;
       window_element.css("cursor", `${url_string}, default`);
       //CSS3 with hotspot:
       window_element.css("cursor", `${url_string} ${x} ${y}, auto`);
+      me.cursor_data = [url, x, y, w, h];
     }
     let zoom = detectZoom.zoom();
     //prefer fractional zoom values if possible:
@@ -1351,18 +1370,18 @@ export class XpraWindow {
         set_cursor_url(
           scaled_cursor_url,
           Math.round(xhot * window.devicePixelRatio),
-          Math.round(yhot * window.devicePixelRatio)
+          Math.round(yhot * window.devicePixelRatio),
+          Math.round(canvas.width),
+          Math.round(canvas.height),
         );
       });
       temporary_img.src = cursor_url;
     } else {
-      set_cursor_url(cursor_url, xhot, yhot);
+      set_cursor_url(cursor_url, xhot, yhot, w, h);
     }
   }
 
-  eos() {
-    this._close_broadway();
-  }
+  eos() {}
 
   /**
    * This function draws the contents of the off-screen canvas to the visible
@@ -1381,93 +1400,6 @@ export class XpraWindow {
       );
     }
     this.canvas_ctx.drawImage(this.draw_canvas, 0, 0);
-  }
-
-  /**
-   * The following function inits the Broadway h264 decoder
-   */
-  _init_broadway(enc_width, enc_height, width, height) {
-    this.broadway_decoder = new Decoder({
-      rgb: true,
-      size: { width: enc_width, height: enc_height },
-    });
-    this.log("broadway decoder initialized");
-    this.broadway_paint_location = [0, 0];
-    this.broadway_decoder.onPictureDecoded = (
-      buffer,
-      p_width,
-      p_height,
-      infos
-    ) => {
-      this._broadway_paint(
-        buffer,
-        enc_width,
-        enc_height,
-        width,
-        height,
-        p_width,
-        p_height,
-        infos
-      );
-    };
-  }
-
-  _broadway_paint(
-    buffer,
-    enc_width,
-    enc_height,
-    width,
-    height,
-    p_width,
-    p_height,
-    infos
-  ) {
-    this.debug(
-      "draw",
-      "broadway picture decoded: ",
-      buffer.length,
-      "bytes, size ",
-      p_width,
-      "x",
-      `${p_height}, paint location: `,
-      this.broadway_paint_location,
-      "with infos=",
-      infos
-    );
-    if (!this.broadway_decoder) {
-      return;
-    }
-    const img = this.offscreen_canvas_ctx.createImageData(p_width, p_height);
-    img.data.set(buffer);
-    const x = this.broadway_paint_location[0];
-    const y = this.broadway_paint_location[1];
-    this.offscreen_canvas_ctx.putImageData(
-      img,
-      x,
-      y,
-      0,
-      0,
-      enc_width,
-      enc_height
-    );
-    if (enc_width != width || enc_height != height) {
-      //scale it:
-      this.offscreen_canvas_ctx.drawImage(
-        this.offscreen_canvas,
-        x,
-        y,
-        enc_width,
-        enc_height,
-        x,
-        y,
-        width,
-        height
-      );
-    }
-  }
-
-  _close_broadway() {
-    this.broadway_decoder = null;
   }
 
   /**
@@ -1638,20 +1570,8 @@ export class XpraWindow {
         const paint_coding = coding.split("/")[0]; //ie: "png/P" -> "png"
         image.src = this.construct_base64_image_url(paint_coding, img_data);
       } else if (coding == "h264") {
-        const frame = options["frame"] || 0;
-        if (frame == 0) {
-          this._close_broadway();
-        }
-        if (!this.broadway_decoder) {
-          this._init_broadway(enc_width, enc_height, width, height);
-        }
-        this.broadway_paint_location = [x, y];
-        // we can pass a buffer full of NALs to decode() directly
-        // as long as they are framed properly with the NAL header
-        this.broadway_decoder.decode(img_data);
-        // broadway decoding is synchronous:
-        // (and already painted via the onPictureDecoded callback)
-        painted();
+        paint_error("h264 decoding is only supported via the decode workers");
+        this.may_paint_now();
       } else if (coding == "scroll") {
         for (let index = 0, stop = img_data.length; index < stop; ++index) {
           const scroll_data = img_data[index];
@@ -1699,7 +1619,6 @@ export class XpraWindow {
    */
   destroy() {
     // remove div
-    this._close_broadway();
     this.div.remove();
   }
 }
