@@ -1,7 +1,16 @@
 /*
-A stub class to facilitate communication with the protocol when
-it is loaded in a worker
+ * This file is part of Xpra.
+ * Copyright (C) 2023 Andrew G Knackstedt <andrewk@vivaldi.net>
+ * Licensed under MPL 2.0, see:
+ * http://www.mozilla.org/MPL/2.0/
+ *
+ */
+
+/*
+  This is a stub class to facilitate communication with the protocol when
+  it is loaded in a worker
 */
+
 export class XpraProtocolWorkerHost {
   worker: Worker;
   packet_handler: Function;
