@@ -637,16 +637,7 @@ class XpraClient {
     }
   }
 
-  close_windows() {
-    for (const wid in this.id_to_window) {
-      const win = this.id_to_window[wid];
-      this.close_window(win);
-    }
-  }
-
-  close_window(win) {
-    window.removeWindowListItem(win.wid);
-    win.destroy();
+  send_close_window(win) {
     this.send([PACKET_TYPES.close_window, win.wid]);
   }
 
@@ -3314,7 +3305,7 @@ class XpraClient {
       (event, window) => this.on_mouseup(event, window),
       (event, window) => this.on_mousescroll(event, window),
       (window) => this.set_focus(window),
-      (window) => this.close_window(window),
+      (window) => this.send_close_window(window),
       this.scale
     );
     if (this.server_is_desktop || this.server_is_shadow) {
