@@ -637,13 +637,6 @@ class XpraClient {
     }
   }
 
-  close_windows() {
-    for (const wid in this.id_to_window) {
-      const win = this.id_to_window[wid];
-      this.close_window(win);
-    }
-  }
-
   close_window(win) {
     window.removeWindowListItem(win.wid);
     win.destroy();
