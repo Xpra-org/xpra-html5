@@ -627,19 +627,21 @@
           "" + JSON.stringify(client.server_last_info)
         );
         //screenshot:
-        const canvas = document.createElement("canvas");
-        canvas.width = client.desktop_width;
-        canvas.height = client.desktop_height;
-        const ctx = canvas.getContext("2d");
-        for (let i in client.id_to_window) {
-          const iwin = client.id_to_window[i];
-          ctx.drawImage(iwin.draw_canvas, iwin.x, iwin.y);
+        if (!client.offscreen_api) {
+          const canvas = document.createElement("canvas");
+          canvas.width = client.desktop_width;
+          canvas.height = client.desktop_height;
+          const ctx = canvas.getContext("2d");
+          for (let i in client.id_to_window) {
+            const iwin = client.id_to_window[i];
+            ctx.drawImage(iwin.draw_canvas, iwin.x, iwin.y);
+          }
+          const png_base64 = canvas.toDataURL("image/png");
+          zip.file(
+            "screenshot.png",
+            Utilities.convertDataURIToBinary(png_base64)
+          );
         }
-        const png_base64 = canvas.toDataURL("image/png");
-        zip.file(
-          "screenshot.png",
-          Utilities.convertDataURIToBinary(png_base64)
-        );
         zip.generateAsync({ type: "blob" }).then(function (content) {
           saveAs(content, "bugreport.zip");
         });
