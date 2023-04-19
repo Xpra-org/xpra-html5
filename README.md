@@ -58,4 +58,3 @@ For a more complete list of options, see [configuration options](./docs/Configur
 # Compatibility
 
 This client is compatible with any [currently supported version](https://github.com/Xpra-org/xpra/wiki/Versions) of xpra.
-
