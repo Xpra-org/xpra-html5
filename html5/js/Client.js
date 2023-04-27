@@ -2777,6 +2777,9 @@ class XpraClient {
         this.process_xdg_menu();
       }
     }
+    if (!hello["client-shutdown"]) {
+      $("#shutdown_menu_entry").hide();
+    }
 
     this.server_is_desktop = Boolean(hello["desktop"]);
     this.server_is_shadow = Boolean(hello["shadow"]);
