@@ -2780,6 +2780,9 @@ class XpraClient {
     if (!hello["client-shutdown"]) {
       $("#shutdown_menu_entry").hide();
     }
+    if ((!hello["file_transfer"]) && (!hello["file"] || !hello["file"]["enabled"])) {
+      $("#upload_menu_entry").hide();
+    }
 
     this.server_is_desktop = Boolean(hello["desktop"]);
     this.server_is_shadow = Boolean(hello["shadow"]);
