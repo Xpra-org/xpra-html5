@@ -1166,7 +1166,7 @@ class XpraWindow {
       const e = mousedown_event;
       e.type = "mousedown.draggable";
       e.target = this.div[0];
-      this.div.trigger(e);
+      jQuery(this.div).trigger(e);
     } else if (direction == MOVERESIZE_CANCEL) {
       jQuery(this.div).draggable("disable");
       jQuery(this.div).draggable("enable");
