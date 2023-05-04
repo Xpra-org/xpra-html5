@@ -4326,7 +4326,6 @@ class XpraClient {
       //nothing to do: ready to play
       return;
     }
-    const me = this;
     this.on_audio_state_change(
       "waiting",
       `${this.audio_framework} playing ${this.audio_codec} stream`
@@ -4395,7 +4394,6 @@ class XpraClient {
       this.audio_source_buffer.appendBuffer(buf);
       const b = this.audio_source_buffer.buffered;
       if (b && b.length > 0) {
-        const p = this.audio.played;
         const e = b.end(0);
         const buf_size = Math.round(1000 * (e - this.audio.currentTime));
         this.debug(
@@ -4736,7 +4734,7 @@ class XpraClient {
       this.send_clipboard_string(request_id, selection, "", UTF8_STRING);
       return;
     }
-    const target = server_buffer[0];
+    //const target = server_buffer[0];
     const dtype = server_buffer[1];
     const dformat = server_buffer[2];
     const wire_encoding = server_buffer[3];
