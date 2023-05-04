@@ -1895,7 +1895,7 @@ class XpraClient {
       px = -px;
     }
     if (
-      this.scroll_reverse_y === true ||
+      this.scroll_reverse_y == true ||
       (this.scroll_reverse_x == "auto" &&
         this.detect_vertical_scroll_direction(e) < 0 &&
         py > 0)
