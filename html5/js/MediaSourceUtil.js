@@ -119,8 +119,8 @@ const MediaSourceUtil = {
     if (Utilities.isIE()) {
       return {};
     }
-    const codecs_supported = {};
-    const codecs_failed = {};
+    const codecs_supported = new Map();
+    const codecs_failed = new Map();
     if (AV && AV.Decoder && AV.Decoder.find) {
       for (const codec_option in MediaSourceConstants.AURORA_CODECS) {
         const codec_string = MediaSourceConstants.AURORA_CODECS[codec_option];
