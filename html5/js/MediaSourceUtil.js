@@ -210,12 +210,7 @@ const MediaSourceUtil = {
       return null;
     }
     const codec_options = Object.keys(codecs);
-    for (
-      let index = 0;
-      index < MediaSourceConstants.PREFERRED_CODEC_ORDER.length;
-      index++
-    ) {
-      const codec_option = MediaSourceConstants.PREFERRED_CODEC_ORDER[index];
+    for (let codec_option of MediaSourceConstants.PREFERRED_CODEC_ORDER) {
       if (codec_options.includes(codec_option)) {
         return codec_option;
       }

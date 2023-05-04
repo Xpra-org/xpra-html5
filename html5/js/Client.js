@@ -2741,12 +2741,7 @@ class XpraClient {
             );
             this.audio_codec = null;
             //find the best one we can use:
-            for (
-              let index = 0;
-              index < MediaSourceConstants.PREFERRED_CODEC_ORDER.length;
-              index++
-            ) {
-              const codec = MediaSourceConstants.PREFERRED_CODEC_ORDER[index];
+            for (let codec of MediaSourceConstants.PREFERRED_CODEC_ORDER) {
               if (
                 codec in this.audio_codecs &&
                 this.server_audio_codecs.includes(codec)

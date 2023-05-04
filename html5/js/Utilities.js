@@ -157,8 +157,7 @@ const Utilities = {
     let language;
     // support for HTML 5.1 "navigator.languages"
     if (Array.isArray(nav.languages)) {
-      for (let index = 0; index < nav.languages.length; index++) {
-        language = nav.languages[index];
+      for (let language of nav.languages) {
         if (language && language.length > 0) {
           return language;
         }

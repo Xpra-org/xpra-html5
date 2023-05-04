@@ -256,8 +256,8 @@ class XpraProtocol {
         let message = `invalid packet header format: ${this.header[0]}`;
         if (this.header.length > 1) {
           let hex = "";
-          for (let p = 0; p < this.header.length; p++) {
-            const v = this.header[p].toString(16);
+          for (let p of this.header) {
+            const v = p.toString(16);
             hex += v.length < 2 ? `0${v}` : v;
           }
           message += `: 0x${hex}`;
