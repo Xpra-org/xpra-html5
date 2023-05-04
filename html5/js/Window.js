@@ -1261,7 +1261,7 @@ class XpraWindow {
     const window_element = jQuery(`#${String(this.wid)}`);
     const cursor_url = this.construct_base64_image_url(encoding, array);
     const me = this;
-    function set_cursor_url(url, x, y) {
+    function set_cursor_url(url, x, y, w, h) {
       const url_string = `url('${url}')`;
       window_element.css("cursor", `${url_string}, default`);
       //CSS3 with hotspot:
