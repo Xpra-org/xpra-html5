@@ -355,7 +355,7 @@ class XpraClient {
     if (this.debug_categories.includes(category)) {
       if (category != "network") {
         //logging.DEBUG = 10
-        this.send_log(10, arguments);
+        this.send_log(10, arguments_);
       }
       Reflect.apply(this.cdebug, this, arguments);
     }
