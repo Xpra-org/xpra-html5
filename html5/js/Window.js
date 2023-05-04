@@ -14,7 +14,9 @@
 
 const TASKBAR_HEIGHT = 0;
 
-function dummy() {}
+function dummy() {
+	//this placeholder function does nothing
+}
 
 /**
  * This is the class representing a window we draw on the canvas.
@@ -534,7 +536,9 @@ class XpraWindow {
     }
   }
 
-  suspend() {}
+  suspend() {
+	  //perhaps we should suspend updates?
+  }
 
   resume() {
     this.init_canvas();
@@ -1298,7 +1302,10 @@ class XpraWindow {
     }
   }
 
-  eos() {}
+  eos() {
+	  //we don't handle video streams in this class,
+	  //so this should never be called
+  }
 
   /**
    * This function draws the contents of the off-screen canvas to the visible
