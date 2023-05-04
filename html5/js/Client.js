@@ -3242,7 +3242,7 @@ class XpraClient {
 
   reconfigure_all_trays() {
     const float_menu = document.querySelector(FLOAT_MENU_SELECTOR);
-    float_menu_width = float_menu_item_size * 4 + float_menu_padding;
+    let float_menu_width = float_menu_item_size * 4 + float_menu_padding;
     for (const twid in this.id_to_window) {
       const twin = this.id_to_window[twid];
       if (twin && twin.tray) {
