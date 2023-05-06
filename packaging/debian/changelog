@@ -1,4 +1,4 @@
-xpra-html5 (8.0-r1425-1) UNRELEASED; urgency=low
+xpra-html5 (8.0-r0-1) UNRELEASED; urgency=low
   * disable scroll encoding with offscreen decode worker
   * screenshots cannot be used with the offscreen api
   * don't close windows when re-connecting or when closing the browser window
@@ -18,7 +18,7 @@ xpra-html5 (8.0-r1425-1) UNRELEASED; urgency=low
     - improved syntax
     - use the preferred keywords for variable declaration
 
- -- Antoine Martin antoine@xpra.org  Sat, 06 May 2023 19:19:03 +0700 +700
+ -- Antoine Martin antoine@xpra.org  Sat, 06 May 2023 19:24:27 +0700 +700
 
 xpra-html5 (7.0-r1424-1) UNRELEASED; urgency=low
   * unable to move undecorated / CSD windows

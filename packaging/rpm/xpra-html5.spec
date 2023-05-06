@@ -4,7 +4,7 @@
 # later version. See the file COPYING for details.
 
 %define version 8.0
-%define release 1.r1425%{?dist}
+%define release 1.r0%{?dist}
 %define minifier uglifyjs
 %define python python3
 
@@ -77,7 +77,7 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
-* Sat May 06 2023 Antoine Martin <antoine@xpra.org> 8.0-1425-1
+* Sat May 06 2023 Antoine Martin <antoine@xpra.org> 8.0-0-1
 - disable scroll encoding with offscreen decode worker
 - screenshots cannot be used with the offscreen api
 - don't close windows when re-connecting or when closing the browser window
