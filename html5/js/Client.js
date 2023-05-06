@@ -1698,7 +1698,7 @@ XpraClient.prototype.do_window_mouse_scroll = function(e, window) {
 	if (this.scroll_reverse_x) {
 		px = -px;
 	}
-	if (this.scroll_reverse_y===true || (this.scroll_reverse_x=="auto" && this.detect_vertical_scroll_direction(e, window) < 0 && py > 0)) {
+	if (this.scroll_reverse_y==true || (this.scroll_reverse_x=="auto" && this.detect_vertical_scroll_direction(e, window) < 0 && py > 0)) {
 		py = -py;
 	}
 	const apx = Math.abs(px);
