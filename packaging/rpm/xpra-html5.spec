@@ -77,8 +77,15 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
-* Tue Mar 14 2023 Antoine Martin <antoine@xpra.org> 5.2-6-1
-- TODO
+* Sat May 06 2023 Antoine Martin <antoine@xpra.org> 5.2-0-1
+- offscreen decode worker issues: disable scroll encoding and screenshots, fix decode parsing errors
+- workarounds for older versions of Safari
+- correctly parse audio metadata
+- stop collecting vertical refresh data once we have enough
+- don't close windows when re-connecting
+- connect form can populate username
+- add missing alt attributes
+- honour vertical scroll reverse option
 
 * Sun Mar 05 2023 Antoine Martin <antoine@xpra.org> 5.1-0-1
 - missing wheel events in non-seamless modes

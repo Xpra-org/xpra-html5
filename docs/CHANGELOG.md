@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.2] 2023-05-06
+* offscreen decode worker issues: disable scroll encoding and screenshots, fix decode parsing errors
+* workarounds for older versions of Safari
+* correctly parse audio metadata
+* stop collecting vertical refresh data once we have enough
+* don't close windows when re-connecting
+* connect form can populate username
+* add missing alt attributes
+* honour vertical scroll reverse option
+
 ## [5.1] 2023-03-05
 * missing wheel events in non-seamless modes
 * workaround for older browsers without hasOwn (ie: Safari)
