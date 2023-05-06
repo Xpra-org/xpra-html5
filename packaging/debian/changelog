@@ -1,3 +1,8 @@
+xpra-html5 (9.0-r1452-1) UNRELEASED; urgency=low
+  * TODO
+
+ -- Antoine Martin antoine@xpra.org  Sat, 06 May 2023 19:26:50 +0700 +700
+
 xpra-html5 (8.0-r1425-1) UNRELEASED; urgency=low
   * disable scroll encoding with offscreen decode worker
   * screenshots cannot be used with the offscreen api

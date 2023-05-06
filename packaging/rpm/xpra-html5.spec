@@ -3,8 +3,8 @@
 # Xpra is released under the terms of the GNU GPL v2, or, at your option, any
 # later version. See the file COPYING for details.
 
-%define version 8.0
-%define release 1.r1425%{?dist}
+%define version 9.0
+%define release 1.r1452%{?dist}
 %define minifier uglifyjs
 %define python python3
 
@@ -77,6 +77,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Sat May 06 2023 Antoine Martin <antoine@xpra.org> 9.0-1452-1
+- TODO
+
 * Sat May 06 2023 Antoine Martin <antoine@xpra.org> 8.0-1425-1
 - disable scroll encoding with offscreen decode worker
 - screenshots cannot be used with the offscreen api
