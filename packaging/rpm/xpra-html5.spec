@@ -77,8 +77,26 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
-* Mon Mar 13 2023 Antoine Martin <antoine@xpra.org> 8.0-1425-1
-- TODO
+* Sat May 06 2023 Antoine Martin <antoine@xpra.org> 8.0-1425-1
+- disable scroll encoding with offscreen decode worker
+- screenshots cannot be used with the offscreen api
+- don't close windows when re-connecting or when closing the browser window
+- closing windows is only a request
+- hide options when they are not available: `shutdown` and `file upload`
+- remote logging arguments missing
+- fix initiate-move-resize
+- cursor fixes: cursor updates and geometry
+- fix vertical scroll reverse
+- minor cleanups:
+   unused variables
+   unused function
+   unused statements
+   document empty functions
+   linter cleanup
+   use a more correct datatype
+   improved syntax
+   use the preferred keywords for variable declaration
+
 
 * Sun Mar 12 2023 Antoine Martin <antoine@xpra.org> 7.0-1424-1
 - unable to move undecorated / CSD windows

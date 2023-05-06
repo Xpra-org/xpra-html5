@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [8.0] 2023-05-06
+- [disable scroll encoding with offscreen decode worker](https://github.com/Xpra-org/xpra-html5/commit/e73861dc4750162c1905ae6bf773c74b9c63646d)
+- [screenshots cannot be used with the offscreen api](https://github.com/Xpra-org/xpra-html5/commit/231589217059dcdc7c06010d1c058305a8c7c2c2)
+- don't close windows [when re-connecting](https://github.com/Xpra-org/xpra-html5/commit/79ceb55b317a1c52973d83f31a3148a348e6f877) or [when closing the browser window](https://github.com/Xpra-org/xpra-html5/commit/640ee6d81ea4f0a1d49689e6974f16c2ace0f5c6)
+- [closing windows is only a request](https://github.com/Xpra-org/xpra-html5/commit/8d67e87adf64f5ecd4cbfc9580c402f583f10960), [even from the menu](https://github.com/Xpra-org/xpra-html5/commit/d08f98ce20778a1dcedf26d8c003967c631b5269)
+- hide options when they are not available: [`shutdown`](https://github.com/Xpra-org/xpra-html5/commit/b30082d2dee31ba4ae21e14762ff72cb9c565b96) and [`file upload`](https://github.com/Xpra-org/xpra-html5/commit/8c36971731e82050b49f11e41329c7a7552615e0)
+- [remote logging arguments missing](https://github.com/Xpra-org/xpra-html5/commit/53234fbd8476600df7f4606e061d956697d6b610)
+- [fix initiate-move-resize](https://github.com/Xpra-org/xpra-html5/commit/e7d1a6efbdc0b7e37d8c0eb3452d6ac662fd604e)
+- cursor fixes: [cursor updates](https://github.com/Xpra-org/xpra-html5/commit/7ac5d41dd1b5b5987134a93eb35b93b78714dea5), [geometry](https://github.com/Xpra-org/xpra-html5/commit/29685b3e21b27476f56caf4539509bc0a48f795e)
+- [fix vertical scroll reverse](https://github.com/Xpra-org/xpra-html5/commit/caa851d4d8540cd20e7cdf800bbc131b60f723f6)
+- minor cleanups: [unused variables](https://github.com/Xpra-org/xpra-html5/commit/b6fb4b44e47930f9ced2384eec17994aec79e484), [unused function](https://github.com/Xpra-org/xpra-html5/commit/f143cf43234b22c5826f8d90e70343ae8461ac5f), [unused statements](https://github.com/Xpra-org/xpra-html5/commit/bb24f0b413aaf4083cd6536eee31efc7b8a20d16), [document empty functions](https://github.com/Xpra-org/xpra-html5/commit/f4e07565c6829e37b7fcdde1a5dc6b9d523e1886), [linter cleanup](https://github.com/Xpra-org/xpra-html5/commit/1fe68b2d04f5cafe324ee6b6163e8c1271807741), [use a more correct datatype](https://github.com/Xpra-org/xpra-html5/commit/176cf754e3e260438162d48bcb19619d24d8cbde), [improved syntax](https://github.com/Xpra-org/xpra-html5/commit/6b5dfbdf409d47ac16854a1883b2bafcab062ac6), [use the preferred keywords for variable declaration](https://github.com/Xpra-org/xpra-html5/commit/9a7687f36eb7d203d0bec21d35d4e8b907e6732d)
+
 ## [7.0] 2023-03-12
 
 - [unable to move undecorated / CSD windows](https://github.com/Xpra-org/xpra-html5/issues/210)

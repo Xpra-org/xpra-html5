@@ -1,7 +1,24 @@
 xpra-html5 (8.0-r1425-1) UNRELEASED; urgency=low
-  * TODO
+  * disable scroll encoding with offscreen decode worker
+  * screenshots cannot be used with the offscreen api
+  * don't close windows when re-connecting or when closing the browser window
+  * closing windows is only a request
+  * hide options when they are not available: `shutdown` and `file upload`
+  * remote logging arguments missing
+  * fix initiate-move-resize
+  * cursor fixes: cursor updates and geometry
+  * fix vertical scroll reverse
+  * minor cleanups:
+    - unused variables
+    - unused function
+    - unused statements
+    - document empty functions
+    - linter cleanup
+    - use a more correct datatype
+    - improved syntax
+    - use the preferred keywords for variable declaration
 
- -- Antoine Martin antoine@xpra.org  Mon, 13 Mar 2023 15:47:45 +0700 +700
+ -- Antoine Martin antoine@xpra.org  Sat, 06 May 2023 19:19:03 +0700 +700
 
 xpra-html5 (7.0-r1424-1) UNRELEASED; urgency=low
   * unable to move undecorated / CSD windows
