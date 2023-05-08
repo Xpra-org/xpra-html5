@@ -74,11 +74,6 @@ class XpraWindow {
     this.geometry_cb = geometry_callback || dummy;
     this.window_closed_cb = window_closed_callback || dummy;
 
-    this.log = () => client.log.apply(client, arguments);
-    this.warn = () => client.warn.apply(client, arguments);
-    this.error = () => client.error.apply(client, arguments);
-    this.exc = () => client.exc.apply(client, arguments);
-    this.debug = () => client.debug.apply(client, arguments);
     this.debug_categories = client.debug_categories;
 
     this.canvas = null;
@@ -162,6 +157,22 @@ class XpraWindow {
     this.updateCSSGeometry();
     // now read all metadata
     this.update_metadata(metadata);
+  }
+
+  log() {
+	if (this.client) this.client.log.apply(this.client, arguments);
+  }
+  warn() {
+	if (this.client) this.client.warn.apply(this.client, arguments);
+  }
+  error() {
+	if (this.client) this.client.error.apply(this.client, arguments);
+  }
+  exc() {
+	if (this.client) this.client.exc.apply(this.client, arguments);
+  }
+  debug() {
+	if (this.client) this.client.debug.apply(this.client, arguments);
   }
 
   add_window_decorations() {
