@@ -19,14 +19,14 @@ const Utilities = {
 
   exc: console_error_safe,
   error: console_error_safe,
-  warn: console_log_safe,
+  warn: console_warn_safe,
   log: console_log_safe,
   debug: console_debug_safe,
 
   //these versions should not be redirected:
   cexc: console_error_safe,
   cerror: console_error_safe,
-  cwarn: console_log_safe,
+  cwarn: console_warn_safe,
   clog: console_log_safe,
   cdebug: console_debug_safe,
 
@@ -774,6 +774,10 @@ function console_debug_safe() {
 
 function console_error_safe() {
   if (console) console.error.apply(console, arguments);
+}
+
+function console_warn_safe() {
+  if (console) console.warn.apply(console, arguments);
 }
 
 function console_log_safe() {
