@@ -2982,7 +2982,7 @@ XpraClient.prototype._new_window = function(wid, x, y, w, h, metadata, override_
 		this._window_closed,
 		this.scale
 		);
-	if(win && !override_redirect && win.metadata["window-type"]=="NORMAL"){
+	if(win && win.has_decorations) {
 		const trimmedTitle = Utilities.trimString(win.title,30);
 		window.addWindowListItem(wid, trimmedTitle);
 	}
@@ -3125,7 +3125,7 @@ XpraClient.prototype.on_last_window = function() {
 XpraClient.prototype._process_lost_window = function(packet, ctx) {
 	const wid = packet[1];
 	const win = ctx.id_to_window[wid];
-	if(win && !win.override_redirect && win.metadata["window-type"]=="NORMAL"){
+	if(win && win.has_decorations) {
 		window.removeWindowListItem(wid);
 	}
 	try {

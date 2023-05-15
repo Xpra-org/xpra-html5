@@ -77,6 +77,7 @@ function XpraWindow(client, wid, x, y, w, h,
 	this.maximized = false;
 	this.focused = false;
 	this.decorations = true;
+	this.has_decorations = false;
 	this.resizable = false;
 	this.stacking_layer = 0;
 
@@ -110,6 +111,9 @@ function XpraWindow(client, wid, x, y, w, h,
 	}
 	else if((this.windowtype == "") || (this.windowtype == "NORMAL") || (this.windowtype == "DIALOG") || (this.windowtype == "UTILITY")) {
 		this.resizable = true;
+	}
+
+	if (this.resizable || metadata["decorations"]) {
 		this.add_window_decorations();
 	}
 
@@ -131,6 +135,7 @@ function XpraWindow(client, wid, x, y, w, h,
 }
 
 XpraWindow.prototype.add_window_decorations = function() {
+	this.has_decorations = true;
 	const me = this;
 	const wid = this.wid;
 	jQuery(this.div).addClass("border");
