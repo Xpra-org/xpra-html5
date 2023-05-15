@@ -2775,7 +2775,7 @@ class XpraClient {
     if (!hello["client-shutdown"]) {
       $("#shutdown_menu_entry").hide();
     }
-    if (!this.file_transfer || ((!hello["file_transfer"]) && (!hello["file"] || !hello["file"]["enabled"]))) {
+    if (!this.file_transfer || ((!hello["file-transfer"]) && (!hello["file"] || !hello["file"]["enabled"]))) {
       $("#upload_menu_entry").hide();
     }
 
