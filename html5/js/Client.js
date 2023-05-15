@@ -3312,7 +3312,7 @@ class XpraClient {
     if (this.server_is_desktop || this.server_is_shadow) {
       window.noWindowList();
     }
-    else if (win && !override_redirect && win.metadata["window-type"] == "NORMAL") {
+    else if (win && win.has_decorations) {
       const trimmedTitle = Utilities.trimString(win.title, 30);
       window.addWindowListItem(win, wid, trimmedTitle);
     }
@@ -3487,11 +3487,7 @@ class XpraClient {
   _process_lost_window(packet) {
     const wid = packet[1];
     const win = this.id_to_window[wid];
-    if (
-      win &&
-      !win.override_redirect &&
-      win.metadata["window-type"] == "NORMAL"
-    ) {
+    if (win && win.has_decorations) {
       window.removeWindowListItem(wid);
     }
     try {

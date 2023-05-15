@@ -90,6 +90,7 @@ class XpraWindow {
     this.maximized = false;
     this.focused = false;
     this.decorations = true;
+    this.has_decorations = false;
     this.resizable = false;
     this.stacking_layer = 0;
 
@@ -176,6 +177,7 @@ class XpraWindow {
   }
 
   add_window_decorations() {
+    this.has_decorations = true;
     const wid = this.wid;
     jQuery(this.div).addClass("border");
     // add a title bar to this window if we need to
