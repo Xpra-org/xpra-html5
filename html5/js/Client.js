@@ -3231,7 +3231,7 @@ class XpraClient {
     this.send_tray_configure(wid);
   }
   send_tray_configure(wid) {
-    const div = jQuery(`#${String(wid)}`);
+    const div = jQuery(`#${wid}`);
     const x = Math.round(div.offset().left);
     const y = Math.round(div.offset().top);
     const w = float_menu_item_size;

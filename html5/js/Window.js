@@ -51,7 +51,7 @@ class XpraWindow {
     //xpra specific attributes:
     this.wid = wid;
     //enclosing div in page DOM
-    this.div = document.getElementById(String(wid));
+    this.div = document.getElementById(wid);
 
     //these values represent the internal geometry
     //i.e. geometry as windows appear to the compositor
@@ -142,11 +142,9 @@ class XpraWindow {
 
     // create the spinner overlay div
     jQuery(this.div).prepend(
-      `<div id="spinner${String(
-        wid
-      )}" class="spinneroverlay"><div class="spinnermiddle"><div class="spinner"></div></div></div>`
+      `<div id="spinner${wid}" class="spinneroverlay"><div class="spinnermiddle"><div class="spinner"></div></div></div>`
     );
-    this.spinnerdiv = jQuery(`#spinner${String(wid)}`);
+    this.spinnerdiv = jQuery(`#spinner${wid}`);
 
     this.cursor_data = null;
     this.pointer_down = -1;
@@ -183,25 +181,19 @@ class XpraWindow {
     // add a title bar to this window if we need to
     // create header
     let head =
-      `<div id="head${String(wid)}" class="windowhead"> ` +
-      `<span class="windowicon"><img class="windowicon" id="windowicon${String(
-        wid
-      )}" /></span> ` +
-      `<span class="windowtitle" id="title${String(wid)}">${
+      `<div id="head${wid}" class="windowhead"> ` +
+      `<span class="windowicon"><img class="windowicon" id="windowicon${wid}" /></span> ` +
+      `<span class="windowtitle" id="title${wid}">${
         this.title
       }</span> ` +
       `<span class="windowbuttons"> `;
     if (!jQuery(this.div).hasClass("modal")) {
       //modal windows cannot be minimized (see #204)
-      head += `<span id="minimize${String(
-        wid
-      )}"><img src="icons/minimize.png" /></span>`;
+      head += `<span id="minimize${wid}"><img src="icons/minimize.png" /></span>`;
     }
     head +=
-      `<span id="maximize${String(
-        wid
-      )}"><img src="icons/maximize.png" /></span> ` +
-      `<span id="close${String(wid)}"><img src="icons/close.png" /></span> ` +
+      `<span id="maximize${wid}"><img src="icons/maximize.png" /></span> ` +
+      `<span id="close${wid}"><img src="icons/close.png" /></span> ` +
       `</span></div>`;
     jQuery(this.div).prepend(head);
     // make draggable
@@ -209,7 +201,7 @@ class XpraWindow {
       jQuery(this.div).draggable({ transform: true });
     }
     jQuery(this.div).draggable({ cancel: "canvas" });
-    jQuery(`#head${String(this.wid)}`).click((event_) => {
+    jQuery(`#head${wid}`).click((event_) => {
       if (!this.minimized) {
         this.focus();
       }
@@ -248,10 +240,10 @@ class XpraWindow {
       setTimeout(() => this.client.request_refresh(wid), 200);
       setTimeout(() => this.client.request_refresh(wid), 500);
     });
-    this.d_header = `#head${String(wid)}`;
-    this.d_closebtn = `#close${String(wid)}`;
-    this.d_maximizebtn = `#maximize${String(wid)}`;
-    this.d_minimizebtn = `#minimize${String(wid)}`;
+    this.d_header = `#head${wid}`;
+    this.d_closebtn = `#close${wid}`;
+    this.d_maximizebtn = `#maximize${wid}`;
+    this.d_minimizebtn = `#minimize${wid}`;
     if (this.resizable) {
       jQuery(this.d_header).dblclick(() => this.toggle_maximized());
       jQuery(this.d_closebtn).click(() => this.window_closed_cb(this));
@@ -260,7 +252,7 @@ class XpraWindow {
     } else {
       jQuery(this.d_closebtn).hide();
       jQuery(this.d_maximizebtn).hide();
-      jQuery(`#windowlistitemmax${String(wid)}`).hide();
+      jQuery(`#windowlistitemmax${wid}`).hide();
       jQuery(this.d_minimizebtn).hide();
     }
     // adjust top offset
@@ -750,7 +742,7 @@ class XpraWindow {
     }
     if (minw > 0 && minw == maxw && minh > 0 && minh == maxh) {
       jQuery(this.d_maximizebtn).hide();
-      jQuery(`#windowlistitemmax${String(this.wid)}`).hide();
+      jQuery(`#windowlistitemmax${this.wid}`).hide();
       jQuery(this.div).resizable("disable");
     } else {
       jQuery(this.d_maximizebtn).show();
@@ -1244,7 +1236,7 @@ class XpraWindow {
     let source = "favicon.png";
     if (encoding == "png") {
       //move title to the right:
-      $(`#title${String(this.wid)}`).css("left", 32);
+      $(`#title${this.wid}`).css("left", 32);
       if (typeof img_data === "string") {
         const uint = new Uint8Array(img_data.length);
         for (let index = 0; index < img_data.length; ++index) {
@@ -1254,13 +1246,13 @@ class XpraWindow {
       }
       source = this.construct_base64_image_url(encoding, img_data);
     }
-    jQuery(`#windowicon${String(this.wid)}`).attr("src", source);
-    jQuery(`#windowlistitemicon${String(this.wid)}`).attr("src", source);
+    jQuery(`#windowicon${this.wid}`).attr("src", source);
+    jQuery(`#windowlistitemicon${this.wid}`).attr("src", source);
     return source;
   }
 
   reset_cursor() {
-    jQuery(`#${String(this.wid)}`).css("cursor", "default");
+    jQuery(`#${this.wid}`).css("cursor", "default");
     this.cursor_data = null;
   }
 
@@ -1273,7 +1265,7 @@ class XpraWindow {
     if (typeof img_data === "string") {
       array = Utilities.StringToUint8(img_data);
     }
-    const window_element = jQuery(`#${String(this.wid)}`);
+    const window_element = jQuery(`#${this.wid}`);
     const cursor_url = this.construct_base64_image_url(encoding, array);
     const me = this;
     function set_cursor_url(url, x, y, w, h) {
