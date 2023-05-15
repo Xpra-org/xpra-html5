@@ -143,6 +143,9 @@ class XpraWindow {
       this.windowtype == "UTILITY"
     ) {
       this.resizable = true;
+    }
+
+    if (this.resizable || metadata["decorations"]) {
       this.add_window_decorations();
     }
 
