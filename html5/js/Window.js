@@ -15,7 +15,7 @@
 const TASKBAR_HEIGHT = 0;
 
 function dummy() {
-	//this placeholder function does nothing
+  //this placeholder function does nothing
 }
 
 /**
@@ -160,19 +160,19 @@ class XpraWindow {
   }
 
   log() {
-	if (this.client) this.client.log.apply(this.client, arguments);
+    if (this.client) this.client.log.apply(this.client, arguments);
   }
   warn() {
-	if (this.client) this.client.warn.apply(this.client, arguments);
+    if (this.client) this.client.warn.apply(this.client, arguments);
   }
   error() {
-	if (this.client) this.client.error.apply(this.client, arguments);
+    if (this.client) this.client.error.apply(this.client, arguments);
   }
   exc() {
-	if (this.client) this.client.exc.apply(this.client, arguments);
+    if (this.client) this.client.exc.apply(this.client, arguments);
   }
   debug() {
-	if (this.client) this.client.debug.apply(this.client, arguments);
+    if (this.client) this.client.debug.apply(this.client, arguments);
   }
 
   add_window_decorations() {
@@ -540,7 +540,7 @@ class XpraWindow {
   }
 
   suspend() {
-	  //perhaps we should suspend updates?
+    //perhaps we should suspend updates?
   }
 
   resume() {
@@ -1306,8 +1306,8 @@ class XpraWindow {
   }
 
   eos() {
-	  //we don't handle video streams in this class,
-	  //so this should never be called
+    //we don't handle video streams in this class,
+    //so this should never be called
   }
 
   /**
