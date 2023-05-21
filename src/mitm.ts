@@ -1,3 +1,13 @@
+/*
+ * This file is part of Xpra.
+ * Copyright (c) 2023 Andrew G. Knackstedt <andrewk@vivaldi.net>
+ * Copyright (c) 2022 Antoine Martin <antoine@xpra.org>
+ * Copyright (C) 2021 Tijs van der Zwaan <tijzwa@vpo.nl>
+ * Licensed under MPL 2.0, see:
+ * http://www.mozilla.org/MPL/2.0/
+ *
+ */
+
 // This will prevent the sw from restarting
 let keepAlive = () => {
     keepAlive = () => { };
@@ -8,6 +18,7 @@ let keepAlive = () => {
             sw.postMessage("ping");
         } else {
             fetch(ping).then((res) =>
+                // @ts-ignore (this isn't right, but I'm not sure the intents) 
                 res.text(!res.ok && clearInterval(interval))
             );
         }
@@ -42,16 +53,14 @@ function registerWorker() {
             return (
                 (sw = swReg.active) ||
                 new Promise((resolve) => {
-                    swRegTmp.addEventListener(
-                        "statechange",
-                        (fn = () => {
-                            if (swRegTmp.state === "activated") {
-                                swRegTmp.removeEventListener("statechange", fn);
-                                sw = swReg.active;
-                                resolve();
-                            }
-                        })
-                    );
+                    let fn = () => {
+                        if (swRegTmp.state === "activated") {
+                            swRegTmp.removeEventListener("statechange", fn);
+                            sw = swReg.active;
+                            resolve(null);
+                        }
+                    };
+                    swRegTmp.addEventListener("statechange", fn);
                 })
             );
         });
