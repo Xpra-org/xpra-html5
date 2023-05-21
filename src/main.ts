@@ -390,7 +390,7 @@ function init_client(): any {
     const shadow_display = getparam("shadow_display") || "";
     const submit = getboolparam("submit", true);
     const server = getparam("server") || window.location.hostname;
-    const port = 3300//getparam("port") || window.location.port;
+    const port = getparam("port") || window.location.port;
     const ssl = getboolparam("ssl", https);
     const path = getparam("path") || window.location.pathname;
     const encryption = getparam("encryption") || null;
