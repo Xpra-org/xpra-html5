@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!--
+	Copyright (c) 2013-2022 Antoine Martin <antoine@xpra.org>
+	Copyright (c) 2014 Joshua Higgins <josh@kxes.net>
+	Licensed under MPL 2.0
+	-->
+
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <!-- Bootstrap core CSS -->
+    <link href="css/bootstrap.css" rel="stylesheet" />
+    <!-- Custom styles for this template -->
+    <link href="css/signin.css" rel="stylesheet" />
+    <title>Xpra HTML5 Client</title>
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
+    <link rel="icon" type="image/png" href="favicon.png" />
+
+    <script type="text/javascript" src="js/RgbHelpers.js"></script>
+    <script type="text/javascript" src="js/VideoDecoder.js"></script>
+    <script
+      type="text/javascript"
+      src="js/OffscreenDecodeWorkerHelper.js"
+    ></script>
+
+    <script src="js/lib/jquery.js"></script>
+    <script src="js/Utilities.js"></script>
+    <script src="js/MediaSourceUtil.js"></script>
+    <script src="js/lib/aurora/aurora.js"></script>
+    <!--
+	<script src="js/lib/aurora/mp3.js"></script>
+	<script src="js/lib/aurora/flac.js"></script>
+	<script src="js/lib/aurora/aac.js"></script>
+	-->
+  </head>
+
+  <body>
+    <div class="container">
+      <form class="form-signin" action="./index.html">
+        <img src="icons/xpra-logo.png" alt="xpra logo" />
+        <h2 class="form-signin-heading">Xpra HTML5 Client</h2>
+        <h5>Version 8.0 beta</h5>
+
+        <div
+          id="alert-disconnect"
+          class="alert alert-info"
+          role="alert"
+          style="display: none"
+        >
+          <p>You were disconnected for the following reason:</p>
+          <p><span id="disconnect-reason"></span></p>
+        </div>
+
+        <div class="form-group form-inline">
+          <label class="sr-only" for="server">Server</label>
+          <input
+            title="Server"
+            type="text"
+            class="form-control"
+            id="server"
+            placeholder="Server"
+            maxlength="256"
+          />
+          <label class="sr-only" for="port">Port</label>
+          <input
+            title="Port"
+            type="text"
+            class="form-control"
+            id="port"
+            placeholder="Port"
+            size="5"
+            maxlength="5"
+          />
+          <br />
+          <label class="sr-only" for="username">Username</label>
+          <input
+            title="Username"
+            type="text"
+            class="form-control"
+            id="username"
+            autocomplete="username"
+            placeholder="Username"
+            size="16"
+            maxlength="256"
+          />
+          <label class="sr-only" for="password">Password</label>
+          <input
+            title="Password"
+            type="password"
+            class="form-control"
+            id="password"
+            autocomplete="current-password"
+            placeholder="Password"
+            size="16"
+            maxlength="256"
+          />
+          <img
+            id="toggle-password"
+            class="field-icon"
+            src="./icons/eye-slash.png"
+          />
+          <br />
+          <div class="security-box">
+            <span id="ssl-span"
+              ><input type="checkbox" id="ssl" /> Secure Sockets</span
+            >
+            <span id="insecure-span"
+              ><input type="checkbox" id="insecure" /> Insecure plain-text
+              passwords</span
+            >
+            <br />
+            <span id="encryption-span">
+              <input type="checkbox" id="aes" />
+              <span id="aes-label"> AES</span>
+              <select id="encryption">
+                <option value="AES-CBC">AES-CBC</option>
+                <option value="AES-CFB">AES-CFB</option>
+                <option value="AES-CTR">AES-CTR</option>
+              </select>
+            </span>
+            <span id="encryption-key-span">
+              <input
+                type="password"
+                class="form-control"
+                id="key"
+                autocomplete="on"
+                placeholder="AES-KEY"
+                size="32"
+                maxlength="256"
+              />
+              <img
+                id="toggle-key"
+                class="field-icon"
+                src="./icons/eye-slash.png"
+              />
+            </span>
+          </div>
+
+          <div class="panel-group">
+            <ul class="list-style-none action">
+              <li id="action_connect_group">
+                <label
+                  ><input
+                    type="radio"
+                    name="action"
+                    class="radiobox"
+                    value="connect"
+                    id="action_connect"
+                    checked="checked"
+                  />
+                  Connect:</label
+                >
+                <input
+                  title="display"
+                  type="text"
+                  class="form-control command"
+                  id="display"
+                  placeholder="Display (optional)"
+                  size="20"
+                  maxlength="256"
+                />
+                <select id="select_display" style="display: none"></select
+                ><span id="select_display_warning" class="warning"></span>
+              </li>
+              <li id="action_start_group">
+                <div style="display: inline-block; vertical-align: top">
+                  <label
+                    ><input
+                      type="radio"
+                      name="action"
+                      class="radiobox"
+                      value="start"
+                      id="action_start"
+                      checked="checked"
+                    />
+                    Start Command:</label
+                  >
+                  <input
+                    title="command"
+                    type="text"
+                    class="form-control command"
+                    id="start_command"
+                    placeholder="Command"
+                    size="20"
+                    maxlength="256"
+                  />
+                </div>
+                <div style="display: inline-block">
+                  <select id="command_category" style="display: none"></select>
+                  <img
+                    class="command-icon"
+                    id="command_category_icon"
+                    alt="desktop command category icon"
+                    src="./icons/noicon.png"
+                  />
+                  <br />
+                  <select id="command_entry" style="display: none"></select>
+                  <img
+                    class="command-icon"
+                    id="command_entry_icon"
+                    alt="desktop command icon"
+                    src="./icons/noicon.png"
+                  />
+                </div>
+              </li>
+              <li id="action_start_desktop_group">
+                <label
+                  ><input
+                    type="radio"
+                    name="action"
+                    class="radiobox"
+                    value="start-desktop"
+                    id="action_start_desktop"
+                    checked="checked"
+                  />
+                  Start Desktop:</label
+                >
+                <input
+                  title="desktop command"
+                  type="text"
+                  class="form-control command"
+                  id="start_desktop_command"
+                  placeholder="Desktop Command"
+                  size="20"
+                  maxlength="256"
+                />
+                <img
+                  class="command-icon"
+                  id="desktop_entry_icon"
+                  alt="desktop command icon"
+                  src="./icons/noicon.png"
+                />
+                <select id="desktop_entry" style="display: none"></select
+                ><span id="desktop_entry_warning" class="warning"></span>
+              </li>
+              <li id="action_shadow_group">
+                <label
+                  ><input
+                    type="radio"
+                    name="action"
+                    class="radiobox"
+                    value="shadow"
+                    id="action_shadow"
+                    checked="checked"
+                  />
+                  Shadow:</label
+                >
+                <input
+                  title="display"
+                  type="text"
+                  class="form-control command"
+                  id="shadow_display"
+                  placeholder="Display (optional)"
+                  size="20"
+                  maxlength="256"
+                />
+                <select
+                  id="select_shadow_display"
+                  style="display: none"
+                ></select
+                ><span
+                  id="select_shadow_display_warning"
+                  class="warning"
+                ></span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <a class="btn btn-lg btn-success" role="button" onclick="doConnect();"
+            >Connect</a
+          >
+          <a
+            class="btn btn-lg btn-success"
+            role="button"
+            onclick="doConnectURI();"
+            >Client URI</a
+          >
+          <a
+            class="btn btn-lg btn-success"
+            role="button"
+            onclick="downloadConnectionFile();"
+            >Connection File</a
+          >
+        </div>
+
+        <div class="panel-group" role="tablist">
+          <div class="panel panel-default">
+            <div id="expandopts" class="panel-heading" role="tab">
+              <h4 class="panel-title">Advanced options</h4>
+            </div>
+
+            <div
+              id="hiddenopts"
+              class="panel-collapse collapse in"
+              role="tabpanel"
+              style="display: none"
+            >
+              <ul class="list-group">
+                <li class="list-group-item">
+                  <select id="bandwidth_limit">
+                    <option value="0">None</option>
+                    <option value="100000000">100Mbps</option>
+                    <option value="10000000">10Mbps</option>
+                    <option value="1000000">1Mbps</option>
+                  </select>
+                  Bandwith Constraint
+                </li>
+
+                <li class="list-group-item">
+                  <select id="encoding">
+                    <option value="auto">Automatic</option>
+                    <option value="webp">WebP</option>
+                    <option value="jpeg">JPEG</option>
+                    <option value="png">PNG</option>
+                    <option value="rgb">Raw RGB</option>
+                  </select>
+                  Encoding &nbsp; <input type="checkbox" id="offscreen" />
+                  <span id="offscreen_label">offscreen decoding</span>
+                </li>
+
+                <li class="list-group-item">
+                  <select id="keyboard_layout">
+                    <option value="us">English USA</option>
+                    <option value="gb">United Kingdom</option>
+                    <option value="fr">France</option>
+                    <option value="de">Germany</option>
+                    <option value="es">Spain</option>
+                    <option value="" disabled>----------------</option>
+                    <option value="ad">Andorra</option>
+                    <option value="af">Afghanistan</option>
+                    <option value="al">Albania</option>
+                    <option value="ara">Arabic</option>
+                    <option value="am">Armenia</option>
+                    <option value="az">Azerbaijan</option>
+                    <option value="bd">Bangladesh</option>
+                    <option value="by">Belarus</option>
+                    <option value="be">Belgium</option>
+                    <option value="bt">Bhutan</option>
+                    <option value="ba">Bosnia</option>
+                    <option value="br">Brazil</option>
+                    <option value="bg">Bulgaria</option>
+                    <option value="kh">Cambodia</option>
+                    <option value="ca">Canada</option>
+                    <option value="cn">China</option>
+                    <option value="cd">Congo,</option>
+                    <option value="hr">Croatia</option>
+                    <option value="cz">Czechia</option>
+                    <option value="dk">Denmark</option>
+                    <option value="epo">Esperanto</option>
+                    <option value="ee">Estonia</option>
+                    <option value="et">Ethiopia</option>
+                    <option value="ir">Iran</option>
+                    <option value="iq">Iraq</option>
+                    <option value="fo">Faroe</option>
+                    <option value="fi">Finland</option>
+                    <option value="fr">France</option>
+                    <option value="ge">Georgia</option>
+                    <option value="gh">Ghana</option>
+                    <option value="gr">Greece</option>
+                    <option value="gn">Guinea</option>
+                    <option value="hu">Hungary</option>
+                    <option value="is">Iceland</option>
+                    <option value="in">India</option>
+                    <option value="ie">Ireland</option>
+                    <option value="il">Israel</option>
+                    <option value="it">Italy</option>
+                    <option value="jp">Japan</option>
+                    <option value="kz">Kazakhstan</option>
+                    <option value="kr">Korea,</option>
+                    <option value="kg">Kyrgyzstan</option>
+                    <option value="latam">Latin</option>
+                    <option value="lv">Latvia</option>
+                    <option value="la">Laos</option>
+                    <option value="lt">Lithuania</option>
+                    <option value="mao">Maori</option>
+                    <option value="mk">Macedonia</option>
+                    <option value="mv">Maldives</option>
+                    <option value="ml">Mali</option>
+                    <option value="mt">Malta</option>
+                    <option value="mn">Mongolia</option>
+                    <option value="me">Montenegro</option>
+                    <option value="ma">Morocco</option>
+                    <option value="mm">Myanmar</option>
+                    <option value="np">Nepal</option>
+                    <option value="nl">Netherlands</option>
+                    <option value="ng">Nigeria</option>
+                    <option value="no">Norway</option>
+                    <option value="pk">Pakistan</option>
+                    <option value="pl">Poland</option>
+                    <option value="pt">Portugal</option>
+                    <option value="ro">Romania</option>
+                    <option value="ru">Russia</option>
+                    <option value="sn">Senegal</option>
+                    <option value="rs">Serbia</option>
+                    <option value="sk">Slovakia</option>
+                    <option value="si">Slovenia</option>
+                    <option value="za">South Africa</option>
+                    <option value="lk">Sri Lanka</option>
+                    <option value="se">Sweden</option>
+                    <option value="ch">Switzerland</option>
+                    <option value="sy">Syria</option>
+                    <option value="tw">Taiwan</option>
+                    <option value="tj">Tajikistan</option>
+                    <option value="tz">Tanzania</option>
+                    <option value="th">Thailand</option>
+                    <option value="tr">Turkey</option>
+                    <option value="tm">Turkmenistan</option>
+                    <option value="ua">Ukraine</option>
+                    <option value="uz">Uzbekistan</option>
+                    <option value="vn">Vietnam</option>
+                  </select>
+                  Keyboard Layout
+                </li>
+                <li class="list-group-item keyboard">
+                  <input type="checkbox" id="keyboard" />
+                  <span>On-screen keyboard</span>
+                </li>
+
+                <li class="list-group-item clipboard">
+                  <input type="checkbox" id="clipboard" />
+                  <span>Clipboard sharing</span>
+                </li>
+                <li class="list-group-item printing">
+                  <input type="checkbox" id="printing" /> <span>Printing</span>
+                </li>
+                <li class="list-group-item file_transfer">
+                  <input type="checkbox" id="file_transfer" />
+                  <span>File transfers</span>
+                </li>
+                <li class="list-group-item sound">
+                  <input type="checkbox" id="sound" />
+                  <span>Audio forwarding, codec: </span>
+                  <select id="audio_codec"></select>
+                  <input type="hidden" id="ignore_audio_blacklist" value="" />
+                </li>
+                <li class="list-group-item exit_with_children">
+                  <input type="checkbox" id="exit_with_children" />
+                  <span>Terminate server when command exits</span>
+                </li>
+                <li class="list-group-item exit_with_client">
+                  <input type="checkbox" id="exit_with_client" />
+                  <span>Terminate server when client disconnects</span>
+                </li>
+                <li class="list-group-item">
+                  <input type="checkbox" id="sharing" />
+                  <span>Share session</span>
+                </li>
+                <li class="list-group-item">
+                  <input type="checkbox" id="steal" />
+                  <span>Steal session from existing client</span>
+                </li>
+                <li class="list-group-item">
+                  <input type="checkbox" id="reconnect" />
+                  <span>Re-connect automatically to the session</span>
+                </li>
+                <li class="list-group-item">
+                  <input type="checkbox" id="swap_keys" />
+                  <span>Swap command and control key</span>
+                </li>
+                <li class="list-group-item">
+                  <span>Reverse vertical scrolling</span>
+                  <select id="scroll_reverse_y">
+                    <option value="false">No</option>
+                    <option value="true">Yes</option>
+                    <option value="auto">Auto</option>
+                  </select>
+                  <br />
+                  <input type="checkbox" id="scroll_reverse_x" />
+                  <span>Reverse horizontal scrolling</span>
+                </li>
+                <li class="list-group-item">
+                  <input type="checkbox" id="floating_menu" />
+                  <span>Floating Menu</span>,
+                  <input type="checkbox" id="autohide" />
+                  <span>Auto Hide</span>, <input type="checkbox" id="clock" />
+                  <span>Server clock</span> <br />
+                </li>
+
+                <li class="list-group-item">
+                  Menu position:
+                  <select id="toolbar_position">
+                    <option value="top-left">Top Left</option>
+                    <option value="top">Top</option>
+                    <option value="top-right">Top Right</option>
+                  </select>
+                </li>
+                <li class="list-group-item">
+                  <input type="checkbox" id="video" />
+                  <span
+                    >Video
+                    <input type="checkbox" id="mediasource_video" /> Native
+                    decoding</span
+                  >
+                </li>
+                <li class="list-group-item">
+                  <span>Server Path:</span>
+                  <input
+                    title="path"
+                    type="text"
+                    class="form-control"
+                    id="path"
+                    placeholder=""
+                    size="16"
+                    maxlength="256"
+                  />
+                </li>
+                <li class="list-group-item">
+                  <span>Client Screen Width:</span>
+                  <input
+                    title="override_width"
+                    type="text"
+                    class="form-control"
+                    id="override_width"
+                    size="16"
+                    maxlength="256"
+                  />
+                </li>
+                <li class="list-group-item">
+                  <span>Debugging</span>:<br />
+                  <input type="checkbox" id="debug_main" /> <span>Main</span>,
+                  <input type="checkbox" id="debug_keyboard" />
+                  <span>keyboard</span>,
+                  <input type="checkbox" id="debug_geometry" />
+                  <span>geometry</span>,
+                  <input type="checkbox" id="debug_mouse" /> <span>mouse</span>,
+                  <input type="checkbox" id="debug_clipboard" />
+                  <span>clipboard</span>
+                  <input type="checkbox" id="debug_draw" /> <span>draw</span>,
+                  <input type="checkbox" id="debug_audio" /> <span>audio</span>,
+                  <input type="checkbox" id="debug_network" />
+                  <span>network</span>
+                  <input type="checkbox" id="debug_file" /> <span>file</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <input type="hidden" id="vrefresh" value="0" />
+      </form>
+    </div>
+    <!-- /container -->
+    <div class="bg-image"></div>
+  </body>
+</html>
