@@ -1,3 +1,40 @@
+/*
+ * This file is part of Xpra.
+ * Copyright (c) 2023 Andrew G. Knackstedt <andrewk@vivaldi.net>
+ * Copyright (c) 2022 Antoine Martin <antoine@xpra.org>
+ * Copyright (C) 2021 Tijs van der Zwaan <tijzwa@vpo.nl>
+ * Licensed under MPL 2.0, see:
+ * http://www.mozilla.org/MPL/2.0/
+ *
+ */
+import { Utilities } from './app/utilities';
+import { MediaSourceConstants, MediaSourceUtil } from './app/util/media-source-util';
+
+
+/*
+ * Helper for offscreen decoding and painting.
+ */
+const XpraOffscreenWorker = {
+    isAvailable() {
+        // We do not support firefox as it makes canvases flicker
+        const isFirefox = navigator.userAgent.toLowerCase().includes("firefox");
+        if (typeof OffscreenCanvas !== "undefined" && !isFirefox) {
+            //we also need the direct constructor:
+            try {
+                new OffscreenCanvas(256, 256);
+                return true;
+            } catch (error) {
+                console.warn("unable to instantiate an offscreen canvas:", error);
+            }
+        }
+        console.warn(
+            "Offscreen decoding is not available. Please consider using Google Chrome for better performance."
+        );
+        return false;
+    },
+};
+
+declare const $;
 
 const VALUE_PROPERTIES = [
     "server",
@@ -62,7 +99,7 @@ const FILE_PROPERTIES = [
 ];
 const FILE_TRANSLATION = { server: "host" };
 
-function add_prop(prop, value, first) {
+function add_prop(prop: string, value: any, first?) {
     if (Utilities.hasSessionStorage()) {
         //we're using sessionStorage, no need for URL
         if (value === null || value === "undefined") {
@@ -88,35 +125,35 @@ function doConnect() {
         add_prop("submit", true, true) +
         get_URL_action() +
         get_URL_props();
-    window.location = url;
+    window.location = url as any;
 }
 
 function doConnectURI() {
     let url = "xpraws://";
-    const ssl = document.getElementById("ssl").checked;
+    const ssl = (<HTMLInputElement>document.getElementById("ssl")).checked;
     if (ssl) {
         url = "xprawss://";
     }
-    const username = document.getElementById("username").value;
+    const username = (<HTMLInputElement>document.getElementById("username")).value;
     if (username) {
         url += username + "@";
     }
-    url += document.getElementById("server").value;
-    const port = document.getElementById("port").value;
+    url += (<HTMLInputElement>document.getElementById("server")).value;
+    const port = (<HTMLInputElement>document.getElementById("port")).value;
     if (port) {
         url += ":" + port;
     }
     url += "/";
     url += get_URL_action() + get_URL_props();
-    window.location = url;
+    window.location = url as any;
 }
 
 function downloadConnectionFile() {
     const filename =
-        (document.getElementById("server").value || "session") + ".xpra";
+        ((<HTMLInputElement>document.getElementById("server")).value || "session") + ".xpra";
     let data = "autoconnect=true\n";
     //set a mode:
-    const ssl = document.getElementById("ssl").checked;
+    const ssl = (<HTMLInputElement>document.getElementById("ssl")).checked;
     if (ssl) {
         data += "mode=wss\n";
     } else {
@@ -125,7 +162,7 @@ function downloadConnectionFile() {
     for (let i = 0; i < FILE_PROPERTIES.length; i++) {
         const prop = FILE_PROPERTIES[i];
         const prop_name = FILE_TRANSLATION[prop] || prop;
-        const value = document.getElementById(prop).value;
+        const value = (<HTMLInputElement>document.getElementById(prop)).value;
         if (value !== "") {
             data += prop_name + "=" + value + "\n";
         }
@@ -145,7 +182,7 @@ function downloadConnectionFile() {
     ];
     for (let i = 0; i < DEBUG_CATEGORIES.length; i++) {
         let category = DEBUG_CATEGORIES[i];
-        const el = document.getElementById("debug_" + category);
+        const el = document.getElementById("debug_" + category) as HTMLInputElement;
         if (el && el.checked) {
             //"main" enables "client" debugging:
             let s = category == "main" ? "client" : category;
@@ -163,16 +200,18 @@ function downloadConnectionFile() {
 }
 
 function get_visible_value(entry, select) {
-    let entry_widget = document.getElementById(entry);
+    let entry_widget = document.getElementById(entry) as HTMLInputElement;
     if (
         entry_widget.style.visibility !== "hidden" ||
+        // @ts-ignore
         entry_widget.style.visibility !== "collapse"
     ) {
         return entry_widget.value;
     }
-    let select_widget = document.getElementById(select);
+    let select_widget = document.getElementById(select) as HTMLInputElement;
     if (
         select_widget.style.visibility !== "hidden" ||
+        // @ts-ignore
         select_widget.style.visibility !== "collapse"
     ) {
         return select_widget.value;
@@ -185,16 +224,16 @@ function get_URL_action() {
     let start = "";
     let display = "";
     let action = "";
-    if (document.getElementById("action_connect").checked) {
+    if ((<HTMLInputElement>document.getElementById("action_connect")).checked) {
         action = "connect";
         display = get_visible_value("display", "select_display");
-    } else if (document.getElementById("action_start").checked) {
+    } else if ((<HTMLInputElement>document.getElementById("action_start")).checked) {
         action = "start";
         start = get_visible_value("start_command", "command_entry");
-    } else if (document.getElementById("action_start_desktop").checked) {
+    } else if ((<HTMLInputElement>document.getElementById("action_start_desktop")).checked) {
         action = "start-desktop";
         start = get_visible_value("start_desktop_command", "desktop_entry");
-    } else if (document.getElementById("action_shadow").checked) {
+    } else if ((<HTMLInputElement>document.getElementById("action_shadow")).checked) {
         action = "shadow";
         display = get_visible_value(
             "shadow_display",
@@ -217,12 +256,12 @@ function get_URL_props() {
     let url = "";
     for (let i = 0; i < VALUE_PROPERTIES.length; i++) {
         const prop = VALUE_PROPERTIES[i];
-        const value = document.getElementById(prop).value;
+        const value = (<HTMLInputElement>document.getElementById(prop)).value;
         url += add_prop(prop, value);
     }
     for (let i = 0; i < BOOLEAN_PROPERTIES.length; i++) {
         const prop = BOOLEAN_PROPERTIES[i];
-        url += add_prop(prop, document.getElementById(prop).checked);
+        url += add_prop(prop, (<HTMLInputElement>document.getElementById(prop)).checked);
     }
     return url;
 }
@@ -235,7 +274,7 @@ function fill_form(default_settings) {
         }
         return v;
     };
-    const getboolparam = function (prop, default_value) {
+    const getboolparam = function (prop, default_value?) {
         let v = Utilities.getparam(prop);
         if (v == null && prop in default_settings) {
             v = default_settings[prop];
@@ -280,28 +319,28 @@ function fill_form(default_settings) {
     if (https) {
         protocol_port = 443;
     }
-    document.getElementById("server").value =
+    (<HTMLInputElement>document.getElementById("server")).value =
         getparam("server") || link.hostname;
-    document.getElementById("port").value =
+    (<HTMLInputElement>document.getElementById("port")).value =
         getparam("port") || link.port || protocol_port;
-    document.getElementById("path").value = path || pathname;
-    document.getElementById("username").value = getparam("username") || "";
+    (<HTMLInputElement>document.getElementById("path")).value = path || pathname;
+    (<HTMLInputElement>document.getElementById("username")).value = getparam("username") || "";
 
     const override_width = getparam("override_width");
     if (override_width) {
-        document.getElementById("override_width").value = override_width;
+        (<HTMLInputElement>document.getElementById("override_width")).value = override_width;
     } else {
-        document.getElementById("override_width").placeholder =
-            window.innerWidth;
+        (<HTMLInputElement>document.getElementById("override_width")).placeholder =
+            window.innerWidth.toString();
     }
 
     const ssl = getboolparam("ssl", https);
     const insecure = getboolparam("insecure", false);
     $("input#ssl").prop("checked", ssl);
     $("input#insecure").prop("checked", insecure);
-    const ssl_input = document.getElementById("ssl");
-    const insecure_input = document.getElementById("insecure");
-    const aes_input = document.getElementById("aes");
+    const ssl_input = document.getElementById("ssl") as HTMLInputElement;
+    const insecure_input = document.getElementById("insecure") as HTMLInputElement;
+    const aes_input = document.getElementById("aes") as HTMLInputElement;
     const has_session_storage = Utilities.hasSessionStorage();
     $("span#encryption-key-span").hide();
     aes_input.onchange = function () {
@@ -311,7 +350,7 @@ function fill_form(default_settings) {
             $("img#toggle-key").show();
             $("span#aes-label").hide();
             $("span#encryption-key-span").show();
-            const key_input = document.getElementById("key");
+            const key_input = document.getElementById("key") as HTMLInputElement;
             if (!key_input.value) {
                 key_input.focus();
             }
@@ -331,14 +370,15 @@ function fill_form(default_settings) {
         if (enc == "AES") {
             aes_input.checked = true;
             let enc_mode = encryption.split("-")[1] || "CBC";
-            document.getElementById("encryption").value = "AES-" + enc_mode;
+            (<HTMLInputElement>document.getElementById("encryption")).value = "AES-" + enc_mode;
         }
     }
-    aes_input.onchange();
+    aes_input.onchange(null);
 
     //vrefresh:
     let animation_times = [];
     let vrefresh = -1;
+    let fps;
     function animation_cb(now) {
         let l = animation_times.push(now);
         if (l > 100) {
@@ -347,7 +387,7 @@ function fill_form(default_settings) {
         let t0 = animation_times[0];
         if (now > t0 && l > 20) {
             fps = Math.floor((1000 * (l - 1)) / (now - t0));
-            document.getElementById("vrefresh").value = "" + fps;
+            (<HTMLInputElement>document.getElementById("vrefresh")).value = "" + fps;
             if (l <= 40) {
                 Utilities.debug("draw", "animation_cb", now, "fps", fps);
             }
@@ -358,7 +398,7 @@ function fill_form(default_settings) {
 
     //reveal password and aes key:
     function toggle_reveal(el) {
-        let x = document.getElementById(el);
+        let x = document.getElementById(el) as HTMLInputElement;
         if (x.type === "password") {
             x.type = "text";
             return "eye.png";
@@ -390,7 +430,7 @@ function fill_form(default_settings) {
             if (ssl_input.checked) {
                 $("span#insecure-span").hide();
                 aes_input.checked = false;
-                aes_input.onchange();
+                aes_input.onchange(null);
             } else {
                 $("span#insecure-span").show();
             }
@@ -414,36 +454,36 @@ function fill_form(default_settings) {
 
     const action = getparam("action") || "";
     if (action == "shadow") {
-        document.getElementById("action_shadow").checked = true;
+        (<HTMLInputElement>document.getElementById("action_shadow")).checked = true;
     } else if (action == "start-desktop") {
-        document.getElementById("action_start_desktop").checked = true;
+        (<HTMLInputElement>document.getElementById("action_start_desktop")).checked = true;
     } else if (action == "start") {
-        document.getElementById("action_start").checked = true;
+        (<HTMLInputElement>document.getElementById("action_start")).checked = true;
     } else {
-        document.getElementById("action_connect").checked = true;
+        (<HTMLInputElement>document.getElementById("action_connect")).checked = true;
     }
     const start = getparam("start") || "";
 
-    function get_host_address(skip_credentials) {
+    function get_host_address(skip_credentials?: boolean, error_fn?: Function) {
         let url = "http";
-        if (document.getElementById("ssl").checked) {
+        if ((<HTMLInputElement>document.getElementById("ssl")).checked) {
             url += "s";
         }
         url += "://";
         if (!skip_credentials) {
-            const username = document.getElementById("username").value;
+            const username = (<HTMLInputElement>document.getElementById("username")).value;
             if (username) {
                 url += username + "@";
             }
         }
-        const server = document.getElementById("server").value;
+        const server = (<HTMLInputElement>document.getElementById("server")).value;
         if (!server) {
             //nothing we can do
             error_fn("no server address");
             return;
         }
         url += server;
-        const port = document.getElementById("port").value;
+        const port = (<HTMLInputElement>document.getElementById("port")).value;
         const iport = parseInt(port) || 0;
         if (port && !iport) {
             error_fn("invalid port number '" + port + "'");
@@ -452,7 +492,7 @@ function fill_form(default_settings) {
         if (iport) {
             url += ":" + port;
         }
-        const path = document.getElementById("path").value;
+        const path = (<HTMLInputElement>document.getElementById("path")).value;
         if (path) {
             if (!path.startsWith("/")) {
                 url += "/";
@@ -465,18 +505,18 @@ function fill_form(default_settings) {
         return url;
     }
 
-    function json_action(uri, success_fn, error_fn) {
-        const url = get_host_address() + uri;
+    function json_action(uri, success_fn, error_fn?) {
+        const url = get_host_address(false, error_fn) + uri;
         Utilities.json_action(url, success_fn, error_fn);
     }
 
     const command_category_icon = document.getElementById(
         "command_category_icon"
     );
-    const command_category = document.getElementById("command_category");
+    const command_category = document.getElementById("command_category") as HTMLSelectElement;
     const command_entry_icon =
         document.getElementById("command_entry_icon");
-    const command_entry = document.getElementById("command_entry");
+    const command_entry = document.getElementById("command_entry") as HTMLSelectElement;
     function load_icon(icon, src) {
         const url = get_host_address(true) + src;
         icon.onload = function () {
@@ -587,7 +627,7 @@ function fill_form(default_settings) {
 
     const desktop_entry_icon =
         document.getElementById("desktop_entry_icon");
-    const desktop_entry = document.getElementById("desktop_entry");
+    const desktop_entry = document.getElementById("desktop_entry") as HTMLSelectElement;
     function desktop_entry_changed() {
         var de = desktop_entry.options[desktop_entry.selectedIndex].innerHTML;
         Utilities.log("desktop_session=", de);
@@ -704,7 +744,7 @@ function fill_form(default_settings) {
             "Sessions",
             function (xhr, response) {
                 var sessions = Object.keys(response);
-                const select_display = document.getElementById("select_display");
+                const select_display = document.getElementById("select_display") as HTMLInputElement;
                 select_display.innerText = null;
                 let count = 0;
                 for (let s in sessions) {
@@ -754,13 +794,13 @@ function fill_form(default_settings) {
                     if (session) {
                         let attributes = response[session];
                         if (attributes && attributes.username) {
-                            document.getElementById("username").value =
+                            (<HTMLInputElement>document.getElementById("username")).value =
                                 attributes.username;
                         }
                     }
                 }
 
-                select_display.onchange = display_populate_username();
+                select_display.onchange = display_populate_username;
                 display_populate_username();
             },
             function (error) {
@@ -825,13 +865,13 @@ function fill_form(default_settings) {
     for (var i = 0, l = watched_elements.length; i < l; i++) {
         let watched_element = watched_elements[i];
         let el = $("#" + watched_element);
-        function cancel_changed_timer() {
+        const cancel_changed_timer = () => {
             if (target_changed_timer) {
                 clearTimeout(target_changed_timer);
                 target_changed_timer = 0;
             }
         }
-        function host_address_changed() {
+        const host_address_changed = () => {
             cancel_changed_timer();
             const url = get_host_address();
             if (url != host_address) {
@@ -851,7 +891,7 @@ function fill_form(default_settings) {
         el.on("keyup", function () {
             Utilities.log(watched_element, "key event");
             cancel_changed_timer();
-            target_changed_timer = setTimeout(host_address_changed, ajax_delay);
+            target_changed_timer = setTimeout(host_address_changed, ajax_delay) as any as number;
         });
         el.on("keydown", function () {
             cancel_changed_timer();
@@ -876,15 +916,15 @@ function fill_form(default_settings) {
     $('input:radio[value="' + action + '"]').click();
 
     const encoding = getparam("encoding") || "auto";
-    document.getElementById("encoding").value = encoding;
+    (<HTMLInputElement>document.getElementById("encoding")).value = encoding;
 
     const offscreen = getboolparam(
         "offscreen",
         XpraOffscreenWorker.isAvailable()
     );
-    document.getElementById("offscreen").checked = offscreen;
+    (<HTMLInputElement>document.getElementById("offscreen")).checked = offscreen;
     if (!XpraOffscreenWorker.isAvailable()) {
-        document.getElementById("offscreen").disabled = true;
+        (<HTMLInputElement>document.getElementById("offscreen")).disabled = true;
         document
             .getElementById("offscreen")
             .setAttribute("title", "not available in your browser");
@@ -901,13 +941,13 @@ function fill_form(default_settings) {
             bandwidth_limit = ci["downlink"];
         }
     }
-    document.getElementById("bandwidth_limit").value = bandwidth_limit || 0;
+    (<HTMLInputElement>document.getElementById("bandwidth_limit")).value = bandwidth_limit || 0;
 
     let keyboard_layout = getparam("keyboard_layout");
     if (keyboard_layout == null) {
         keyboard_layout = Utilities.getKeyboardLayout();
     }
-    document.getElementById("keyboard_layout").value = keyboard_layout;
+    (<HTMLInputElement>document.getElementById("keyboard_layout")).value = keyboard_layout;
     json_action("favicon.png?echo-headers", function (xhr, response) {
         const headers = Utilities.ParseResponseHeaders(
             xhr.getAllResponseHeaders()
@@ -926,14 +966,14 @@ function fill_form(default_settings) {
                 Utilities.debug("request locale:", locale);
                 if (locale != keyboard_layout) {
                     keyboard_layout = locale;
-                    document.getElementById("keyboard_layout").value =
+                    (<HTMLInputElement>document.getElementById("keyboard_layout")).value =
                         keyboard_layout;
                 }
             }
         }
     });
     const audio_codec = getparam("audio_codec") || "";
-    const audio_codec_select = document.getElementById("audio_codec");
+    const audio_codec_select = document.getElementById("audio_codec") as HTMLSelectElement;
     const ignore_audio_blacklist = getboolparam(
         "ignore_audio_blacklist",
         false
@@ -945,7 +985,6 @@ function fill_form(default_settings) {
     const codecs_supported = MediaSourceUtil.get_supported_codecs(
         getboolparam("mediasource", true),
         getboolparam("aurora", true),
-        getboolparam("http-stream", true),
         ignore_audio_blacklist
     );
     let best_codec = audio_codec;
@@ -966,7 +1005,7 @@ function fill_form(default_settings) {
     } else {
         //enable sound checkbox if the codec is changed:
         audio_codec_select.onchange = function () {
-            document.getElementById("sound").checked = true;
+            (<HTMLInputElement>document.getElementById("sound")).checked = true;
         };
     }
     const sound = getboolparam("sound");
@@ -1025,16 +1064,16 @@ function fill_form(default_settings) {
     for (let i = 0; i < bool_props.length; i++) {
         const prop = bool_props[i];
         const def = default_on.includes(prop);
-        document.getElementById(prop).checked = getboolparam(prop, def);
+        (<HTMLInputElement>document.getElementById(prop)).checked = getboolparam(prop, def);
     }
     //scroll_reverse_y has 3 options: Yes, No, Auto
     const scroll_reverse_y = getboolparam("scroll_reverse_y", "auto");
-    document.getElementById("scroll_reverse_y").value = scroll_reverse_y;
+    (<HTMLInputElement>document.getElementById("scroll_reverse_y")).value = scroll_reverse_y;
 
     function toggle_mediasource_video() {
         $("#mediasource_video").prop("disabled", !video.checked);
     }
-    const video = document.getElementById("video");
+    const video = document.getElementById("video") as HTMLInputElement;
     video.onchange = toggle_mediasource_video;
     toggle_mediasource_video();
 
@@ -1052,10 +1091,10 @@ function fill_form(default_settings) {
     set_menu_attributes_visibility();
     let toolbar_position = getparam("toolbar_position") || "top";
     if (toolbar_position) {
-        document.getElementById("toolbar_position").value = toolbar_position;
+        (<HTMLInputElement>document.getElementById("toolbar_position")).value = toolbar_position;
     }
 
-    aes_input.onchange();
+    aes_input.onchange(null);
 
     //this may override default values (ie: terminate flags are off for connect mode):
     set_exit_actions(action == "connect" || action == "");

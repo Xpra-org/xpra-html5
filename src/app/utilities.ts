@@ -635,7 +635,7 @@ export const Utilities = globalThis['Utilities'] = {
     return index;
   },
 
-  json_action(uri, success_function, error_function, username, password) {
+  json_action(uri: string, success_function: Function, error_function: Function, username?: string, password?: string) {
     Utilities.log(
       "json_action(",
       uri,
