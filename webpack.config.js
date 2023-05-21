@@ -13,7 +13,11 @@ const stylesHandler = isProduction
   : "style-loader";
 
 const config = {
-  entry: "./src/main.ts",
+  entry: {
+    main: "./src/main.ts",
+    mitm: "./src/mitm.ts",
+    connect: "./src/connect.ts",
+  },
   output: {
     path: path.resolve(__dirname, "dist"),
   },
@@ -24,6 +28,16 @@ const config = {
   plugins: [
     new HtmlWebpackPlugin({
       template: "src/index.html",
+    }),
+    new HtmlWebpackPlugin({
+      template: `./src/connect.html`,
+      filename: `connect.html`,
+      chunks: [`connect`],
+    }),
+    new HtmlWebpackPlugin({
+      template: `./src/mitm.html`,
+      filename: `mitm.html`,
+      chunks: [`mitm`],
     }),
     new CopyPlugin({
       patterns: [
