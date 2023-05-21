@@ -127,6 +127,7 @@ function doConnect() {
         get_URL_props();
     window.location = url as any;
 }
+window['doConnect'] = doConnect;
 
 function doConnectURI() {
     let url = "xpraws://";
@@ -147,6 +148,7 @@ function doConnectURI() {
     url += get_URL_action() + get_URL_props();
     window.location = url as any;
 }
+window['doConnectURI'] = doConnectURI;
 
 function downloadConnectionFile() {
     const filename =
@@ -198,6 +200,7 @@ function downloadConnectionFile() {
     }
     Utilities.saveFile(filename, data, { type: "text/plain" });
 }
+window['downloadConnectionFile'] = downloadConnectionFile;
 
 function get_visible_value(entry, select) {
     let entry_widget = document.getElementById(entry) as HTMLInputElement;
@@ -480,14 +483,14 @@ function fill_form(default_settings) {
         if (!server) {
             //nothing we can do
             error_fn("no server address");
-            return;
+            return null;
         }
         url += server;
         const port = (<HTMLInputElement>document.getElementById("port")).value;
         const iport = parseInt(port) || 0;
         if (port && !iport) {
             error_fn("invalid port number '" + port + "'");
-            return;
+            return null;
         }
         if (iport) {
             url += ":" + port;
@@ -1108,7 +1111,7 @@ function fill_form(default_settings) {
     } catch (e) {
         //ignore
     }
-    function submit_if_enter(e) {
+    const submit_if_enter = (e) => {
         if (!e) {
             const e = window.event;
         }
