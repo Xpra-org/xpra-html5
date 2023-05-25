@@ -2966,7 +2966,7 @@ class XpraClient {
     const server_salt = Utilities.s(packet[1]);
     const salt_digest = Utilities.s(packet[4]) || "xor";
     const prompt = (Utilities.s(packet[5]) || "password").replace(
-      /[^\d+,./:a-z]/gi,
+      /[^\d+,. /:a-z]/gi,
       ""
     );
     this.clog("process challenge:", digest);
