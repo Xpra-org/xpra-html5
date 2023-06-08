@@ -256,7 +256,7 @@ function rencode_none() {
 //turn this flag off to use "rencodeplus" when encoding
 //this will send Uint8Array as 'binary'
 //(decoding is always supported since not having it is free)
-let rencode_legacy_mode = true;
+let rencode_legacy_mode = false;
 function rencodelegacy(obj) {
 	rencode_legacy_mode = true;
 	return rencode(obj);
