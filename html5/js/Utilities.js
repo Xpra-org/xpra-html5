@@ -435,6 +435,9 @@ const Utilities = {
   },
 
   s(v) {
+	if (v===undefined) {
+		return "";
+	}
     const type = typeof v;
     if (type === "object" && v.constructor === Uint8Array) {
       return Utilities.Uint8ToString(v);
@@ -443,6 +446,9 @@ const Utilities = {
   },
 
   u : function(v){
+	if (v===undefined) {
+		return new Uint8Array(0);
+	}
     const type = typeof v;
       if (type === 'object' && v.constructor===Uint8Array) {
         return v;
