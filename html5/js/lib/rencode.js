@@ -256,7 +256,7 @@ function rencode_none() {
 //turn this flag off to use "rencodeplus" when encoding
 //this will send Uint8Array as 'binary'
 //(decoding is always supported since not having it is free)
-rencode_legacy_mode = true;
+let rencode_legacy_mode = true;
 function rencodelegacy(obj) {
 	rencode_legacy_mode = true;
 	return rencode(obj);
@@ -310,20 +310,18 @@ function rdecode_string(dec) {
 	}
 	const binary = dec.buf[dec.pos+len]==RENCODE.SLASH_CHARCODE;
 	dec.pos += len+1;
+	const bytes = dec.buf.subarray(dec.pos, dec.pos+str_len);
+	dec.pos += str_len;
 	if (binary) {
-		const bytes = dec.buf.subarray(dec.pos, dec.pos+str_len);
-		dec.pos += str_len;
 		return bytes;
 	}
 	if (str_len==0) {
 		return "";
 	}
-	const sub = dec.buf.subarray(dec.pos, dec.pos+str_len);
-	dec.pos += str_len;
 	if (rencode_legacy_mode) {
-		return Uint8ToString(sub);
+		return Uint8ToString(bytes);
 	}
-	return utf8ByteArrayToString(sub)
+	return utf8ByteArrayToString(bytes)
 }
 function Uint8ToString(u8a){
 	const CHUNK_SZ = 0x8000;
