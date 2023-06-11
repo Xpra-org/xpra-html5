@@ -14,6 +14,9 @@
 
 const XpraOffscreenWorker = {
     isAvailable: function () {
+	if (navigator.userAgent.toLowerCase().includes("safari")) {
+		return false;
+	}
         if (XpraImageDecoderLoader.hasNativeDecoder() && XpraVideoDecoderLoader.hasNativeDecoder && typeof OffscreenCanvas !== "undefined") {
             //we also need the direct constructor:
             try {
