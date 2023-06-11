@@ -13,6 +13,10 @@
 
 const XpraOffscreenWorker = {
   isAvailable() {
+	const isSafari = navigator.userAgent.toLowerCase().includes("safari");
+	if (isSafari) {
+		return false;
+	}
     // We do not support firefox as it makes canvases flicker
     const isFirefox = navigator.userAgent.toLowerCase().includes("firefox");
     if (typeof OffscreenCanvas !== "undefined" && !isFirefox) {
