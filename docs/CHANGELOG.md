@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.3] 2023-06-15
+* some windows can't be restored
+* fix relative path to eye-icon
+* handle missing values more gracefully
+* Safari can't render using offscreen
+
 ## [5.2] 2023-05-06
 * offscreen decode worker issues: disable scroll encoding and screenshots, fix decode parsing errors
 * workarounds for older versions of Safari

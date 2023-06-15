@@ -1,4 +1,4 @@
-xpra-html5 (5.2-r0-1) UNRELEASED; urgency=low
+xpra-html5 (5.3-r0-1) UNRELEASED; urgency=low
   * offscreen decode worker issues: disable scroll encoding and screenshots, fix decode parsing errors
   * workarounds for older versions of Safari
   * correctly parse audio metadata
@@ -8,7 +8,7 @@ xpra-html5 (5.2-r0-1) UNRELEASED; urgency=low
   * add missing alt attributes
   * honour vertical scroll reverse option
 
- -- Antoine Martin antoine@xpra.org  Sat, 06 May 2023 23:59:04 +0700 +700
+ -- Antoine Martin antoine@xpra.org  Thu, 15 Jun 2023 16:57:47 +0700 +700
 
 xpra-html5 (5.1-r0-1) UNRELEASED; urgency=low
   * missing wheel events in non-seamless modes

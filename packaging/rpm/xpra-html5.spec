@@ -3,8 +3,8 @@
 # Xpra is released under the terms of the GNU GPL v2, or, at your option, any
 # later version. See the file COPYING for details.
 
-%define version 5.2
-%define release 1.r1275%{?dist}
+%define version 5.3
+%define release 1.r2%{?dist}
 %define minifier uglifyjs
 %define python python3
 
@@ -77,7 +77,7 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
-* Sat May 06 2023 Antoine Martin <antoine@xpra.org> 5.2-0-1
+* Thu Jun 15 2023 Antoine Martin <antoine@xpra.org> 5.3-0-1
 - offscreen decode worker issues: disable scroll encoding and screenshots, fix decode parsing errors
 - workarounds for older versions of Safari
 - correctly parse audio metadata
