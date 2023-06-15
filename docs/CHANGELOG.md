@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 - [hide upload menu entry if file transfers are disabled](https://github.com/Xpra-org/xpra-html5/commit/d01fac614ff734ba8deb96ec10c2b5ced3bdc28a)
 - [file-tranfers capability check](https://github.com/Xpra-org/xpra-html5/commit/aa90aac93930181fc9b7ef06c235d536cea2acd9)
 - [handle missing values more gracefully](https://github.com/Xpra-org/xpra-html5/commit/984ce7557ab23945a2bf8be8ad9359a32b0c0884)
+- [some windows can't be restored](https://github.com/Xpra-org/xpra-html5/commit/e4b7d7ec19b4d583f56151188045a1c6bb883d78)
 
 ## [8.0] 2023-05-06
 - [disable scroll encoding with offscreen decode worker](https://github.com/Xpra-org/xpra-html5/commit/e73861dc4750162c1905ae6bf773c74b9c63646d)

@@ -81,6 +81,7 @@ rm -rf $RPM_BUILD_ROOT
 - hide upload menu entry if file transfers are disabled
 - file-tranfers capability check
 - handle missing values more gracefully
+- some windows can't be restored
 
 * Sat May 06 2023 Antoine Martin <antoine@xpra.org> 8.0-0-1
 - disable scroll encoding with offscreen decode worker
