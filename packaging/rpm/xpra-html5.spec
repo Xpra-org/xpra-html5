@@ -1,5 +1,5 @@
 # This file is part of Xpra.
-# Copyright (C) 2010-2022 Antoine Martin <antoine@xpra.org>
+# Copyright (C) 2010-2023 Antoine Martin <antoine@xpra.org>
 # Xpra is released under the terms of the GNU GPL v2, or, at your option, any
 # later version. See the file COPYING for details.
 
@@ -77,8 +77,16 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
-* Tue Mar 14 2023 Antoine Martin <antoine@xpra.org> 7.1-2-1
-- TODO
+* Thu Jun 15 2023 Antoine Martin <antoine@xpra.org> 7.1-0-1
+- cursors
+- don't close windows when re-connecting
+- closing windows is a request, not an action
+- disable screenshots with offscreen rendering
+- restore console warnings
+- logging from Window objects was broken
+- some windows can't be restored
+- fix relative path to eye-icon
+- Safari can't render using offscreen
 
 * Mon Mar 13 2023 Antoine Martin <antoine@xpra.org> 7.0-0-1
 - unable to move undecorated / CSD windows

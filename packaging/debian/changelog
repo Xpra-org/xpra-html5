@@ -1,7 +1,15 @@
 xpra-html5 (7.1-r2-1) UNRELEASED; urgency=low
-  * TODO
+  * cursors
+  * don't close windows when re-connecting
+  * closing windows is a request, not an action
+  * disable screenshots with offscreen rendering
+  * restore console warnings
+  * logging from Window objects was broken
+  * some windows can't be restored
+  * fix relative path to eye-icon
+  * Safari can't render using offscreen
 
- -- Antoine Martin antoine@xpra.org  Tue, 14 Mar 2023 16:10:03 +0700 +700
+ -- Antoine Martin antoine@xpra.org  Thu, 15 Mar 2023 16:49:57 +0700 +700
 
 xpra-html5 (7.0-r0-1) UNRELEASED; urgency=low
   * unable to move undecorated / CSD windows
