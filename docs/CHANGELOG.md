@@ -13,6 +13,7 @@ All notable changes to this project will be documented in this file.
 * [some windows can't be restored](https://github.com/Xpra-org/xpra-html5/commit/8255ce76436cd732876c22b5f9d8f2916aa2b6c2)
 * [fix relative path to eye-icon](https://github.com/Xpra-org/xpra-html5/commit/7bf86f43c857f197e081738655d6106e40bdca19)
 * [Safari can't render using offscreen](https://github.com/Xpra-org/xpra-html5/commit/229103cb9bc94b1bb18dd84d62a7f9373bf2e357)
+* [handle missing values more gracefully](https://github.com/Xpra-org/xpra-html5/commit/fc9c039e032dc453085e98ec301003c0d8d799c0)
 
 
 ## [7.0] 2023-03-12

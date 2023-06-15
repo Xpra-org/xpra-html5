@@ -8,6 +8,7 @@ xpra-html5 (7.1-r2-1) UNRELEASED; urgency=low
   * some windows can't be restored
   * fix relative path to eye-icon
   * Safari can't render using offscreen
+  * handle missing values more gracefully
 
  -- Antoine Martin antoine@xpra.org  Thu, 15 Mar 2023 16:49:57 +0700 +700
 

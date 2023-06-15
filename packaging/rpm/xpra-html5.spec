@@ -87,6 +87,7 @@ rm -rf $RPM_BUILD_ROOT
 - some windows can't be restored
 - fix relative path to eye-icon
 - Safari can't render using offscreen
+- handle missing values more gracefully
 
 * Mon Mar 13 2023 Antoine Martin <antoine@xpra.org> 7.0-0-1
 - unable to move undecorated / CSD windows
