@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 * fix relative path to eye-icon
 * handle missing values more gracefully
 * Safari can't render using offscreen
+* allow spaces in passwords
 
 ## [5.2] 2023-05-06
 * offscreen decode worker issues: disable scroll encoding and screenshots, fix decode parsing errors

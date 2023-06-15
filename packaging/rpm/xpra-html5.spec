@@ -78,6 +78,13 @@ rm -rf $RPM_BUILD_ROOT
 
 %changelog
 * Thu Jun 15 2023 Antoine Martin <antoine@xpra.org> 5.3-0-1
+- some windows can't be restored
+- fix relative path to eye-icon
+- handle missing values more gracefully
+- Safari can't render using offscreen
+- allow spaces in passwords
+
+* Sat May 06 2023 Antoine Martin <antoine@xpra.org> 5.2-0-1
 - offscreen decode worker issues: disable scroll encoding and screenshots, fix decode parsing errors
 - workarounds for older versions of Safari
 - correctly parse audio metadata
