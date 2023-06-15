@@ -3,8 +3,8 @@
 # Xpra is released under the terms of the GNU GPL v2, or, at your option, any
 # later version. See the file COPYING for details.
 
-%define version 8.0
-%define release 1.r0%{?dist}
+%define version 8.1
+%define release 1.r4%{?dist}
 %define minifier uglifyjs
 %define python python3
 
@@ -77,6 +77,11 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Thu Jun 15 2023 Antoine Martin <antoine@xpra.org> 8.1-4-1
+- hide upload menu entry if file transfers are disabled
+- file-tranfers capability check
+- handle missing values more gracefully
+
 * Sat May 06 2023 Antoine Martin <antoine@xpra.org> 8.0-0-1
 - disable scroll encoding with offscreen decode worker
 - screenshots cannot be used with the offscreen api
