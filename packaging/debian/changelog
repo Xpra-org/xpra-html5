@@ -1,5 +1,7 @@
-xpra-html5 (8.1-r4-1) UNRELEASED; urgency=low
-  * TODO
+xpra-html5 (8.1-r0-1) UNRELEASED; urgency=low
+  * hide upload menu entry if file transfers are disabled
+  * file-tranfers capability check
+  * handle missing values more gracefully
 
  -- Antoine Martin antoine@xpra.org  Thu, 15 Jun 2023 17:21:16 +0700 +700
 
