@@ -17,7 +17,8 @@ const XpraOffscreenWorker = {
     var match = navigator.userAgent.match(/version\/(\d+\.\d+)/i);
     if (match && match[1]) {
       var version = parseFloat(match[1]);
-      return version >= 16.4;
+      // Safari is buggy, see #227
+      return version >= 999.9;
     }
     return false;
   },
