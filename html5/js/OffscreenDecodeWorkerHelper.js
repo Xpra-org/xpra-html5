@@ -12,14 +12,38 @@
  */
 
 const XpraOffscreenWorker = {
+  // OffscreenCanvas supported since v.16.4
+  isSafariVersionSupported() {
+    var match = navigator.userAgent.match(/version\/(\d+\.\d+)/i);
+    if (match && match[1]) {
+      var version = parseFloat(match[1]);
+      return version >= 16.4;
+    }
+    return false;
+  },
+
+  // OffscreenCanvas supported since v.105 (with fixed added for 107/108)
+  isFirefoxVersionSupported() {
+    var match = navigator.userAgent.match(/firefox\/(\d+)/i);
+    if (match && match[1]) {
+      var version = parseInt(match[1], 10);
+      return version >= 108;
+    }
+    return false;
+  },
+
   isAvailable() {
-	const isSafari = navigator.userAgent.toLowerCase().includes("safari");
-	if (isSafari) {
-		return false;
-	}
-    // We do not support firefox as it makes canvases flicker
-    const isFirefox = navigator.userAgent.toLowerCase().includes("firefox");
-    if (typeof OffscreenCanvas !== "undefined" && !isFirefox) {
+    var isSafari = navigator.userAgent.toLowerCase().includes("safari");
+    if (isSafari && !this.isSafariVersionSupported()) {
+      return false;
+    }
+
+    var isFirefox = navigator.userAgent.toLowerCase().includes("firefox");
+    if (isFirefox && this.isFirefoxVersionSupported()) {
+      return false;
+    }
+
+    if (typeof OffscreenCanvas !== "undefined") {
       //we also need the direct constructor:
       try {
         new OffscreenCanvas(256, 256);
@@ -29,7 +53,8 @@ const XpraOffscreenWorker = {
       }
     }
     console.warn(
-      "Offscreen decoding is not available. Please consider using Google Chrome for better performance."
+      "Offscreen decoding is not available. Please consider using " +
+        "Google Chrome, Firefox >= 108 or Safari >= 16.4 for better performance."
     );
     return false;
   },
