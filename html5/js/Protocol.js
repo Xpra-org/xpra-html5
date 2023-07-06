@@ -234,14 +234,6 @@ class XpraProtocol {
     console.log.apply(console, arguments);
   }
 
-  StringToUint8(string_) {
-    return Uint8Array.from([...string_].map((x) => x.charCodeAt(0)));
-  }
-
-  ord(c) {
-    return c.charCodeAt(0);
-  }
-
   do_process_receive_queue() {
     if (this.header.length < 8 && this.rQ.length > 0) {
       //add from receive queue data to header until we get the 8 bytes we need:
@@ -360,7 +352,7 @@ class XpraProtocol {
 
     // decrypt if needed
     if (proto_crypto) {
-      this.cipher_in.update(forge.util.createBuffer(Uint8ToString(packet_data)));
+      this.cipher_in.update(forge.util.createBuffer(Utilities.Uint8ToString(packet_data)));
       const decrypted = this.cipher_in.output.getBytes();
       if (!decrypted || decrypted.length < packet_size - padding) {
         this.error("error decrypting packet using", this.cipher_in);
@@ -376,7 +368,7 @@ class XpraProtocol {
         this.raw_packets = [];
         return this.rQ.length > 0;
       }
-      packet_data = this.StringToUint8(
+      packet_data = Utilities.StringToUint8(
         decrypted.slice(0, packet_size - padding)
       );
     }
@@ -472,7 +464,7 @@ class XpraProtocol {
           this.cipher_out_block_size -
           (payload_size % this.cipher_out_block_size);
         let input_data =
-          typeof bdata === "string" ? bdata : Uint8ToString(bdata);
+          typeof bdata === "string" ? bdata : Utilities.Uint8ToString(bdata);
         if (padding_size) {
           const padding_char = String.fromCharCode(padding_size);
           input_data += padding_char.repeat(padding_size);
@@ -498,7 +490,7 @@ class XpraProtocol {
       } else {
         //copy string one character at a time..
         for (let index = 0; index < actual_size; index++) {
-          packet_data[8 + index] = this.ord(bdata[index]);
+          packet_data[8 + index] = Utilities.ord(bdata[index]);
         }
       }
       // put into buffer before send
@@ -624,7 +616,8 @@ if (
     "lib/lz4.js",
     "lib/brotli_decode.js",
     "lib/forge.js",
-    "lib/rencode.js"
+    "lib/rencode.js",
+    "Utilities.js"
   );
   // make protocol instance
   const protocol = new XpraProtocol();

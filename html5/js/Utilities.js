@@ -55,6 +55,10 @@ const Utilities = {
     return s.join("");
   },
 
+  ord(c) {
+    return c.charCodeAt(0);
+  },
+
   getSecureRandomString(length_) {
     const crypto = window.crypto || window.mscrypto;
     if (!crypto) {
