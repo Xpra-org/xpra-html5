@@ -1271,7 +1271,7 @@ class XpraClient {
     let name = "HTML";
     if (navigator.userAgentData) {
       const brands = navigator.userAgentData.brands;
-      if (brands.length>0) {
+      if (brands.length > 0) {
         name = brands[0].brand + " " + brands[0].version;
       }
     }
@@ -1593,7 +1593,7 @@ class XpraClient {
       "encodings.packet": true,
       //skipping some keys
       //ie: "encoding.min-quality": 50,
-      //ie: "encoding.min-speed": 80,
+      "encoding.min-speed": 50,
       //ie: "encoding.non-scroll": ["rgb32", "png", "jpeg"],
       //video stuff:
       "encoding.color-gamut": Utilities.getColorGamut(),
@@ -2775,7 +2775,10 @@ class XpraClient {
     if (!hello["client-shutdown"]) {
       $("#shutdown_menu_entry").hide();
     }
-    if (!this.file_transfer || ((!hello["file-transfer"]) && (!hello["file"] || !hello["file"]["enabled"]))) {
+    if (
+      !this.file_transfer ||
+      (!hello["file-transfer"] && (!hello["file"] || !hello["file"]["enabled"]))
+    ) {
       $("#upload_menu_entry").hide();
     }
 
@@ -3311,8 +3314,7 @@ class XpraClient {
     );
     if (this.server_is_desktop || this.server_is_shadow) {
       window.noWindowList();
-    }
-    else if (win && win.has_decorations) {
+    } else if (win && win.has_decorations) {
       const trimmedTitle = Utilities.trimString(win.title, 30);
       window.addWindowListItem(win, wid, trimmedTitle);
     }
