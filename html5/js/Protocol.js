@@ -397,10 +397,10 @@ class XpraProtocol {
       //decode raw packet string into objects:
       let packet = null;
       try {
-        if (proto_flags == 0x1) {
-          packet = rdecodelegacy(packet_data);
-        } else if (proto_flags == 0x10) {
-          packet = rdecodeplus(packet_data);
+        if (proto_flags == 0x10) {
+          packet = rdecode(packet_data);
+        } else if (proto_flags == 0x1) {
+          throw `rencode legacy mode is not supported, protocol flag: ${proto_flags}`;
         } else {
           throw `invalid packet encoder flags ${proto_flags}`;
         }
@@ -449,7 +449,7 @@ class XpraProtocol {
       let proto_flags = 0x10;
       let bdata = null;
       try {
-        bdata = rencodeplus(packet);
+        bdata = rencode(packet);
       } catch (error) {
         this.error("Error: failed to encode packet:", packet);
         this.error(" with packet encoder", this.packet_encoder);

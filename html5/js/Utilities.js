@@ -432,9 +432,9 @@ const Utilities = {
   },
 
   s(v) {
-	if (v===undefined) {
-		return "";
-	}
+    if (v === undefined) {
+      return "";
+    }
     const type = typeof v;
     if (type === "object" && v.constructor === Uint8Array) {
       return Utilities.Uint8ToString(v);
@@ -442,10 +442,10 @@ const Utilities = {
     return v.toString();
   },
 
-  u : function(v){
-	if (v===undefined) {
-		return new Uint8Array(0);
-	}
+  u(v) {
+    if (v === undefined) {
+      return new Uint8Array(0);
+    }
     const type = typeof v;
       if (type === 'object' && v.constructor===Uint8Array) {
         return v;
