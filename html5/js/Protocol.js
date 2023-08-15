@@ -352,7 +352,7 @@ class XpraProtocol {
 
     // decrypt if needed
     if (proto_crypto) {
-      this.cipher_in.update(forge.util.createBuffer(uintToString(packet_data)));
+      this.cipher_in.update(forge.util.createBuffer(Utilities.Uint8ToString(packet_data)));
       const decrypted = this.cipher_in.output.getBytes();
       if (!decrypted || decrypted.length < packet_size - padding) {
         this.error("error decrypting packet using", this.cipher_in);
@@ -397,10 +397,10 @@ class XpraProtocol {
       //decode raw packet string into objects:
       let packet = null;
       try {
-        if (proto_flags == 0x1) {
-          packet = rdecodelegacy(packet_data);
-        } else if (proto_flags == 0x10) {
-          packet = rdecodeplus(packet_data);
+        if (proto_flags == 0x10) {
+          packet = rdecode(packet_data);
+        } else if (proto_flags == 0x1) {
+          throw `rencode legacy mode is not supported, protocol flag: ${proto_flags}`;
         } else {
           throw `invalid packet encoder flags ${proto_flags}`;
         }
@@ -449,7 +449,7 @@ class XpraProtocol {
       let proto_flags = 0x10;
       let bdata = null;
       try {
-        bdata = rencodeplus(packet);
+        bdata = rencode(packet);
       } catch (error) {
         this.error("Error: failed to encode packet:", packet);
         this.error(" with packet encoder", this.packet_encoder);
@@ -490,7 +490,7 @@ class XpraProtocol {
       } else {
         //copy string one character at a time..
         for (let index = 0; index < actual_size; index++) {
-          packet_data[8 + index] = ord(bdata[index]);
+          packet_data[8 + index] = Utilities.ord(bdata[index]);
         }
       }
       // put into buffer before send
@@ -616,7 +616,8 @@ if (
     "lib/lz4.js",
     "lib/brotli_decode.js",
     "lib/forge.js",
-    "lib/rencode.js"
+    "lib/rencode.js",
+    "Utilities.js"
   );
   // make protocol instance
   const protocol = new XpraProtocol();

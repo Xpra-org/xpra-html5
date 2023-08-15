@@ -1271,7 +1271,7 @@ class XpraClient {
     let name = "HTML";
     if (navigator.userAgentData) {
       const brands = navigator.userAgentData.brands;
-      if (brands.length>0) {
+      if (brands.length > 0) {
         name = brands[0].brand + " " + brands[0].version;
       }
     }
@@ -1593,7 +1593,7 @@ class XpraClient {
       "encodings.packet": true,
       //skipping some keys
       //ie: "encoding.min-quality": 50,
-      //ie: "encoding.min-speed": 80,
+      "encoding.min-speed": 50,
       //ie: "encoding.non-scroll": ["rgb32", "png", "jpeg"],
       //video stuff:
       "encoding.color-gamut": Utilities.getColorGamut(),
@@ -2019,34 +2019,28 @@ class XpraClient {
         e.preventDefault();
         return;
       }
-      let paste_data;
       if (navigator.clipboard && navigator.clipboard.readText) {
         navigator.clipboard.readText().then(
           (text) => {
             this.cdebug("clipboard", "paste event, text=", text);
-            const paste_data = unescape(encodeURIComponent(text));
-            this.clipboard_buffer = paste_data;
-            this.send_clipboard_token(paste_data);
+            this.clipboard_buffer = text;
+            const data = Utilities.StringToUint8(text);
+            this.send_clipboard_token(data);
           },
           (error) => this.cdebug("clipboard", "paste event failed:", error)
         );
       } else {
-        let datatype = TEXT_PLAIN;
-        if (Utilities.isIE()) {
-          datatype = "Text";
-        }
-        paste_data = unescape(
-          encodeURIComponent(clipboardData.getData(datatype))
-        );
-        cdebug("clipboard", "paste event, data=", paste_data);
-        this.clipboard_buffer = paste_data;
-        this.send_clipboard_token(paste_data);
+        const text = clipboardData.getData(TEXT_PLAIN);
+        cdebug("clipboard", "paste event, text=", text);
+        this.clipboard_buffer = text;
+        const data = Utilities.StringToUint8(text);
+        this.send_clipboard_token(data);
       }
     });
     window.addEventListener("copy", (e) => {
       const clipboard_buffer = this.get_clipboard_buffer();
       const pasteboard = $(PASTEBOARD_SELECTOR);
-      pasteboard.text(decodeURIComponent(escape(clipboard_buffer)));
+      pasteboard.text(clipboard_buffer);
       pasteboard.select();
       this.cdebug(
         "clipboard",
@@ -2058,7 +2052,7 @@ class XpraClient {
     window.addEventListener("cut", (e) => {
       const clipboard_buffer = this.get_clipboard_buffer();
       const pasteboard = $(PASTEBOARD_SELECTOR);
-      pasteboard.text(decodeURIComponent(escape(clipboard_buffer)));
+      pasteboard.text(clipboard_buffer);
       pasteboard.select();
       this.cdebug(
         "clipboard",
@@ -2188,7 +2182,7 @@ class XpraClient {
     navigator.clipboard.readText().then(
       (text) => {
         this.debug("clipboard", "paste event, text=", text);
-        const clipboard_buffer = unescape(encodeURIComponent(text));
+        const clipboard_buffer = encodeURIComponent(text);
         if (clipboard_buffer != this.clipboard_buffer) {
           this.debug("clipboard", "clipboard contents have changed");
           this.clipboard_buffer = clipboard_buffer;
@@ -2775,7 +2769,10 @@ class XpraClient {
     if (!hello["client-shutdown"]) {
       $("#shutdown_menu_entry").hide();
     }
-    if (!this.file_transfer || ((!hello["file-transfer"]) && (!hello["file"] || !hello["file"]["enabled"]))) {
+    if (
+      !this.file_transfer ||
+      (!hello["file-transfer"] && (!hello["file"] || !hello["file"]["enabled"]))
+    ) {
       $("#upload_menu_entry").hide();
     }
 
@@ -2962,10 +2959,10 @@ class XpraClient {
         return;
       }
     }
-    const digest = Utilities.s(packet[3]);
-    const server_salt = Utilities.s(packet[1]);
-    const salt_digest = Utilities.s(packet[4]) || "xor";
-    const prompt = (Utilities.s(packet[5]) || "password").replace(
+    const digest = packet[3];
+    const server_salt = Uint8ToString(packet[1]);
+    const salt_digest = packet[4] || "xor";
+    const prompt = (packet[5] || "password").replace(
       /[^\d+,. /:a-z]/gi,
       ""
     );
@@ -3311,8 +3308,7 @@ class XpraClient {
     );
     if (this.server_is_desktop || this.server_is_shadow) {
       window.noWindowList();
-    }
-    else if (win && win.has_decorations) {
+    } else if (win && win.has_decorations) {
       const trimmedTitle = Utilities.trimString(win.title, 30);
       window.addWindowListItem(win, wid, trimmedTitle);
     }

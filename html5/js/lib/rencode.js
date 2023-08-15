@@ -253,14 +253,6 @@ function rencode_none() {
 	return new Uint8Array([RENCODE.CHR_NONE]);
 }
 
-//turn this flag off to use "rencodeplus" when encoding
-//this will send Uint8Array as 'binary'
-//(decoding is always supported since not having it is free)
-let rencode_legacy_mode = false;
-function rencodelegacy(obj) {
-	rencode_legacy_mode = true;
-	return rencode(obj);
-}
 function rencode(obj) {
 	if (obj === null || obj === undefined) {
 		return rencode_none();
@@ -271,15 +263,6 @@ function rencode(obj) {
 			return rencode_dict(obj);
 		}
 		if(obj.constructor===Uint8Array) {
-			if (rencode_legacy_mode) {
-				//legacy rencode cannot handle bytearrays
-				const CHUNK_SZ = 0x8000;
-				const c = [];
-				for (let i=0; i < u8a.length; i+=CHUNK_SZ) {
-					c.push(String.fromCharCode.apply(null, u8a.subarray(i, i+CHUNK_SZ)));
-				}
-				return rencode_string(c.join(""));
-			}
 			return rencode_uint8(obj);
 		}
 		return rencode_list(obj);
@@ -292,10 +275,6 @@ function rencode(obj) {
 		case "boolean":		return rencode_bool(obj?1:0);
 		default:	throw "invalid object type in source: "+type;
 	}
-}
-function rencodeplus(obj) {
-	rencode_legacy_mode = false;
-	return rencode(obj);
 }
 
 function rdecode_string(dec) {
@@ -318,9 +297,7 @@ function rdecode_string(dec) {
 	if (str_len==0) {
 		return "";
 	}
-	if (rencode_legacy_mode) {
-		return Uint8ToString(bytes);
-	}
+
 	return utf8ByteArrayToString(bytes)
 }
 function Uint8ToString(u8a){
@@ -515,15 +492,6 @@ function _rdecode(dec) {
 		throw "no decoder for typecode "+typecode+" at position "+dec.pos;
 	}
 	return decode(dec);
-}
-
-function rdecodelegacy(buf) {
-	rencode_legacy_mode = true;
-	return rdecode(buf);
-}
-function rdecodeplus(buf) {
-	rencode_legacy_mode = false;
-	return rdecode(buf);
 }
 
 function rdecode(buf) {

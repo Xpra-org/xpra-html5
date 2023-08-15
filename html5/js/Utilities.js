@@ -55,6 +55,10 @@ const Utilities = {
     return s.join("");
   },
 
+  ord(c) {
+    return c.charCodeAt(0);
+  },
+
   getSecureRandomString(length_) {
     const crypto = window.crypto || window.mscrypto;
     if (!crypto) {
@@ -419,25 +423,18 @@ const Utilities = {
     }
   },
 
-  StringToUint8(string_) {
-    return Uint8Array.from([...string_].map((x) => x.charCodeAt(0)));
+  StringToUint8(value) {
+    return new TextEncoder().encode(value);
   },
 
-  Uint8ToString(u8a) {
-    const CHUNK_SZ = 0x80_00;
-    const c = [];
-    for (let index = 0; index < u8a.length; index += CHUNK_SZ) {
-      c.push(
-        String.fromCharCode.apply(null, u8a.subarray(index, index + CHUNK_SZ))
-      );
-    }
-    return c.join("");
+  Uint8ToString(value) {
+    return new TextDecoder().decode(value);
   },
 
   s(v) {
-	if (v===undefined) {
-		return "";
-	}
+    if (v === undefined) {
+      return "";
+    }
     const type = typeof v;
     if (type === "object" && v.constructor === Uint8Array) {
       return Utilities.Uint8ToString(v);
@@ -445,10 +442,10 @@ const Utilities = {
     return v.toString();
   },
 
-  u : function(v){
-	if (v===undefined) {
-		return new Uint8Array(0);
-	}
+  u(v) {
+    if (v === undefined) {
+      return new Uint8Array(0);
+    }
     const type = typeof v;
       if (type === 'object' && v.constructor===Uint8Array) {
         return v;
