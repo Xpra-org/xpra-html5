@@ -2705,11 +2705,11 @@ class XpraClient {
     }
 
     // file transfer attributes:
-    this.remote_file_size_limit = hello["file-size-limit"] || 0;
+    this.remote_file_size_limit = hello["max-file-size"];
     this.remote_file_chunks = Math.max(
       0,
       Math.min(
-        this.remote_file_size_limit * 1024 * 1024,
+        this.remote_file_size_limit,
         hello["file-chunks"] || 0
       )
     );
