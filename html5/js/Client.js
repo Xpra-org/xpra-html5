@@ -1456,7 +1456,6 @@ class XpraClient {
       "mouse.show": true,
       // packet encoders
       rencodeplus: true,
-      bencode: false,
       yaml: false,
       "open-url": this.open_url,
       "ping-echo-sourceid": true,
@@ -2922,9 +2921,6 @@ class XpraClient {
   xdg_image(icon_data, icon_type) {
     const img = new Image();
     if (typeof icon_data !== "undefined") {
-      if (typeof icon_data === "string") {
-        icon_data = Utilities.StringToUint8(icon_data);
-      }
       if (icon_type == "svg") {
         img.src = `data:image/svg+xml;base64,${Utilities.ArrayBufferToBase64(
           icon_data
@@ -3735,11 +3731,6 @@ class XpraClient {
     const raw_buffers = [];
     const now = performance.now();
     if (coding != "scroll") {
-      if (!(img_data instanceof Uint8Array)) {
-        //the legacy bencoder can give us a string here
-        img_data = Utilities.StringToUint8(img_data);
-        packet[7] = img_data;
-      }
       raw_buffers.push(img_data.buffer);
     }
     if (this.decode_worker) {

@@ -1266,12 +1266,8 @@ class XpraWindow {
       this.warn("received an invalid cursor encoding:", encoding);
       return;
     }
-    let array = img_data;
-    if (typeof img_data === "string") {
-      array = Utilities.StringToUint8(img_data);
-    }
     const window_element = jQuery(`#${this.wid}`);
-    const cursor_url = this.construct_base64_image_url(encoding, array);
+    const cursor_url = this.construct_base64_image_url(encoding, img_data);
     const me = this;
     function set_cursor_url(url, x, y, w, h) {
       const url_string = `url('${url}')`;
