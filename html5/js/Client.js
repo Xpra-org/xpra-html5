@@ -1462,11 +1462,6 @@ class XpraClient {
       vrefresh: this.vrefresh,
       "file-chunks": FILE_CHUNKS_SIZE,
     });
-    if (SHOW_START_MENU) {
-      this._update_capabilities({
-        "xdg-menu-update": true,
-      });
-    }
     if (this.bandwidth_limit > 0) {
       this._update_capabilities({
         "bandwidth-limit": this.bandwidth_limit,
@@ -1555,11 +1550,6 @@ class XpraClient {
 
     this._update_capabilities({
       auto_refresh_delay: 500,
-      randr_notify: true,
-      "sound.server_driven": true,
-      "server-window-resize": true,
-      "screen-resize-bigger": false,
-      "window.initiate-moveresize": true,
       "metadata.supported": [
         "fullscreen",
         "maximized",
@@ -1585,7 +1575,6 @@ class XpraClient {
       "encodings.rgb_formats": this.RGB_FORMATS,
       "encodings.window-icon": ["png"],
       "encodings.cursor": ["png"],
-      "encoding.flush": true,
       "encoding.transparency": true,
       "encoding.decoder-speed": { video: 0 },
       "encodings.packet": true,
@@ -1597,7 +1586,6 @@ class XpraClient {
       "encoding.color-gamut": Utilities.getColorGamut(),
       "encoding.video_scaling": true,
       "encoding.video_max_size": video_max_size,
-      "encoding.eos": true,
       "encoding.full_csc_modes": {
         mpeg1: ["YUV420P"],
         h264: ["YUV420P"],
@@ -1636,7 +1624,6 @@ class XpraClient {
       "sound.receive": true,
       "sound.send": false,
       "sound.decoders": Object.keys(this.audio_codecs),
-      "sound.bundle-metadata": true,
       // encoding stuff
       windows: true,
       "window.pre-map": true,
@@ -1671,7 +1658,6 @@ class XpraClient {
       "file-transfer": this.file_transfer,
       printing: this.printing,
       "file-size-limit": 4 * 1024,
-      flush: true,
     });
   }
 
