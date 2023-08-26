@@ -1452,7 +1452,6 @@ class XpraClient {
       digest: digests,
       "salt-digest": digests,
       //compression bits:
-      zlib: false,
       compression_level: 1,
       "mouse.show": true,
       // packet encoders
@@ -1640,7 +1639,6 @@ class XpraClient {
       "sound.decoders": Object.keys(this.audio_codecs),
       "sound.bundle-metadata": true,
       // encoding stuff
-      "encoding.rgb_zlib": true,
       windows: true,
       "window.pre-map": true,
       //partial support:
