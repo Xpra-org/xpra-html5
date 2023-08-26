@@ -2638,25 +2638,6 @@ class XpraClient {
       throw "no common packet encoders, 'rencodeplus' is required by this client";
     }
 
-    // find the modifier to use for Num_Lock
-    const modifier_keycodes = hello["modifier_keycodes"];
-    if (modifier_keycodes) {
-      for (const modifier in modifier_keycodes) {
-        if (Object.hasOwn((modifier_keycodes, modifier))) {
-          const mappings = modifier_keycodes[modifier];
-          for (const keycode in mappings) {
-            const keys = mappings[keycode];
-            for (const index in keys) {
-              const key = keys[index];
-              if (key == "Num_Lock") {
-                this.num_lock_modifier = modifier;
-              }
-            }
-          }
-        }
-      }
-    }
-
     const version = Utilities.s(hello["version"]);
     try {
       const vparts = version.split(".");
@@ -2672,32 +2653,8 @@ class XpraClient {
       return;
     }
     this.log("got hello: server version", version, "accepted our connection");
-    //figure out "alt" and "meta" keys:
-    if ("modifier_keycodes" in hello) {
-      const modifier_keycodes = hello["modifier_keycodes"];
-      for (const keycode_index in modifier_keycodes) {
-        const keys = modifier_keycodes[keycode_index];
-        for (const key_index in keys) {
-          const key = keys[key_index];
-          //the first value is usually the integer keycode,
-          //the second one is the actual key name,
-          //doesn't hurt to test both:
-          for (const subkey_index in key) {
-            if ("Alt_L" == key[subkey_index]) this.alt_modifier = keycode_index;
-            else if ("Meta_L" == key[subkey_index])
-              this.meta_modifier = keycode_index;
-            else if (
-              "ISO_Level3_Shift" == key[subkey_index] ||
-              "Mode_switch" == key[subkey_index]
-            )
-              this.altgr_modifier = keycode_index;
-            else if ("Control_L" == key[subkey_index])
-              this.control_modifier = keycode_index;
-          }
-        }
-      }
-    }
     // stuff that must be done after hello
+    this._process_modifier_keycodes(hello["modifier_keycodes"] || {});
     this._process_audio_caps(hello["audio"] || {});
     if (SHOW_START_MENU) {
       this.xdg_menu = hello["xdg-menu"];
@@ -2769,14 +2726,13 @@ class XpraClient {
     this.connected = true;
   }
 
-  _process_modifier_keycodes() {
+  _process_modifier_keycodes(modifier_keycodes) {
     // find the modifier to use for Num_Lock
-    const modifier_keycodes = hello["modifier_keycodes"];
     if (!modifier_keycodes) {
       return;
     }
     for (const modifier in modifier_keycodes) {
-      if (Object.hasOwn((modifier_keycodes, modifier))) {
+      if (Object.hasOwn(modifier_keycodes, modifier)) {
         const mappings = modifier_keycodes[modifier];
         for (const keycode in mappings) {
           const keys = mappings[keycode];
@@ -2785,13 +2741,13 @@ class XpraClient {
             if (key == "Num_Lock") {
               this.num_lock_modifier = modifier;
             } else if (key == "Alt_L") {
-              this.alt_modifier = keycode_index;
+              this.alt_modifier = modifier;
             } else if (key == "Meta_L") {
-              this.meta_modifier = keycode_index;
+              this.meta_modifier = modifier;
             } else if (key == "ISO_Level3_Shift" || key == "Mode_switch") {
-              this.altgr_modifier = keycode_index;
+              this.altgr_modifier = modifier;
             } else if (key == "Control_L") {
-              this.control_modifier = keycode_index;
+              this.control_modifier = modifier;
             }
           }
         }
