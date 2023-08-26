@@ -1621,9 +1621,12 @@ class XpraClient {
       "encoding.mpeg4+mp4.score-delta": 40,
       "encoding.vp8+webm.score-delta": 40,
 
-      "sound.receive": true,
-      "sound.send": false,
-      "sound.decoders": Object.keys(this.audio_codecs),
+	  "audio" : {
+		  "receive" : true,
+		  "send" : true,
+		  "decoders" : Object.keys(this.audio_codecs),
+	  },
+	  "wants" : ["audio", ],
       // encoding stuff
       windows: true,
       "window.pre-map": true,
