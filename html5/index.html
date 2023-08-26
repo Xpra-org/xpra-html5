@@ -1322,7 +1322,12 @@
           client.audio_state = newstate;
           let tooltip;
           let data_icon;
-          if (newstate == "playing") {
+          const sound_button_element = $("#sound_button");
+          if (newstate == "disabled") {
+              data_icon = "volume_up";
+              tooltip = "audio is not available";
+              sound_button_element.css("color", "#777");
+          } else if (newstate == "playing") {
             data_icon = "volume_up";
             tooltip = "audio playing,\nclick to stop";
           } else if (newstate == "waiting") {
@@ -1333,28 +1338,26 @@
             tooltip = "audio off,\nclick to start";
           }
           clog("audio-state:", newstate);
-          const sound_button_element = $("#sound_button");
           sound_button_element.attr("data-icon", data_icon);
           sound_button_element.attr("title", tooltip);
         };
-        if (client.audio_enabled) {
-          $("#sound_button").click(function () {
-            clog("speaker icon clicked, audio_enabled=", client.audio_enabled);
-            if (
-              client.audio_state == "playing" ||
-              client.audio_state == "waiting"
-            ) {
-              client.on_audio_state_change("stopped", "user action");
-              client.close_audio();
-            } else {
-              client.on_audio_state_change("waiting", "user action");
-              client._audio_start_stream();
-              client._sound_start_receiving();
-            }
-          });
-        } else {
-          $("#sound_button").hide();
-        }
+        $("#sound_button").click(function () {
+          clog("speaker icon clicked, audio_enabled=", client.audio_enabled);
+          if (!client.audio_enabled) {
+              client.audio_state == "disabled";
+          }
+          else if (
+            client.audio_state == "playing" ||
+            client.audio_state == "waiting"
+          ) {
+            client.on_audio_state_change("stopped", "user action");
+            client.close_audio();
+          } else {
+            client.on_audio_state_change("waiting", "user action");
+            client._audio_start_stream();
+            client._sound_start_receiving();
+          }
+        });
       }
 
       function toggle_fullscreen() {

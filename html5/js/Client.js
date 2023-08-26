@@ -2698,51 +2698,7 @@ class XpraClient {
       }
     }
     // stuff that must be done after hello
-    if (this.audio_enabled) {
-      if (!hello["sound.send"]) {
-        this.warn("server does not support speaker forwarding");
-        this.audio_enabled = false;
-      } else {
-        this.server_audio_codecs = hello["sound.encoders"];
-        if (!this.server_audio_codecs) {
-          this.error("audio codecs missing on the server");
-          this.audio_enabled = false;
-        } else {
-          this.log(
-            "audio codecs supported by the server:",
-            this.server_audio_codecs
-          );
-          if (!this.server_audio_codecs.includes(this.audio_codec)) {
-            this.warn(
-              `audio codec ${this.audio_codec} is not supported by the server`
-            );
-            this.audio_codec = null;
-            //find the best one we can use:
-            for (let codec of MediaSourceConstants.PREFERRED_CODEC_ORDER) {
-              if (
-                codec in this.audio_codecs &&
-                this.server_audio_codecs.includes(codec)
-              ) {
-                this.audio_framework = this.mediasource_codecs[codec]
-                  ? "mediasource"
-                  : "aurora";
-                this.audio_codec = codec;
-                this.log("using", this.audio_framework, "audio codec", codec);
-                break;
-              }
-            }
-            if (!this.audio_codec) {
-              this.warn("audio codec: no matches found");
-              this.audio_enabled = false;
-            }
-          }
-        }
-        //with Firefox, we have to wait for a user event..
-        if (this.audio_enabled && !Utilities.isFirefox()) {
-          this._sound_start_receiving();
-        }
-      }
-    }
+    this._process_audio_caps(hello["audio"] || {});
     if (SHOW_START_MENU) {
       this.xdg_menu = hello["xdg-menu"];
       if (this.xdg_menu) {
@@ -2811,6 +2767,87 @@ class XpraClient {
     this.on_connection_progress("Session started", "", 100);
     this.on_connect();
     this.connected = true;
+  }
+
+  _process_modifier_keycodes() {
+    // find the modifier to use for Num_Lock
+    const modifier_keycodes = hello["modifier_keycodes"];
+    if (!modifier_keycodes) {
+      return;
+    }
+    for (const modifier in modifier_keycodes) {
+      if (Object.hasOwn((modifier_keycodes, modifier))) {
+        const mappings = modifier_keycodes[modifier];
+        for (const keycode in mappings) {
+          const keys = mappings[keycode];
+          for (const index in keys) {
+            const key = keys[index];
+            if (key == "Num_Lock") {
+              this.num_lock_modifier = modifier;
+            } else if (key == "Alt_L") {
+              this.alt_modifier = keycode_index;
+            } else if (key == "Meta_L") {
+              this.meta_modifier = keycode_index;
+            } else if (key == "ISO_Level3_Shift" || key == "Mode_switch") {
+              this.altgr_modifier = keycode_index;
+            } else if (key == "Control_L") {
+              this.control_modifier = keycode_index;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  _process_audio_caps(audio_caps) {
+    if (!this.audio_enabled) {
+      this.on_audio_state_change("disabled", "");
+      return;
+    }
+    if (!audio_caps["send"]) {
+      this.audio_enabled = false;
+      this.on_audio_state_change("disabled", "server does not support speaker forwarding");
+      return;
+    }
+    this.server_audio_codecs = audio_caps["encoders"];
+    if (!this.server_audio_codecs) {
+      this.audio_enabled = false;
+       this.on_audio_state_change("disabled", "audio codecs missing on the server");
+      return;
+    }
+    this.log(
+      "audio codecs supported by the server:",
+      this.server_audio_codecs
+    );
+    if (!this.server_audio_codecs.includes(this.audio_codec)) {
+      this.warn(
+        `audio codec ${this.audio_codec} is not supported by the server`
+      );
+      this.audio_codec = null;
+      //find the best codec we can use:
+      for (let codec of MediaSourceConstants.PREFERRED_CODEC_ORDER) {
+        if (
+          codec in this.audio_codecs &&
+          this.server_audio_codecs.includes(codec)
+        ) {
+          this.audio_framework = this.mediasource_codecs[codec]
+            ? "mediasource"
+            : "aurora";
+          this.audio_codec = codec;
+          this.log("using", this.audio_framework, "audio codec", codec);
+          break;
+        }
+      }
+      if (!this.audio_codec) {
+        this.audio_enabled = false;
+        this.on_audio_state_change("disabled", "no matching audio codec");
+        return;
+      }
+    }
+    //with Firefox, we have to wait for a user event..
+    if (this.audio_enabled && !Utilities.isFirefox()) {
+      this._sound_start_receiving();
+    }
   }
 
   _process_encodings(packet) {
