@@ -1,7 +1,17 @@
 xpra-html5 (9.0-r1452-1) UNRELEASED; urgency=low
-  * TODO
+  * support only xpra v5
+  * windows that shouldn't be collapsible can be collapsed but not restored back
+  * Unicode clipboard transfers
+  * fix keyboard modifiers mapping
+  * allow spaces in passwords
+  * safari doesn't draw the window
+  * enable offscreen rendering with Firefox and Safari
+  * require less CPU but more bandwidth
+  * use relative path for icons
+  * more robust value parsing
+  * dependencies cleanup
 
- -- Antoine Martin antoine@xpra.org  Sat, 06 May 2023 19:26:50 +0700 +700
+ -- Antoine Martin antoine@xpra.org  Sun, 27 Aug 2023 21:59:32 +0700 +700
 
 xpra-html5 (8.0-r1425-1) UNRELEASED; urgency=low
   * disable scroll encoding with offscreen decode worker

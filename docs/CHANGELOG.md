@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.0] 2023-08-27
+- [support only xpra v5](https://github.com/Xpra-org/xpra-html5/issues/262)
+- [windows that shouldn't be collapsible can be collapsed but not restored back](https://github.com/Xpra-org/xpra-html5/issues/240)
+- [Unicode clipboard transfers](https://github.com/Xpra-org/xpra-html5/pull/259)
+- [fix keyboard modifiers mapping](https://github.com/Xpra-org/xpra-html5/commit/46820f3cfac28fd1adb7e3f94fffb5f4823c3082)
+- [allow spaces in passwords](https://github.com/Xpra-org/xpra-html5/commit/cd0de67cbf9dbb13cf7dfbf2a23945c1c4ea6b10)
+- [safari doesn't draw the window](https://github.com/Xpra-org/xpra-html5/issues/227)
+- [enable offscreen rendering with Firefox and Safari](https://github.com/Xpra-org/xpra-html5/commit/89a60618183ee36b2e79acf3f4eabcf0463bdbd2)
+- [require less CPU but more bandwidth](https://github.com/Xpra-org/xpra-html5/commit/f133a43c35f797e7a5601ee3e3c348d6de6ee146)
+- [use relative path for icons](https://github.com/Xpra-org/xpra-html5/commit/da3f0d41a35e557ea54436081a95499cc1249996)
+- [more robust value parsing](https://github.com/Xpra-org/xpra-html5/commit/a67f9257535d68a1b5ed415b6e1965e04b4fdbcc)
+- [dependencies cleanup](https://github.com/Xpra-org/xpra-html5/pull/257)
+
+
 ## [8.0] 2023-05-06
 - [disable scroll encoding with offscreen decode worker](https://github.com/Xpra-org/xpra-html5/commit/e73861dc4750162c1905ae6bf773c74b9c63646d)
 - [screenshots cannot be used with the offscreen api](https://github.com/Xpra-org/xpra-html5/commit/231589217059dcdc7c06010d1c058305a8c7c2c2)

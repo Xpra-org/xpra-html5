@@ -77,8 +77,18 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
-* Sat May 06 2023 Antoine Martin <antoine@xpra.org> 9.0-1452-1
-- TODO
+* Sun Aug 27 2023 Antoine Martin <antoine@xpra.org> 9.0-1452-1
+- support only xpra v5
+- windows that shouldn't be collapsible can be collapsed but not restored back
+- Unicode clipboard transfers
+- fix keyboard modifiers mapping
+- allow spaces in passwords
+- safari doesn't draw the window
+- enable offscreen rendering with Firefox and Safari
+- require less CPU but more bandwidth
+- use relative path for icons
+- more robust value parsing
+- dependencies cleanup
 
 * Sat May 06 2023 Antoine Martin <antoine@xpra.org> 8.0-1425-1
 - disable scroll encoding with offscreen decode worker
