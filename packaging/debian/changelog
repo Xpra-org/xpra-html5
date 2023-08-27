@@ -1,4 +1,4 @@
-xpra-html5 (9.0-r1452-1) UNRELEASED; urgency=low
+xpra-html5 (9.0-r1479-1) UNRELEASED; urgency=low
   * support only xpra v5
   * windows that shouldn't be collapsible can be collapsed but not restored back
   * Unicode clipboard transfers

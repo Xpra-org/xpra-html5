@@ -4,7 +4,7 @@
 # later version. See the file COPYING for details.
 
 %define version 9.0
-%define release 1.r1452%{?dist}
+%define release 1.r1479%{?dist}
 %define minifier uglifyjs
 %define python python3
 
@@ -77,7 +77,7 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
-* Sun Aug 27 2023 Antoine Martin <antoine@xpra.org> 9.0-1452-1
+* Sun Aug 27 2023 Antoine Martin <antoine@xpra.org> 9.0-1479-1
 - support only xpra v5
 - windows that shouldn't be collapsible can be collapsed but not restored back
 - Unicode clipboard transfers
