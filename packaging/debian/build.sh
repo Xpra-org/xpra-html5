@@ -19,5 +19,5 @@ mk-build-deps --install --tool='apt-get -o Debug::pkgProblemResolver=yes --no-in
 rm -f xpra-html5-build-deps*
 
 python3 ./setup.py deb
-mv ./dist/xpra-html5-*.deb $REPO_ARCH_PATH
+cp ./dist/xpra-html5-*.deb $REPO_ARCH_PATH
 popd
