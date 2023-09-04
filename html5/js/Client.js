@@ -1461,6 +1461,7 @@ class XpraClient {
       "ping-echo-sourceid": true,
       vrefresh: this.vrefresh,
       "file-chunks": FILE_CHUNKS_SIZE,
+      "xdg-menu-update" : true,
     });
     if (this.bandwidth_limit > 0) {
       this._update_capabilities({
