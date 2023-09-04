@@ -1,3 +1,8 @@
+xpra-html5 (10-r1482-1) UNRELEASED; urgency=low
+  * TODO
+
+ -- Antoine Martin antoine@xpra.org  Mon, 04 Sep 2023 20:44:45 +0700 +700
+
 xpra-html5 (9.0-r1479-1) UNRELEASED; urgency=low
   * support only xpra v5
   * windows that shouldn't be collapsible can be collapsed but not restored back
