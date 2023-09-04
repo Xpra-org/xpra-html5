@@ -3,8 +3,8 @@
 # Xpra is released under the terms of the GNU GPL v2, or, at your option, any
 # later version. See the file COPYING for details.
 
-%define version 9.0
-%define release 1.r1479%{?dist}
+%define version 9.1
+%define release 1.r3%{?dist}
 %define minifier uglifyjs
 %define python python3
 
@@ -77,6 +77,10 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Mon Sep 04 2023 Antoine Martin <antoine@xpra.org> 9.1-3-1
+- remove beta tag
+- missing start menu with v5 servers
+
 * Sun Aug 27 2023 Antoine Martin <antoine@xpra.org> 9.0-1479-1
 - support only xpra v5
 - windows that shouldn't be collapsible can be collapsed but not restored back

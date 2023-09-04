@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [9.1]
+- [remove beta tag](https://github.com/Xpra-org/xpra-html5/commit/04ea66febc749e07fd7998af1af5127d66213061)
+- [missing start menu with v5 servers](https://github.com/Xpra-org/xpra-html5/commit/61cf239eb48c2cc346f915355a4fe7892196b26a)
+
 ## [9.0] 2023-08-27
 - [support only xpra v5](https://github.com/Xpra-org/xpra-html5/issues/262)
 - [windows that shouldn't be collapsible can be collapsed but not restored back](https://github.com/Xpra-org/xpra-html5/issues/240)
