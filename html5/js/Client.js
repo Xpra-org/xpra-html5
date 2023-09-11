@@ -8,9 +8,9 @@
  * xpra client
  *
  * requires:
- *	Protocol.js
- *	Window.js
- *	Keycodes.js
+ *    Protocol.js
+ *    Window.js
+ *    Keycodes.js
  */
 
 const XPRA_CLIENT_FORCE_NO_WORKER = false;
@@ -29,6 +29,15 @@ const UTF8_STRING = "UTF8_STRING";
 const FLOAT_MENU_SELECTOR = "#float_menu";
 const PASTEBOARD_SELECTOR = "#pasteboard";
 const WINDOW_PREVIEW_SELECTOR = "#window_preview";
+
+const METADATA_SUPPORTED = [
+    "fullscreen", "maximized",
+    "iconic", "above", "below",
+    "title", "size-hints",
+    "class-instance", "transient-for", "window-type",
+    "has-alpha", "decorations", "override-redirect",
+    "tray", "modal", "opacity",
+]
 
 // This option adds the CSS class .gpu-trigger to the windows.
 // The article at https://www.urbaninsight.com/article/improving-html5-app-performance-gpu-accelerated-css-transitions
@@ -1498,16 +1507,16 @@ class XpraClient {
       }
       const mode = this.encryption.split("-")[1] || "CBC";
       this.cipher_in_caps = {
-        cipher: enc,
-        "cipher.mode": mode,
-        "cipher.iv": Utilities.getSecureRandomString(16),
-        "cipher.key_salt": Utilities.getSecureRandomString(32),
-        "cipher.key_size": 32, //256 bits
-        "cipher.key_hash": "SHA1",
-        "cipher.key_stretch_iterations": 1000,
-        "cipher.padding.options": ["PKCS#7"],
+        "cipher": enc,
+        "mode": mode,
+        "iv": Utilities.getSecureRandomString(16),
+        "key_salt": Utilities.getSecureRandomString(32),
+        "key_size": 32, //256 bits
+        "key_hash": "SHA1",
+        "key_stretch_iterations": 1000,
+        "padding.options": ["PKCS#7"],
       };
-      this._update_capabilities(this.cipher_in_caps);
+      this._update_capabilities({"encryption" : this.cipher_in_caps});
       this.protocol.set_cipher_in(this.cipher_in_caps, this.encryption_key);
     }
     if (this.start_new_session) {
@@ -1518,141 +1527,41 @@ class XpraClient {
   }
 
   _make_hello() {
-    let selections;
-    if (
-      navigator.clipboard &&
-      navigator.clipboard.readText &&
-      navigator.clipboard.writeText
-    ) {
-      //we don't need the primary contents,
-      //we can use the async clipboard
-      selections = ["CLIPBOARD"];
-      this.log("using new navigator.clipboard");
-    } else {
-      selections = ["CLIPBOARD", "PRIMARY"];
-      this.log("legacy clipboard");
-    }
     this.desktop_width = this.container.clientWidth;
     this.desktop_height = this.container.clientHeight;
     this.key_layout = this._get_keyboard_layout();
-    if (this.supported_encodings.indexOf("scroll") > 0) {
-      //support older servers which use a capability for enabling 'scroll' encoding:
-      this._update_capabilities({
-        "encoding.scrolling": true,
-        "encoding.scrolling.min-percent": 50,
-        "encoding.scrolling.preference": 20,
-      });
-    }
-
-    let video_max_size = [1024, 768];
-    if (this.offscreen_api) {
-      video_max_size = [4096, 4096];
-    }
 
     this._update_capabilities({
       auto_refresh_delay: 500,
-      "metadata.supported": [
-        "fullscreen",
-        "maximized",
-        "iconic",
-        "above",
-        "below",
-        "title",
-        "size-hints",
-        "class-instance",
-        "transient-for",
-        "window-type",
-        "has-alpha",
-        "decorations",
-        "override-redirect",
-        "tray",
-        "modal",
-        "opacity",
-      ],
-      encoding: this.encoding,
-      encodings: this.supported_encodings,
-      "encoding.icons.max_size": [30, 30],
-      "encodings.core": this.supported_encodings,
-      "encodings.rgb_formats": this.RGB_FORMATS,
-      "encodings.window-icon": ["png"],
-      "encodings.cursor": ["png"],
-      "encoding.transparency": true,
-      "encoding.decoder-speed": { video: 0 },
-      "encodings.packet": true,
-      //skipping some keys
-      //ie: "encoding.min-quality": 50,
-      "encoding.min-speed": 50,
-      //ie: "encoding.non-scroll": ["rgb32", "png", "jpeg"],
-      //video stuff:
-      "encoding.color-gamut": Utilities.getColorGamut(),
-      "encoding.video_scaling": true,
-      "encoding.video_max_size": video_max_size,
-      "encoding.full_csc_modes": {
-        mpeg1: ["YUV420P"],
-        h264: ["YUV420P"],
-        "mpeg4+mp4": ["YUV420P"],
-        "h264+mp4": ["YUV420P"],
-        "vp8+webm": ["YUV420P"],
-        webp: ["BGRX", "BGRA"],
-        jpeg: [
-          "BGRX",
-          "BGRA",
-          "BGR",
-          "RGBX",
-          "RGBA",
-          "RGB",
-          "YUV420P",
-          "YUV422P",
-          "YUV444P",
-        ],
-        vp8: ["YUV420P"],
+      "metadata.supported": METADATA_SUPPORTED,
+      "encodings": {
+        "" : this.supported_encodings,
+        "core": this.supported_encodings,
+        "rgb_formats": this.RGB_FORMATS,
+        "window-icon": ["png"],
+        "cursor": ["png"],
+        "packet": true,
       },
-      "encoding.h264.YUV420P.profile": "baseline",
-      "encoding.h264.YUV420P.level": "2.1",
-      "encoding.h264.cabac": false,
-      "encoding.h264.deblocking-filter": false,
-      "encoding.h264.fast-decode": true,
-      "encoding.h264+mp4.YUV420P.profile": "baseline",
-      "encoding.h264+mp4.YUV420P.level": "3.0",
-      //prefer unmuxed VPX
-      "encoding.vp8.score-delta": 70,
-      "encoding.h264.score-delta": 80,
-      "encoding.h264+mp4.score-delta": 50,
-      "encoding.h264+mp4.": 50,
-      "encoding.mpeg4+mp4.score-delta": 40,
-      "encoding.vp8+webm.score-delta": 40,
-
-	  "audio" : {
-		  "receive" : true,
-		  "send" : true,
-		  "decoders" : Object.keys(this.audio_codecs),
-	  },
-	  "wants" : ["audio", ],
+      "encoding": this._get_encoding_caps(),
+      "audio" : this._get_audio_caps(),
+      "clipboard": this._get_clipboard_caps(),
+      "keymap" : this._get_keymap_caps(),
+      "wants" : ["audio", ],
       // encoding stuff
       windows: true,
       "window.pre-map": true,
       //partial support:
       keyboard: true,
-      //older servers (v4.3 and older):
-      xkbmap_layout: this.key_layout,
-      xkbmap_keycodes: this._get_keycodes(),
-      //newer servers (v4.4 and later):
-      keymap: {
-        layout: this.key_layout,
-        keycodes: this._get_keycodes(),
-      },
       desktop_size: [this.desktop_width, this.desktop_height],
       desktop_mode_size: [this.desktop_width, this.desktop_height],
       screen_sizes: this._get_screen_sizes(),
-      dpi: this._get_DPI(),
-      //not handled yet, but we will:
-      clipboard: this.clipboard_enabled,
-      "clipboard.want_targets": true,
-      "clipboard.greedy": true,
-      "clipboard.selections": selections,
-      notifications: true,
-      "notifications.close": true,
-      "notifications.actions": true,
+      dpi: {
+        "x" : this._get_DPI(),
+        "y" : this._get_DPI(),
+      },
+      notifications: {
+        "enabled" : true,
+      },
       cursors: true,
       bell: true,
       system_tray: true,
@@ -1663,6 +1572,96 @@ class XpraClient {
       printing: this.printing,
       "file-size-limit": 4 * 1024,
     });
+  }
+
+  _get_audio_caps() {
+    return {
+      "receive" : true,
+      "send" : true,
+      "decoders" : Object.keys(this.audio_codecs),
+    }
+  }
+
+  _get_keymap_caps() {
+    return {
+      "layout": this.key_layout,
+      "keycodes": this._get_keycodes(),
+    }
+  }
+
+  _get_clipboard_caps() {
+    let selections;
+    if (navigator.clipboard && navigator.clipboard.readText && navigator.clipboard.writeText) {
+      //we don't need the primary contents,
+      //we can use the async clipboard
+      selections = ["CLIPBOARD"];
+      this.log("using new navigator.clipboard");
+    } else {
+      selections = ["CLIPBOARD", "PRIMARY"];
+      this.log("legacy clipboard");
+    }
+    return {
+      "enabled" : this.clipboard_enabled,
+      "want_targets" : true,
+      "greedy" : true,
+      "selections": selections,
+    }
+  }
+
+  _get_encoding_caps() {
+    let video_max_size = [1024, 768];
+    if (this.offscreen_api) {
+      video_max_size = [4096, 4096];
+    }
+    return {
+      "": this.encoding,
+      "icons" : {
+        "max_size": [30, 30],
+      },
+      "transparency": true,
+      "decoder-speed": { "video": 0 },
+      "min-speed": 50,
+      "color-gamut": Utilities.getColorGamut(),
+      "video_scaling": true,
+      "video_max_size": video_max_size,
+      "full_csc_modes": {
+        "mpeg1": ["YUV420P"],
+        "h264": ["YUV420P"],
+        "mpeg4+mp4": ["YUV420P"],
+        "h264+mp4": ["YUV420P"],
+        "vp8+webm": ["YUV420P"],
+        "webp": ["BGRX", "BGRA"],
+        "jpeg": ["BGRX", "BGRA", "BGR", "RGBX", "RGBA", "RGB", "YUV420P", "YUV422P", "YUV444P"],
+        "vp8": ["YUV420P"],
+      },
+      "h264": {
+        "score-delta": 80,
+        "YUV420P": {
+          "profile": "baseline",
+          "level": "2.1",
+          "cabac": false,
+          "deblocking-filter": false,
+          "fast-decode": true,
+        },
+      },
+      "h264+mp4": {
+        "score-delta": 50,
+        "YUV420P": {
+          "profile": "baseline",
+          "level": "3.0",
+        },
+      },
+      //prefer unmuxed VPX
+      "vp8": {
+        "score-delta": 70,
+      },
+      "mpeg4+mp4": {
+        "score-delta": 40,
+      },
+      "vp8+webm": {
+        "score-delta": 40,
+      },
+    }
   }
 
   on_first_ui_event() {
