@@ -1421,101 +1421,27 @@ class XpraClient {
 
   _make_hello_base() {
     this.capabilities = {};
-    const digests = ["hmac", "hmac+md5", "xor", "keycloak"];
-    if (typeof forge !== "undefined") {
-      try {
-        this.debug("network", "forge.md.algorithms=", forge.md.algorithms);
-        for (const hash in forge.md.algorithms) {
-          digests.push(`hmac+${hash}`);
-        }
-        this.debug("network", "digests:", digests);
-      } catch {
-        this.cerror("Error probing forge crypto digests");
-      }
-    } else {
-      this.clog("cryptography library 'forge' not found");
-    }
     this._update_capabilities({
-      // version and platform
-      version: Utilities.VERSION,
-      "build.revision": Utilities.REVISION,
-      "build.local_modifications": Utilities.LOCAL_MODIFICATIONS,
-      "build.branch": Utilities.BRANCH,
-      platform: Utilities.getPlatformName(),
-      "platform.name": Utilities.getPlatformName(),
-      "platform.processor": Utilities.getPlatformProcessor(),
-      "platform.platform": navigator.appVersion,
+      "version": Utilities.VERSION,
+      "client_type": "HTML5",
+      "display": this.server_display || "",
+      "build": this._get_build_caps(),
+      "platform": this._get_platform_caps(),
       "session-type": Utilities.getSimpleUserAgentString(),
       "session-type.full": navigator.userAgent,
-      namespace: true,
-      "clipboard.contents-slice-fix": true,
-      share: this.sharing,
-      steal: this.steal,
-      client_type: "HTML5",
-      "websocket.multi-packet": true,
-      "setting-change": true,
-      username: this.username,
-      display: this.server_display || "",
-      uuid: this.uuid,
-      argv: [window.location.href],
-      digest: digests,
-      "salt-digest": digests,
-      //compression bits:
-      compression_level: 1,
-      "mouse.show": true,
-      // packet encoders
-      rencodeplus: true,
-      yaml: false,
+      "username": this.username,
+      "uuid": this.uuid,
+      "argv": [window.location.href],
       "open-url": this.open_url,
-      "ping-echo-sourceid": true,
-      vrefresh: this.vrefresh,
+      "share": this.sharing,
+      "steal": this.steal,
+      "mouse.show": true,
+      "vrefresh": this.vrefresh,
       "file-chunks": FILE_CHUNKS_SIZE,
-      "xdg-menu-update" : true,
     });
-    if (this.bandwidth_limit > 0) {
-      this._update_capabilities({
-        "bandwidth-limit": this.bandwidth_limit,
-      });
-    }
-    const ci = Utilities.getConnectionInfo();
-    if (ci) {
-      this._update_capabilities({
-        "connection-data": ci,
-      });
-    }
-    if (lz4.decode) {
-      this._update_capabilities({
-        lz4: true,
-        "encoding.rgb_lz4": true,
-      });
-    }
-
-    if (typeof BrotliDecode != "undefined" && !Utilities.isIE()) {
-      this._update_capabilities({
-        brotli: true,
-      });
-    }
-
-    this._update_capabilities({
-      "clipboard.preferred-targets": this.clipboard_targets,
-    });
-
+    this._update_capabilities(this._get_network_caps())
     if (this.encryption) {
-      const enc = this.encryption.split("-")[0];
-      if (enc != "AES") {
-        throw `invalid encryption specified: '${enc}'`;
-      }
-      const mode = this.encryption.split("-")[1] || "CBC";
-      this.cipher_in_caps = {
-        "cipher": enc,
-        "mode": mode,
-        "iv": Utilities.getSecureRandomString(16),
-        "key_salt": Utilities.getSecureRandomString(32),
-        "key_size": 32, //256 bits
-        "key_hash": "SHA1",
-        "key_stretch_iterations": 1000,
-        "padding.options": ["PKCS#7"],
-      };
+      this.cipher_in_caps = this._get_cipher_caps()
       this._update_capabilities({"encryption" : this.cipher_in_caps});
       this.protocol.set_cipher_in(this.cipher_in_caps, this.encryption_key);
     }
@@ -1574,6 +1500,74 @@ class XpraClient {
     });
   }
 
+  _get_network_caps() {
+    const digests = this._get_digests();
+    return {
+      "digest": digests,
+      "salt-digest": digests,
+      "compression_level": 1,
+      "rencodeplus": true,
+      "brotli": (typeof BrotliDecode != "undefined"),
+      "lz4": (lz4 && lz4.decode != "undefined"),
+      "bandwidth-limit": this.bandwidth_limit,
+      "connection-data": Utilities.getConnectionInfo(),
+    }
+  }
+
+  _get_digests() {
+    const digests = ["hmac", "hmac+md5", "xor", "keycloak"];
+    if (typeof forge !== "undefined") {
+      try {
+        this.debug("network", "forge.md.algorithms=", forge.md.algorithms);
+        for (const hash in forge.md.algorithms) {
+          digests.push(`hmac+${hash}`);
+        }
+        this.debug("network", "digests:", digests);
+      } catch {
+        this.cerror("Error probing forge crypto digests");
+      }
+    } else {
+      this.clog("cryptography library 'forge' not found");
+    }
+    return digests;
+  }
+
+  _get_cipher_caps() {
+    const enc = this.encryption.split("-")[0];
+    if (enc != "AES") {
+      throw `invalid encryption specified: '${enc}'`;
+    }
+    const mode = this.encryption.split("-")[1] || "CBC";
+    return {
+      "cipher": enc,
+      "mode": mode,
+      "iv": Utilities.getSecureRandomString(16),
+      "key_salt": Utilities.getSecureRandomString(32),
+      "key_size": 32, //256 bits
+      "key_hash": "SHA1",
+      "key_stretch_iterations": 1000,
+      "padding.options": ["PKCS#7"],
+    }
+  }
+
+
+  _get_build_caps() {
+    return {
+      "revision" : Utilities.REVISION,
+      "local_modifications": Utilities.LOCAL_MODIFICATIONS,
+      "branch": Utilities.BRANCH,
+    }
+  }
+
+  _get_platform_caps() {
+    return {
+      "" : Utilities.getPlatformName(),
+      "name": Utilities.getPlatformName(),
+      "processor": Utilities.getPlatformProcessor(),
+      "platform": navigator.appVersion,
+    }
+  }
+
   _get_audio_caps() {
     return {
       "receive" : true,
@@ -1605,6 +1599,7 @@ class XpraClient {
       "want_targets" : true,
       "greedy" : true,
       "selections": selections,
+      "preferred-targets": this.clipboard_targets,
     }
   }
 
@@ -1619,6 +1614,7 @@ class XpraClient {
         "max_size": [30, 30],
       },
       "transparency": true,
+      "rgb_lz4": (lz4 && lz4.decode != "undefined"),
       "decoder-speed": { "video": 0 },
       "min-speed": 50,
       "color-gamut": Utilities.getColorGamut(),
