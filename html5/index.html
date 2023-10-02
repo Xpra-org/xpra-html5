@@ -933,7 +933,10 @@
           // the primary encoding
           client.set_encoding(encoding);
         }
-        for (const key of ["speed", "min-speed", "quality", "min-quality"]) {
+        for (const key of [
+            "scaling.control", "initial_quality", "initial_speed", "auto_refresh_delay",
+            "speed", "min-speed", "quality", "min-quality",
+            ]) {
           const v = getintparam(key, -1);
           if (v>=0) {
              client.set_encoding_option(key, v);
