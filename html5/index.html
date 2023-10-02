@@ -384,6 +384,10 @@
         let v = Utilities.getparam(prop);
         if (v == null && prop in default_settings) {
           v = default_settings[prop];
+          clog("using", prop, "=", v, " from default settings");
+        }
+        else if (v != null && v != "") {
+        	clog("using", prop, "=", v, " from parameters");
         }
         return v;
       };
