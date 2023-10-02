@@ -933,6 +933,12 @@
           // the primary encoding
           client.set_encoding(encoding);
         }
+        for (const key of ["speed", "min-speed", "quality", "min-quality"]) {
+          const v = getintparam(key, -1);
+          if (v>=0) {
+             client.set_encoding_option(key, v);
+          }
+        }
         client.offscreen_api = offscreen && client.offscreen_api;
 
         if (action && action != "connect") {

@@ -92,35 +92,6 @@ class XpraClient {
     this.open_url = true;
     this.steal = true;
     this.remote_logging = true;
-    this.encoding = "auto";
-    //basic set of encodings:
-    //(more may be added after checking via the DecodeWorker)
-    this.supported_encodings = [
-      "jpeg",
-      "png",
-      "png/P",
-      "png/L",
-      "rgb",
-      "rgb32",
-      "rgb24",
-      "scroll",
-      "void",
-    ];
-    //extra encodings we enable if validated via the decode worker:
-    //(we also validate jpeg and png as a sanity check)
-    this.check_encodings = [
-      "jpeg",
-      "png",
-      "png/P",
-      "png/L",
-      "rgb",
-      "rgb32",
-      "rgb24",
-      "scroll",
-      "webp",
-      "void",
-      "avif",
-    ];
     this.debug_categories = [];
     this.start_new_session = null;
     this.clipboard_enabled = false;
@@ -151,6 +122,93 @@ class XpraClient {
     this.uuid = Utilities.getHexUUID();
     this.offscreen_api = DECODE_WORKER && XpraOffscreenWorker.isAvailable();
     this.try_gpu = TRY_GPU_TRIGGER;
+
+    this.init_encodings();
+  }
+
+  init_encodings() {
+    this.encoding = "auto";
+    //basic set of encodings:
+    //(more may be added after checking via the DecodeWorker)
+    this.supported_encodings = [
+      "jpeg",
+      "png",
+      "png/P",
+      "png/L",
+      "rgb",
+      "rgb32",
+      "rgb24",
+      "scroll",
+      "void",
+    ];
+    //extra encodings we enable if validated via the decode worker:
+    //(we also validate jpeg and png as a sanity check)
+    this.check_encodings = [
+      "jpeg",
+      "png",
+      "png/P",
+      "png/L",
+      "rgb",
+      "rgb32",
+      "rgb24",
+      "scroll",
+      "webp",
+      "void",
+      "avif",
+    ];
+    let video_max_size = [1024, 768];
+    if (this.offscreen_api) {
+      video_max_size = [4096, 4096];
+    }
+    this.encoding_options = {
+      "": this.encoding,
+      "icons" : {
+        "max_size": [30, 30],
+      },
+      "transparency": true,
+      "rgb_lz4": (lz4 && lz4.decode != "undefined"),
+      "decoder-speed": { "video": 0 },
+      "color-gamut": Utilities.getColorGamut(),
+      "video_scaling": true,
+      "video_max_size": video_max_size,
+      "full_csc_modes": {
+        "mpeg1": ["YUV420P"],
+        "h264": ["YUV420P"],
+        "mpeg4+mp4": ["YUV420P"],
+        "h264+mp4": ["YUV420P"],
+        "vp8+webm": ["YUV420P"],
+        "webp": ["BGRX", "BGRA"],
+        "jpeg": ["BGRX", "BGRA", "BGR", "RGBX", "RGBA", "RGB", "YUV420P", "YUV422P", "YUV444P"],
+        "vp8": ["YUV420P"],
+      },
+      "h264": {
+        "score-delta": 80,
+        "YUV420P": {
+          "profile": "baseline",
+          "level": "2.1",
+          "cabac": false,
+          "deblocking-filter": false,
+          "fast-decode": true,
+        },
+      },
+      "h264+mp4": {
+        "score-delta": 50,
+        "YUV420P": {
+          "profile": "baseline",
+          "level": "3.0",
+        },
+      },
+      //prefer unmuxed VPX
+      "vp8": {
+        "score-delta": 70,
+      },
+      "mpeg4+mp4": {
+        "score-delta": 40,
+      },
+      "vp8+webm": {
+        "score-delta": 40,
+      },
+    };
   }
 
   init_state() {
@@ -679,6 +737,10 @@ class XpraClient {
     // add an encoding to our hello.encodings list
     this.clog("encoding:", encoding);
     this.encoding = encoding;
+  }
+  set_encoding_option(option, value) {
+    this.clog("encoding: ", option, "=", value);
+    this.encoding_options[option] = value;
   }
 
   _route_packet(packet) {
@@ -1604,60 +1666,7 @@ class XpraClient {
   }
 
   _get_encoding_caps() {
-    let video_max_size = [1024, 768];
-    if (this.offscreen_api) {
-      video_max_size = [4096, 4096];
-    }
-    return {
-      "": this.encoding,
-      "icons" : {
-        "max_size": [30, 30],
-      },
-      "transparency": true,
-      "rgb_lz4": (lz4 && lz4.decode != "undefined"),
-      "decoder-speed": { "video": 0 },
-      "min-speed": 50,
-      "color-gamut": Utilities.getColorGamut(),
-      "video_scaling": true,
-      "video_max_size": video_max_size,
-      "full_csc_modes": {
-        "mpeg1": ["YUV420P"],
-        "h264": ["YUV420P"],
-        "mpeg4+mp4": ["YUV420P"],
-        "h264+mp4": ["YUV420P"],
-        "vp8+webm": ["YUV420P"],
-        "webp": ["BGRX", "BGRA"],
-        "jpeg": ["BGRX", "BGRA", "BGR", "RGBX", "RGBA", "RGB", "YUV420P", "YUV422P", "YUV444P"],
-        "vp8": ["YUV420P"],
-      },
-      "h264": {
-        "score-delta": 80,
-        "YUV420P": {
-          "profile": "baseline",
-          "level": "2.1",
-          "cabac": false,
-          "deblocking-filter": false,
-          "fast-decode": true,
-        },
-      },
-      "h264+mp4": {
-        "score-delta": 50,
-        "YUV420P": {
-          "profile": "baseline",
-          "level": "3.0",
-        },
-      },
-      //prefer unmuxed VPX
-      "vp8": {
-        "score-delta": 70,
-      },
-      "mpeg4+mp4": {
-        "score-delta": 40,
-      },
-      "vp8+webm": {
-        "score-delta": 40,
-      },
-    }
+    return this.encoding_options;
   }
 
   on_first_ui_event() {
