@@ -393,27 +393,18 @@
       };
 
       const getboolparam = function (prop, default_value) {
-        let v = Utilities.getparam(prop);
-        if (v == null && prop in default_settings) {
-          v = default_settings[prop];
-        }
+        const v = getparam(prop);
         return Utilities.stristrue(v, default_value);
       };
       const getboolautoparam = function (prop, default_value) {
-        let v = Utilities.getparam(prop);
-        if (v == null && prop in default_settings) {
-          v = default_settings[prop];
-        }
+        const v = getparam(prop);
         if (v == "auto") {
           return "auto";
         }
         return Utilities.stristrue(v, default_value);
       };
       const getintparam = function (prop, default_value) {
-        let v = Utilities.getparam(prop);
-        if (v == null && prop in default_settings) {
-          v = default_settings[prop];
-        }
+        let v = getparam(prop);
         try {
           v = parseInt(v);
         } catch (e) {
@@ -425,10 +416,7 @@
         return v;
       };
       const getfloatparam = function (prop, default_value) {
-        let v = Utilities.getparam(prop);
-        if (v == null && prop in default_settings) {
-          v = default_settings[prop];
-        }
+        let v = getparam(prop);
         try {
           v = parseFloat(v);
         } catch (e) {
