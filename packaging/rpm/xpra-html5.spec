@@ -77,8 +77,11 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
-* Mon Sep 04 2023 Antoine Martin <antoine@xpra.org> 10-1482-1
-- TODO
+* Tue Oct 03 2023 Antoine Martin <antoine@xpra.org> 10-1482-1
+- move some encoding attributes to default settings, support more encoding attributes
+- simplify parameter parsing
+- structured capabilities and more readable
+- cosmetic: debug logging, whitespace
 
 * Sun Aug 27 2023 Antoine Martin <antoine@xpra.org> 9.0-1479-1
 - support only xpra v5

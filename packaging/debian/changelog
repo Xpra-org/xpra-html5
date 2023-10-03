@@ -1,5 +1,8 @@
 xpra-html5 (10-r1482-1) UNRELEASED; urgency=low
-  * TODO
+  * move some encoding attributes to default settings, support more encoding attributes
+  * simplify parameter parsing
+  * structured capabilities and more readable
+  * cosmetic: debug logging, whitespace
 
  -- Antoine Martin antoine@xpra.org  Mon, 04 Sep 2023 20:44:45 +0700 +700
 

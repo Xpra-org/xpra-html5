@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [10.0] 2023-10-03
+- [move some encoding attributes to default settings](https://github.com/Xpra-org/xpra-html5/commit/431276b92cdef468c28c07c4c645cf79c051fd9c), [support more encoding attributes](https://github.com/Xpra-org/xpra-html5/commit/a64a7da357232c15e06f3c2d3ee5c06de71f5378)
+- [simplify parameter parsing](https://github.com/Xpra-org/xpra-html5/commit/b370a42812e48958c26ac31f6cf5b6efb3c85770)
+- [structured capabilities](https://github.com/Xpra-org/xpra-html5/commit/a6a8f598bdb357d268800e8ab429d18ccf3c3855) and [more readable](https://github.com/Xpra-org/xpra-html5/commit/fd135129ea5541164b84cbd051a994b331498a18)
+- cosmetic: [debug logging](https://github.com/Xpra-org/xpra-html5/commit/4a6e0f1333508425b0acfbff23be608945ef7bb9), [whitespace](https://github.com/Xpra-org/xpra-html5/commit/a70464f3c347840025afb1feefad52965f1abd43)
+
 ## [9.0] 2023-08-27
 - [support only xpra v5](https://github.com/Xpra-org/xpra-html5/issues/262)
 - [windows that shouldn't be collapsible can be collapsed but not restored back](https://github.com/Xpra-org/xpra-html5/issues/240)
