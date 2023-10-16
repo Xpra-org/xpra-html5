@@ -2,7 +2,8 @@
 
 All notable changes to this project will be documented in this file.
 
-## [10.0] 2023-10-03
+## [10.0] 2023-10-16
+- update libraries: [jquery v3.7.1](https://github.com/Xpra-org/xpra-html5/commit/b7ca50be7b90de1657817f6685a0eb956fe99669), [jquery ui v1.13.2](https://github.com/Xpra-org/xpra-html5/commit/b503697e2420c070d2e6441e18e100e2586dade3)
 - [move some encoding attributes to default settings](https://github.com/Xpra-org/xpra-html5/commit/431276b92cdef468c28c07c4c645cf79c051fd9c), [support more encoding attributes](https://github.com/Xpra-org/xpra-html5/commit/a64a7da357232c15e06f3c2d3ee5c06de71f5378)
 - [simplify parameter parsing](https://github.com/Xpra-org/xpra-html5/commit/b370a42812e48958c26ac31f6cf5b6efb3c85770)
 - [structured capabilities](https://github.com/Xpra-org/xpra-html5/commit/a6a8f598bdb357d268800e8ab429d18ccf3c3855) and [more readable](https://github.com/Xpra-org/xpra-html5/commit/fd135129ea5541164b84cbd051a994b331498a18)

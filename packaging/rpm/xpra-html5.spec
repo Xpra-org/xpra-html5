@@ -77,7 +77,8 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
-* Tue Oct 03 2023 Antoine Martin <antoine@xpra.org> 10-1482-1
+* Mon Oct 16 2023 Antoine Martin <antoine@xpra.org> 10-1482-1
+- update libraries: jquery v3.7.1, jquery ui v1.13.2
 - move some encoding attributes to default settings, support more encoding attributes
 - simplify parameter parsing
 - structured capabilities and more readable
