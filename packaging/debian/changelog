@@ -1,8 +1,8 @@
-xpra-html5 (9.1-r3-1) UNRELEASED; urgency=low
+xpra-html5 (9.1-r0-1) UNRELEASED; urgency=low
   * remove beta tag
   * missing start menu with v5 servers
 
- -- Antoine Martin antoine@xpra.org  Mon, 04 Sep 2023 20:23:42 +0700 +700
+ -- Antoine Martin antoine@xpra.org  Mon, 16 Oct 2023 20:33:55 +0700 +700
 
 xpra-html5 (9.0-r1479-1) UNRELEASED; urgency=low
   * support only xpra v5

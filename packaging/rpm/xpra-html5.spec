@@ -4,7 +4,7 @@
 # later version. See the file COPYING for details.
 
 %define version 9.1
-%define release 1.r3%{?dist}
+%define release 1.r0%{?dist}
 %define minifier uglifyjs
 %define python python3
 
@@ -77,7 +77,7 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
-* Mon Sep 04 2023 Antoine Martin <antoine@xpra.org> 9.1-3-1
+* Mon Oct 16 2023 Antoine Martin <antoine@xpra.org> 9.1-0-1
 - remove beta tag
 - missing start menu with v5 servers
 
