@@ -1,3 +1,8 @@
+xpra-html5 (5.4-r2-1) UNRELEASED; urgency=low
+  * TODO
+
+ -- Antoine Martin antoine@xpra.org  Wed, 15 Nov 2023 22:03:37 +0700 +700
+
 xpra-html5 (5.3-r0-1) UNRELEASED; urgency=low
   * some windows can't be restored
   * fix relative path to eye-icon

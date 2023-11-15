@@ -3,8 +3,8 @@
 # Xpra is released under the terms of the GNU GPL v2, or, at your option, any
 # later version. See the file COPYING for details.
 
-%define version 5.3
-%define release 1.r2%{?dist}
+%define version 5.4
+%define release 0%{?dist}
 %define minifier uglifyjs
 %define python python3
 
@@ -77,6 +77,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Wed Nov 15 2023 Antoine Martin <antoine@xpra.org> 5.4-1
+- update jquery and jquery-ui libraries
+
 * Thu Jun 15 2023 Antoine Martin <antoine@xpra.org> 5.3-0-1
 - some windows can't be restored
 - fix relative path to eye-icon
