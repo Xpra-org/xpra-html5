@@ -156,7 +156,7 @@ def record_vcs_info():
             lines = fdata.splitlines()
             for i, line in enumerate(lines):
                 if line.startswith("%define release "):
-                    lines[i] = f"%define release 1.r{rev}%\{{?dist\}}"
+                    lines[i] = f"%define release 1.r{rev}%{{?dist}}"
                     break
             lines.append("")
             open("./packaging/rpm/xpra-html5.spec", "w", encoding="latin1").write("\n".join(lines))
