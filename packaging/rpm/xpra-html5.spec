@@ -3,8 +3,8 @@
 # Xpra is released under the terms of the GNU GPL v2, or, at your option, any
 # later version. See the file COPYING for details.
 
-%define version 10
-%define release 1.r1482%{?dist}
+%define version 11
+%define release 1.r1498%{?dist}
 %define minifier uglifyjs
 %define python python3
 
@@ -77,6 +77,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Mon Nov 27 2023 Antoine Martin <antoine@xpra.org> 11-1498-1
+- TODO
+
 * Mon Oct 16 2023 Antoine Martin <antoine@xpra.org> 10-1482-1
 - update libraries: jquery v3.7.1, jquery ui v1.13.2
 - move some encoding attributes to default settings, support more encoding attributes
