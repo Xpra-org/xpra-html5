@@ -224,6 +224,10 @@ const Utilities = {
     const ua = navigator.userAgent.toLowerCase();
     return ua.includes("safari") && !ua.includes("chrome");
   },
+  isWebkit() {
+    const ua = navigator.userAgent.toLowerCase();
+    return ua.includes("webkit");
+  },
   isEdge() {
     return navigator.userAgent.includes("Edge");
   },
