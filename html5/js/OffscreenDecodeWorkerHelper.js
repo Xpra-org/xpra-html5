@@ -34,13 +34,15 @@ const XpraOffscreenWorker = {
   },
 
   isAvailable() {
-    var isSafari = navigator.userAgent.toLowerCase().includes("safari");
-    if (isSafari && !this.isSafariVersionSupported()) {
+    if (Utilities.isSafari() && !this.isSafariVersionSupported()) {
       return false;
     }
 
-    var isFirefox = navigator.userAgent.toLowerCase().includes("firefox");
-    if (isFirefox && this.isFirefoxVersionSupported()) {
+    if (Utilities.isWebkit() && !Utilities.isChrome()) {
+      return false;
+    }
+
+    if (Utilities.isFirefox() && this.isFirefoxVersionSupported()) {
       return false;
     }
 
@@ -48,6 +50,7 @@ const XpraOffscreenWorker = {
       //we also need the direct constructor:
       try {
         new OffscreenCanvas(256, 256);
+        console.log("offscreen canvas is available with", navigator.userAgent);
         return true;
       } catch (error) {
         console.warn("unable to instantiate an offscreen canvas:", error);
