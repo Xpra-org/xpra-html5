@@ -2908,15 +2908,11 @@ class XpraClient {
   xdg_image(icon_data, icon_type) {
     const img = new Image();
     if (typeof icon_data !== "undefined") {
+      let image_type = "image/"+icon_type;
       if (icon_type == "svg") {
-        img.src = `data:image/svg+xml;base64,${Utilities.ArrayBufferToBase64(
-          icon_data
-        )}`;
-      } else if (icon_type == "png" || icon_type == "jpeg") {
-        img.src = `data:image/${icon_type};base64,${Utilities.ArrayBufferToBase64(
-          icon_data
-        )}`;
+        image_type = "image/svg+xml";
       }
+      img.src = `data:{image_type};base64,${Utilities.ArrayBufferToBase64(icon_data)}`;
     }
     img.className = "menu-content-left";
     img.height = 24;
