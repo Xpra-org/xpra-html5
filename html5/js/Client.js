@@ -2912,7 +2912,7 @@ class XpraClient {
       if (icon_type == "svg") {
         image_type = "image/svg+xml";
       }
-      img.src = `data:{image_type};base64,${Utilities.ArrayBufferToBase64(icon_data)}`;
+      img.src = "data:"+image_type+";base64,"+Utilities.ArrayBufferToBase64(icon_data);
     }
     img.className = "menu-content-left";
     img.height = 24;
