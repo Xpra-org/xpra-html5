@@ -6,6 +6,8 @@ All notable changes to this project will be documented in this file.
 - update libraries: [jquery v3.7.1](https://github.com/Xpra-org/xpra-html5/commit/b7ca50be7b90de1657817f6685a0eb956fe99669), [jquery ui v1.13.2](https://github.com/Xpra-org/xpra-html5/commit/b503697e2420c070d2e6441e18e100e2586dade3)
 - [disable offscreen rendering with more buggy webkit based browsers](https://github.com/Xpra-org/xpra-html5/commit/e2e71ff9102033293d2c078c3ba6c7a9880b9a70)
 - [missing svg icons in start menu](https://github.com/Xpra-org/xpra-html5/commit/a549489c86d2d5c05ae5a28c5519b8a40ff19948)
+- [don't show the clock menu entry until we have the time](https://github.com/Xpra-org/xpra-html5/commit/5012e3365856280268de1430915dc23f775a7c59)
+- [compatibility with newer servers for ping option](https://github.com/Xpra-org/xpra-html5/commit/3240fad3b758b08a40f33a6243dfb4aab2a12cf9)
 - [move some encoding attributes to default settings](https://github.com/Xpra-org/xpra-html5/commit/431276b92cdef468c28c07c4c645cf79c051fd9c), [support more encoding attributes](https://github.com/Xpra-org/xpra-html5/commit/a64a7da357232c15e06f3c2d3ee5c06de71f5378)
 - [simplify parameter parsing](https://github.com/Xpra-org/xpra-html5/commit/b370a42812e48958c26ac31f6cf5b6efb3c85770)
 - [structured capabilities](https://github.com/Xpra-org/xpra-html5/commit/a6a8f598bdb357d268800e8ab429d18ccf3c3855) and [more readable](https://github.com/Xpra-org/xpra-html5/commit/fd135129ea5541164b84cbd051a994b331498a18)

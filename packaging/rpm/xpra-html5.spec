@@ -81,6 +81,8 @@ rm -rf $RPM_BUILD_ROOT
 - update libraries: jquery v3.7.1, jquery ui v1.13.2
 - disable offscreen rendering with more buggy webkit based browsers
 - missing svg icons in start menu
+- don't show the clock menu entry until we have the time
+- compatibility with newer servers for ping option
 - move some encoding attributes to default settings, support more encoding attributes
 - simplify parameter parsing
 - structured capabilities and more readable
