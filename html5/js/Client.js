@@ -1501,7 +1501,7 @@ class XpraClient {
       "vrefresh": this.vrefresh,
       "file-chunks": FILE_CHUNKS_SIZE,
     });
-    this._update_capabilities(this._get_network_caps())
+    this._update_capabilities(this._get_network_caps());
     if (this.encryption) {
       this.cipher_in_caps = this._get_cipher_caps()
       this._update_capabilities({"encryption" : this.cipher_in_caps});
@@ -1573,6 +1573,9 @@ class XpraClient {
       "lz4": (lz4 && lz4.decode != "undefined"),
       "bandwidth-limit": this.bandwidth_limit,
       "connection-data": Utilities.getConnectionInfo(),
+      "network" : {
+        "pings" : 5,
+      }
     }
   }
 
