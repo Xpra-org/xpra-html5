@@ -77,8 +77,10 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
-* Wed Nov 15 2023 Antoine Martin <antoine@xpra.org> 5.4-1
+* Tue Nov 28 2023 Antoine Martin <antoine@xpra.org> 5.4-1
 - update jquery and jquery-ui libraries
+- don't show the clock menu entry until we have the time
+- compatibility with newer servers for ping capability
 
 * Thu Jun 15 2023 Antoine Martin <antoine@xpra.org> 5.3-0-1
 - some windows can't be restored

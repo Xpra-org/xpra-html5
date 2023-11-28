@@ -1,7 +1,9 @@
-xpra-html5 (5.4-r2-1) UNRELEASED; urgency=low
-  * TODO
+xpra-html5 (5.4-r0-1) UNRELEASED; urgency=low
+  * update jquery and jquery-ui libraries
+  * don't show the clock menu entry until we have the time
+  * compatibility with newer servers for ping capability
 
- -- Antoine Martin antoine@xpra.org  Wed, 15 Nov 2023 22:03:37 +0700 +700
+ -- Antoine Martin antoine@xpra.org  Tue, 28 Nov 2023 13:00:01 +0700 +700
 
 xpra-html5 (5.3-r0-1) UNRELEASED; urgency=low
   * some windows can't be restored

@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.4] 2023-11-28
+* update libraries: jquery and jquery-ui
+* don't show the clock menu entry until we have the time
+* compatibility with newer servers for ping capability
+
 ## [5.3] 2023-06-15
 * some windows can't be restored
 * fix relative path to eye-icon
