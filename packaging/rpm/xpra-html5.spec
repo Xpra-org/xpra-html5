@@ -79,7 +79,7 @@ rm -rf $RPM_BUILD_ROOT
 %changelog
 * Tue Nov 28 2023 Antoine Martin <antoine@xpra.org> 10-1482-1
 - update libraries: jquery v3.7.1, jquery ui v1.13.2
-- disable offscreen rendering with more buggy webkit based browsers
+- disable offscreen rendering with more buggy webkit based browsers, Chrome without https
 - missing svg icons in start menu
 - don't show the clock menu entry until we have the time
 - compatibility with newer servers for ping option

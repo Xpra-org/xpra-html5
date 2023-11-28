@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [10.0] 2023-11-28
 - update libraries: [jquery v3.7.1](https://github.com/Xpra-org/xpra-html5/commit/b7ca50be7b90de1657817f6685a0eb956fe99669), [jquery ui v1.13.2](https://github.com/Xpra-org/xpra-html5/commit/b503697e2420c070d2e6441e18e100e2586dade3)
-- [disable offscreen rendering with more buggy webkit based browsers](https://github.com/Xpra-org/xpra-html5/commit/e2e71ff9102033293d2c078c3ba6c7a9880b9a70)
+- disable offscreen rendering with [more buggy webkit based browsers](https://github.com/Xpra-org/xpra-html5/commit/e2e71ff9102033293d2c078c3ba6c7a9880b9a70), [Chrome without https](https://github.com/Xpra-org/xpra-html5/commit/52742e3f78fee5c098778f68094f7c58e603f22a)
 - [missing svg icons in start menu](https://github.com/Xpra-org/xpra-html5/commit/a549489c86d2d5c05ae5a28c5519b8a40ff19948)
 - [don't show the clock menu entry until we have the time](https://github.com/Xpra-org/xpra-html5/commit/5012e3365856280268de1430915dc23f775a7c59)
 - [compatibility with newer servers for ping option](https://github.com/Xpra-org/xpra-html5/commit/3240fad3b758b08a40f33a6243dfb4aab2a12cf9)
