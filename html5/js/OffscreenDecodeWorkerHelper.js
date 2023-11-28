@@ -33,16 +33,24 @@ const XpraOffscreenWorker = {
     return false;
   },
 
-  isAvailable() {
+  isAvailable(ssl) {
     if (Utilities.isSafari() && !this.isSafariVersionSupported()) {
+      console.log("offscreen canvas is not supported with this version of Safari");
       return false;
     }
 
     if (Utilities.isWebkit() && !Utilities.isChrome()) {
+      console.log("offscreen canvas is not supported with this webkit browser");
       return false;
     }
 
     if (Utilities.isFirefox() && this.isFirefoxVersionSupported()) {
+      console.log("offscreen canvas is not supported with this version of Firefox");
+      return false;
+    }
+
+    if (Utilities.isChrome() && !ssl) {
+      console.log("offscreen canvas requires https with Chrome");
       return false;
     }
 
