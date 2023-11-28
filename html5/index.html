@@ -1262,8 +1262,8 @@
       }
 
       function init_clock(client, enabled) {
+        $("#clock_menu_entry").hide();
         if (!enabled) {
-          $("#clock_menu_entry").hide();
           return;
         }
         function update_clock() {
@@ -1297,6 +1297,7 @@
 
         function wait_for_time() {
           if (client.last_ping_local_time > 0) {
+            $("#clock_menu_entry").show();
             update_clock();
           } else {
             //check again soon:
