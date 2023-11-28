@@ -120,7 +120,7 @@ class XpraClient {
     this.PING_FREQUENCY = 5000;
     this.INFO_FREQUENCY = 1000;
     this.uuid = Utilities.getHexUUID();
-    this.offscreen_api = DECODE_WORKER && XpraOffscreenWorker.isAvailable();
+    this.offscreen_api = false;
     this.try_gpu = TRY_GPU_TRIGGER;
 
     this.init_encodings();
@@ -542,6 +542,7 @@ class XpraClient {
       this._do_connect(false);
       return;
     }
+    this.offscreen_api = DECODE_WORKER && XpraOffscreenWorker.isAvailable(this.ssl);
     this.clog("we have webworker support");
     // spawn worker that checks for a websocket
     const worker = new Worker("js/lib/wsworker_check.js");
