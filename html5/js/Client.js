@@ -1302,6 +1302,9 @@ XpraClient.prototype._make_hello_base = function() {
 		"open-url"					: this.open_url,
 		"ping-echo-sourceid"		: true,
 		"vrefresh"					: this.vrefresh,
+		"network" : {
+			"pings" : 5,
+		},
 	});
 	if (SHOW_START_MENU) {
 		this._update_capabilities({
