@@ -77,12 +77,14 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
-* Mon Oct 16 2023 Antoine Martin <antoine@xpra.org> 10-1482-1
+* Tue Nov 28 2023 Antoine Martin <antoine@xpra.org> 10-1482-1
 - update libraries: jquery v3.7.1, jquery ui v1.13.2
+- disable offscreen rendering with more buggy webkit based browsers
+- missing svg icons in start menu
 - move some encoding attributes to default settings, support more encoding attributes
 - simplify parameter parsing
 - structured capabilities and more readable
-- cosmetic: debug logging, whitespace
+- cosmetic: debug logging, whitespace, invalid escape sequence
 
 * Sun Aug 27 2023 Antoine Martin <antoine@xpra.org> 9.0-1479-1
 - support only xpra v5
