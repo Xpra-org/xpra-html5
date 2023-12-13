@@ -1,3 +1,8 @@
+xpra-html5 (10.1-r10-1) UNRELEASED; urgency=low
+  * missing start menu
+
+ -- Antoine Martin antoine@xpra.org  Wed, 13 Dec 2023 15:07:29 +0700 +700
+
 xpra-html5 (10-r1482-1) UNRELEASED; urgency=low
   * update libraries: jquery v3.7.1, jquery ui v1.13.2
   * disable offscreen rendering with more buggy webkit based browsers, Chrome

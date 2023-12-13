@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [10.1] 2023-12-13
+- [missing start menu](https://github.com/Xpra-org/xpra-html5/commit/1378ff914aab1b382fb2ddd6471d4d33200bbd07)
+
 ## [10.0] 2023-11-28
 - update libraries: [jquery v3.7.1](https://github.com/Xpra-org/xpra-html5/commit/b7ca50be7b90de1657817f6685a0eb956fe99669), [jquery ui v1.13.2](https://github.com/Xpra-org/xpra-html5/commit/b503697e2420c070d2e6441e18e100e2586dade3)
 - disable offscreen rendering with [more buggy webkit based browsers](https://github.com/Xpra-org/xpra-html5/commit/e2e71ff9102033293d2c078c3ba6c7a9880b9a70), [Chrome without https](https://github.com/Xpra-org/xpra-html5/commit/52742e3f78fee5c098778f68094f7c58e603f22a)
