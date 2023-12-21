@@ -124,6 +124,8 @@ class XpraWindow {
       jQuery(this.div).addClass(`window-${this.windowtype}`);
     }
 
+    const fullscreen = (metadata["fullscreen"]) ?? false;
+
     if (this.client.server_is_desktop || this.client.server_is_shadow) {
       jQuery(this.div).addClass("desktop");
       this.resizable = false;
@@ -131,12 +133,12 @@ class XpraWindow {
       jQuery(this.div).addClass("tray");
     } else if (this.override_redirect) {
       jQuery(this.div).addClass("override-redirect");
-    } else if (
+    } else if (!fullscreen && (
       this.windowtype == "" ||
       this.windowtype == "NORMAL" ||
       this.windowtype == "DIALOG" ||
       this.windowtype == "UTILITY"
-    ) {
+    )) {
       this.resizable = true;
     }
 

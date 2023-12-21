@@ -3325,7 +3325,7 @@ class XpraClient {
     }
     let client_properties = {};
     if (packet.length >= 8) client_properties = packet[7];
-    if (x == 0 && y == 0 && !metadata["set-initial-position"]) {
+    if (x == 0 && y == 0 && !metadata["set-initial-position"] && !metadata["fullscreen"]) {
       //find a good position for it
       const l = Object.keys(this.id_to_window).length;
       if (l == 0) {
