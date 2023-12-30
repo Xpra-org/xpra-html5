@@ -1501,6 +1501,7 @@ class XpraClient {
       "mouse.show": true,
       "vrefresh": this.vrefresh,
       "file-chunks": FILE_CHUNKS_SIZE,
+      "setting-change": true,  // Required by v5 servers
       "xdg-menu-update" : true,
     });
     this._update_capabilities(this._get_network_caps());
