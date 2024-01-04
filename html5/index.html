@@ -24,9 +24,9 @@
     <link rel="stylesheet" href="css/spinner.css" />
 
     <script>
-    if (!Object.hasOwn) {
+      if (!Object.hasOwn) {
         Object.hasOwn = Object.call.bind(Object.hasOwnProperty);
-    }
+      }
     </script>
     <script type="text/javascript" src="js/lib/jquery.js"></script>
     <script type="text/javascript" src="js/lib/jquery-ui.js"></script>
@@ -38,7 +38,6 @@
       type="text/javascript"
       src="js/lib/jquery-transform-draggable.js"
     ></script>
-
 
     <script type="text/javascript" src="js/lib/rencode.js"></script>
     <script type="text/javascript" src="js/lib/lz4.js"></script>
@@ -226,7 +225,12 @@
             </ul>
           </li>
           <li class="-hasSubmenu -noChevron">
-            <a href="#" title="Open Windows" data-icon="filter" id="open_windows"></a>
+            <a
+              href="#"
+              title="Open Windows"
+              data-icon="filter"
+              id="open_windows"
+            ></a>
             <ul id="open_windows_list"></ul>
           </li>
           <li class="-hasSubmenu -noChevron">
@@ -385,9 +389,8 @@
         if (v == null && prop in default_settings) {
           v = default_settings[prop];
           clog("using", prop, "=", v, " from default settings");
-        }
-        else if (v != null && v != "") {
-        	clog("using", prop, "=", v, " from parameters");
+        } else if (v != null && v != "") {
+          clog("using", prop, "=", v, " from parameters");
         }
         return v;
       };
@@ -766,7 +769,10 @@
         //Safari and navigator.clipboard don't mix well:
         //(only enabled with ssl contexts)
         //https://github.com/Xpra-org/xpra-html5/issues/226
-        const clipboard = getboolparam("clipboard", !(Utilities.isSafari() && ssl));
+        const clipboard = getboolparam(
+          "clipboard",
+          !(Utilities.isSafari() && ssl)
+        );
         const printing = getboolparam("printing", true);
         const file_transfer = getboolparam("file_transfer", true);
         const steal = getboolparam("steal", true);
@@ -934,12 +940,18 @@
           client.set_encoding(encoding);
         }
         for (const key of [
-            "scaling.control", "initial_quality", "initial_speed", "auto_refresh_delay",
-            "speed", "min-speed", "quality", "min-quality",
-            ]) {
+          "scaling.control",
+          "initial_quality",
+          "initial_speed",
+          "auto_refresh_delay",
+          "speed",
+          "min-speed",
+          "quality",
+          "min-quality",
+        ]) {
           const v = getintparam(key, -1);
-          if (v>=0) {
-             client.set_encoding_option(key, v);
+          if (v >= 0) {
+            client.set_encoding_option(key, v);
           }
         }
         client.offscreen_api = offscreen && client.offscreen_api;
@@ -1318,9 +1330,9 @@
           let data_icon;
           const sound_button_element = $("#sound_button");
           if (newstate == "disabled") {
-              data_icon = "volume_up";
-              tooltip = "audio is not available";
-              sound_button_element.css("color", "#777");
+            data_icon = "volume_up";
+            tooltip = "audio is not available";
+            sound_button_element.css("color", "#777");
           } else if (newstate == "playing") {
             data_icon = "volume_up";
             tooltip = "audio playing,\nclick to stop";
@@ -1338,9 +1350,8 @@
         $("#sound_button").click(function () {
           clog("speaker icon clicked, audio_enabled=", client.audio_enabled);
           if (!client.audio_enabled) {
-              client.audio_state == "disabled";
-          }
-          else if (
+            client.audio_state = "disabled";
+          } else if (
             client.audio_state == "playing" ||
             client.audio_state == "waiting"
           ) {
@@ -1596,10 +1607,9 @@
         // disable right click menu:
         window.oncontextmenu = function (e) {
           if (
-            client.clipboard_enabled && (
-              client.clipboard_direction === "to-client" ||
-              client.clipboard_direction === "both"
-            )
+            client.clipboard_enabled &&
+            (client.clipboard_direction === "to-client" ||
+              client.clipboard_direction === "both")
           ) {
             client._poll_clipboard(e);
           }
