@@ -70,6 +70,7 @@ class XpraVideoDecoder {
       codec: this.codec,
       hardwareAcceleration: "no-preference",
       optimizeForLatency: true,
+      colorSpace: new VideoColorSpace({fullRange: true})
     });
     this.last_timestamp = 0;
     this.initialized = true;
