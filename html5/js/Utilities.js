@@ -590,9 +590,7 @@ const Utilities = {
     }
     let value = getParameter(property);
     try {
-      if (value === undefined && typeof sessionStorage !== "undefined") {
-        value = sessionStorage.getItem(property);
-      }
+      value = Utilities.getSessionStorageValue(property);
     } catch {
       value = null;
     }
@@ -621,6 +619,34 @@ const Utilities = {
     } catch {
       return false;
     }
+  },
+
+  getSessionStorageValue(property) {
+    const params = JSON.parse(sessionStorage.getItem(Utilities.getSessionStoragePrefix()))
+    if (property in params) {
+      return String(params[property]);
+    }
+    return null;
+  },
+
+  setSessionStorageValue(property, value) {
+    const prefix = Utilities.getSessionStoragePrefix();
+    let params = JSON.parse(sessionStorage.getItem(prefix)) || {}
+    if (value === null || value === "undefined") {
+      delete params[property];
+    } else {
+      params[property] = String(value);
+    }
+    sessionStorage.setItem(prefix, JSON.stringify(params));
+  },
+
+  clearSessionStorage() {
+    sessionStorage.removeItem(Utilities.getSessionStoragePrefix());
+  },
+
+  getSessionStoragePrefix() {
+    const urlPath = new URL(window.location.href).pathname
+    return urlPath.substring(0, urlPath.lastIndexOf("/"));
   },
 
   getConnectionInfo() {
