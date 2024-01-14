@@ -617,12 +617,7 @@
 
       function add_prop(prop, value, first) {
         if (Utilities.hasSessionStorage()) {
-          //we're using sessionStorage, no need for URL
-          if (value === null || value === "undefined") {
-            sessionStorage.removeItem(prop);
-          } else {
-            sessionStorage.setItem(prop, value);
-          }
+          Utilities.setSessionStorageValue(prop, value);
           return "";
         }
         if (value === null || value === "undefined") {
@@ -1618,7 +1613,7 @@
         });
         //delete session params:
         try {
-          sessionStorage.clear();
+          Utilities.clearSessionStorage();
         } catch (e) {
           //ignore
         }
