@@ -24,6 +24,7 @@ Just install `xpra-html5` from there.
 
 To install from source:
 ```
+sudo apt install uglifyjs
 git clone https://github.com/Xpra-org/xpra-html5
 cd xpra-html5
 ./setup.py install
