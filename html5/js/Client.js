@@ -2159,7 +2159,7 @@ class XpraClient {
     navigator.clipboard.readText().then(
       (text) => {
         this.debug("clipboard", "paste event, text=", text);
-        const clipboard_buffer = encodeURIComponent(text);
+        const clipboard_buffer = unescape(encodeURIComponent(text));
         if (clipboard_buffer != this.clipboard_buffer) {
           this.debug("clipboard", "clipboard contents have changed");
           this.clipboard_buffer = clipboard_buffer;
