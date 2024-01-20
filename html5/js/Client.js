@@ -25,6 +25,7 @@ const CHUNK_TIMEOUT = 10 * 1000;
 
 const TEXT_PLAIN = "text/plain";
 const UTF8_STRING = "UTF8_STRING";
+const TEXT_HTML = "text/html";
 
 const FLOAT_MENU_SELECTOR = "#float_menu";
 const PASTEBOARD_SELECTOR = "#pasteboard";
@@ -272,7 +273,7 @@ class XpraClient {
     this.clipboard_buffer = "";
     this.clipboard_server_buffers = {};
     this.clipboard_pending = false;
-    this.clipboard_targets = [UTF8_STRING, "TEXT", "STRING", TEXT_PLAIN];
+    this.clipboard_targets = [TEXT_HTML, UTF8_STRING, "TEXT", "STRING", TEXT_PLAIN];
     if (
       CLIPBOARD_IMAGES &&
       navigator.clipboard &&
