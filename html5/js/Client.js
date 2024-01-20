@@ -1011,11 +1011,6 @@ class XpraClient {
   }
 
   _keyb_process(pressed, event) {
-    // MSIE hack
-    return this.do_keyb_process(pressed, event || window.event);
-  }
-
-  do_keyb_process(pressed, event) {
     if (this.server_readonly) {
       return true;
     }
@@ -1999,10 +1994,6 @@ class XpraClient {
   init_clipboard() {
     window.addEventListener("paste", (e) => {
       let clipboardData = (e.originalEvent || e).clipboardData;
-      //IE: must use window.clipboardData because the event clipboardData is null!
-      if (!clipboardData) {
-        clipboardData = window.clipboardData;
-      }
       if (
         clipboardData &&
         clipboardData.files &&
@@ -2095,7 +2086,6 @@ class XpraClient {
       ", buffer=",
       clipboard_buffer
     );
-    //for IE:
     let success = false;
     if (
       Object.hasOwn(window, "clipboardData") &&
@@ -2103,11 +2093,7 @@ class XpraClient {
       typeof window.clipboardData.setData === "function"
     ) {
       try {
-        if (Utilities.isIE()) {
-          window.clipboardData.setData("Text", clipboard_buffer);
-        } else {
-          window.clipboardData.setData(clipboard_datatype, clipboard_buffer);
-        }
+        window.clipboardData.setData(clipboard_datatype, clipboard_buffer);
         success = true;
       } catch {
         success = false;
@@ -2142,16 +2128,9 @@ class XpraClient {
     //fallback code for legacy mode:
     let datatype = TEXT_PLAIN;
     let clipboardData = (e.originalEvent || e).clipboardData;
-    //IE: must use window.clipboardData because the event clipboardData is null!
     if (!clipboardData) {
-      clipboardData = window.clipboardData;
-      if (!clipboardData) {
-        this.debug("clipboard", "polling: no data available");
-        return false;
-      }
-    }
-    if (Utilities.isIE()) {
-      datatype = "Text";
+      this.debug("clipboard", "polling: no data available");
+      return false;
     }
     const raw_clipboard_buffer = clipboardData.getData(datatype);
     if (raw_clipboard_buffer === null) {
@@ -4415,20 +4394,21 @@ class XpraClient {
     return this.clipboard_datatype;
   }
 
-  send_clipboard_token(data) {
+  send_clipboard_token(data, data_format) {
     if (!this.clipboard_enabled || !this.connected) {
       return;
     }
-    this.debug("clipboard", "sending clipboard token with data:", data);
     const claim = true; //Boolean(navigator.clipboard && navigator.clipboard.readText && navigator.clipboard.writeText);
     const greedy = true;
     const synchronous = true;
+    const actual_data_format = data_format || [UTF8_STRING, TEXT_PLAIN];
+    this.debug("clipboard", "sending clipboard token with data:", data, "as", actual_data_format);
     let packet;
     packet = data
       ? [
           "clipboard-token",
           "CLIPBOARD",
-          [UTF8_STRING, TEXT_PLAIN],
+          actual_data_format,
           UTF8_STRING,
           UTF8_STRING,
           8,

@@ -43,33 +43,6 @@
             devicePxPerCssPx: 1
         };
     };
-    /**
-     * IE 8 and 9: no trick needed!
-     * TODO: Test on IE10 and Windows 8 RT
-     * @return {Object}
-     * @private
-     **/
-    var ie8 = function () {
-        var zoom = Math.round((screen.deviceXDPI / screen.logicalXDPI) * 100) / 100;
-        return {
-            zoom: zoom,
-            devicePxPerCssPx: zoom * devicePixelRatio()
-        };
-    };
-
-    /**
-     * For IE10 we need to change our technique again...
-     * thanks https://github.com/stefanvanburen
-     * @return {Object}
-     * @private
-     */
-    var ie10 = function () {
-        var zoom = Math.round((document.documentElement.offsetHeight / window.innerHeight) * 100) / 100;
-        return {
-            zoom: zoom,
-            devicePxPerCssPx: zoom * devicePixelRatio()
-        };
-    };
 
 	/**
 	* For chrome
@@ -271,16 +244,8 @@
      */
     var detectFunction = (function () {
         var func = fallback;
-        //IE8+
-        if (!isNaN(screen.logicalXDPI) && !isNaN(screen.systemXDPI)) {
-            func = ie8;
-        }
-        // IE10+ / Touch
-        else if (window.navigator.msMaxTouchPoints) {
-            func = ie10;
-        }
 		//chrome
-		else if(!!window.chrome && !(!!window.opera || navigator.userAgent.indexOf(' Opera') >= 0)){
+		if(!!window.chrome && !(!!window.opera || navigator.userAgent.indexOf(' Opera') >= 0)){
 			func = chrome;
 		}
 		//safari

@@ -365,16 +365,7 @@ function rdecode_intl(dec) {
 function rdecode_intq(dec) {
 	const slice = dec.buf.slice(dec.pos+1, dec.pos+9)
 	const dv = new DataView(slice.buffer);
-	let s = 0;
-	if ("getBigInt64" in DataView.prototype) {
-		s = dv.getBigInt64(0);
-	}
-	else {
-		//oh, IE...
-		const left =  dv.getInt32(0);
-		const right = dv.getUint32(4);
-		s = 2**32*left + right;
-	}
+	const s = dv.getBigInt64(0);
 	dec.pos += 9;
 	if (!Number.isSafeInteger(s)) {
 		//console.warn("value is not a safe integer: ", s);

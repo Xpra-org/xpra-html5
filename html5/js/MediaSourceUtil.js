@@ -115,10 +115,6 @@ const MediaSourceUtil = {
   },
 
   getAuroraAudioCodecs() {
-    //IE is totally useless:
-    if (Utilities.isIE()) {
-      return {};
-    }
     const codecs_supported = new Map();
     const codecs_failed = new Map();
     if (AV && AV.Decoder && AV.Decoder.find) {
@@ -142,10 +138,6 @@ const MediaSourceUtil = {
     const media_source_class = MediaSourceUtil.getMediaSourceClass();
     if (!media_source_class) {
       Utilities.log("audio forwarding: no media source API support");
-      return [];
-    }
-    //IE is totally useless:
-    if (Utilities.isIE()) {
       return [];
     }
     const codecs_supported = [];
