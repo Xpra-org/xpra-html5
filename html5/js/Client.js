@@ -2008,22 +2008,34 @@ class XpraClient {
         e.preventDefault();
         return;
       }
+      let html = e.clipboardData.getData("text/html");
+      if (html) {
+        this.cdebug("clipboard", "paste event, html=", html);
+        this.clipboard_buffer = html;
+        const data = Utilities.StringToUint8(html);
+        this.send_clipboard_token(data, [TEXT_HTML]);
+        return;
+      }
       if (navigator.clipboard && navigator.clipboard.readText) {
         navigator.clipboard.readText().then(
           (text) => {
             this.cdebug("clipboard", "paste event, text=", text);
             this.clipboard_buffer = text;
             const data = Utilities.StringToUint8(text);
-            this.send_clipboard_token(data);
+            this.send_clipboard_token(data, [TEXT_PLAIN]);
           },
           (error) => this.cdebug("clipboard", "paste event failed:", error)
         );
       } else {
-        const text = clipboardData.getData(TEXT_PLAIN);
-        cdebug("clipboard", "paste event, text=", text);
+        let text = clipboardData.getData(TEXT_HTML);
+        let datatype = TEXT_HTML;
+        if (!text_html) {
+            text = clipboardData.getData(TEXT_PLAIN);
+            cdebug("clipboard", "paste event, text=", text);
+        }
         this.clipboard_buffer = text;
         const data = Utilities.StringToUint8(text);
-        this.send_clipboard_token(data);
+        this.send_clipboard_token(data, [datatype]);
       }
     });
     window.addEventListener("copy", (e) => {
@@ -2120,6 +2132,11 @@ class XpraClient {
       //we're still waiting to set the clipboard..
       return false;
     }
+    if (navigator.clipboard && navigator.clipboard.clipboardData) {
+      this.debug("clipboard", "polling using", navigator.clipboard.clipboardData);
+      this.read_clipboard_data();
+      return false;
+    }
     if (navigator.clipboard && navigator.clipboard.readText) {
       this.debug("clipboard", "polling using", navigator.clipboard.readText);
       this.read_clipboard_text();
@@ -2143,10 +2160,38 @@ class XpraClient {
     }
     this.debug("clipboard", "clipboard contents have changed");
     this.clipboard_buffer = clipboard_buffer;
-    this.send_clipboard_token(clipboard_buffer);
-    this.clipboard_delayed_event_time =
-      performance.now() + CLIPBOARD_EVENT_DELAY;
+    this.send_clipboard_token(clipboard_buffer, [datatype]);
+    this.clipboard_delayed_event_time = performance.now() + CLIPBOARD_EVENT_DELAY;
     return true;
+  }
+
+  read_clipboard_data() {
+    if (this.clipboard_enabled === false) {
+      return;
+    }
+    navigator.clipboard.clipboardData.read(TEXT_HTML).then(
+      (text) => {
+        this.debug("clipboard", "paste event, text/html=", text);
+        if (!text) {
+            // try with plain text:
+            read_clipboard_text();
+            return;
+        }
+        const clipboard_buffer = text;
+        if (clipboard_buffer != this.clipboard_buffer) {
+          this.debug("clipboard", "clipboard contents have changed");
+          this.clipboard_buffer = clipboard_buffer;
+          this.send_clipboard_token(clipboard_buffer, [TEXT_HTML]);
+          this.clipboard_delayed_event_time =
+            performance.now() + CLIPBOARD_EVENT_DELAY;
+        }
+        this.clipboard_pending = false;
+      },
+      (error) => {
+        this.debug("clipboard", "paste event failed:", error);
+        this.clipboard_pending = false;
+      }
+    );
   }
 
   read_clipboard_text() {
@@ -2163,7 +2208,7 @@ class XpraClient {
         if (clipboard_buffer != this.clipboard_buffer) {
           this.debug("clipboard", "clipboard contents have changed");
           this.clipboard_buffer = clipboard_buffer;
-          this.send_clipboard_token(clipboard_buffer);
+          this.send_clipboard_token(clipboard_buffer, [TEXT_PLAIN]);
           this.clipboard_delayed_event_time =
             performance.now() + CLIPBOARD_EVENT_DELAY;
         }
