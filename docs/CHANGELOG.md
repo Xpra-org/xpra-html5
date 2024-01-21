@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [11.0] 2024-01-21
+- [more consistent positioning of fullscreen windows](https://github.com/Xpra-org/xpra-html5/commit/be43532f1637b315466289154b387f48db7a9a0b)
+- [prefix the `sessionStorage` data with pathname](https://github.com/Xpra-org/xpra-html5/commit/b944a32f4b3a1394e092095e6ab57d575b764307)
+- [Safari does not support offscreen decoding](https://github.com/Xpra-org/xpra-html5/commit/32611a767bc1467b7e64246d25856538a1773fe7), [stop saying that it does](https://github.com/Xpra-org/xpra-html5/commit/0fefac217a6373f39e492b94f82242ed2da10652)
+- [Chrome now requires https to enable offscreen decoding](https://github.com/Xpra-org/xpra-html5/commit/52742e3f78fee5c098778f68094f7c58e603f22a)
+- [missing window icons](https://github.com/Xpra-org/xpra-html5/commit/931bdbae00d52e94fea444acdd3f120562f47895)
+- Clipboard: [`unescape` plain text clipboard data](https://github.com/Xpra-org/xpra-html5/commit/922c36723daea1476a1ec289312773bb24404017), [copy `text/html` to the server](https://github.com/Xpra-org/xpra-html5/commit/75652df303c3f3ebd3b10b3deb3f0972391a6be7) and [from the server](https://github.com/Xpra-org/xpra-html5/commit/75ee107b07c31e0ea95e19ad23d9379069442bef)
+- improve compatibility with server versions: [continue to enable pings](https://github.com/Xpra-org/xpra-html5/commit/a2c6626617406845a8ba618c67ce1a469c81fc7e), [dynamic menus](https://github.com/Xpra-org/xpra-html5/commit/f511841404a8acad14e53ebb30e1d5701666bb5b), [request start menu data](https://github.com/Xpra-org/xpra-html5/commit/3e031265a27b0ad0b2e6e727ed899e47f00b68c1)
+- [don't show the clock menu entry until we have the time](https://github.com/Xpra-org/xpra-html5/commit/7cde1e1d82ce372d128cc80eb2a21bf48b0894c2)
+- [audio state not updated](https://github.com/Xpra-org/xpra-html5/commit/be106513d006c902b6dd40350d510ad063a30e1d)
+- code cleanups: [simplify](https://github.com/Xpra-org/xpra-html5/commit/3caaee5581567c75be791f122364b30aa7629af7), [remove MSIE workarounds](https://github.com/Xpra-org/xpra-html5/commit/f4323d6dbead27d1d539309111992845e1cad1ae)
+- [detect minifier, default to 'copy' if not found](https://github.com/Xpra-org/xpra-html5/commit/b04f11622218f809f9a4055c93d56ba08257afbe)
+- [automatic release number generation string format](https://github.com/Xpra-org/xpra-html5/commit/6eabfae5c75befd385780fe8d9b6fc26b206bee1)
+
 ## [10.0] 2023-10-16
 - update libraries: [jquery v3.7.1](https://github.com/Xpra-org/xpra-html5/commit/b7ca50be7b90de1657817f6685a0eb956fe99669), [jquery ui v1.13.2](https://github.com/Xpra-org/xpra-html5/commit/b503697e2420c070d2e6441e18e100e2586dade3)
 - [move some encoding attributes to default settings](https://github.com/Xpra-org/xpra-html5/commit/431276b92cdef468c28c07c4c645cf79c051fd9c), [support more encoding attributes](https://github.com/Xpra-org/xpra-html5/commit/a64a7da357232c15e06f3c2d3ee5c06de71f5378)

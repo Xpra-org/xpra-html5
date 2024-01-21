@@ -4,7 +4,7 @@
 # later version. See the file COPYING for details.
 
 %define version 11
-%define release 1.r1498%{?dist}
+%define release 1.r1513%{?dist}
 %define minifier uglifyjs
 %define python python3
 
@@ -77,8 +77,19 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
-* Mon Nov 27 2023 Antoine Martin <antoine@xpra.org> 11-1498-1
-- TODO
+* Sun Jan 21 2023 Antoine Martin <antoine@xpra.org> 11-1498-1
+- more consistent positioning of fullscreen windows
+- prefix the `sessionStorage` data with pathname
+- Safari does not support offscreen decoding, stop saying that it does
+- Chrome now requires https to enable offscreen decoding
+- missing window icons
+- clipboard: `unescape` plain text clipboard data, copy `text/html` to the server and from the server
+- improve compatibility with server versions: continue to enable pings, dynamic menus, request start menu data
+- don't show the clock menu entry until we have the time
+- audio state not updated
+- code cleanups: simplify, remove MSIE workarounds
+- detect minifier, default to 'copy' if not found
+- automatic release number generation string format
 
 * Mon Oct 16 2023 Antoine Martin <antoine@xpra.org> 10-1482-1
 - update libraries: jquery v3.7.1, jquery ui v1.13.2
