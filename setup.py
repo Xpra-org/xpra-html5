@@ -524,6 +524,14 @@ def sdist():
     )
 
 
+def detect_minifier() -> str:
+    cmd = "yuicompressor" if sys.platform.startswith("win") else "uglifyjs"
+    from shutil import which
+    if not which(cmd):
+        return ""
+    return cmd
+
+
 def main(args):
     def help():
         cmd = args[0]
@@ -547,7 +555,7 @@ def main(args):
                 record_vcs_info()
             except Exception:
                 print("Warning: src_info is missing")
-        minifier = "yuicompressor" if sys.platform.startswith("win") else "uglifyjs"
+        minifier = detect_minifier()
         root_dir = ""
         install_dir = os.path.normpath(os.path.join(sys.prefix, "share/xpra/www"))
         # Platform-dependent configuration file location:
