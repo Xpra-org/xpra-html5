@@ -518,7 +518,10 @@ def make_rpm() -> None:
 
 def sdist() -> None:
     record_vcs_info()
-    from distutils.core import setup
+    try:
+        from setuptools import setup
+    except ImportError:
+        from distutils.core import setup
     setup(
         name="xpra-html5",
         version=VERSION,
