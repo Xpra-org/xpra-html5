@@ -20,6 +20,7 @@ Vendor:				https://xpra.org/
 Source:				xpra-html5-%{version}.tar.xz
 BuildArch:			noarch
 BuildRoot:			%{_tmppath}/%{name}-%{version}-root
+BuildRequires:		python3-setuptools
 Conflicts:			xpra < 2.1
 %if 0%{?el7}
 %define minifier ""

@@ -4,6 +4,7 @@ Source: xpra-html5
 Maintainer: Antoine Martin <antoine@xpra.org>
 Standards-Version: 3.9.3
 Build-Depends: python3
+              ,python3-setuptools
               ,uglifyjs
               ,brotli
               ,libjs-jquery
