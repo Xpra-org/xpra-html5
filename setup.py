@@ -23,7 +23,7 @@ AUTHOR_EMAIL = "antoine@xpra.org"
 CONFIGURATION_FILES = ("default-settings.txt", )
 
 
-def glob_recurse(srcdir: str) -> dict[str, list[str]]:
+def glob_recurse(srcdir: str):
     m = {}
     for root, _, files in os.walk(srcdir):
         for f in files:
@@ -54,7 +54,7 @@ def get_output_line(cmd: str) -> str:
     return out.splitlines()[0]
 
 
-def install_symlink(symlink_options: list[str], dst: AnyStr):
+def install_symlink(symlink_options, dst):
     for symlink_option in symlink_options:
         if symlink_option.find("*"):
             import glob
@@ -77,7 +77,7 @@ def install_symlink(symlink_options: list[str], dst: AnyStr):
     return False
 
 
-def get_vcs_info() -> dict[str, str]:
+def get_vcs_info():
     info = {}
     branch = None
     for cmd in (
@@ -167,7 +167,7 @@ def record_vcs_info() -> None:
             open("./packaging/rpm/xpra-html5.spec", "w", encoding="latin1").write("\n".join(lines))
 
 
-def load_vcs_info() -> dict:
+def load_vcs_info():
     info = {}
     if os.path.exists("./vcs-info"):
         with open("./vcs-info", 'r', encoding="latin1") as f:
@@ -446,7 +446,7 @@ def set_version(new_version: str) -> None:
     open("./packaging/rpm/xpra-html5.spec", "w").write("\n".join(lines))
 
 
-def file_sub(filename: str, replace: dict[str, str]):
+def file_sub(filename: str, replace):
     fdata = open(filename, "r").read()
     for old, new in replace.items():
         fdata = re.sub(old, new, fdata)
