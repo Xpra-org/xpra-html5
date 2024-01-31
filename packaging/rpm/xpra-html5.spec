@@ -4,7 +4,7 @@
 # later version. See the file COPYING for details.
 
 %define version 11
-%define release 1.r1513%{?dist}
+%define release 1.r1520%{?dist}
 %define minifier uglifyjs
 %define python python3
 
@@ -78,7 +78,7 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
-* Sun Jan 21 2024 Antoine Martin <antoine@xpra.org> 11-1498-1
+* Wed Jan 31 2024 Antoine Martin <antoine@xpra.org> 11-1498-1
 - more consistent positioning of fullscreen windows
 - prefix the `sessionStorage` data with pathname
 - Safari does not support offscreen decoding, stop saying that it does
@@ -89,6 +89,8 @@ rm -rf $RPM_BUILD_ROOT
 - don't show the clock menu entry until we have the time
 - audio state not updated
 - code cleanups: simplify, remove MSIE workarounds
+- build with newer python versions via setuptools and update the build dependencies
+- minor build file linter warnings
 - detect minifier, default to 'copy' if not found
 - automatic release number generation string format
 

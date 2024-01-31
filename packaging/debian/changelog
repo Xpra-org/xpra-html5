@@ -1,4 +1,4 @@
-xpra-html5 (11-r1513-1) UNRELEASED; urgency=low
+xpra-html5 (11-r1520-1) UNRELEASED; urgency=low
   * more consistent positioning of fullscreen windows
   * prefix the `sessionStorage` data with pathname
   * Safari does not support offscreen decoding, stop saying that it does
@@ -9,10 +9,12 @@ xpra-html5 (11-r1513-1) UNRELEASED; urgency=low
   * don't show the clock menu entry until we have the time
   * audio state not updated
   * code cleanups: simplify, remove MSIE workarounds
+  * build with newer python versions via setuptools and update the build dependencies
+  * minor build file linter warnings
   * detect minifier, default to 'copy' if not found
   * automatic release number generation string format
 
- -- Antoine Martin antoine@xpra.org  Sun, 21 Jan 2024 17:06:44 +0700 +700
+ -- Antoine Martin antoine@xpra.org  Wed, 31 Jan 2024 19:07:06 +0700 +700
 
 xpra-html5 (10-r1482-1) UNRELEASED; urgency=low
   * update libraries: jquery v3.7.1, jquery ui v1.13.2

@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [11.0] 2024-01-21
+## [11.0] 2024-01-31
 - [more consistent positioning of fullscreen windows](https://github.com/Xpra-org/xpra-html5/commit/be43532f1637b315466289154b387f48db7a9a0b)
 - [prefix the `sessionStorage` data with pathname](https://github.com/Xpra-org/xpra-html5/commit/b944a32f4b3a1394e092095e6ab57d575b764307)
 - [Safari does not support offscreen decoding](https://github.com/Xpra-org/xpra-html5/commit/32611a767bc1467b7e64246d25856538a1773fe7), [stop saying that it does](https://github.com/Xpra-org/xpra-html5/commit/0fefac217a6373f39e492b94f82242ed2da10652)
@@ -13,6 +13,8 @@ All notable changes to this project will be documented in this file.
 - [don't show the clock menu entry until we have the time](https://github.com/Xpra-org/xpra-html5/commit/7cde1e1d82ce372d128cc80eb2a21bf48b0894c2)
 - [audio state not updated](https://github.com/Xpra-org/xpra-html5/commit/be106513d006c902b6dd40350d510ad063a30e1d)
 - code cleanups: [simplify](https://github.com/Xpra-org/xpra-html5/commit/3caaee5581567c75be791f122364b30aa7629af7), [remove MSIE workarounds](https://github.com/Xpra-org/xpra-html5/commit/f4323d6dbead27d1d539309111992845e1cad1ae)
+- [build with newer python versions via setuptools](https://github.com/Xpra-org/xpra-html5/commit/f33d7c4c89f663e9d8b08ff95099fdab8085ab38) and [update the build dependencies](https://github.com/Xpra-org/xpra-html5/commit/cf5df50986f12d44f20604cb147f1b2d89edfc71)
+- [minor build file linter warnings](https://github.com/Xpra-org/xpra-html5/commit/b6bd816c80d0771d9d7d9b687ae2d5ea03870085) [whilst preserving backwards compatibility](https://github.com/Xpra-org/xpra-html5/commit/e384d3ff64c3362a1ae11c79e90ce0a29c8b157f)
 - [detect minifier, default to 'copy' if not found](https://github.com/Xpra-org/xpra-html5/commit/b04f11622218f809f9a4055c93d56ba08257afbe)
 - [automatic release number generation string format](https://github.com/Xpra-org/xpra-html5/commit/6eabfae5c75befd385780fe8d9b6fc26b206bee1)
 
