@@ -78,7 +78,7 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
-* Wed Jan 31 2024 Antoine Martin <antoine@xpra.org> 11-1498-1
+* Wed Jan 31 2024 Antoine Martin <antoine@xpra.org> 11-1520-1
 - more consistent positioning of fullscreen windows
 - prefix the `sessionStorage` data with pathname
 - Safari does not support offscreen decoding, stop saying that it does
