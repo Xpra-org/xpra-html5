@@ -94,7 +94,7 @@ def get_vcs_info():
         out, _ = proc.communicate()
         if proc.returncode!=0:
             print("Error: %s returned %s" % (cmd, proc.returncode))
-            return None
+            return ""
         v = out.decode("utf-8").splitlines()[0]
         return v
     parts = get_output_line("git describe --always --tags").split("-")
