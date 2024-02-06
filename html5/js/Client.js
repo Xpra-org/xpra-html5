@@ -1746,14 +1746,16 @@ class XpraClient {
     const y = Math.round(mouse.y);
     const modifiers = this._keyb_get_modifiers(e);
     const buttons = [];
+    const coords = [x, y];
     let wid = 0;
     if (win) {
       wid = win.wid;
-    }
-    this.send([PACKET_TYPES.pointer_position, wid, [x, y], modifiers, buttons]);
-    if (win) {
+      // add relative coordinates:
+      coords.push(Math.round(mouse.x - win.x));
+      coords.push(Math.round(mouse.y - win.y));
       e.preventDefault();
     }
+    this.send([PACKET_TYPES.pointer_position, wid, coords, modifiers, buttons]);
     return win == undefined;
   }
 
@@ -1762,10 +1764,17 @@ class XpraClient {
     const x = Math.round(mouse.x);
     const y = Math.round(mouse.y);
     const modifiers = this._keyb_get_modifiers(e);
-    const wid = win.wid;
     const pressed = false;
+    const coords = [x, y];
+    let wid = 0;
+    if (win) {
+      wid = win.wid;
+      // add relative coordinates:
+      coords.push(Math.round(mouse.x - win.x));
+      coords.push(Math.round(mouse.y - win.y));
+    }
     for (const button of this.buttons_pressed) {
-      this.send_button_action(wid, button, pressed, x, y, modifiers);
+      this.send_button_action(wid, button, pressed, coords, modifiers);
     }
   }
 
@@ -1792,9 +1801,14 @@ class XpraClient {
     const x = Math.round(mouse.x);
     const y = Math.round(mouse.y);
     const modifiers = this._keyb_get_modifiers(e);
+    const coords = [x, y];
     let wid = 0;
     if (win) {
       wid = win.wid;
+      // add relative coordinates:
+      coords.push(Math.round(mouse.x - win.x));
+      coords.push(Math.round(mouse.y - win.y));
+      e.preventDefault();
     }
     // dont call set focus unless the focus has actually changed
     if (wid > 0 && this.focus != wid) {
@@ -1817,11 +1831,11 @@ class XpraClient {
     setTimeout(() => {
       this.clipboard_delayed_event_time =
         performance.now() + CLIPBOARD_EVENT_DELAY;
-      this.send_button_action(wid, button, pressed, x, y, modifiers);
+      this.send_button_action(wid, button, pressed, coords, modifiers);
     }, send_delay);
   }
 
-  send_button_action(wid, button, pressed, x, y, modifiers) {
+  send_button_action(wid, button, pressed, coords, modifiers) {
     const buttons = [];
     if (pressed) {
       this.buttons_pressed.add(button);
@@ -1833,7 +1847,7 @@ class XpraClient {
       wid,
       button,
       pressed,
-      [x, y],
+      coords,
       modifiers,
       buttons,
     ]);
