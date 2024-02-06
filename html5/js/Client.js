@@ -345,10 +345,9 @@ class XpraClient {
     }
     if (Utilities.isEventSupported("wheel")) {
       div.addEventListener("wheel", on_mousescroll, false);
-    } else if (Utilities.isEventSupported("mousewheel")) {
-      div.addEventListener("mousewheel", on_mousescroll, false);
-    } else if (Utilities.isEventSupported("DOMMouseScroll")) {
-      div.addEventListener("DOMMouseScroll", on_mousescroll, false); // for Firefox
+    }
+    else {
+      this.warn("browser does not support scroll wheel events");
     }
   }
 

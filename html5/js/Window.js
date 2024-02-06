@@ -397,10 +397,6 @@ class XpraWindow {
     }
     if (Utilities.isEventSupported("wheel")) {
       canvas.addEventListener("wheel", on_mousescroll, false);
-    } else if (Utilities.isEventSupported("mousewheel")) {
-      canvas.addEventListener("mousewheel", on_mousescroll, false);
-    } else if (Utilities.isEventSupported("DOMMouseScroll")) {
-      canvas.addEventListener("DOMMouseScroll", on_mousescroll, false); // for Firefox
     }
   }
 
