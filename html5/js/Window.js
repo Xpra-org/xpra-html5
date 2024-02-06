@@ -1220,17 +1220,6 @@ class XpraWindow {
     };
   }
 
-  /**
-   * Handle mouse click from this window's canvas,
-   * then we fire "mouse_click_cb" (if it is set).
-   */
-  handle_mouse_click(button, pressed, mx, my, modifiers, buttons) {
-    this.debug("mouse", "got mouse click at ", mx, my);
-    // mouse click event is from canvas just for this window so no need to check
-    // internal geometry anymore
-    this.mouse_click_cb(this, button, pressed, mx, my, modifiers, buttons);
-  }
-
   update_icon(width, height, encoding, img_data) {
     // Cache the icon.
     this.icon = {
