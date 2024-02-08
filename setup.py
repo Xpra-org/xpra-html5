@@ -50,7 +50,7 @@ def get_output_line(cmd: str) -> str:
     out, _ = proc.communicate()
     if proc.returncode != 0:
         print(f"Error: {cmd} returned {proc.returncode}")
-        return None
+        return ""
     return out.splitlines()[0]
 
 
