@@ -316,7 +316,7 @@ def install_html5(root="/", install_dir="/usr/share/xpra/www/", config_dir="/etc
                         jar = yuicompressor.get_jar_filename()
                         java_cmd = os.environ.get("JAVA", "java")
                         minify_cmd = [java_cmd, "-jar", jar]
-                    except OSError:
+                    except (OSError, ImportError):
                         minify_cmd = ["yuicompressor"]
                     minify_cmd += [
                         fsrc,
