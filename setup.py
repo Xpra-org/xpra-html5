@@ -301,7 +301,9 @@ def install_html5(root="/", install_dir="/usr/share/xpra/www/", config_dir="/etc
                     os.chmod(fsrc, 0o644)
 
             if minifier not in ("", None, "copy") and ftype == "js":
-                if minifier == "uglifyjs":
+                if os.path.isabs(minifier):
+                    minify_cmd = shlex.split(minifier)
+                elif minifier == "uglifyjs":
                     minify_cmd = ["uglifyjs",
                                   fsrc,
                                   "-o", dst,
@@ -310,13 +312,14 @@ def install_html5(root="/", install_dir="/usr/share/xpra/www/", config_dir="/etc
                 elif minifier == "hjsmin":
                     minify_cmd = ["hjsmin", "-i", fsrc, "-o", dst]
                 else:
+
                     assert minifier == "yuicompressor"
                     try:
                         import yuicompressor  # @UnresolvedImport
                         jar = yuicompressor.get_jar_filename()
                         java_cmd = os.environ.get("JAVA", "java")
                         minify_cmd = [java_cmd, "-jar", jar]
-                    except OSError:
+                    except (OSError, ImportError):
                         minify_cmd = ["yuicompressor"]
                     minify_cmd += [
                         fsrc,
