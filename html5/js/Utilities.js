@@ -12,7 +12,7 @@ if (!Object.hasOwn) {
 }
 
 const Utilities = {
-  VERSION: "9.0",
+  VERSION: "11.0",
   REVISION: 1285,
   LOCAL_MODIFICATIONS: 3,
   BRANCH: "master",
