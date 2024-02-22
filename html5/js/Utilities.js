@@ -588,11 +588,14 @@ const Utilities = {
         return window.location.queryStringParams[key];
       };
     }
-    let value = getParameter(property);
+    let value;
     try {
       value = Utilities.getSessionStorageValue(property);
     } catch {
-      value = null;
+      value = undefined;
+    }
+    if (value === undefined) {
+      value = getParameter(property);
     }
     return value;
   },
@@ -626,7 +629,7 @@ const Utilities = {
     if (property in params) {
       return String(params[property]);
     }
-    return null;
+    return undefined;
   },
 
   setSessionStorageValue(property, value) {
