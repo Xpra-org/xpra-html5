@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [11.1] 2024-02-24
+- [build failures when using github archives](https://github.com/Xpra-org/xpra-html5/commit/2bdca6c5ba1459c21317e7f51e933b83e06d36fa)
+- [default to `yuicompressor`](https://github.com/Xpra-org/xpra-html5/commit/ecb56b264c235ccb35474ac1a3b85aff1119fc96)
+- [version string incorrectly / not updated](https://github.com/Xpra-org/xpra-html5/commit/8973774c5318aa2dc5223628826296a835aed43e)
+- [offsreen decoding can handle larger video dimensions](https://github.com/Xpra-org/xpra-html5/commit/d81286fe2091f5266df898c0a37dcc30aaa060d0)
+
 ## [11.0] 2024-01-31
 - [more consistent positioning of fullscreen windows](https://github.com/Xpra-org/xpra-html5/commit/be43532f1637b315466289154b387f48db7a9a0b)
 - [prefix the `sessionStorage` data with pathname](https://github.com/Xpra-org/xpra-html5/commit/b944a32f4b3a1394e092095e6ab57d575b764307)

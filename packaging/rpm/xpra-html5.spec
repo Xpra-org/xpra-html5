@@ -3,7 +3,7 @@
 # Xpra is released under the terms of the GNU GPL v2, or, at your option, any
 # later version. See the file COPYING for details.
 
-%define version 11
+%define version 11.1
 %define release 1.r1520%{?dist}
 %define minifier uglifyjs
 %define python python3
@@ -78,6 +78,12 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Sat Feb 24 2024 Antoine Martin <antoine@xpra.org> 11.1-1520-1
+- build failures when using github archives
+- default to `yuicompressor`
+- version string incorrectly / not updated
+- offsreen decoding can handle larger video dimensions
+
 * Wed Jan 31 2024 Antoine Martin <antoine@xpra.org> 11-1520-1
 - more consistent positioning of fullscreen windows
 - prefix the `sessionStorage` data with pathname

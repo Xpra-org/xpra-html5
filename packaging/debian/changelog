@@ -1,3 +1,11 @@
+xpra-html5 (11.1-r1520-1) UNRELEASED; urgency=low
+  * build failures when using github archives
+  * default to `yuicompressor`
+  * version string incorrectly / not updated
+  * offsreen decoding can handle larger video dimensions
+
+ -- Antoine Martin antoine@xpra.org  Sat, 24 Feb 2024 08:22:56 +0700 -500
+
 xpra-html5 (11-r1520-1) UNRELEASED; urgency=low
   * more consistent positioning of fullscreen windows
   * prefix the `sessionStorage` data with pathname
