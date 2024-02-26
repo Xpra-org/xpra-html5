@@ -1557,10 +1557,12 @@ class XpraClient {
       system_tray: true,
       //we cannot handle this (GTK only):
       named_cursors: false,
-      // printing
-      "file-transfer": this.file_transfer,
-      printing: this.printing,
-      "file-size-limit": 4 * 1024,
+      // file-transfer and printing:
+      "file": {
+        "enabled": true,
+        "printing": this.printing,
+        "size-limit": 32 * 1024 * 1024,
+      },
     });
   }
 
@@ -4827,9 +4829,8 @@ class XpraClient {
     if (data.length == filesize) {
       //got the whole file
       if (digest) {
-        digest.update(Utilities.Uint8ToString(data));
+        digest.update(Utilities.ArrayBufferToString(data));
         this.log("digest.update(", data, ")");
-        this.log("digest update string:", Utilities.Uint8ToString(data));
         if (!this.verify_digest(digest, options[digest.algorithm])) {
           return;
         }
