@@ -457,7 +457,7 @@ const Utilities = {
      return StringToUint8(v.toString());
   },
 
-  ArrayBufferToBase64(uintArray) {
+  ArrayBufferToString(uintArray) {
     // apply in chunks of 10400 to avoid call stack overflow
     // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/apply
     let s = "";
@@ -485,7 +485,11 @@ const Utilities = {
         );
       }
     }
-    return window.btoa(s);
+    return s;
+  },
+
+  ArrayBufferToBase64(uintArray) {
+    return window.btoa(Utilities.ArrayBufferToString(uintArray));
   },
 
   ToBase64(v) {
