@@ -2714,6 +2714,7 @@ class XpraClient {
       (!hello["file-transfer"] && (!hello["file"] || !hello["file"]["enabled"]))
     ) {
       $("#upload_menu_entry").hide();
+      $("#download_menu_entry").hide();
     }
 
     this.server_is_desktop = Boolean(hello["desktop"]);

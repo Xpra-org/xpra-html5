@@ -170,6 +170,14 @@
                       >Upload file</a
                     >
                   </li>
+                  <li id="download_menu_entry">
+                    <a
+                      href="#"
+                      data-icon="cloud_download"
+                      onclick="download_file(event); return false"
+                      >Download file</a
+                    >
+                  </li>
                   <li id="shutdown_menu_entry">
                     <a
                       href="#"
@@ -472,6 +480,12 @@
       function upload_file(event) {
         $(".menu-content").slideUp();
         $("#upload").click();
+      }
+
+      function download_file(event) {
+        $(".menu-content").slideUp();
+        const command = ["xpra", "send-file"]
+        client.send(["start-command", "Client-Download-File", command, true, true]);
       }
 
       function cleanup_dialogs() {
