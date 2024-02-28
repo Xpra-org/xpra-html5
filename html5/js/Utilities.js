@@ -593,17 +593,19 @@ const Utilities = {
       };
     }
     let value = getParameter(property);
-    try {
-      value = Utilities.getSessionStorageValue(property);
-    } catch {
-      value = null;
+    if (value === undefined) {
+      try {
+        value = Utilities.getSessionStorageValue(property);
+      } catch {
+        value = null;
+      }
     }
-    return value;
+    return undefined;
   },
 
   getboolparam(property, default_value) {
     const v = Utilities.getparam(property);
-    if (v === null) {
+    if (v === undefined) {
       return default_value;
     }
     return ["true", "on", "1", "yes", "enabled"].includes(
