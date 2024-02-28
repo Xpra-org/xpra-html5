@@ -588,15 +588,15 @@ const Utilities = {
         return window.location.queryStringParams[key];
       };
     }
-    let value;
-    try {
-      value = Utilities.getSessionStorageValue(property);
-    } catch {
-      value = undefined;
-    }
+    
+    let value = getParameter(property);
+    
     if (value === undefined) {
-      value = getParameter(property);
+      try {
+        value = Utilities.getSessionStorageValue(property);
+      } catch {}
     }
+    
     return value;
   },
 
