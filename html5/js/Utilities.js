@@ -31,7 +31,7 @@ const Utilities = {
   cdebug: console_debug_safe,
 
   stristrue(v, default_value) {
-    if (v === null) {
+    if (!v) {
       return default_value;
     }
     return ["true", "on", "1", "yes", "enabled"].includes(

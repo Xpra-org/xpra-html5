@@ -394,7 +394,7 @@
       const default_settings = {};
       const getparam = function (prop) {
         let v = Utilities.getparam(prop);
-        if (v == null && prop in default_settings) {
+        if (v == undefined && prop in default_settings) {
           v = default_settings[prop];
           clog("using", prop, "=", v, " from default settings");
         } else if (v != null && v != "") {
