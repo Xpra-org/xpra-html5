@@ -31,7 +31,7 @@ const Utilities = {
   cdebug: console_debug_safe,
 
   stristrue(v, default_value) {
-    if (v === null) {
+    if (!v) {
       return default_value;
     }
     return ["true", "on", "1", "yes", "enabled"].includes(
@@ -606,7 +606,7 @@ const Utilities = {
 
   getboolparam(property, default_value) {
     const v = Utilities.getparam(property);
-    if (v === null) {
+    if (v === undefined) {
       return default_value;
     }
     return ["true", "on", "1", "yes", "enabled"].includes(
