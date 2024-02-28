@@ -798,7 +798,7 @@
           );
         };
 
-        const disconnect_reason = getparam("disconnect") || null;
+        const disconnect_reason = getparam("disconnect");
         if (disconnect_reason) {
           document.getElementById("alert-disconnect").style.display = "block";
           document.getElementById("disconnect-reason").innerText =
