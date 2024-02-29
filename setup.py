@@ -397,17 +397,17 @@ def set_version(new_version: str) -> None:
         new_version_str += " beta"
     for filename, replace in {
         "./packaging/debian/control": {
-            f"Version: {VERSION}.*": f"Version: {new_version}-r{revision}-1",
+            fr"Version:\s*{VERSION}.*": f"Version: {new_version}-r{revision}-1",
         },
         "./packaging/rpm/xpra-html5.spec": {
             f"%define version {VERSION}": f"%define version {new_version}",
             "%define release .*": f"%define release 1.r{revision}%{{?dist}}",
         },
         "./html5/js/Utilities.js": {
-            f'VERSION : "{VERSION}"': f'VERSION : "{new_version}"',
-            f"REVISION : [0-9]*": f"REVISION : {revision}",
-            'LOCAL_MODIFICATIONS : [0-9]*': f'LOCAL_MODIFICATIONS : {local_modifications}',
-            'BRANCH : "[a-zA-Z]*"': f'BRANCH : "{branch}"',
+            fr'VERSION\s*= "{VERSION}"': f'VERSION = "{new_version}"',
+            fr"REVISION\s*: [0-9]*": f"REVISION : {revision}",
+            r'LOCAL_MODIFICATIONS\s*: [0-9]*': f'LOCAL_MODIFICATIONS: {local_modifications}',
+            r'BRANCH\s*: "[a-zA-Z]*"': f'BRANCH: "{branch}"',
         },
         "./html5/index.html": {
             "<h3>Version .*</h3>": f"<h3>Version {new_version_str}</h3>",
