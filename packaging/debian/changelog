@@ -1,5 +1,9 @@
 xpra-html5 (11.2-r6-1) UNRELEASED; urgency=low
   * fix offscreen decoding buggy PR
+  * offscreen decoding buggy PR
+  * download data handler
+  * add file download action
+  * query parameters not honoured
 
  -- Antoine Martin antoine@xpra.org  Thu, 29 Feb 2024 11:40:35 +0700 +700
 

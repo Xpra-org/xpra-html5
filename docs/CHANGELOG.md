@@ -3,7 +3,10 @@
 All notable changes to this project will be documented in this file.
 
 ## [11.2] 2024-02-29
-- [fix offscreen decoding buggy PR](https://github.com/Xpra-org/xpra-html5/commit/f8605d8c678f09a30c766fc9bd5b2bb70744d771)
+- [offscreen decoding buggy PR](https://github.com/Xpra-org/xpra-html5/commit/f8605d8c678f09a30c766fc9bd5b2bb70744d771)
+- [download data handler](https://github.com/Xpra-org/xpra-html5/commit/3a091413a7c2d4c33d04dcf9d0aec0581008dff5)
+- [add file download action](https://github.com/Xpra-org/xpra-html5/commit/3d3b9513ccaf4ac81d5b4f41ccc2c336a66a1164)
+- [query parameters not honoured](https://github.com/Xpra-org/xpra-html5/commit/68b63181258300b5f41d30e207ceb7051ea1671d) + [fixup](https://github.com/Xpra-org/xpra-html5/commit/0210e5a5b45bd74f7b4ebcd257dae75b9f4d7b76)
 
 ## [11.1] 2024-02-24
 - [build failures when using github archives](https://github.com/Xpra-org/xpra-html5/commit/2bdca6c5ba1459c21317e7f51e933b83e06d36fa)

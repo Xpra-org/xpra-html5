@@ -79,7 +79,10 @@ rm -rf $RPM_BUILD_ROOT
 
 %changelog
 * Thu Feb 29 2024 Antoine Martin <antoine@xpra.org> 11.2-6-1
-- fix offscreen decoding buggy PR
+- offscreen decoding buggy PR
+- download data handler
+- add file download action
+- query parameters not honoured
 
 * Sat Feb 24 2024 Antoine Martin <antoine@xpra.org> 11.1-1520-1
 - build failures when using github archives
