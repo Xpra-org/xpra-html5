@@ -488,6 +488,7 @@ def make_rpm() -> None:
     disttarxz = os.path.join("dist", tarxz)
     if os.path.exists(disttarxz):
         os.unlink(disttarxz)
+    record_vcs_info()
     saved = sys.argv
     try:
         sys.argv = ["./setup.py", "sdist", "--formats=xztar"]
@@ -520,7 +521,6 @@ def make_rpm() -> None:
 
 
 def sdist() -> None:
-    record_vcs_info()
     try:
         from setuptools import setup
     except ImportError:
@@ -550,6 +550,7 @@ def show_help(args) -> int:
     cmd = args[0]
     print("invalid number of arguments, usage:")
     print(f"{cmd} sdist")
+    print(f"{cmd} record-vcs-info")
     print(f"{cmd} install")
     print(f"{cmd} install ROOT [INSTALL_DIR] [CONFIG_DIR] [MINIFIER]")
     print(f"{cmd} deb")
@@ -563,7 +564,11 @@ def main(args) -> int:
         return show_help(args)
     cmd = args[1]
     if cmd == "sdist":
+        record_vcs_info()
         sdist()
+        return 0
+    if cmd == "record-vcs-info":
+        record_vcs_info()
         return 0
     if cmd == "install":
         if not load_vcs_info():
