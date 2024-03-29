@@ -80,6 +80,7 @@ rm -rf $RPM_BUILD_ROOT
 %changelog
 * Fri Mar 29 2024 Antoine Martin <antoine@xpra.org> 12.0-6-1
 - keycloak authentication fails
+- connect page forgetting all settings
 - bug report tool error
 - support custom minifier command
 - build fix when using github source archives

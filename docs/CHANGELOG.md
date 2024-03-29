@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [12.0] 2024-03-29
 - [keycloak authentication fails](https://github.com/Xpra-org/xpra-html5/commit/d09a0b2170c3f93319a5ce0984f57f12794617ca)
+- [connect page forgetting all settings](https://github.com/Xpra-org/xpra-html5/commit/3fccccb2ee4098fef77116c8ddf8cf813dfbc03b)
 - [bug report tool error](https://github.com/Xpra-org/xpra-html5/commit/bc83f23390956b2590fb843275ffe6e4c88f7698)
 - [support custom minifier command](https://github.com/Xpra-org/xpra-html5/commit/1789bb05cf96ba6f864c9a50f0eb4458ee0c013e)
 - [build fix when using github source archives](https://github.com/Xpra-org/xpra-html5/commit/20dddce76047ee95fcdc3d2b57672429951ab38b)
