@@ -3,8 +3,8 @@
 # Xpra is released under the terms of the GNU GPL v2, or, at your option, any
 # later version. See the file COPYING for details.
 
-%define version 12.0
-%define release 1.r1520%{?dist}
+%define version 13
+%define release 1.r6%{?dist}
 %define minifier uglifyjs
 %define python python3
 
@@ -78,6 +78,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Fri Mar 29 2024 Antoine Martin <antoine@xpra.org> 13-6-1
+- TODO
+
 * Wed Jan 31 2024 Antoine Martin <antoine@xpra.org> 12.0-1520-1
 - TODO
 
