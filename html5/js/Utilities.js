@@ -13,9 +13,9 @@ if (!Object.hasOwn) {
 
 const Utilities = {
   VERSION: "12.0",
-  REVISION: 1285,
-  LOCAL_MODIFICATIONS: 3,
-  BRANCH: "master",
+  REVISION : 6,
+  LOCAL_MODIFICATIONS: 0,
+  BRANCH: "v12.x",
 
   exc: console_error_safe,
   error: console_error_safe,

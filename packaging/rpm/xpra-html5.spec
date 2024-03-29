@@ -4,7 +4,7 @@
 # later version. See the file COPYING for details.
 
 %define version 12.0
-%define release 1.r1520%{?dist}
+%define release 1.r6%{?dist}
 %define minifier uglifyjs
 %define python python3
 
@@ -78,8 +78,14 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
-* Wed Jan 31 2024 Antoine Martin <antoine@xpra.org> 12.0-1520-1
-- TODO
+* Fri Mar 29 2024 Antoine Martin <antoine@xpra.org> 12.0-6-1
+- keycloak authentication fails
+- bug report tool error
+- support custom minifier command
+- build fix when using github source archives
+- send relative pointer coordinates when available
+- remove legacy 'wheel' workarounds
+- remove unused function
 
 * Wed Jan 31 2024 Antoine Martin <antoine@xpra.org> 11-1498-1
 - more consistent positioning of fullscreen windows

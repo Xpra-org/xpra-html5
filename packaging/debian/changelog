@@ -1,7 +1,13 @@
-xpra-html5 (12.0-r1520-1) UNRELEASED; urgency=low
-  * TODO
+xpra-html5 (12.0-r6-1) UNRELEASED; urgency=low
+  * keycloak authentication fails
+  * bug report tool error
+  * support custom minifier command
+  * build fix when using github source archives
+  * send relative pointer coordinates when available
+  * remove legacy 'wheel' workarounds
+  * remove unused function
 
- -- Antoine Martin antoine@xpra.org  Wed, 31 Jan 2024 22:34:47 +0700 +700
+ -- Antoine Martin antoine@xpra.org  Fri, 29 Mar 2024 16:29:40 +0700 +700
 
 xpra-html5 (11-r1520-1) UNRELEASED; urgency=low
   * more consistent positioning of fullscreen windows
