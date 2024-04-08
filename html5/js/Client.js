@@ -2047,7 +2047,7 @@ class XpraClient {
       } else {
         let text = clipboardData.getData(TEXT_HTML);
         let datatype = TEXT_HTML;
-        if (!text_html) {
+        if (!text) {
             text = clipboardData.getData(TEXT_PLAIN);
             cdebug("clipboard", "paste event, text=", text);
         }
