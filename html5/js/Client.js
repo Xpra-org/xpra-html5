@@ -1493,7 +1493,6 @@ class XpraClient {
       "username": this.username,
       "uuid": this.uuid,
       "argv": [window.location.href],
-      "open-url": this.open_url,
       "share": this.sharing,
       "steal": this.steal,
       "mouse.show": true,
@@ -1535,6 +1534,7 @@ class XpraClient {
       "audio" : this._get_audio_caps(),
       "clipboard": this._get_clipboard_caps(),
       "keymap" : this._get_keymap_caps(),
+      "file": this._get_file_caps(),
       "wants" : ["audio", ],
       // encoding stuff
       windows: true,
@@ -1556,13 +1556,16 @@ class XpraClient {
       system_tray: true,
       //we cannot handle this (GTK only):
       named_cursors: false,
-      // file-transfer and printing:
-      "file": {
-        "enabled": true,
-        "printing": this.printing,
-        "size-limit": 32 * 1024 * 1024,
-      },
     });
+  }
+
+  _get_file_caps() {
+    return {
+      "enabled": true,
+      "printing": this.printing,
+      "open-url": this.open_url,
+      "size-limit": 32 * 1024 * 1024,
+    }
   }
 
   _get_network_caps() {
