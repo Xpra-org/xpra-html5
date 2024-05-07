@@ -275,7 +275,7 @@
         </div>
 
         <div class="form-group">
-          <a class="btn btn-lg btn-success" role="button" onclick="doConnect();"
+          <a class="btn btn-lg btn-success" role="button" id="main_action_button" onclick="doConnect();"
             >Connect</a
           >
           <a
@@ -960,15 +960,39 @@
           );
         };
 
+        // keep track of the currently selected action
+        // and update the label of the main action button:
+        const main_action_button = document.getElementById("main_action_button");
+        const action_shadow = document.getElementById("action_shadow");
+        const action_start_desktop = document.getElementById("action_start_desktop");
+        const action_start = document.getElementById("action_start");
+        const action_connect = document.getElementById("action_connect");
+        const action_elements = new Map();
+        action_elements.set("Shadow", action_shadow);
+        action_elements.set("Start Desktop", action_start_desktop);
+        action_elements.set("Start Command", action_start);
+        action_elements.set("Connect", action_connect);
+        for (const [action_label, action_element] of action_elements) {
+          console.log(`${action_label} = ${action_element}`);
+          action_element.addEventListener('click', function(){
+            console.log(action_label);
+            main_action_button.text = action_label;
+          }, false);
+        }
+
         const action = getparam("action") || "";
         if (action == "shadow") {
-          document.getElementById("action_shadow").checked = true;
+          action_shadow.checked = true;
+          main_action_button.text = "Shadow";
         } else if (action == "start-desktop") {
-          document.getElementById("action_start_desktop").checked = true;
+          action_start_desktop.checked = true;
+          main_action_button.text = "Start Desktop";
         } else if (action == "start") {
-          document.getElementById("action_start").checked = true;
+          action_start.checked = true;
+          main_action_button.text = "Start Command";
         } else {
-          document.getElementById("action_connect").checked = true;
+          action_connect.checked = true;
+          main_action_button.text = "Connect";
         }
         const start = getparam("start") || "";
 
