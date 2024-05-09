@@ -620,6 +620,10 @@
           Utilities.setSessionStorageValue(prop, value);
           return "";
         }
+        do_add_prop(prop, value, first);
+      }
+
+      function do_add_prop(prop, value, first) {
         if (value === null || value === "undefined") {
           value = "";
         }
@@ -633,9 +637,16 @@
       function doConnect() {
         let url =
           "./index.html" +
-          add_prop("submit", true, true) +
-          get_URL_action() +
-          get_URL_props();
+          add_prop("submit", true, true);
+        let i = 0;
+        for (const [prop, value] of get_URL_action()) {
+          add_prop(prop, value, i==0);
+          i++;
+        }
+        for (const [prop, value] of get_URL_props(VALUE_PROPERTIES + BOOLEAN_PROPERTIES)) {
+          add_prop(prop, value, i==0);
+          i++;
+        }
         window.location = url;
       }
 
@@ -646,8 +657,15 @@
           url = "xprawss://";
         }
         const username = document.getElementById("username").value;
+        const password = document.getElementById("password").value;
         if (username) {
-          url += username + "@";
+          url += username;
+        }
+        if (password) {
+          url += ":"+password;
+        }
+        if (username || password) {
+          url += "@";
         }
         url += document.getElementById("server").value;
         const port = document.getElementById("port").value;
@@ -655,7 +673,34 @@
           url += ":" + port;
         }
         url += "/";
-        url += get_URL_action() + get_URL_props();
+        const url_action = get_URL_action();
+        console.log("url_action=", url_action);
+        let display = url_action.get("display");
+        if (display) {
+          if (display.startsWith(":")) {
+            display = display.substring(1);
+          }
+          url += display;
+        }
+        let i = 0;
+        for (const [prop, value] of url_action) {
+          if (prop != "display" && prop != "action") {
+            url += do_add_prop(prop, value, i==0);
+            i++;
+          }
+        }
+        const props = get_URL_props(FILE_PROPERTIES);
+        props.delete("server");
+        props.delete("port");
+        props.delete("username");
+        props.delete("password");
+        for (const [prop, value] of props) {
+          if (!prop.startsWith("debug_")) {
+            url += do_add_prop(prop, value, i==0);
+            i++;
+          }
+        }
+        console.log("opening client url=", url);
         window.location = url;
       }
 
@@ -711,25 +756,20 @@
       }
 
       function get_visible_value(entry, select) {
-        let entry_widget = document.getElementById(entry);
-        if (
-          entry_widget.style.visibility !== "hidden" ||
-          entry_widget.style.visibility !== "collapse"
-        ) {
+        const entry_widget = document.getElementById(entry);
+        let style = entry_widget.style;
+        if (style.display != "none" && (style.visibility !== "hidden" || style.visibility !== "collapse")) {
           return entry_widget.value;
         }
-        let select_widget = document.getElementById(select);
-        if (
-          select_widget.style.visibility !== "hidden" ||
-          select_widget.style.visibility !== "collapse"
-        ) {
+        const select_widget = document.getElementById(select);
+        style = select_widget.style;
+        if (style.display != "none" && (style.visibility !== "hidden" || style.visibility !== "collapse")) {
           return select_widget.value;
         }
         return "";
       }
 
       function get_URL_action() {
-        let url = "";
         let start = "";
         let display = "";
         let action = "";
@@ -744,35 +784,38 @@
           start = get_visible_value("start_desktop_command", "desktop_entry");
         } else if (document.getElementById("action_shadow").checked) {
           action = "shadow";
-          display = get_visible_value(
-            "shadow_display",
-            "select_shadow_display"
-          );
+          display = get_visible_value("shadow_display", "select_shadow_display");
         }
+        const url_action = new Map();
         if (action) {
-          url += add_prop("action", action);
+          url_action.set("action", action);
         }
         if (start) {
-          url += add_prop("start", start);
+          url_action.set("start", start);
         }
         if (display) {
-          url += add_prop("display", display);
+          url_action.set("display", display);
         }
-        return url;
+        return url_action;
       }
 
-      function get_URL_props() {
-        let url = "";
-        for (let i = 0; i < VALUE_PROPERTIES.length; i++) {
-          const prop = VALUE_PROPERTIES[i];
-          const value = document.getElementById(prop).value;
-          url += add_prop(prop, value);
+      function get_URL_props(properties) {
+        const url_props = new Map();
+        for (let i = 0; i < properties.length; i++) {
+          const prop = properties[i];
+          let value = "";
+          if (BOOLEAN_PROPERTIES.includes(prop)) {
+            value = document.getElementById(prop).checked;
+          }
+          else {
+            value = document.getElementById(prop).value;
+            if (value === null || value === "undefined") {
+              value = "";
+            }
+          }
+          url_props.set(prop, value);
         }
-        for (let i = 0; i < BOOLEAN_PROPERTIES.length; i++) {
-          const prop = BOOLEAN_PROPERTIES[i];
-          url += add_prop(prop, document.getElementById(prop).checked);
-        }
-        return url;
+        return url_props;
       }
 
       function fill_form(default_settings) {
