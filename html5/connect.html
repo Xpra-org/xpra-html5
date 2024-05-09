@@ -972,12 +972,8 @@
           //passwords would be sent on URL,
           //so show insecure checkbox whenever ssl is off:
           ssl_input.onchange = function () {
-            $("input#password").prop(
-              "disabled",
-              !has_session_storage &&
-                !ssl_input.checked &&
-                !insecure_input.checked
-            );
+            const safe = ssl_input.checked || insecure_input.checked;
+            $("input#password").prop("disabled", !safe);
             if (ssl_input.checked) {
               $("span#insecure-span").hide();
               aes_input.checked = false;
