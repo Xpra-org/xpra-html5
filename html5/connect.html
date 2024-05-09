@@ -77,6 +77,10 @@
             maxlength="5"
           />
           <br />
+          <div id="server-info-box">
+            <span id="server-info" />
+            <br />
+          </div>
           <label class="sr-only" for="username">Username</label>
           <input
             title="Username"
@@ -1381,8 +1385,17 @@
           );
         }
 
-        function show_mode(is_proxy) {
-          Utilities.debug("show_mode(", is_proxy, ")");
+        function show_mode(mode, is_proxy) {
+          Utilities.debug("show_mode(", mode, ", ", is_proxy, ")");
+          let server_info = "";
+          let host_address = get_host_address(true);
+          if (mode.length > 0) {
+            server_info = host_address + " is a '" + mode + "' server";
+          }
+          else {
+            server_info = "no information available for " + host_address;
+          }
+          document.getElementById("server-info").innerText = server_info;
           if (is_proxy) {
             //show all options:
             $("#action_connect_group").show();
@@ -1417,13 +1430,13 @@
                 mode.indexOf("desktop") >= 0 ||
                 mode.indexOf("shadow") >= 0
               ) {
-                show_mode(false);
+                show_mode(mode, false);
               } else {
-                show_mode(true);
+                show_mode(mode, true);
               }
             },
             function (error) {
-              show_mode(true);
+              show_mode("", true);
             }
           );
         }

@@ -100,3 +100,9 @@ div.container {
   width: 1.2em;
   height: 1.2em;
 }
+
+.form-signin span#server-info {
+  padding-left: 20px;
+  font-size: 11px;
+  font-style: italic;
+}
