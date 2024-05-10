@@ -726,8 +726,6 @@
       }
 
       function downloadConnectionFile() {
-        const filename =
-          (document.getElementById("server").value || "session") + ".xpra";
         let data = "autoconnect=true\n";
         //set a mode:
         const ssl = document.getElementById("ssl").checked;
@@ -736,6 +734,11 @@
         } else {
           data += "mode=ws\n";
         }
+        const url_action = get_URL_action();
+        const display = url_action.get("display");
+        if (display) {
+          data += "display="+display+"\n";
+        }
         for (let i = 0; i < FILE_PROPERTIES.length; i++) {
           const prop = FILE_PROPERTIES[i];
           const prop_name = FILE_TRANSLATION[prop] || prop;
@@ -743,7 +746,6 @@
           if (BOOLEAN_PROPERTIES.includes(prop)) {
             value = document.getElementById(prop).checked;
             const default_value = DEFAULT_ON.includes(prop);
-            console.log("boolean", prop, ", value=", value, ", default=", default_value);
             if (value == default_value) {
               continue;
             }
@@ -784,6 +786,7 @@
         if (debug) {
           data += "debug=" + debug + "\n";
         }
+        const filename = (document.getElementById("server").value || "session") + ".xpra";
         Utilities.saveFile(filename, data, { type: "text/plain" });
       }
 
