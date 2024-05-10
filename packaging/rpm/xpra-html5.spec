@@ -78,11 +78,36 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
-* Fri Mar 29 2024 Antoine Martin <antoine@xpra.org> 13-6-1
-- TODO
+* Fri May 10 2024 Antoine Martin <antoine@xpra.org> 13-6-1
+- bug fixes:
+   do increase video size with offscreen decoding
+   URL parameters ignored
+   file downloads corrupted
+   URL forwarding not enabled
+   handling of connection URIs and session files
+- clipboard:
+   `text/html` not copied
+- features:
+   trigger file download from server via file chooser
+   show some server information
+- cleanups and cosmetic:
+   button shows action currently selected
+   simplify
+   remove redundant statement
+   remove outdated docstring
+   installation script supports individual info commands
+   ignore whitespace when updating vcs info
 
-* Wed Jan 31 2024 Antoine Martin <antoine@xpra.org> 12.0-1520-1
-- TODO
+* Fri Mar 29 2024 Antoine Martin <antoine@xpra.org> 12.0-6-1
+- keycloak authentication fails
+- connect page forgetting all settings
+- bug report tool error
+- support custom minifier command
+- build fix when using github source archives
+- send relative pointer coordinates when available
+- remove legacy 'wheel' workarounds
+- remove unused function
+
 
 * Wed Jan 31 2024 Antoine Martin <antoine@xpra.org> 11-1498-1
 - more consistent positioning of fullscreen windows

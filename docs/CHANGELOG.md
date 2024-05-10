@@ -1,7 +1,7 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
-## [12.0] 2024-05-10
+## [13.0] 2024-05-10
 - bug fixes:
   - [do increase video size with offscreen decoding](https://github.com/Xpra-org/xpra-html5/commit/69c4e7d36ba1dca420f7b4e07224133b20298489) + [fixup](https://github.com/Xpra-org/xpra-html5/commit/eb9cb20b568a3ef18e7a73c1b0af597ea212a326)
   - [URL parameters ignored](https://github.com/Xpra-org/xpra-html5/commit/864dc00808c6caab238578919cc2442488d4c9cf) + [fixup](https://github.com/Xpra-org/xpra-html5/commit/c07629f9383dafffbcd146747ffc647c50f4c336), and [another](https://github.com/Xpra-org/xpra-html5/commit/7f3aa77e69eb4822d40490dc31f21f2fcbee9816) and [another](https://github.com/Xpra-org/xpra-html5/commit/81692ba11c34da0968e9c8f72119f7831b944b62)
