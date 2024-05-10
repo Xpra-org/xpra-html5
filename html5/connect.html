@@ -717,7 +717,7 @@
         props.delete("password");
         for (const [prop, value] of props) {
           if (!prop.startsWith("debug_")) {
-            url += do_add_prop(prop, value, i==0);
+            url += do_add_prop(prop.replaceAll("_", "-"), value, i==0);
             i++;
           }
         }
@@ -741,7 +741,7 @@
         }
         for (let i = 0; i < FILE_PROPERTIES.length; i++) {
           const prop = FILE_PROPERTIES[i];
-          const prop_name = (FILE_TRANSLATION[prop] || prop).replace("_", "-");
+          const prop_name = (FILE_TRANSLATION[prop] || prop).replaceAll("_", "-");
           let value = "";
           if (BOOLEAN_PROPERTIES.includes(prop)) {
             value = document.getElementById(prop).checked;
