@@ -281,10 +281,7 @@ class XpraClient {
     ) {
       this.clipboard_targets.push("image/png");
     } else {
-      this.log(
-        "no clipboard write support: no images, navigator.clipboard=",
-        navigator.clipboard
-      );
+      this.log("no clipboard write support: no images, navigator.clipboard=", navigator.clipboard);
     }
     // printing / file-transfer:
     this.remote_printing = false;
@@ -1837,8 +1834,7 @@ class XpraClient {
       button = 9;
     }
     setTimeout(() => {
-      this.clipboard_delayed_event_time =
-        performance.now() + CLIPBOARD_EVENT_DELAY;
+      this.clipboard_delayed_event_time = performance.now() + CLIPBOARD_EVENT_DELAY;
       this.send_button_action(wid, button, pressed, coords, modifiers);
     }, send_delay);
   }
@@ -2064,11 +2060,7 @@ class XpraClient {
       const pasteboard = $(PASTEBOARD_SELECTOR);
       pasteboard.text(clipboard_buffer);
       pasteboard.select();
-      this.cdebug(
-        "clipboard",
-        "copy event, clipboard buffer=",
-        clipboard_buffer
-      );
+      this.cdebug("clipboard", "copy event, clipboard buffer=", clipboard_buffer);
       this.clipboard_pending = false;
     });
     window.addEventListener("cut", (e) => {
@@ -2076,11 +2068,7 @@ class XpraClient {
       const pasteboard = $(PASTEBOARD_SELECTOR);
       pasteboard.text(clipboard_buffer);
       pasteboard.select();
-      this.cdebug(
-        "clipboard",
-        "cut event, clipboard buffer=",
-        clipboard_buffer
-      );
+      this.cdebug("clipboard", "cut event, clipboard buffer=", clipboard_buffer);
       this.clipboard_pending = false;
     });
     $("#screen").on("click", (e) => this.may_set_clipboard());
@@ -2088,23 +2076,13 @@ class XpraClient {
   }
 
   may_set_clipboard(e) {
-    this.cdebug(
-      "clipboard",
-      "pending=",
-      this.clipboard_pending,
-      "buffer=",
-      truncate(this.clipboard_buffer)
-    );
+    this.cdebug("clipboard", "pending=", this.clipboard_pending, "buffer=", truncate(this.clipboard_buffer));
     if (!this.clipboard_pending) {
       return;
     }
     let clipboard_buffer = this.get_clipboard_buffer();
-    const clipboard_datatype = (
-      this.get_clipboard_datatype() || ""
-    ).toLowerCase();
-    const is_text =
-      clipboard_datatype.includes("text") ||
-      clipboard_datatype.includes("string");
+    const clipboard_datatype = (this.get_clipboard_datatype() || "").toLowerCase();
+    const is_text = clipboard_datatype.includes("text") || clipboard_datatype.includes("string");
     if (!is_text) {
       //maybe just abort here instead?
       clipboard_buffer = "";
@@ -2112,11 +2090,7 @@ class XpraClient {
     const pasteboard = $(PASTEBOARD_SELECTOR);
     pasteboard.text(clipboard_buffer);
     pasteboard.select();
-    this.cdebug(
-      "clipboard",
-      "click event, with pending clipboard datatype=",
-      clipboard_datatype,
-      ", buffer=",
+    this.cdebug("clipboard", "click event, with pending clipboard datatype=", clipboard_datatype, ", buffer=",
       clipboard_buffer
     );
     let success = false;
