@@ -445,9 +445,10 @@
         return v;
       };
 
+      const float_menu_item_count = 6;
       const float_menu_item_size = 30;
       const float_menu_padding = 20;
-      let float_menu_width = float_menu_item_size * 5 + float_menu_padding;
+      let float_menu_width = float_menu_item_size * float_menu_item_count + float_menu_padding;
 
       let cdebug = function () {
         Utilities.clog.apply(Utilities, arguments);
@@ -1416,7 +1417,7 @@
       }
 
       function expand_float_menu() {
-        const expanded_width = float_menu_item_size * 5;
+        const expanded_width = float_menu_item_size * float_menu_item_count;
         const float_menu = document.getElementById("float_menu");
         float_menu.style.display = "inline-block";
         float_menu.style.width = expanded_width + "px";

@@ -3203,8 +3203,7 @@ class XpraClient {
     const float_menu_element = $(FLOAT_MENU_SELECTOR);
     float_menu_element.children().show();
     //increase size for tray icon
-    const new_width =
-      float_menu_width + float_menu_item_size - float_menu_padding + 5;
+    const new_width = float_menu_width + float_menu_item_size - float_menu_padding + 5;
     float_menu.style.width = `${new_width}px`;
     float_menu_width = float_menu_element.width() + 10;
     mydiv.style.backgroundColor = "white";
@@ -3252,7 +3251,7 @@ class XpraClient {
 
   reconfigure_all_trays() {
     const float_menu = document.querySelector(FLOAT_MENU_SELECTOR);
-    let float_menu_width = float_menu_item_size * 4 + float_menu_padding;
+    let float_menu_width = float_menu_item_size * float_menu_item_count + float_menu_padding;
     for (const twid in this.id_to_window) {
       const twin = this.id_to_window[twid];
       if (twin && twin.tray) {
