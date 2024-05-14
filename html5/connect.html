@@ -664,7 +664,7 @@
           add_prop(prop, value, i==0);
           i++;
         }
-        for (const [prop, value] of get_URL_props(VALUE_PROPERTIES + BOOLEAN_PROPERTIES)) {
+        for (const [prop, value] of get_URL_props(VALUE_PROPERTIES.concat(BOOLEAN_PROPERTIES))) {
           add_prop(prop, value, i==0);
           i++;
         }
@@ -835,15 +835,21 @@
       }
 
       function get_URL_props(properties) {
+        Utilities.log("get_URL_props:", properties);
         const url_props = new Map();
         for (let i = 0; i < properties.length; i++) {
           const prop = properties[i];
+          const element = document.getElementById(prop);
+          if (!element) {
+            Utilities.log("bug? missing element", prop);
+            continue;
+          }
           let value = "";
           if (BOOLEAN_PROPERTIES.includes(prop)) {
-            value = document.getElementById(prop).checked;
+            value = element.checked;
           }
           else {
-            value = document.getElementById(prop).value;
+            value = element.value;
             if (value === null || value === "undefined") {
               value = "";
             }
