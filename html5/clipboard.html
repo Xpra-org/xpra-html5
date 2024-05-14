@@ -19,11 +19,11 @@
         <div>
           <label for="input">Input</label>
           <input
-            title="Server"
+            title="Input"
             type="text"
             class="form-control"
             id="input"
-            placeholder="Server"
+            placeholder="Input"
             maxlength="256"
           />
         </div>
@@ -58,10 +58,17 @@
         <button type="button" id="read">read()</button>
         <input type="text" id="format" value="text/html" />
 
+        <br />
+        <button type="button" id="exec-copy">execCommand("copy")</button>
+        <br />
+        <button type="button" id="exec-paste">execCommand("paste")</button>
+
       </form>
     </div>
 
     <script>
+      const input = document.getElementById("input");
+
       const info = document.getElementById("info");
       const lines = [];
 
@@ -159,13 +166,35 @@
       const readText = document.getElementById("readText");
       const format = document.getElementById("format");
 
-      read.onclick = function() {
+      function show_event(e) {
+        console.log("show_event:", e);
+        console.log("event clipboard data:", (e.originalEvent || e).clipboardData);
+      }
+
+      read.onclick = function(e) {
+        show_event(e);
         const fmt = format.value;
         read_clipboard_data(fmt);
       }
-      readText.onclick = function() {
+      readText.onclick = function(e) {
+        show_event(e);
         read_clipboard_text();
       }
+
+      const exec_copy = document.getElementById("exec-copy");
+      exec_copy.onclick = function(e) {
+        input.select();
+        const copy = document.execCommand("copy");
+        update_info("copy="+copy);
+      }
+
+      const exec_paste = document.getElementById("exec-paste");
+      exec_paste.onclick = function(e) {
+        input.select();
+        const paste = document.execCommand("paste");
+        update_info("paste="+paste);
+      }
+
     </script>
   </body>
 </html>
