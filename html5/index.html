@@ -260,6 +260,14 @@
           <li class="-hasSubmenu -noChevron">
             <a
               href="#"
+              id="clipboard_button"
+              title="Clipboard Copy"
+              data-icon="content_copy"
+            ></a>
+          </li>
+          <li class="-hasSubmenu -noChevron">
+            <a
+              href="#"
               id="sound_button"
               title="Audio"
               data-icon="volume_off"
@@ -1590,6 +1598,10 @@
 
         $("#keyboard_button").on("click", function (e) {
           toggle_keyboard();
+        });
+
+        $("#clipboard_button").on("click", function (e) {
+          client.read_clipboard(e);
         });
 
         // Configure Xpra tray window list right click behavior.

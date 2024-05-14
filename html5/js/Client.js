@@ -96,6 +96,7 @@ class XpraClient {
     this.debug_categories = [];
     this.start_new_session = null;
     this.clipboard_enabled = false;
+    this.clipboard_poll = false;
     this.file_transfer = false;
     this.remote_file_size_limit = 0;
     this.remote_file_chunks = 0;
@@ -1662,6 +1663,7 @@ class XpraClient {
       selections = ["CLIPBOARD", "PRIMARY"];
       this.log("legacy clipboard");
     }
+    this.log("clipboard polling: ", this.clipboard_poll);
     return {
       "enabled" : this.clipboard_enabled,
       "want_targets" : true,
@@ -2119,13 +2121,20 @@ class XpraClient {
   }
 
   _poll_clipboard(e) {
-    if (this.clipboard_enabled === false) {
+    if (!this.clipboard_poll) {
       return;
     }
     //see if the clipboard contents have changed:
     if (this.clipboard_pending) {
       //we're still waiting to set the clipboard..
       return false;
+    }
+    this.read_clipboard(e);
+  }
+
+  read_clipboard(e) {
+    if (this.clipboard_enabled === false) {
+      return;
     }
     if (navigator.clipboard && navigator.clipboard.clipboardData) {
       this.debug("clipboard", "polling using", navigator.clipboard.clipboardData);
