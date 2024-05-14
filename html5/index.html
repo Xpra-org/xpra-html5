@@ -302,9 +302,7 @@
         <a href="./LICENSE">Mozilla Public License Version 2.0</a>
         <br />
         For more information, see
-        <a rel="noopener" href="https://github.com/Xpra-org/xpra-html5"
-          >xpra HTML5 project</a
-        >.
+        <a rel="noopener" href="https://github.com/Xpra-org/xpra-html5">xpra HTML5 project</a>.
       </span>
     </div>
 
@@ -720,13 +718,7 @@
           touchaction = "auto";
           label = "scroll";
         }
-        cdebug(
-          "mouse",
-          "set_touchaction() touchaction=",
-          touchaction,
-          "label=",
-          label
-        );
+        cdebug("mouse", "set_touchaction() touchaction=", touchaction, "label=", label);
         $("div.window canvas").css("touch-action", touchaction);
         $("#touchaction_link").html("Set Touch Action: " + label);
         if (!Utilities.isEdge()) {
@@ -736,9 +728,7 @@
 
       function init_client() {
         if (typeof jQuery == "undefined") {
-          window.alert(
-            "Incomplete Xpra HTML5 client installation: jQuery is missing, cannot continue."
-          );
+          window.alert("Incomplete Xpra HTML5 client installation: jQuery is missing, cannot continue.");
           return;
         }
         const https = document.location.protocol == "https:";
@@ -747,8 +737,7 @@
         const username = getparam("username") || getparam("handle") || null;
         const passwords = [];
         for (let i = 0; i < 10; i++) {
-          let password =
-            getparam("password" + i) || getparam("token" + i) || null;
+          let password = getparam("password" + i) || getparam("token" + i) || null;
           if (!password && i == 0) {
             //try with no suffix:
             password = getparam("password") || getparam("token") || null;
@@ -783,10 +772,7 @@
         const mediasource_video = getboolparam("mediasource_video", false);
         const remote_logging = getboolparam("remote_logging", true);
         const insecure = getboolparam("insecure", false);
-        const ignore_audio_blacklist = getboolparam(
-          "ignore_audio_blacklist",
-          false
-        );
+        const ignore_audio_blacklist = getboolparam("ignore_audio_blacklist", false);
         const keyboard = getboolparam("keyboard", Utilities.isMobile());
         // Some browsers trigger ugly popups if we try to read the clipboard
         // (only enabled with ssl contexts)
@@ -804,10 +790,7 @@
         const floating_menu = getboolparam("floating_menu", true);
         const toolbar_position = getparam("toolbar_position");
         const autohide = getboolparam("autohide", false);
-        const override_width = getfloatparam(
-          "override_width",
-          window.innerWidth
-        );
+        const override_width = getfloatparam("override_width", window.innerWidth);
         vrefresh = getintparam("vrefresh", -1);
         if (vrefresh < 0 && fps >= 30) {
           vrefresh = fps;
@@ -1030,10 +1013,7 @@
         }
 
         // check for encryption parameters
-        if (
-          encryption &&
-          ["0", "false", "no", "disabled"].indexOf(encryption.toLowerCase()) < 0
-        ) {
+        if (encryption && ["0", "false", "no", "disabled"].indexOf(encryption.toLowerCase()) < 0) {
           client.encryption = encryption.toUpperCase();
           if (key) {
             client.encryption_key = key;
@@ -1158,30 +1138,11 @@
               const modifiers = [];
               const keyval = keycode;
               const group = 0;
-              let packet = [
-                "key-action",
-                client.topwindow,
-                keyname,
-                true,
-                modifiers,
-                keyval,
-                str,
-                keycode,
-                group,
-              ];
+              const wid = client.topwindow;
+              let packet = ["key-action", wid, keyname, true, modifiers, keyval, str, keycode, group];
               cdebug("keyboard", packet);
               client.send(packet);
-              packet = [
-                "key-action",
-                client.topwindow,
-                keyname,
-                false,
-                modifiers,
-                keyval,
-                str,
-                keycode,
-                group,
-              ];
+              packet = ["key-action", wid, keyname, false, modifiers, keyval, str, keycode, group];
               cdebug("keyboard", packet);
               client.send(packet);
             } catch (e) {
@@ -1392,10 +1353,7 @@
           Object.hasOwn(document, "msRequestFullscreen");
         if (!f_el) {
           const elem = document.getElementById("fullscreen_button");
-          var is_fullscreen =
-            document.fullScreen ||
-            document.mozFullScreen ||
-            document.webkitIsFullScreen;
+          var is_fullscreen = document.fullScreen || document.mozFullScreen || document.webkitIsFullScreen;
           if (!is_fullscreen) {
             const req =
               elem.requestFullScreen ||
@@ -1521,8 +1479,7 @@
             clog("beforeunload(", event, ") active_file_transfers()=", aft);
             if (aft > 0) {
               //This text is now ignored by all browsers...
-              event.returnValue =
-                "There are file transfers in progress.\nAre you sure you want to leave?";
+              event.returnValue = "There are file transfers in progress.\nAre you sure you want to leave?";
             }
             return event.returnValue;
           },
@@ -1537,11 +1494,8 @@
         };
         const blocked_hosts = (getparam("blocked-hosts") || "").split(",");
         if (blocked_hosts.indexOf(client.host.toLowerCase()) >= 0) {
-          client.callback_close(
-            "connection to host '" +
-              client.host.replace(/[^A-Za-z0-9\.\:]/g, "") +
-              "' blocked"
-          );
+          const sane_host = client.host.replace(/[^A-Za-z0-9\.\:]/g, "");
+          client.callback_close("connection to host '" + sane_host + "' blocked");
         } else {
           client.connect();
         }
@@ -1572,12 +1526,7 @@
         init_audio(client);
         document.addEventListener("visibilitychange", function (e) {
           const window_ids = Object.keys(client.id_to_window).map(Number);
-          clog(
-            "visibilitychange hidden=",
-            document.hidden,
-            "connected=",
-            client.connected
-          );
+          clog("visibilitychange hidden=", document.hidden, "connected=", client.connected);
           if (client.connected) {
             if (document.hidden) {
               client.suspend();
@@ -1613,8 +1562,7 @@
             }
           });
 
-        const screen_change_events =
-          "webkitfullscreenchange mozfullscreenchange fullscreenchange MSFullscreenChange";
+        const screen_change_events = "webkitfullscreenchange mozfullscreenchange fullscreenchange MSFullscreenChange";
         $(document).on(screen_change_events, function () {
           const f_el =
             document.fullscreenElement ||
@@ -1629,11 +1577,8 @@
         });
         // disable right click menu:
         window.oncontextmenu = function (e) {
-          if (
-            client.clipboard_enabled &&
-            (client.clipboard_direction === "to-client" ||
-              client.clipboard_direction === "both")
-          ) {
+          const direction = client.clipboard_direction;
+          if (client.clipboard_enabled && (direction === "to-client" || direction === "both")) {
             client._poll_clipboard(e);
           }
           e.preventDefault();
@@ -1643,10 +1588,8 @@
 
         // Send clipboard from browser on focus if client-to-server clipboard is enabled.
         $(window).on("focus", (e) => {
-          if (
-            client.clipboard_direction === "to-server" ||
-            client.clipboard_direction === "both"
-          ) {
+          const direction = client.clipboard_direction;
+          if (direction === "to-server" || direction === "both") {
             client._poll_clipboard(e);
           }
         });
@@ -1683,11 +1626,7 @@
           init_page();
         };
         xhr.onerror = function () {
-          clog(
-            "network",
-            "default settings request failed with code",
-            xhr.status
-          );
+          clog("network", "default settings request failed with code", xhr.status);
           init_page();
         };
         xhr.onabort = function () {
@@ -1698,12 +1637,7 @@
       }
 
       $(document).ready(function () {
-        clog(
-          "document is ready, browser is",
-          navigator.platform,
-          "64-bit:",
-          Utilities.is_64bit()
-        );
+        clog("document is ready, browser is", navigator.platform, "64-bit:", Utilities.is_64bit());
         load_default_settings();
       });
     </script>
