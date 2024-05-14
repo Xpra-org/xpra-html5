@@ -620,6 +620,7 @@
       const DEFAULT_ON = [
         "steal",
         "printing",
+        "clipboard",
         "file_transfer",
         "reconnect",
         "floating_menu",
@@ -1662,13 +1663,9 @@
           "debug_audio",
           "debug_network",
         ];
-        const default_on = DEFAULT_ON.slice();
-        if (!(Utilities.isSafari() && ssl)) {
-          default_on.push("clipboard");
-        }
         for (let i = 0; i < bool_props.length; i++) {
           const prop = bool_props[i];
-          const def = default_on.includes(prop);
+          const def = DEFAULT_ON.includes(prop);
           document.getElementById(prop).checked = getboolparam(prop, def);
         }
         //scroll_reverse_y has 3 options: Yes, No, Auto
