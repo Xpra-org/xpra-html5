@@ -535,19 +535,15 @@
                 </li>
                 <li class="list-group-item">
                   <span>Debugging</span>:<br />
-                  <input type="checkbox" id="debug_main" /> <span>Main</span>,
-                  <input type="checkbox" id="debug_keyboard" />
-                  <span>keyboard</span>,
-                  <input type="checkbox" id="debug_geometry" />
-                  <span>geometry</span>,
-                  <input type="checkbox" id="debug_mouse" /> <span>mouse</span>,
-                  <input type="checkbox" id="debug_clipboard" />
-                  <span>clipboard</span>
-                  <input type="checkbox" id="debug_draw" /> <span>draw</span>,
-                  <input type="checkbox" id="debug_audio" /> <span>audio</span>,
-                  <input type="checkbox" id="debug_network" />
-                  <span>network</span>
-                  <input type="checkbox" id="debug_file" /> <span>file</span>
+                  <input type="checkbox" id="debug_main" />       <span>Main</span>,
+                  <input type="checkbox" id="debug_keyboard" />   <span>keyboard</span>,
+                  <input type="checkbox" id="debug_geometry" />   <span>geometry</span>,
+                  <input type="checkbox" id="debug_mouse" />      <span>mouse</span>,
+                  <input type="checkbox" id="debug_clipboard" />  <span>clipboard</span>
+                  <input type="checkbox" id="debug_draw" />       <span>draw</span>,
+                  <input type="checkbox" id="debug_audio" />      <span>audio</span>,
+                  <input type="checkbox" id="debug_network" />    <span>network</span>
+                  <input type="checkbox" id="debug_file" />       <span>file</span>
                 </li>
               </ul>
             </div>
@@ -919,10 +915,8 @@
         if (https) {
           protocol_port = 443;
         }
-        document.getElementById("server").value =
-          getparam("server") || link.hostname;
-        document.getElementById("port").value =
-          getparam("port") || link.port || protocol_port;
+        document.getElementById("server").value = getparam("server") || link.hostname;
+        document.getElementById("port").value = getparam("port") || link.port || protocol_port;
         document.getElementById("path").value = path || pathname;
         document.getElementById("username").value = getparam("username") || "";
 
@@ -930,8 +924,7 @@
         if (override_width) {
           document.getElementById("override_width").value = override_width;
         } else {
-          document.getElementById("override_width").placeholder =
-            window.innerWidth;
+          document.getElementById("override_width").placeholder = window.innerWidth;
         }
 
         const ssl = getboolparam("ssl", https);
@@ -1034,10 +1027,7 @@
           //local storage makes this secure
           $("span#insecure-span").hide();
         }
-        $("input#password").prop(
-          "disabled",
-          !has_session_storage && !ssl_input.checked && !insecure_input.checked
-        );
+        $("input#password").prop("disabled", !has_session_storage && !ssl_input.checked && !insecure_input.checked);
         insecure_input.onchange = function () {
           $("input#password").prop(
             "disabled",
@@ -1244,8 +1234,7 @@
           );
         }
 
-        const desktop_entry_icon =
-          document.getElementById("desktop_entry_icon");
+        const desktop_entry_icon = document.getElementById("desktop_entry_icon");
         const desktop_entry = document.getElementById("desktop_entry");
         function desktop_entry_changed() {
           var de = desktop_entry.options[desktop_entry.selectedIndex].innerHTML;
@@ -1549,20 +1538,13 @@
         const encoding = getparam("encoding") || "auto";
         document.getElementById("encoding").value = encoding;
 
-        const offscreen = getboolparam(
-          "offscreen",
-          XpraOffscreenWorker.isAvailable()
-        );
+        const offscreen = getboolparam("offscreen", XpraOffscreenWorker.isAvailable());
         document.getElementById("offscreen").checked = offscreen;
         if (!XpraOffscreenWorker.isAvailable()) {
           document.getElementById("offscreen").disabled = true;
-          document
-            .getElementById("offscreen")
-            .setAttribute("title", "not available in your browser");
+          document.getElementById("offscreen").setAttribute("title", "not available in your browser");
           document.getElementById("offscreen_label").classList.add("disabled");
-          document
-            .getElementById("offscreen_label")
-            .setAttribute("title", "not available in your browser");
+          document.getElementById("offscreen_label").setAttribute("title", "not available in your browser");
         }
 
         let bandwidth_limit = getparam("bandwidth_limit");
@@ -1597,8 +1579,7 @@
               Utilities.debug("request locale:", locale);
               if (locale != keyboard_layout) {
                 keyboard_layout = locale;
-                document.getElementById("keyboard_layout").value =
-                  keyboard_layout;
+                document.getElementById("keyboard_layout").value = keyboard_layout;
               }
             }
           }

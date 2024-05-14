@@ -442,8 +442,7 @@ class XpraClient {
       [PACKET_TYPES.clipboard_request]: this._process_clipboard_request,
       [PACKET_TYPES.clipboard_token]: this._process_clipboard_token,
       [PACKET_TYPES.close]: this._process_close,
-      [PACKET_TYPES.configure_override_redirect]:
-        this._process_configure_override_redirect,
+      [PACKET_TYPES.configure_override_redirect]: this._process_configure_override_redirect,
       [PACKET_TYPES.cursor]: this._process_cursor,
       [PACKET_TYPES.desktop_size]: this._process_desktop_size,
       [PACKET_TYPES.disconnect]: this._process_disconnect,
@@ -499,10 +498,7 @@ class XpraClient {
     this.on_connection_progress("Connecting to server", details, 40);
     // open the web socket, started it in a worker if available
     // check we have enough information for encryption
-    if (
-      this.encryption &&
-      (!this.encryption_key || this.encryption_key == "")
-    ) {
+    if (this.encryption && (!this.encryption_key || this.encryption_key == "")) {
       this.callback_close("no key specified for encryption");
       return;
     }
@@ -669,11 +665,7 @@ class XpraClient {
   }
 
   request_refresh(wid) {
-    this.send([
-      PACKET_TYPES.buffer_refresh,
-      wid,
-      0,
-      100,
+    this.send([PACKET_TYPES.buffer_refresh, wid, 0, 100,
       {
         "refresh-now": true,
         batch: { reset: true },
@@ -731,6 +723,7 @@ class XpraClient {
     this.clog("encoding:", encoding);
     this.encoding = encoding;
   }
+
   set_encoding_option(option, value) {
     this.clog("encoding: ", option, "=", value);
     this.encoding_options[option] = value;
@@ -1022,22 +1015,10 @@ class XpraClient {
     }
     let keystring = event.key || String.fromCharCode(keycode);
     let unpress_now = false;
-    this.debug(
-      "keyboard",
-      "last keycode pressed=",
-      this.last_keycode_pressed,
-      ", keycode=",
-      keycode,
-      ", pressed=",
-      pressed,
-      ", str=",
-      keystring
-    );
+    this.debug("keyboard", "last keycode pressed=", this.last_keycode_pressed, ", keycode=", keycode,
+      ", pressed=", pressed, ", str=", keystring);
     const dead = keystring.toLowerCase() == "dead";
-    if (
-      dead &&
-      ((this.last_keycode_pressed != keycode && !pressed) || pressed)
-    ) {
+    if (dead && ((this.last_keycode_pressed != keycode && !pressed) || pressed)) {
       //dead key unpress without first getting a key pressed event,
       //or just a regular pressed dead key, in both cases send a pair:
       pressed = true;
@@ -1046,19 +1027,7 @@ class XpraClient {
 
     this.last_keycode_pressed = pressed ? keycode : 0;
 
-    this.debug(
-      "keyboard",
-      "processKeyEvent(",
-      pressed,
-      ", ",
-      event,
-      ") key=",
-      keyname,
-      "keycode=",
-      keycode,
-      "dead=",
-      dead
-    );
+    this.debug("keyboard", "processKeyEvent(", pressed, ", ", event, ") key=", keyname, "keycode=", keycode, "dead=", dead);
 
     //sync numlock
     if (keycode == 144 && pressed) {
@@ -1182,23 +1151,15 @@ class XpraClient {
       }
       //let the OS see Control (or Meta on macos) and Shift:
       if (clipboard_modifier_keys.includes(keyname)) {
-        this.debug(
-          "keyboard",
-          "passing clipboard modifier key event to browser:",
-          keyname
-        );
+        this.debug("keyboard", "passing clipboard modifier key event to browser:", keyname);
         allow_default = true;
       }
       //let the OS see Shift + Insert:
       if (shift && keyname == "Insert") {
-        this.debug(
-          "keyboard",
-          "passing clipboard combination Shift+Insert to browser"
-        );
+        this.debug("keyboard", "passing clipboard combination Shift+Insert to browser");
         allow_default = true;
       }
-      const is_clipboard_modifier_set =
-        raw_modifiers.includes(clipboard_modifier);
+      const is_clipboard_modifier_set = raw_modifiers.includes(clipboard_modifier);
       if (is_clipboard_modifier_set) {
         const l = keyname.toLowerCase();
         if (l == "c" || l == "x" || l == "v") {
@@ -1211,38 +1172,18 @@ class XpraClient {
           );
           allow_default = true;
           if (l == "v") {
-            this.clipboard_delayed_event_time =
-              performance.now() + CLIPBOARD_EVENT_DELAY;
+            this.clipboard_delayed_event_time = performance.now() + CLIPBOARD_EVENT_DELAY;
           }
         }
       }
     }
 
     if (this.topwindow != undefined) {
-      let packet = [
-        "key-action",
-        this.topwindow,
-        keyname,
-        pressed,
-        modifiers,
-        keyval,
-        keystring,
-        keycode,
-        group,
-      ];
+      const wid = this.topwindow;
+      let packet = ["key-action", wid, keyname, pressed, modifiers, keyval, keystring, keycode, group];
       this.key_packets.push(packet);
       if (unpress_now) {
-        packet = [
-          "key-action",
-          this.topwindow,
-          keyname,
-          false,
-          modifiers,
-          keyval,
-          keystring,
-          keycode,
-          group,
-        ];
+        packet = ["key-action", wid, keyname, false, modifiers, keyval, keystring, keycode, group];
         this.key_packets.push(packet);
       }
 
@@ -1273,6 +1214,7 @@ class XpraClient {
   _keyb_onkeydown(event) {
     return this._keyb_process(true, event);
   }
+
   _keyb_onkeyup(event) {
     return this._keyb_process(false, event);
   }
@@ -1924,28 +1866,12 @@ class XpraClient {
       if (apx > 0) {
         const button_x = px >= 0 ? 6 : 7;
         const xdist = Math.round((px * 1000) / 120);
-        this.send([
-          PACKET_TYPES.wheel_motion,
-          wid,
-          button_x,
-          -xdist,
-          [x, y],
-          modifiers,
-          buttons,
-        ]);
+        this.send([PACKET_TYPES.wheel_motion, wid, button_x, -xdist, [x, y], modifiers, buttons]);
       }
       if (apy > 0) {
         const button_y = py >= 0 ? 5 : 4;
         const ydist = Math.round((py * 1000) / 120);
-        this.send([
-          PACKET_TYPES.wheel_motion,
-          wid,
-          button_y,
-          -ydist,
-          [x, y],
-          modifiers,
-          buttons,
-        ]);
+        this.send([PACKET_TYPES.wheel_motion, wid, button_y, -ydist, [x, y], modifiers, buttons]);
       }
       return;
     }
@@ -1967,45 +1893,13 @@ class XpraClient {
     const button_y = this.wheel_delta_y >= 0 ? 5 : 4;
     while (wx >= 120) {
       wx -= 120;
-      this.send([
-        PACKET_TYPES.button_action,
-        wid,
-        button_x,
-        true,
-        [x, y],
-        modifiers,
-        buttons,
-      ]);
-      this.send([
-        PACKET_TYPES.button_action,
-        wid,
-        button_x,
-        false,
-        [x, y],
-        modifiers,
-        buttons,
-      ]);
+      this.send([PACKET_TYPES.button_action, wid, button_x, true, [x, y], modifiers, buttons]);
+      this.send([PACKET_TYPES.button_action, wid, button_x, false, [x, y], modifiers, buttons]);
     }
     while (wy >= 120) {
       wy -= 120;
-      this.send([
-        PACKET_TYPES.button_action,
-        wid,
-        button_y,
-        true,
-        [x, y],
-        modifiers,
-        buttons,
-      ]);
-      this.send([
-        PACKET_TYPES.button_action,
-        wid,
-        button_y,
-        false,
-        [x, y],
-        modifiers,
-        buttons,
-      ]);
+      this.send([PACKET_TYPES.button_action, wid, button_y, true, [x, y], modifiers, buttons]);
+      this.send([PACKET_TYPES.button_action, wid, button_y, false, [x, y], modifiers, buttons]);
     }
     //store left overs:
     this.wheel_delta_x = this.wheel_delta_x >= 0 ? wx : -wx;
@@ -2017,11 +1911,7 @@ class XpraClient {
   init_clipboard() {
     window.addEventListener("paste", (e) => {
       let clipboardData = (e.originalEvent || e).clipboardData;
-      if (
-        clipboardData &&
-        clipboardData.files &&
-        clipboardData.files.length > 0
-      ) {
+      if (clipboardData && clipboardData.files && clipboardData.files.length > 0) {
         const files = clipboardData.files;
         this.clog("paste got", files.length, "files");
         for (let index = 0; index < files.length; index++) {
@@ -2309,8 +2199,7 @@ class XpraClient {
       default_settings.auto_fullscreen_desktop_class !== undefined &&
       default_settings.auto_fullscreen_desktop_class.length > 0
     ) {
-      const auto_fullscreen_desktop_class =
-        default_settings.auto_fullscreen_desktop_class;
+      const auto_fullscreen_desktop_class = default_settings.auto_fullscreen_desktop_class;
       if (
         win.windowtype == "DESKTOP" &&
         win.metadata["class-instance"].includes(auto_fullscreen_desktop_class)
@@ -2490,6 +2379,7 @@ class XpraClient {
       this.close();
     }, this.HELLO_TIMEOUT);
   }
+
   cancel_hello_timer() {
     if (this.hello_timer) {
       clearTimeout(this.hello_timer);
