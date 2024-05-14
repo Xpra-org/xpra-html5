@@ -784,6 +784,7 @@
           cpoll = !ssl;
         }
         const clipboard_poll = getboolparam("clipboard_poll", cpoll);
+        const clipboard_preferred_format = getparam("clipboard_preferred_format", "text/plain");
         const printing = getboolparam("printing", true);
         const file_transfer = getboolparam("file_transfer", true);
         const steal = getboolparam("steal", true);
@@ -892,6 +893,7 @@
         client.insecure = insecure;
         client.clipboard_enabled = clipboard;
         client.clipboard_poll = clipboard_poll;
+        client.clipboard_preferred_format = clipboard_preferred_format;
         client.printing = printing;
         client.file_transfer = file_transfer;
         client.bandwidth_limit = bandwidth_limit;
@@ -1072,6 +1074,7 @@
                 keyboard: keyboard,
                 clipboard: clipboard,
                 clipboard_poll: clipboard_poll,
+                clipboard_preferred_format: clipboard_preferred_format,
                 printing: printing,
                 file_transfer: file_transfer,
                 exit_with_children: exit_with_children,

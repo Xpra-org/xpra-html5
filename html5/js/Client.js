@@ -97,6 +97,7 @@ class XpraClient {
     this.start_new_session = null;
     this.clipboard_enabled = false;
     this.clipboard_poll = false;
+    this.clipboard_preferred_format = "text/plain";
     this.file_transfer = false;
     this.remote_file_size_limit = 0;
     this.remote_file_chunks = 0;
@@ -268,22 +269,12 @@ class XpraClient {
     this.scroll_reverse_x = false;
     this.scroll_reverse_y = "auto";
     // clipboard
-    this.clipboard_direction =
-      default_settings["clipboard_direction"] || "both";
+    this.clipboard_direction = default_settings["clipboard_direction"] || "both";
     this.clipboard_datatype = null;
     this.clipboard_buffer = "";
     this.clipboard_server_buffers = {};
     this.clipboard_pending = false;
     this.clipboard_targets = [TEXT_HTML, UTF8_STRING, "TEXT", "STRING", TEXT_PLAIN];
-    if (
-      CLIPBOARD_IMAGES &&
-      navigator.clipboard &&
-      Object.hasOwn(navigator.clipboard, "write")
-    ) {
-      this.clipboard_targets.push("image/png");
-    } else {
-      this.log("no clipboard write support: no images, navigator.clipboard=", navigator.clipboard);
-    }
     // printing / file-transfer:
     this.remote_printing = false;
     this.remote_file_transfer = false;
@@ -1664,6 +1655,19 @@ class XpraClient {
       this.log("legacy clipboard");
     }
     this.log("clipboard polling: ", this.clipboard_poll);
+
+    this.clipboard_targets = [this.clipboard_preferred_format];
+    for (const target of [TEXT_HTML, UTF8_STRING, "TEXT", "STRING", TEXT_PLAIN]) {
+      if (target != this.clipboard_preferred_format) {
+        this.clipboard_targets.push(target);
+      }
+    }
+    if (CLIPBOARD_IMAGES && navigator.clipboard && Object.hasOwn(navigator.clipboard, "write")) {
+      this.clipboard_targets.push("image/png");
+    } else {
+      this.log("no clipboard write support: no images, navigator.clipboard=", navigator.clipboard);
+    }
+
     return {
       "enabled" : this.clipboard_enabled,
       "want_targets" : true,

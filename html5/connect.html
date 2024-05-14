@@ -431,7 +431,12 @@
 
                 <li class="list-group-item clipboard">
                   <input type="checkbox" id="clipboard" />
-                  <span>Clipboard sharing</span>
+                  <span>Clipboard sharing, preferred format:</span>
+                  <select id="clipboard_preferred_format">
+                    <option value="text/plain">text/plain</option>
+                    <option value="UTF8_STRING">UTF8</option>
+                    <option value="text/html">text/html</option>
+                  </select>
                 </li>
                 <li class="list-group-item printing">
                   <input type="checkbox" id="printing" /> <span>Printing</span>
@@ -574,6 +579,7 @@
         "encryption",
         "scroll_reverse_y",
         "vrefresh",
+        "clipboard_preferred_format",
       ];
       const BOOLEAN_PROPERTIES = [
         "keyboard",
@@ -1536,6 +1542,9 @@
           set_exit_actions(action == "connect");
         });
         $('input:radio[value="' + action + '"]').click();
+
+        const clipboard_preferred_format = getparam("clipboard_preferred_format") || "text/plain";
+        document.getElementById("clipboard_preferred_format").value = clipboard_preferred_format;
 
         const encoding = getparam("encoding") || "auto";
         document.getElementById("encoding").value = encoding;
