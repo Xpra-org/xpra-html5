@@ -153,7 +153,7 @@
         update_info("requesting contents via readText()");
         navigator.clipboard.readText().then((text) => {
           update_info("readText() clipboard data: '"+text+"'");
-          contents.innerText = text;
+          contents.innerHTML = text;
           // const clipboard_buffer = unescape(encodeURIComponent(text));
         },
         (error) => {
