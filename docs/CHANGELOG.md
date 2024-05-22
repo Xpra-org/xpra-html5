@@ -1,7 +1,7 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
-## [13.0] 2024-05-10
+## [13.0] 2024-05-23
 - bug fixes:
   - [do increase video size with offscreen decoding](https://github.com/Xpra-org/xpra-html5/commit/69c4e7d36ba1dca420f7b4e07224133b20298489) + [fixup](https://github.com/Xpra-org/xpra-html5/commit/eb9cb20b568a3ef18e7a73c1b0af597ea212a326)
   - [URL parameters ignored](https://github.com/Xpra-org/xpra-html5/commit/864dc00808c6caab238578919cc2442488d4c9cf) + [fixup](https://github.com/Xpra-org/xpra-html5/commit/c07629f9383dafffbcd146747ffc647c50f4c336), and [another](https://github.com/Xpra-org/xpra-html5/commit/7f3aa77e69eb4822d40490dc31f21f2fcbee9816) and [another](https://github.com/Xpra-org/xpra-html5/commit/81692ba11c34da0968e9c8f72119f7831b944b62)
@@ -9,7 +9,11 @@ All notable changes to this project will be documented in this file.
   - [URL forwarding not enabled](https://github.com/Xpra-org/xpra-html5/commit/b68ca432d2743732ae653340a2932dea03740cca)
   - handling of [connection URIs](https://github.com/Xpra-org/xpra-html5/commit/529e2932a2704e921b6b4833451b85af52bba13b) and session files: [syntax mismatch](https://github.com/Xpra-org/xpra-html5/commit/02eace0c88b4a76b8c2d8102fc4d2cf525e26fe9), [include display number](https://github.com/Xpra-org/xpra-html5/commit/877bf364a43f9eb3126fa18e7e5c728b3c5bc09f), [skip default values](https://github.com/Xpra-org/xpra-html5/commit/b2c8207f85a1a9c13a6266527feb599cd196e5f0), [boolean options not saved correctly](https://github.com/Xpra-org/xpra-html5/commit/e8f32e861c0b730c233447a1df806b9b4891583d)
 - clipboard:
+  - [let users choose the preferred clipboard format](https://github.com/Xpra-org/xpra-html5/commit/124f57eaf4f52603bc4c5e9470e947b1afe87d2f)
+  - [disable polling with Safari and Firefox](https://github.com/Xpra-org/xpra-html5/commit/8f8de0dd89017c9b3f377a5117ffc108579f8fb4)
+  - [add manual clipboard synchronization button](https://github.com/Xpra-org/xpra-html5/commit/22940880a50764b8e3c3631ebc80c9ad38a70cd2), [make space for it in the top bar](https://github.com/Xpra-org/xpra-html5/commit/0b6a09260adbf4d4d40c83a268c5ef195273b269)
   - [`text/html` not copied](https://github.com/Xpra-org/xpra-html5/commit/085e0df8fde96ca96611932d33ee93577221e6a8)
+  - [add test page](https://github.com/Xpra-org/xpra-html5/commit/68f6b36fb76d49825a2771161e2145c63b9e8cee), [add more tools to it](https://github.com/Xpra-org/xpra-html5/commit/f709521eff573b5171fee5dfbd8f3f77ea541c93)
 - features:
   - [trigger file download from server via file chooser](https://github.com/Xpra-org/xpra-html5/commit/674a4004e0ce8c0b81f68f599274352f967ab44a)
   - [show some server information](https://github.com/Xpra-org/xpra-html5/commit/c625024513748664144d79c38cb6788e40c6e6d8)
@@ -20,6 +24,7 @@ All notable changes to this project will be documented in this file.
   - [remove outdated docstring](https://github.com/Xpra-org/xpra-html5/commit/71d8ad39a765d19031705f89af6da5c89f0e060a)
   - [installation script supports individual info commands](https://github.com/Xpra-org/xpra-html5/commit/1cbc65c8f4a3e7a49ff979d9b253539d540cd37a)
   - [ignore whitespace when updating vcs info](https://github.com/Xpra-org/xpra-html5/commit/c22bd46eef159acd8f75681ccfe8d655c2d099e0)
+  - [remove pointless line wrapping](https://github.com/Xpra-org/xpra-html5/commit/eb54346a9779a721fd69d96b7bf69f77314edaaf), [bad automated formatting](https://github.com/Xpra-org/xpra-html5/commit/2d2a19a5dba1b67b6635cd168bdacca6f10bbba9), [improve readability](https://github.com/Xpra-org/xpra-html5/commit/cffed14e08fb296cdd071497ffd399ce987e5719)
 
 ## [12.0] 2024-03-29
 - [keycloak authentication fails](https://github.com/Xpra-org/xpra-html5/commit/d09a0b2170c3f93319a5ce0984f57f12794617ca)

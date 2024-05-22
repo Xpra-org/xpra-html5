@@ -4,7 +4,7 @@
 # later version. See the file COPYING for details.
 
 %define version 13
-%define release 1.r6%{?dist}
+%define release 1.r1569%{?dist}
 %define minifier uglifyjs
 %define python python3
 
@@ -78,7 +78,7 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
-* Fri May 10 2024 Antoine Martin <antoine@xpra.org> 13-6-1
+* Thu May 23 2024 Antoine Martin <antoine@xpra.org> 13-6-1
 - bug fixes:
    do increase video size with offscreen decoding
    URL parameters ignored
@@ -86,7 +86,11 @@ rm -rf $RPM_BUILD_ROOT
    URL forwarding not enabled
    handling of connection URIs and session files
 - clipboard:
+   let users choose the preferred clipboard format
+   disable polling with Safari and Firefox
+   add manual clipboard synchronization button
    `text/html` not copied
+   add test page
 - features:
    trigger file download from server via file chooser
    show some server information
@@ -97,6 +101,7 @@ rm -rf $RPM_BUILD_ROOT
    remove outdated docstring
    installation script supports individual info commands
    ignore whitespace when updating vcs info
+   remove pointless line wrapping, bad automated formatting, improve readability
 
 * Fri Mar 29 2024 Antoine Martin <antoine@xpra.org> 12.0-6-1
 - keycloak authentication fails
