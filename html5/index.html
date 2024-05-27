@@ -1235,6 +1235,11 @@
       }
 
       function init_file_transfer(client) {
+        if (!client.file_transfer) {
+          $("upload_link").removeAttr("href");
+          return;
+        }
+
         function handleFileSelect(evt) {
           evt.stopPropagation();
           evt.preventDefault();
@@ -1465,6 +1470,7 @@
 
       let client;
       function init_page() {
+        clog("initializing page");
         const touchaction = getparam("touchaction") || "scroll";
         touchaction_scroll = touchaction == "scroll";
         set_touchaction();
@@ -1519,15 +1525,10 @@
             client.debug.apply(client, arguments);
           }
         };
+        clog("initializing subsystems");
         init_tablet_input(client);
-        if (client.clipboard_enabled) {
-          init_clipboard(client);
-        }
-        if (client.file_transfer) {
-          init_file_transfer(client);
-        } else {
-          $("upload_link").removeAttr("href");
-        }
+        init_clipboard(client);
+        init_file_transfer(client);
         init_keyboard(client);
         init_clock(client, getboolparam("clock", true));
         init_audio(client);

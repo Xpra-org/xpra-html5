@@ -1909,6 +1909,11 @@ class XpraClient {
   }
 
   init_clipboard() {
+    this.clog("initializing clipboard: enabled=", this.clipboard_enabled,
+              ", poll=", this.clipboard_poll, ", preferred format=", this.clipboard_preferred_format);
+    if (!this.clipboard_enabled) {
+      return;
+    }
     window.addEventListener("paste", (e) => {
       let clipboardData = (e.originalEvent || e).clipboardData;
       if (clipboardData && clipboardData.files && clipboardData.files.length > 0) {
@@ -2463,15 +2468,10 @@ class XpraClient {
   }
 
   _process_close(packet) {
-    this.clog(
-      "websocket closed: ",
-      packet[1],
-      "reason: ",
-      this.disconnect_reason,
-      ", reconnect: ",
-      this.reconnect,
-      ", reconnect attempt: ",
-      this.reconnect_attempt
+    this.clog("websocket closed: ", packet[1],
+              "reason: ", this.disconnect_reason,
+              ", reconnect: ", this.reconnect,
+              ", reconnect attempt: ", this.reconnect_attempt
     );
     if (this.reconnect_in_progress) {
       return;
