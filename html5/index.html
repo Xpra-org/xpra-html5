@@ -784,7 +784,7 @@
           cpoll = !ssl;
         }
         const clipboard_poll = getboolparam("clipboard_poll", cpoll);
-        const clipboard_preferred_format = getparam("clipboard_preferred_format", "text/plain");
+        const clipboard_preferred_format = getparam("clipboard_preferred_format") || "text/plain";
         const printing = getboolparam("printing", true);
         const file_transfer = getboolparam("file_transfer", true);
         const steal = getboolparam("steal", true);
