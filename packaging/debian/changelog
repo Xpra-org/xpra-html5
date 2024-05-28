@@ -1,5 +1,6 @@
 xpra-html5 (13-r1569-1) UNRELEASED; urgency=low
   * bug fixes:
+    - password prompt and re-connection issues
     - do increase video size with offscreen decoding
     - URL parameters ignored
     - file downloads corrupted
@@ -23,7 +24,7 @@ xpra-html5 (13-r1569-1) UNRELEASED; urgency=low
     - ignore whitespace when updating vcs info
     - remove pointless line wrapping, bad automated formatting, improve readability
 
- -- Antoine Martin antoine@xpra.org  Thu, 23 May 2024 00:14:28 +0700 +700
+ -- Antoine Martin antoine@xpra.org  Tue, 28 May 2024 22:19:17 +0700 +700
 
 xpra-html5 (12.0-r6-1) UNRELEASED; urgency=low
   * keycloak authentication fails

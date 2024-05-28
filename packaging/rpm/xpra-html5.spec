@@ -78,8 +78,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
-* Thu May 23 2024 Antoine Martin <antoine@xpra.org> 13-6-1
+* Tue May 28 2024 Antoine Martin <antoine@xpra.org> 13-6-1
 - bug fixes:
+   password prompt and re-connection issues
    do increase video size with offscreen decoding
    URL parameters ignored
    file downloads corrupted

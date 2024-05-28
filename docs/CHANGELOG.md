@@ -1,15 +1,16 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
-## [13.0] 2024-05-23
+## [13.0] 2024-05-28
 - bug fixes:
+  - [password prompt and re-connection issues](https://github.com/Xpra-org/xpra-html5/commit/388fa5322dc32fe86e88d8bf50cc6c9ad16d6426)
   - [do increase video size with offscreen decoding](https://github.com/Xpra-org/xpra-html5/commit/69c4e7d36ba1dca420f7b4e07224133b20298489) + [fixup](https://github.com/Xpra-org/xpra-html5/commit/eb9cb20b568a3ef18e7a73c1b0af597ea212a326)
   - [URL parameters ignored](https://github.com/Xpra-org/xpra-html5/commit/864dc00808c6caab238578919cc2442488d4c9cf) + [fixup](https://github.com/Xpra-org/xpra-html5/commit/c07629f9383dafffbcd146747ffc647c50f4c336), and [another](https://github.com/Xpra-org/xpra-html5/commit/7f3aa77e69eb4822d40490dc31f21f2fcbee9816) and [another](https://github.com/Xpra-org/xpra-html5/commit/81692ba11c34da0968e9c8f72119f7831b944b62)
   - [file downloads corrupted](https://github.com/Xpra-org/xpra-html5/commit/0ce0a70bdaf383e539d0e90fb701c241dc91c1dd)
   - [URL forwarding not enabled](https://github.com/Xpra-org/xpra-html5/commit/b68ca432d2743732ae653340a2932dea03740cca)
   - handling of [connection URIs](https://github.com/Xpra-org/xpra-html5/commit/529e2932a2704e921b6b4833451b85af52bba13b) and session files: [syntax mismatch](https://github.com/Xpra-org/xpra-html5/commit/02eace0c88b4a76b8c2d8102fc4d2cf525e26fe9), [include display number](https://github.com/Xpra-org/xpra-html5/commit/877bf364a43f9eb3126fa18e7e5c728b3c5bc09f), [skip default values](https://github.com/Xpra-org/xpra-html5/commit/b2c8207f85a1a9c13a6266527feb599cd196e5f0), [boolean options not saved correctly](https://github.com/Xpra-org/xpra-html5/commit/e8f32e861c0b730c233447a1df806b9b4891583d)
 - clipboard:
-  - [let users choose the preferred clipboard format](https://github.com/Xpra-org/xpra-html5/commit/124f57eaf4f52603bc4c5e9470e947b1afe87d2f)
+  - [let users choose the preferred clipboard format](https://github.com/Xpra-org/xpra-html5/commit/124f57eaf4f52603bc4c5e9470e947b1afe87d2f) + [fixup](https://github.com/Xpra-org/xpra-html5/commit/8a6687a063528f2fbc4305c10daaaccfc1edd2ab)
   - [disable polling with Safari and Firefox](https://github.com/Xpra-org/xpra-html5/commit/8f8de0dd89017c9b3f377a5117ffc108579f8fb4)
   - [add manual clipboard synchronization button](https://github.com/Xpra-org/xpra-html5/commit/22940880a50764b8e3c3631ebc80c9ad38a70cd2), [make space for it in the top bar](https://github.com/Xpra-org/xpra-html5/commit/0b6a09260adbf4d4d40c83a268c5ef195273b269)
   - [`text/html` not copied](https://github.com/Xpra-org/xpra-html5/commit/085e0df8fde96ca96611932d33ee93577221e6a8)
