@@ -5,39 +5,22 @@
             Copyright (c) 2013-2022 Antoine Martin <antoine@xpra.org>
             Copyright (c) 2014 Joshua Higgins <josh@kxes.net>
             Licensed under MPL 2.0
-        -->
+    -->
 
     <title>xpra websockets client</title>
     <meta charset="utf-8" />
     <meta name="description" content="xpra websockets client" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
-    <link
-      rel="shortcut icon"
-      type="image/png"
-      href="favicon.png"
-      id="favicon"
-    />
-
+    <link rel="shortcut icon" type="image/png" href="favicon.png" id="favicon" />
     <link rel="stylesheet" href="css/client.css" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="stylesheet" href="css/spinner.css" />
 
-    <script>
-      if (!Object.hasOwn) {
-        Object.hasOwn = Object.call.bind(Object.hasOwnProperty);
-      }
-    </script>
     <script type="text/javascript" src="js/lib/jquery.js"></script>
     <script type="text/javascript" src="js/lib/jquery-ui.js"></script>
-    <script
-      type="text/javascript"
-      src="js/lib/jquery.ba-throttle-debounce.js"
-    ></script>
-    <script
-      type="text/javascript"
-      src="js/lib/jquery-transform-draggable.js"
-    ></script>
+    <script type="text/javascript" src="js/lib/jquery.ba-throttle-debounce.js"></script>
+    <script type="text/javascript" src="js/lib/jquery-transform-draggable.js"></script>
 
     <script type="text/javascript" src="js/lib/rencode.js"></script>
     <script type="text/javascript" src="js/lib/lz4.js"></script>
@@ -53,10 +36,7 @@
         -->
     <script type="text/javascript" src="js/lib/aurora/aurora-xpra.js"></script>
 
-    <script
-      type="text/javascript"
-      src="js/lib/web-streams-ponyfill.es6.js"
-    ></script>
+    <script type="text/javascript" src="js/lib/web-streams-ponyfill.es6.js"></script>
     <script type="text/javascript" src="js/lib/StreamSaver.js"></script>
     <script type="text/javascript" src="js/lib/FileSaver.js"></script>
     <script type="text/javascript" src="js/lib/detect-zoom.js"></script>
@@ -70,10 +50,7 @@
     <script type="text/javascript" src="js/MediaSourceUtil.js"></script>
     <script type="text/javascript" src="js/RgbHelpers.js"></script>
     <script type="text/javascript" src="js/VideoDecoder.js"></script>
-    <script
-      type="text/javascript"
-      src="js/OffscreenDecodeWorkerHelper.js"
-    ></script>
+    <script type="text/javascript" src="js/OffscreenDecodeWorkerHelper.js"></script>
     <script type="text/javascript" src="js/Client.js"></script>
 
     <link rel="stylesheet" type="text/css" href="css/menu.css" />
@@ -87,24 +64,18 @@
     <script type="text/javascript" src="js/lib/slick.js"></script>
 
     <!-- simple-keyboard -->
-    <script
-      type="application/javascript"
-      src="js/lib/simple-keyboard.js"
-    ></script>
+    <script type="application/javascript" src="js/lib/simple-keyboard.js"></script>
     <link rel="stylesheet" href="css/simple-keyboard.css" />
   </head>
 
   <body>
-    <div
-      id="dpi"
-      style="
+    <div id="dpi" style="
         width: 1in;
         height: 1in;
         left: -100%;
         top: -100%;
         position: absolute;
-      "
-    ></div>
+      "></div>
 
     <div id="progress" class="overlay" style="display: none">
       <p id="progress-label"></p>
