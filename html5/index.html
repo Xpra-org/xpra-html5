@@ -131,8 +131,8 @@
           </div>
           <br />
           <div id="login-buttons">
-            <a class="login-button" role="button" tabindex="2" onclick="login_cancel();">Cancel</a>
-            <a class="login-button" role="button" tabindex="3" onclick="login_connect();">Connect</a>
+            <a class="login-button" role="button" tabindex="2" id="login_cancel" onclick="login_cancel();">Cancel</a>
+            <a class="login-button" role="button" tabindex="3" id="login_connect" onclick="login_connect();">Connect</a>
           </div>
         </div>
       </div>
@@ -510,10 +510,7 @@
         cleanup_dialogs();
         $("button.menu-button").prop("disabled", true);
       }
-      document.addEventListener(
-        "connection-established",
-        connection_established
-      );
+      document.addEventListener("connection-established", connection_established);
       document.addEventListener("connection-lost", connection_lost);
 
       $("body").click(function () {
@@ -667,9 +664,6 @@
         login_callback(password);
       }
       function password_special_keys(e) {
-        if (!e) {
-          e = window.event;
-        }
         if (e.keyCode == 13) {
           e.preventDefault();
           login_connect();
@@ -1465,12 +1459,24 @@
         }
       }
 
+      function init_auth_autosubmit() {
+        document.querySelector("#login_connect").addEventListener("keyup", password_special_keys);
+        document.querySelector("#login_cancel").addEventListener("keyup", event => {
+          if (event.keyCode == 27 || event.keyCode == 13) {
+            event.preventDefault();
+            login_cancel();
+          }
+        });
+      }
+
       let client;
       function init_page() {
         clog("initializing page");
         const touchaction = getparam("touchaction") || "scroll";
         touchaction_scroll = touchaction == "scroll";
         set_touchaction();
+
+        init_auth_autosubmit();
 
         client = init_client();
         addEventListener(
