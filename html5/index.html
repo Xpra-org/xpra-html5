@@ -114,9 +114,11 @@
 
     <div id="login-overlay">
       <div id="login-box">
+        <form id="login_form">
         <div id="login-innerbox">
           <span id="login-header"></span>
           <br />
+          <input type="text" name="username" id="username" value="" autocomplete="username" style="display: none;">
           <div id="password-box">
             <input
               title="Password"
@@ -127,6 +129,7 @@
               size="16"
               maxlength="256"
               tabindex="1"
+              required
             />
           </div>
           <br />
@@ -135,6 +138,7 @@
             <a class="login-button" role="button" tabindex="3" id="login_connect" onclick="login_connect();">Connect</a>
           </div>
         </div>
+        </form>
       </div>
     </div>
 
@@ -802,6 +806,9 @@
         } catch (e) {
           //ignore
         }
+
+        const username_input = document.getElementById("username");
+        username_input.value = username || "none";
 
         var scale = 1;
         if (window.innerWidth !== override_width) {
