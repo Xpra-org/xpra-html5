@@ -523,6 +523,9 @@ table#sessiondata td {
   border: 1px solid transparent;
   border-radius: 4px;
 }
+.login-button:focus, .login-button:hover {
+  background-color: #449d44;
+}
 
 @media screen {
   .notifications .alert.visible {
