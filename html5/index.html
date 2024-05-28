@@ -1094,7 +1094,9 @@
                 props["debug_" + category] = true;
               }
               if (insecure || Utilities.hasSessionStorage()) {
-                props["password"] = password;
+                for (let i = 0; i < passwords.length; i++) {
+                  add_prop("password"+i, passwords[i]);
+                }
               } else {
                 props["password"] = "";
               }
