@@ -83,9 +83,6 @@ class XpraProtocolWorkerHost {
     this.worker.postMessage({ c: "x", p: caps, k: key });
   };
 
-  enable_packet_encoder = function (packet_encoder) {
-    this.worker.postMessage({ c: "p", pe: packet_encoder });
-  };
 }
 
 /*
@@ -108,7 +105,6 @@ class XpraProtocol {
 
     //Queue processing via intervals
     this.process_interval = 0; //milliseconds
-    this.packet_encoder = "rencodeplus";
   }
 
   close_event_str(event) {
@@ -429,18 +425,11 @@ class XpraProtocol {
     return this.rQ.length > 0;
   }
 
-  enable_packet_encoder(packet_encoder) {
-    this.packet_encoder = packet_encoder;
-  }
-
   process_send_queue() {
     while (this.sQ.length > 0 && this.websocket) {
       const packet = this.sQ.shift();
       if (!packet) {
         return;
-      }
-      if (this.packet_encoder != "rencodeplus") {
-        throw `invalid packet encoder: ${this.packet_encoder}`;
       }
       let proto_flags = 0x10;
       let bdata = null;
@@ -448,7 +437,6 @@ class XpraProtocol {
         bdata = rencode(packet);
       } catch (error) {
         this.error("Error: failed to encode packet:", packet);
-        this.error(" with packet encoder", this.packet_encoder);
         this.error(error);
         continue;
       }
@@ -646,9 +634,6 @@ if (
           break;
         case "s":
           protocol.send(data.p);
-          break;
-        case "p":
-          protocol.enable_packet_encoder(data.pe);
           break;
         case "x":
           protocol.set_cipher_out(data.p, data.k);
