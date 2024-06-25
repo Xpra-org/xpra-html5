@@ -276,9 +276,7 @@ class XpraProtocol {
     }
 
     if (proto_flags > 1 && proto_flags != 0x10) {
-      this.protocol_error(
-        `we can't handle this protocol flag yet: ${proto_flags}`
-      );
+      this.protocol_error(`we can't handle this protocol flag yet: ${proto_flags}`);
       return;
     }
 
@@ -300,8 +298,7 @@ class XpraProtocol {
     // work out padding if necessary
     let padding = 0;
     if (proto_crypto && this.cipher_in_block_size > 0) {
-      padding =
-        this.cipher_in_block_size - (packet_size % this.cipher_in_block_size);
+      padding = this.cipher_in_block_size - (packet_size % this.cipher_in_block_size);
       packet_size += padding;
     }
 
@@ -495,10 +492,7 @@ class XpraProtocol {
       const raw_buffers = [];
       if (packet[0] === "draw" && "buffer" in packet[7]) {
         raw_buffers.push(packet[7].buffer);
-      } else if (
-        packet[0] === "sound-data" &&
-        Object.hasOwn(packet[2], "buffer")
-      ) {
+      } else if (packet[0] === "sound-data" && Object.hasOwn(packet[2], "buffer")) {
         raw_buffers.push(packet[2].buffer);
       }
       postMessage({ c: "p", p: packet }, raw_buffers);
