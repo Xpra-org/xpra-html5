@@ -22,6 +22,7 @@ const FILE_SIZE_LIMIT = 4 * 1024 * 1024 * 1024; //are we even allowed to allocat
 const FILE_CHUNKS_SIZE = 128 * 1024;
 const MAX_CONCURRENT_FILES = 5;
 const CHUNK_TIMEOUT = 10 * 1000;
+const WEBTRANSPORT = false;
 
 const TEXT_PLAIN = "text/plain";
 const UTF8_STRING = "UTF8_STRING";
@@ -642,10 +643,13 @@ class XpraClient {
   }
 
   _do_connect(with_worker) {
-    this.protocol =
-      with_worker && !XPRA_CLIENT_FORCE_NO_WORKER
-        ? new XpraProtocolWorkerHost()
-        : new XpraProtocol();
+    if (WEBTRANSPORT) {
+      this.protocol = new XpraWebTransportProtocol();
+    }
+    else {
+        const use_worker = with_worker && !XPRA_CLIENT_FORCE_NO_WORKER;
+        this.protocol = use_worker ? new XpraProtocolWorkerHost() : new XpraProtocol();
+    }
     this.open_protocol();
   }
 
@@ -653,15 +657,27 @@ class XpraClient {
     // set protocol to deliver packets to our packet router
     this.protocol.set_packet_handler((packet) => this._route_packet(packet));
     // make uri
-    let uri = "ws://";
-    if (this.ssl) uri = "wss://";
+    let uri = "";
+    if (WEBTRANSPORT) {
+        uri = "http";
+    }
+    else {
+        uri = "ws";
+    }
+    if (this.ssl) {
+        uri += "s";
+    }
+    uri += "://";
     uri += this.host;
-    if (this.port) uri += `:${this.port}`;
+    if (this.port) {
+        uri += `:${this.port}`;
+    }
     uri += this.path;
     // do open
     this.uri = uri;
     this.on_connection_progress("Opening WebSocket connection", uri, 50);
     this.protocol.open(uri);
+    console.log("open_protocol() done");
   }
 
   request_refresh(wid) {
