@@ -16,6 +16,7 @@ class XpraWebTransportProtocol {
     this.packet_handler = null;
     this.webtransport = null;
     this.stream = null;
+    this.writer = null;
     this.raw_packets = [];
     this.rQ = []; // Receive queue
     this.sQ = []; // Send queue
@@ -23,12 +24,7 @@ class XpraWebTransportProtocol {
     this.header = [];
 
     //Queue processing via intervals
-    this.process_interval = 1000; //milliseconds
-  }
-
-  close_event_str(event) {
-    // TODO: re-use websocket `code_mappings`?
-    return ""+event;
+    this.process_interval = 0; //milliseconds
   }
 
   cancel_connected_timer() {
@@ -97,12 +93,9 @@ class XpraWebTransportProtocol {
       console.error("error in read loop: "+e);
       handle(["close", "read loop error", e.toString()])
     });
+    this.writer = this.stream.writable.getWriter();
     handle(["open"]);
     console.log("async open end");
-  }
-
-  toHex(buffer) {
-    return Array.prototype.map.call(buffer, x => ('00' + x.toString(16)).slice(-2)).join('');
   }
 
   async read_loop() {
@@ -113,7 +106,6 @@ class XpraWebTransportProtocol {
       if (done) {
         break;
       }
-      console.log("received: ", this.toHex(value));
       this.rQ.push(value);
       setTimeout(() => me.process_receive_queue(), this.process_interval);
     }
@@ -335,7 +327,7 @@ class XpraWebTransportProtocol {
       }
       packet_data.set(bdata, 8);
       if (this.stream) {
-        this.stream.writable.getWriter().write(new Uint8Array(packet_data).buffer);
+        this.writer.write(new Uint8Array(packet_data).buffer);
       }
     }
   }

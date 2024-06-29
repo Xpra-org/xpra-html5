@@ -22,7 +22,7 @@ const FILE_SIZE_LIMIT = 4 * 1024 * 1024 * 1024; //are we even allowed to allocat
 const FILE_CHUNKS_SIZE = 128 * 1024;
 const MAX_CONCURRENT_FILES = 5;
 const CHUNK_TIMEOUT = 10 * 1000;
-const WEBTRANSPORT = false;
+const WEBTRANSPORT = true;
 
 const TEXT_PLAIN = "text/plain";
 const UTF8_STRING = "UTF8_STRING";
