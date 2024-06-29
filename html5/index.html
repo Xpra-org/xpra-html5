@@ -728,6 +728,8 @@
         const server = getparam("server") || window.location.hostname;
         const port = getparam("port") || window.location.port;
         const ssl = getboolparam("ssl", https);
+        const webtransport = getboolparam("webtransport", false);
+        console.error("webtransport=", webtransport);
         const path = getparam("path") || window.location.pathname;
         const encryption = getparam("encryption") || null;
         const key = getparam("key") || null;
@@ -1026,6 +1028,7 @@
                 server: server,
                 port: port,
                 ssl: ssl,
+                webtransport: webtransport,
                 path: path,
                 encryption: encryption,
                 encoding: encoding,
@@ -1086,6 +1089,7 @@
         client.host = server;
         client.port = port;
         client.ssl = ssl;
+        client.webtransport = webtransport;
         client.path = path.split("index.html")[0];
         return client;
       }

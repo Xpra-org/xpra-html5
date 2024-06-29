@@ -108,13 +108,15 @@
           />
           <br />
           <div class="security-box">
-            <span id="ssl-span"
-              ><input type="checkbox" id="ssl" /> Secure Sockets</span
-            >
-            <span id="insecure-span"
-              ><input type="checkbox" id="insecure" /> Insecure plain-text
-              passwords</span
-            >
+            <span id="ssl-span">
+              <input type="checkbox" id="ssl" /> Secure Sockets
+            </span>
+            <span id="insecure-span">
+              <input type="checkbox" id="insecure" /> Insecure plain-text passwords
+            </span>
+            <span id="webtransport-span">
+              <input type="checkbox" id="webtransport" /> WebTransport
+            </span>
             <br />
             <span id="encryption-span">
               <input type="checkbox" id="aes" />
@@ -593,6 +595,7 @@
         "mediasource_video",
         "ssl",
         "insecure",
+        "webtransport",
         "floating_menu",
         "autohide",
         "clock",
@@ -674,6 +677,8 @@
       function doConnectURI() {
         let url = "xpraws://";
         const ssl = document.getElementById("ssl").checked;
+        // the python client does not support webtransport yet:
+        // const webtransport = document.getElementById("webtransport").checked;
         if (ssl) {
           url = "xprawss://";
         }
@@ -926,11 +931,14 @@
 
         const ssl = getboolparam("ssl", https);
         const insecure = getboolparam("insecure", false);
-        $("input#ssl").prop("checked", ssl);
-        $("input#insecure").prop("checked", insecure);
+        const webtransport = getboolparam("webtransport", false);
         const ssl_input = document.getElementById("ssl");
         const insecure_input = document.getElementById("insecure");
+        const webtransport_input = document.getElementById("webtransport");
         const aes_input = document.getElementById("aes");
+        ssl_input.checked = ssl;
+        insecure_input.checked = insecure;
+        webtransport_input.checked = webtransport;
         const has_session_storage = Utilities.hasSessionStorage();
         $("span#encryption-key-span").hide();
         aes_input.onchange = function () {
@@ -964,6 +972,16 @@
           }
         }
         aes_input.onchange();
+        webtransport_input.onchange = function () {
+          ssl_input.disabled = webtransport_input.checked;
+          insecure_input.disabled = webtransport_input.checked;
+          aes_input.disabled = webtransport_input.checked;
+          if (webtransport_input.checked) {
+            ssl_input.checked = true;
+            aes_input.checked = false;
+          }
+        }
+        webtransport_input.onchange();
 
         //vrefresh:
         let animation_times = [];
@@ -1024,15 +1042,10 @@
           //local storage makes this secure
           $("span#insecure-span").hide();
         }
-        $("input#password").prop("disabled", !has_session_storage && !ssl_input.checked && !insecure_input.checked);
         insecure_input.onchange = function () {
-          $("input#password").prop(
-            "disabled",
-            !has_session_storage &&
-              !ssl_input.checked &&
-              !insecure_input.checked
-          );
+          $("input#password").prop("disabled", !has_session_storage && !ssl_input.checked && !insecure_input.checked);
         };
+        insecure_input.onchange();
 
         // keep track of the currently selected action
         // and update the label of the main action button:
