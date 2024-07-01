@@ -977,8 +977,11 @@
           insecure_input.disabled = webtransport_input.checked;
           aes_input.disabled = webtransport_input.checked;
           if (webtransport_input.checked) {
-            ssl_input.checked = true;
             aes_input.checked = false;
+            if (!ssl_input.checked) {
+              ssl_input.checked = true;
+              host_address_changed();
+            }
           }
         }
         webtransport_input.onchange();
