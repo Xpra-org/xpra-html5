@@ -753,7 +753,7 @@ class XpraClient {
     this.desktop_width = this.container.clientWidth;
     this.desktop_height = this.container.clientHeight;
     const newsize = [this.desktop_width, this.desktop_height];
-    const packet = ["desktop_size", newsize[0], newsize[1], this._get_screen_sizes()];
+    const packet = [PACKET_TYPES.desktop_size, newsize[0], newsize[1], this._get_screen_sizes()];
     this.send(packet);
     // call the screen_resized function on all open windows
     for (const index in this.id_to_window) {
@@ -1142,10 +1142,10 @@ class XpraClient {
 
     if (this.topwindow != undefined) {
       const wid = this.topwindow;
-      let packet = ["key-action", wid, keyname, pressed, modifiers, keyval, keystring, keycode, group];
+      let packet = [PACKET_TYPES.key_action, wid, keyname, pressed, modifiers, keyval, keystring, keycode, group];
       this.key_packets.push(packet);
       if (unpress_now) {
-        packet = ["key-action", wid, keyname, false, modifiers, keyval, keystring, keycode, group];
+        packet = [PACKET_TYPES.key_action, wid, keyname, false, modifiers, keyval, keystring, keycode, group];
         this.key_packets.push(packet);
       }
 
@@ -3088,7 +3088,7 @@ class XpraClient {
     this.id_to_window[wid] = win;
     if (!override_redirect) {
       const geom = win.get_internal_geometry();
-      this.send(["map-window", wid, geom.x, geom.y, geom.w, geom.h, win.client_properties]);
+      this.send([PACKET_TYPES.map_window, wid, geom.x, geom.y, geom.w, geom.h, win.client_properties]);
       this.set_focus(win);
     }
   }
@@ -3345,7 +3345,7 @@ class XpraClient {
       });
       const reason = 2; //closed by the user - best guess...
       notification.addEventListener("close", () =>
-        context.send(["notification-close", nid, reason, ""])
+        context.send([PACKET_TYPES.notification_close, nid, reason, ""])
       );
       notification.addEventListener("click", () =>
         context.log("user clicked on notification", nid)
@@ -3370,10 +3370,10 @@ class XpraClient {
     if (window.doNotification) {
       window.doNotification("info", nid, summary, body, expire_timeout, icon, actions, hints,
         function (nid, action_id) {
-          context.send(["notification-action", nid, action_id]);
+          context.send([PACKET_TYPES.notification_action, nid, action_id]);
         },
         function (nid, reason, text) {
-          context.send(["notification-close", nid, reason, text || ""]);
+          context.send([PACKET_TYPES.notification_close, nid, reason, text || ""]);
         }
       );
     }
@@ -3515,7 +3515,7 @@ class XpraClient {
     if (!protocol) {
       return;
     }
-    const packet = ["damage-sequence", packet_sequence, wid, width, height, decode_time, message];
+    const packet = [PACKET_TYPES.damage_sequence, packet_sequence, wid, width, height, decode_time, message];
     if (decode_time < 0) {
       this.cwarn("decode error packet:", packet);
     }
@@ -4029,7 +4029,7 @@ class XpraClient {
     let packet;
     packet = data
       ? [
-          "clipboard-token",
+          PACKET_TYPES.clipboard_token,
           "CLIPBOARD",
           actual_data_format,
           UTF8_STRING,
@@ -4042,7 +4042,7 @@ class XpraClient {
           synchronous,
         ]
       : [
-          "clipboard-token",
+          PACKET_TYPES.clipboard_token,
           "CLIPBOARD",
           [],
           "",
@@ -4257,7 +4257,7 @@ class XpraClient {
   }
 
   send_clipboard_none(request_id, selection) {
-    const packet = ["clipboard-contents-none", request_id, selection];
+    const packet = [PACKET_TYPES.clipboard_contents_none, request_id, selection];
     this.debug("clipboard", "sending clipboard-contents-none");
     this.send(packet);
   }
@@ -4267,7 +4267,7 @@ class XpraClient {
       this.send_clipboard_none(request_id, selection);
       return;
     }
-    const packet = ["clipboard-contents", request_id, selection, datatype || UTF8_STRING, 8, "bytes", clipboard_buffer];
+    const packet = [PACKET_TYPES.clipboard_contents, request_id, selection, datatype || UTF8_STRING, 8, "bytes", clipboard_buffer];
     this.debug("clipboard", "send_clipboard_string: packet=", packet);
     this.send(packet);
   }
@@ -4277,7 +4277,7 @@ class XpraClient {
       this.send_clipboard_none(request_id, selection);
       return;
     }
-    const packet = ["clipboard-contents", request_id, selection, datatype, dformat || 8, encoding || "bytes", clipboard_buffer];
+    const packet = [PACKET_TYPES.clipboard_contents, request_id, selection, datatype, dformat || 8, encoding || "bytes", clipboard_buffer];
     this.send(packet);
   }
 
@@ -4643,7 +4643,7 @@ class XpraClient {
       //send everything now:
       this.debug("file", "sending full file:", size, "bytes, chunk size", chunk_size);
     }
-    const packet = ["send-file", filename, mimetype, false, this.remote_open_files, size, cdata, options];
+    const packet = [PACKET_TYPES.send_file, filename, mimetype, false, this.remote_open_files, size, cdata, options];
     this.send(packet);
   }
 
@@ -4730,7 +4730,7 @@ class XpraClient {
   }
 
   start_command(name, command, ignore) {
-    const packet = ["start-command", name, command, ignore];
+    const packet = [PACKET_TYPES.start_command, name, command, ignore];
     this.send(packet);
   }
 

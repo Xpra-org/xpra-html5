@@ -812,13 +812,13 @@ class XpraWindow {
     const geom = this.get_internal_geometry();
     this.set_minimized(!this.minimized);
     if (this.minimized) {
-      this.client.send(["unmap-window", this.wid, true]);
+      this.client.send([PACKET_TYPES.unmap_window, this.wid, true]);
       this.stacking_layer = 0;
       if (this.client.focus == this.wid) {
         this.client.auto_focus();
       }
     } else {
-      this.client.send(["map-window", this.wid, geom.x, geom.y, geom.w, geom.h, this.client_properties]);
+      this.client.send([PACKET_TYPES.map_window, this.wid, geom.x, geom.y, geom.w, geom.h, this.client_properties]);
       //force focus switch:
       this.client.focus = -1;
       this.client.set_focus(this);
