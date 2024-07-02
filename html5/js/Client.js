@@ -500,7 +500,7 @@ class XpraClient {
     // open the web socket, started it in a worker if available
     // check we have enough information for encryption
     if (this.encryption && (!this.encryption_key || this.encryption_key == "")) {
-      this.callback_close("no key specified for encryption");
+      this.disconnect("no key specified for encryption");
       return;
     }
     this.initialize_workers();
@@ -1280,7 +1280,7 @@ class XpraClient {
         this.do_reconnect();
       } else {
         // no point in telling the server here...
-        this.callback_close(`server ping timeout, waited ${this.PING_TIMEOUT}ms without a response`);
+        this.disconnect(`server ping timeout, waited ${this.PING_TIMEOUT}ms without a response`);
       }
     }
   }
@@ -2333,7 +2333,7 @@ class XpraClient {
     this.close_audio();
     if (!reconnect) {
       // call the client's close callback
-      this.callback_close(this.disconnect_reason);
+      this.close();
     }
   }
 
@@ -2390,6 +2390,11 @@ class XpraClient {
     } else {
       this.close();
     }
+  }
+
+  disconnect(reason) {
+    this.disconnect_reason = reason || "unknown";
+    this.close();
   }
 
   close() {
@@ -2479,12 +2484,12 @@ class XpraClient {
       const vparts = version.split(".");
       const vno = vparts.map((x) => Number.parseInt(x));
       if (vno[0] <= 0 && vno[1] < 10) {
-        this.callback_close(`unsupported version: ${version}`);
+        this.disconnect(`unsupported version: ${version}`);
         this.close();
         return;
       }
     } catch {
-      this.callback_close(`error parsing version number '${version}'`);
+      this.disconnect(`error parsing version number '${version}'`);
       this.close();
       return;
     }
@@ -2745,7 +2750,7 @@ class XpraClient {
         this.cipher_out_caps = packet[2];
         this.protocol.set_cipher_out(this.cipher_out_caps, this.encryption_key);
       } else {
-        this.callback_close("challenge does not contain encryption details to use for the response");
+        this.disconnect("challenge does not contain encryption details to use for the response");
         return;
       }
     }
@@ -2760,15 +2765,14 @@ class XpraClient {
         return;
       }
       if (password == undefined) {
-        client.disconnect_reason = "password prompt cancelled";
-        client.close();
+        client.disconnect("password prompt cancelled");
         return;
       }
       client.do_process_challenge(digest, server_salt, salt_digest, password);
     }
     if (this.passwords.length > 0) {
       if (!this.is_digest_safe(digest)) {
-        this.callback_close("refusing to send a password over an insecure connection");
+        this.disconnect("refusing to send a password over an insecure connection");
         return;
       }
       const password = this.passwords.shift();
@@ -2782,7 +2786,7 @@ class XpraClient {
     }
     if (this.password_prompt_fn && this.is_digest_safe(digest)) {
       if (!this.is_digest_safe(digest)) {
-        this.callback_close("refusing to prompt for a password over an insecure connection");
+        this.disconnect("refusing to prompt for a password over an insecure connection");
         return;
       }
       const address = `${client.host}:${client.port}`;
@@ -2790,7 +2794,7 @@ class XpraClient {
       this.password_prompt_fn(`The server at ${address} requires a ${prompt}`, call_do_process_challenge);
       return;
     }
-    this.callback_close("No password specified for authentication challenge");
+    this.disconnect("No password specified for authentication challenge");
   }
 
   is_digest_safe(digest) {
@@ -2804,13 +2808,13 @@ class XpraClient {
     let l = server_salt.length;
     //don't use xor over unencrypted connections unless explicitly allowed:
     if (!this.is_digest_safe(digest)) {
-      this.callback_close(`server requested digest xor, cowardly refusing to use it without encryption with ${this.host}`);
+      this.disconnect(`server requested digest xor, cowardly refusing to use it without encryption with ${this.host}`);
       return;
     }
 
     if (salt_digest == "xor") {
       if (l < 16 || l > 256) {
-        this.callback_close(`invalid server salt length for xor digest:${l}`);
+        this.disconnect(`invalid server salt length for xor digest:${l}`);
         return;
       }
     } else {
@@ -2821,7 +2825,7 @@ class XpraClient {
     this.clog("challenge using salt digest", salt_digest);
     const salt = this._gendigest(salt_digest, client_salt, server_salt);
     if (!salt) {
-      this.callback_close(`server requested an unsupported salt digest ${salt_digest}`);
+      this.disconnect(`server requested an unsupported salt digest ${salt_digest}`);
       return;
     }
     const challenge_digest = digest.startsWith("keycloak") ? "xor" : digest;
@@ -2830,7 +2834,7 @@ class XpraClient {
     if (challenge_response) {
       this.do_send_hello(challenge_response, client_salt);
     } else {
-      this.callback_close(`server requested an unsupported digest ${digest}`);
+      this.disconnect(`server requested an unsupported digest ${digest}`);
     }
   }
 
