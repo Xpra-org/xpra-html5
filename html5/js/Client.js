@@ -31,6 +31,8 @@ const FLOAT_MENU_SELECTOR = "#float_menu";
 const PASTEBOARD_SELECTOR = "#pasteboard";
 const WINDOW_PREVIEW_SELECTOR = "#window_preview";
 
+const BELL_SOUND =  "data:audio/wav;base64,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qJrx4KOQjahZxWbcZgztj2c49nKmkId44S71j0c8eV9yDK6uPRzx5X18eDvjvQ6yKo9ZSS6l//8elePK/Lf//IInrOF/FvDoADYAGBMGb7FtErm5MXMlmPAJQVgWta7Zx2go+8xJ0UiCb8LHHdftWyLJE0QIAIsI+UbXu67dZMjmgDGCGl1H+vpF4NSDckSIkk7Vd+sxEhBQMRU8j/12UIRhzSaUdQ+rQU5kGeFxm+hb1oh6pWWmv3uvmReDl0UnvtapVaIzo1jZbf/pD6ElLqSX+rUmOQNpJFa/r+sa4e/pBlAABoAAAAA3CUgShLdGIxsY7AUABPRrgCABdDuQ5GC7DqPQCgbbJUAoRSUj+NIEig0YfyWUho1VBBBA//uQZB4ABZx5zfMakeAAAAmwAAAAF5F3P0w9GtAAACfAAAAAwLhMDmAYWMgVEG1U0FIGCBgXBXAtfMH10000EEEEEECUBYln03TTTdNBDZopopYvrTTdNa325mImNg3TTPV9q3pmY0xoO6bv3r00y+IDGid/9aaaZTGMuj9mpu9Mpio1dXrr5HERTZSmqU36A3CumzN/9Robv/Xx4v9ijkSRSNLQhAWumap82WRSBUqXStV/YcS+XVLnSS+WLDroqArFkMEsAS+eWmrUzrO0oEmE40RlMZ5+ODIkAyKAGUwZ3mVKmcamcJnMW26MRPgUw6j+LkhyHGVGYjSUUKNpuJUQoOIAyDvEyG8S5yfK6dhZc0Tx1KI/gviKL6qvvFs1+bWtaz58uUNnryq6kt5RzOCkPWlVqVX2a/EEBUdU1KrXLf40GoiiFXK///qpoiDXrOgqDR38JB0bw7SoL+ZB9o1RCkQjQ2CBYZKd/+VJxZRRZlqSkKiws0WFxUyCwsKiMy7hUVFhIaCrNQsKkTIsLivwKKigsj8XYlwt/WKi2N4d//uQRCSAAjURNIHpMZBGYiaQPSYyAAABLAAAAAAAACWAAAAApUF/Mg+0aohSIRobBAsMlO//Kk4soosy1JSFRYWaLC4qZBYWFRGZdwqKiwkNBVmoWFSJkWFxX4FFRQWR+LsS4W/rFRb/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////VEFHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAU291bmRib3kuZGUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMjAwNGh0dHA6Ly93d3cuc291bmRib3kuZGUAAAAAAAAAACU=";
+
 const METADATA_SUPPORTED = [
     "fullscreen", "maximized",
     "iconic", "above", "below",
@@ -744,10 +746,8 @@ class XpraClient {
     if (!this.connected) {
       return;
     }
-    if (
-      this.container.clientWidth == this.desktop_width &&
-      this.container.clientHeight == this.desktop_height
-    ) {
+    if (this.container.clientWidth == this.desktop_width && this.container.clientHeight == this.desktop_height) {
+      // unchanged
       return;
     }
     this.desktop_width = this.container.clientWidth;
@@ -1217,10 +1217,7 @@ class XpraClient {
 
   _get_screen_sizes() {
     const dpi = this._get_DPI();
-    const screen_size = [
-      this.container.clientWidth,
-      this.container.clientHeight,
-    ];
+    const screen_size = [this.container.clientWidth, this.container.clientHeight];
     const wmm = Math.round((screen_size[0] * 25.4) / dpi);
     const hmm = Math.round((screen_size[1] * 25.4) / dpi);
     const monitor = ["Canvas", 0, 0, screen_size[0], screen_size[1], wmm, hmm];
@@ -1283,9 +1280,7 @@ class XpraClient {
         this.do_reconnect();
       } else {
         // no point in telling the server here...
-        this.callback_close(
-          `server ping timeout, waited ${this.PING_TIMEOUT}ms without a response`
-        );
+        this.callback_close(`server ping timeout, waited ${this.PING_TIMEOUT}ms without a response`);
       }
     }
   }
@@ -1794,12 +1789,7 @@ class XpraClient {
     if (this.scroll_reverse_x) {
       px = -px;
     }
-    if (
-      this.scroll_reverse_y == true ||
-      (this.scroll_reverse_x == "auto" &&
-        this.detect_vertical_scroll_direction(e) < 0 &&
-        py > 0)
-    ) {
+    if (this.scroll_reverse_y == true || (this.scroll_reverse_x == "auto" && this.detect_vertical_scroll_direction(e) < 0 && py > 0)) {
       py = -py;
     }
     const apx = Math.abs(px);
@@ -2167,9 +2157,7 @@ class XpraClient {
     });
 
     preview_element.on("afterChange", (event, slick, currentSlide) => {
-      const wid = $(".slick-current .window-preview-item-container").data(
-        "wid"
-      );
+      const wid = $(".slick-current .window-preview-item-container").data("wid");
       const win = this.id_to_window[wid];
       if (!win.minimized) {
         win.focus();
@@ -2181,9 +2169,7 @@ class XpraClient {
 
     if (preview_element.is(":visible")) {
       // Restore the current selection if it's minimized.
-      const wid = $(".slick-current .window-preview-item-container").data(
-        "wid"
-      );
+      const wid = $(".slick-current .window-preview-item-container").data("wid");
       this.clog(`current wid: ${wid}`);
       const win = this.id_to_window[wid];
       if (win.minimized) {
@@ -2557,13 +2543,7 @@ class XpraClient {
 
     // file transfer attributes:
     this.remote_file_size_limit = hello["max-file-size"];
-    this.remote_file_chunks = Math.max(
-      0,
-      Math.min(
-        this.remote_file_size_limit,
-        hello["file-chunks"] || 0
-      )
-    );
+    this.remote_file_chunks = Math.max(0, Math.min(this.remote_file_size_limit, hello["file-chunks"] || 0));
 
     // start sending our own pings
     this._send_ping();
@@ -2622,19 +2602,13 @@ class XpraClient {
        this.on_audio_state_change("disabled", "audio codecs missing on the server");
       return;
     }
-    this.log(
-      "audio codecs supported by the server:",
-      this.server_audio_codecs
-    );
+    this.log("audio codecs supported by the server:", this.server_audio_codecs);
     if (!this.server_audio_codecs.includes(this.audio_codec)) {
       this.warn(`audio codec ${this.audio_codec} is not supported by the server`);
       this.audio_codec = null;
       //find the best codec we can use:
       for (let codec of MediaSourceConstants.PREFERRED_CODEC_ORDER) {
-        if (
-          codec in this.audio_codecs &&
-          this.server_audio_codecs.includes(codec)
-        ) {
+        if (codec in this.audio_codecs && this.server_audio_codecs.includes(codec)) {
           this.audio_framework = this.mediasource_codecs[codec]
             ? "mediasource"
             : "aurora";
@@ -2791,12 +2765,7 @@ class XpraClient {
         return;
       }
       const challenge_digest = digest.startsWith("keycloak") ? "xor" : digest;
-      client.do_process_challenge(
-        challenge_digest,
-        server_salt,
-        salt_digest,
-        password
-      );
+      client.do_process_challenge(challenge_digest, server_salt, salt_digest, password);
     }
     if (this.passwords.length > 0) {
       const password = this.passwords.shift();
@@ -2810,10 +2779,7 @@ class XpraClient {
     } else if (this.password_prompt_fn) {
       const address = `${client.host}:${client.port}`;
       this.cancel_hello_timer();
-      this.password_prompt_fn(
-        `The server at ${address} requires a ${prompt}`,
-        call_do_process_challenge
-      );
+      this.password_prompt_fn(`The server at ${address} requires a ${prompt}`, call_do_process_challenge);
       return;
     }
     this.callback_close("No password specified for authentication challenge");
@@ -2825,17 +2791,8 @@ class XpraClient {
     let l = server_salt.length;
     if (salt_digest == "xor") {
       //don't use xor over unencrypted connections unless explicitly allowed:
-      if (
-        digest == "xor" &&
-        !this.ssl &&
-        !this.encryption &&
-        !this.insecure &&
-        this.host != "localhost" &&
-        this.host != "127.0.0.1"
-      ) {
-        this.callback_close(
-          `server requested digest xor, cowardly refusing to use it without encryption with ${this.host}`
-        );
+      if (digest == "xor" && !this.ssl && !this.encryption && !this.insecure && this.host != "localhost" && this.host != "127.0.0.1") {
+        this.callback_close(`server requested digest xor, cowardly refusing to use it without encryption with ${this.host}`);
         return;
       }
       if (l < 16 || l > 256) {
@@ -3013,16 +2970,9 @@ class XpraClient {
 
     mycanvas.width = w;
     mycanvas.height = h;
-    this.id_to_window[wid] = new XpraWindow(
-      this,
-      wid,
-      x,
-      y,
-      w,
-      h,
-      metadata,
-      false,
-      true,
+    this.id_to_window[wid] = new XpraWindow(this, wid,
+      x, y, w, h,
+      metadata, false, true,
       {},
       //TODO: send new tray geometry to the server using send_tray_configure
       () => this.debug("tray", "tray geometry changed (ignored)"),
@@ -3036,6 +2986,7 @@ class XpraClient {
     );
     this.send_tray_configure(wid);
   }
+
   send_tray_configure(wid) {
     const div = jQuery(`#${wid}`);
     const x = Math.round(div.offset().left);
@@ -3095,16 +3046,10 @@ class XpraClient {
     const screen = document.querySelector("#screen");
     screen.append(mydiv);
     // create the XpraWindow object to own the new div
-    const win = new XpraWindow(
-      this,
-      wid,
-      x,
-      y,
-      w,
-      h,
+    const win = new XpraWindow(this, wid,
+      x, y, w, h,
       metadata,
-      override_redirect,
-      false,
+      override_redirect, false,
       client_properties,
       (window) => this.send_configure_window(window, {}, false),
       (event, window) => this.on_mousemove(event, window),
@@ -3124,15 +3069,7 @@ class XpraClient {
     this.id_to_window[wid] = win;
     if (!override_redirect) {
       const geom = win.get_internal_geometry();
-      this.send([
-        "map-window",
-        wid,
-        geom.x,
-        geom.y,
-        geom.w,
-        geom.h,
-        win.client_properties,
-      ]);
+      this.send(["map-window", wid, geom.x, geom.y, geom.w, geom.h, win.client_properties]);
       this.set_focus(win);
     }
   }
@@ -3169,33 +3106,15 @@ class XpraClient {
         y = 96;
       }
     }
-    this._new_window(
-      wid,
-      x,
-      y,
-      w,
-      h,
-      metadata,
-      override_redirect,
-      client_properties
-    );
+    this._new_window(wid, x, y, w, h, metadata, override_redirect, client_properties);
     this._new_ui_event();
   }
 
   send_configure_window(win, state, skip_geometry) {
     const geom = win.get_internal_geometry();
     const wid = win.wid;
-    const packet = [
-      PACKET_TYPES.configure_window,
-      wid,
-      geom.x,
-      geom.y,
-      geom.w,
-      geom.h,
-      win.client_properties,
-      0,
-      state,
-      skip_geometry,
+    const packet = [PACKET_TYPES.configure_window, wid, geom.x, geom.y, geom.w, geom.h,
+      win.client_properties, 0, state, skip_geometry,
     ];
     this.send(packet);
   }
@@ -3229,20 +3148,8 @@ class XpraClient {
     const direction = packet[4];
     const button = packet[5];
     const source_indication = packet[6];
-    this.log(
-      "initiate moveresize on",
-      win,
-      "mousedown_event=",
-      this.mousedown_event
-    );
-    win.initiate_moveresize(
-      this.mousedown_event,
-      x_root,
-      y_root,
-      direction,
-      button,
-      source_indication
-    );
+    this.log("initiate moveresize on", win, "mousedown_event=", this.mousedown_event);
+    win.initiate_moveresize(this.mousedown_event, x_root, y_root, direction, button, source_indication);
   }
 
   _process_pointer_position(packet) {
@@ -3323,11 +3230,7 @@ class XpraClient {
     let highest_stacking = -1;
     for (const index in this.id_to_window) {
       const win = this.id_to_window[index];
-      if (
-        !win.minimized &&
-        win.stacking_layer > highest_stacking &&
-        !win.tray
-      ) {
+      if (!win.minimized && win.stacking_layer > highest_stacking && !win.tray) {
         highest_window = win;
         highest_stacking = win.stacking_layer;
       }
@@ -3381,16 +3284,11 @@ class XpraClient {
       oscillator.connect(gainNode);
       gainNode.connect(this.audio_context.destination);
       gainNode.gain.setValueAtTime(percent, this.audio_context.currentTime);
-      oscillator.frequency.setValueAtTime(
-        pitch,
-        this.audio_context.currentTime
-      );
+      oscillator.frequency.setValueAtTime(pitch, this.audio_context.currentTime);
       oscillator.start();
       setTimeout(() => oscillator.stop(), duration);
     } else {
-      const snd = new Audio(
-        "data:audio/wav;base64,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qJrx4KOQjahZxWbcZgztj2c49nKmkId44S71j0c8eV9yDK6uPRzx5X18eDvjvQ6yKo9ZSS6l//8elePK/Lf//IInrOF/FvDoADYAGBMGb7FtErm5MXMlmPAJQVgWta7Zx2go+8xJ0UiCb8LHHdftWyLJE0QIAIsI+UbXu67dZMjmgDGCGl1H+vpF4NSDckSIkk7Vd+sxEhBQMRU8j/12UIRhzSaUdQ+rQU5kGeFxm+hb1oh6pWWmv3uvmReDl0UnvtapVaIzo1jZbf/pD6ElLqSX+rUmOQNpJFa/r+sa4e/pBlAABoAAAAA3CUgShLdGIxsY7AUABPRrgCABdDuQ5GC7DqPQCgbbJUAoRSUj+NIEig0YfyWUho1VBBBA//uQZB4ABZx5zfMakeAAAAmwAAAAF5F3P0w9GtAAACfAAAAAwLhMDmAYWMgVEG1U0FIGCBgXBXAtfMH10000EEEEEECUBYln03TTTdNBDZopopYvrTTdNa325mImNg3TTPV9q3pmY0xoO6bv3r00y+IDGid/9aaaZTGMuj9mpu9Mpio1dXrr5HERTZSmqU36A3CumzN/9Robv/Xx4v9ijkSRSNLQhAWumap82WRSBUqXStV/YcS+XVLnSS+WLDroqArFkMEsAS+eWmrUzrO0oEmE40RlMZ5+ODIkAyKAGUwZ3mVKmcamcJnMW26MRPgUw6j+LkhyHGVGYjSUUKNpuJUQoOIAyDvEyG8S5yfK6dhZc0Tx1KI/gviKL6qvvFs1+bWtaz58uUNnryq6kt5RzOCkPWlVqVX2a/EEBUdU1KrXLf40GoiiFXK///qpoiDXrOgqDR38JB0bw7SoL+ZB9o1RCkQjQ2CBYZKd/+VJxZRRZlqSkKiws0WFxUyCwsKiMy7hUVFhIaCrNQsKkTIsLivwKKigsj8XYlwt/WKi2N4d//uQRCSAAjURNIHpMZBGYiaQPSYyAAABLAAAAAAAACWAAAAApUF/Mg+0aohSIRobBAsMlO//Kk4soosy1JSFRYWaLC4qZBYWFRGZdwqKiwkNBVmoWFSJkWFxX4FFRQWR+LsS4W/rFRb/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////VEFHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAU291bmRib3kuZGUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMjAwNGh0dHA6Ly93d3cuc291bmRib3kuZGUAAAAAAAAAACU="
-      );
+      const snd = new Audio(BELL_SOUND);
       snd.play();
     }
   }
@@ -3451,15 +3349,7 @@ class XpraClient {
     }
 
     if (window.doNotification) {
-      window.doNotification(
-        "info",
-        nid,
-        summary,
-        body,
-        expire_timeout,
-        icon,
-        actions,
-        hints,
+      window.doNotification("info", nid, summary, body, expire_timeout, icon, actions, hints,
         function (nid, action_id) {
           context.send(["notification-action", nid, action_id]);
         },
@@ -3521,11 +3411,7 @@ class XpraClient {
     if (win) {
       const source = win.update_icon(w, h, encoding, img_data);
       //update favicon too:
-      if (
-        wid == this.focus ||
-        this.server_is_desktop ||
-        this.server_is_shadow
-      ) {
+      if (wid == this.focus || this.server_is_desktop || this.server_is_shadow) {
         jQuery("#favicon").attr("href", source);
       }
     }
@@ -3605,27 +3491,12 @@ class XpraClient {
     }
   }
 
-  do_send_damage_sequence(
-    packet_sequence,
-    wid,
-    width,
-    height,
-    decode_time,
-    message
-  ) {
+  do_send_damage_sequence(packet_sequence, wid, width, height, decode_time, message) {
     const protocol = this.protocol;
     if (!protocol) {
       return;
     }
-    const packet = [
-      "damage-sequence",
-      packet_sequence,
-      wid,
-      width,
-      height,
-      decode_time,
-      message,
-    ];
+    const packet = ["damage-sequence", packet_sequence, wid, width, height, decode_time, message];
     if (decode_time < 0) {
       this.cwarn("decode error packet:", packet);
     }
@@ -3659,14 +3530,7 @@ class XpraClient {
     }
     const me = this;
     function send_damage_sequence(decode_time, message) {
-      me.do_send_damage_sequence(
-        packet_sequence,
-        wid,
-        width,
-        height,
-        decode_time,
-        message
-      );
+      me.do_send_damage_sequence(packet_sequence, wid, width, height, decode_time, message);
     }
     const client = this;
     function decode_result(error) {
@@ -3679,17 +3543,7 @@ class XpraClient {
         this.request_redraw(win);
         decode_time = -1;
       }
-      client.debug(
-        "draw",
-        "decode time for ",
-        coding,
-        " sequence ",
-        packet_sequence,
-        ": ",
-        decode_time,
-        ", flush=",
-        flush
-      );
+      client.debug("draw", "decode time for ", coding, " sequence ", packet_sequence, ": ", decode_time, ", flush=", flush);
       send_damage_sequence(decode_time, error || "");
     }
     if (!win) {
@@ -3721,9 +3575,7 @@ class XpraClient {
     this.debug("audio", "init_audio() enabled=", this.audio_enabled, ", mediasource enabled=",
         this.audio_mediasource_enabled, ", aurora enabled=", this.audio_aurora_enabled);
     if (this.audio_mediasource_enabled) {
-      this.mediasource_codecs = MediaSourceUtil.getMediaSourceAudioCodecs(
-        ignore_audio_blacklist
-      );
+      this.mediasource_codecs = MediaSourceUtil.getMediaSourceAudioCodecs(ignore_audio_blacklist);
       for (const codec_option in this.mediasource_codecs) {
         this.audio_codecs[codec_option] = this.mediasource_codecs[codec_option];
       }
@@ -3750,22 +3602,15 @@ class XpraClient {
         this.warn(`invalid audio codec: ${this.audio_codec}`);
         this.warn(`codecs found: ${this.audio_codecs}`);
       }
-      this.audio_codec = MediaSourceUtil.getDefaultAudioCodec(
-        this.audio_codecs
-      );
+      this.audio_codec = MediaSourceUtil.getDefaultAudioCodec(this.audio_codecs);
       if (this.audio_codec) {
-        if (
-          this.audio_mediasource_enabled &&
-          this.audio_codec in this.mediasource_codecs
-        ) {
+        if (this.audio_mediasource_enabled && this.audio_codec in this.mediasource_codecs) {
           this.audio_framework = "mediasource";
         } else if (this.audio_aurora_enabled && !Utilities.isIE()) {
           this.audio_framework = "aurora";
         }
         if (this.audio_framework) {
-          this.log(
-            `using ${this.audio_framework} audio codec: ${this.audio_codec}`
-          );
+          this.log(`using ${this.audio_framework} audio codec: ${this.audio_codec}`);
         } else {
           this.warn("no valid audio framework - cannot enable audio");
           this.audio_enabled = false;
@@ -3775,9 +3620,7 @@ class XpraClient {
         this.audio_enabled = false;
       }
     } else {
-      this.log(
-        `using ${this.audio_framework} audio codec: ${this.audio_codec}`
-      );
+      this.log(`using ${this.audio_framework} audio codec: ${this.audio_codec}`);
     }
     this.log("audio codecs: ", Object.keys(this.audio_codecs));
   }
@@ -3785,11 +3628,7 @@ class XpraClient {
   _sound_start_receiving() {
     if (!this.audio_framework || !this.audio_codec) {
       //choose a codec + framework to use
-      const codecs_supported = MediaSourceUtil.get_supported_codecs(
-        this.audio_mediasource_enabled,
-        this.audio_aurora_enabled,
-        false
-      );
+      const codecs_supported = MediaSourceUtil.get_supported_codecs(this.audio_mediasource_enabled, this.audio_aurora_enabled, false);
       const audio_codec = MediaSourceUtil.get_best_codec(codecs_supported);
       if (!audio_codec) {
         this.log("no codec found");
@@ -3827,10 +3666,7 @@ class XpraClient {
     function audio_error(event) {
       if (!me.media_source) {
         //already closed
-        me.debug(
-          "audio",
-          `media_source is closed, ignoring audio error: ${event}`
-        );
+        me.debug("audio", `media_source is closed, ignoring audio error: ${event}`);
         return;
       }
       if (me.audio) {
@@ -3847,10 +3683,7 @@ class XpraClient {
     //Create a MediaSource:
     this.media_source = MediaSourceUtil.getMediaSource();
     if (this.debug) {
-      MediaSourceUtil.addMediaSourceEventDebugListeners(
-        this.media_source,
-        "audio"
-      );
+      MediaSourceUtil.addMediaSourceEventDebugListeners(this.media_source, "audio");
     }
     this.media_source.addEventListener("error", (e) =>
       audio_error("audio source")
@@ -3885,9 +3718,7 @@ class XpraClient {
         this.close_audio();
         return;
       }
-      this.log(
-        `using audio codec string for ${this.audio_codec}: ${codec_string}`
-      );
+      this.log(`using audio codec string for ${this.audio_codec}: ${codec_string}`);
 
       //Create a SourceBuffer:
       let asb;
@@ -3940,9 +3771,7 @@ class XpraClient {
   }
 
   _close_audio_mediasource() {
-    this.log(
-      `close_audio_mediasource: audio_source_buffer=${this.audio_source_buffer}, media_source=${this.media_source}, audio=${this.audio}`
-    );
+    this.log(`close_audio_mediasource: audio_source_buffer=${this.audio_source_buffer}, media_source=${this.media_source}, audio=${this.audio}`);
     this.audio_source_ready = false;
     if (this.audio) {
       if (this.media_source) {
@@ -4042,10 +3871,7 @@ class XpraClient {
       this.audio_buffers.push(buf);
     }
     const ab = this.audio_buffers;
-    if (
-      this._audio_ready() &&
-      (this.audio_buffers_count > 0 || ab.length >= MIN_START_BUFFERS)
-    ) {
+    if (this._audio_ready() && (this.audio_buffers_count > 0 || ab.length >= MIN_START_BUFFERS)) {
       if (CONCAT) {
         if (ab.length == 1) {
           //shortcut
@@ -4084,10 +3910,7 @@ class XpraClient {
       //nothing to do: ready to play
       return;
     }
-    this.on_audio_state_change(
-      "waiting",
-      `${this.audio_framework} playing ${this.audio_codec} stream`
-    );
+    this.on_audio_state_change("waiting", `${this.audio_framework} playing ${this.audio_codec} stream`);
     if (this.audio_framework == "mediasource") {
       const play = this.audio.play();
       if (play == undefined) {
@@ -4109,10 +3932,7 @@ class XpraClient {
     } else if (this.audio_framework == "aurora") {
       this.audio_aurora_ctx.play();
     } else {
-      this.on_audio_state_change(
-        "error",
-        `unknown framework ${this.audio_framework}`
-      );
+      this.on_audio_state_change("error", `unknown framework ${this.audio_framework}`);
       this.close_audio();
     }
   }
@@ -4239,13 +4059,7 @@ class XpraClient {
       wire_encoding = packet[6];
       wire_data = packet[7];
       //always keep track of the latest server buffer
-      this.clipboard_server_buffers[selection] = [
-        target,
-        dtype,
-        dformat,
-        wire_encoding,
-        wire_data,
-      ];
+      this.clipboard_server_buffers[selection] = [target, dtype, dformat, wire_encoding, wire_data];
     }
 
     const is_valid_target = target && this.clipboard_targets.includes(target);
@@ -4280,13 +4094,8 @@ class XpraClient {
             );
           }
         }
-      } else if (
-        CLIPBOARD_IMAGES &&
-        dtype == "image/png" &&
-        dformat == 8 &&
-        wire_encoding == "bytes" &&
-        navigator.clipboard &&
-        Object.hasOwn(navigator.clipboard, "write")
+      } else if (CLIPBOARD_IMAGES && dtype == "image/png" && dformat == 8 && wire_encoding == "bytes" &&
+        navigator.clipboard && Object.hasOwn(navigator.clipboard, "write")
       ) {
         this.debug("clipboard", "png image received");
         const blob = new Blob([wire_data], { type: dtype });
@@ -4308,9 +4117,7 @@ class XpraClient {
       return;
     }
     this.clipboard_enabled = packet[1];
-    this.log(
-      `server set clipboard state to ${packet[1]} reason was: ${packet[2]}`
-    );
+    this.log(`server set clipboard state to ${packet[1]} reason was: ${packet[2]}`);
   }
 
   _process_clipboard_request(packet) {
@@ -4366,10 +4173,7 @@ class XpraClient {
                     (error) => {
                       this.debug("clipboard", `getType('${item_type}') failed`, error);
                       //send last server buffer instead:
-                      this.resend_clipboard_server_buffer(
-                        request_id,
-                        selection
-                      );
+                      this.resend_clipboard_server_buffer(request_id, selection);
                     }
                   );
                   return;
@@ -4476,13 +4280,7 @@ class XpraClient {
       return;
     }
     let digest = null;
-    for (const hash_function of [
-      "sha512",
-      "sha384",
-      "sha256",
-      "sha224",
-      "sha1",
-    ]) {
+    for (const hash_function of ["sha512", "sha384", "sha256", "sha224", "sha1"]) {
       if (options[hash_function]) {
         try {
           digest = forge.md[hash_function].create();
@@ -4515,11 +4313,7 @@ class XpraClient {
     }
     const chunk = 0;
     if (this.receive_chunks_in_progress.size > MAX_CONCURRENT_FILES) {
-      this.cancel_file(
-        chunk_id,
-        "too many concurrent files being downloaded",
-        chunk
-      );
+      this.cancel_file(chunk_id, "too many concurrent files being downloaded", chunk);
       return;
     }
     //start receiving chunks:
@@ -4625,12 +4419,7 @@ class XpraClient {
     }
     const filesize = chunk_state[6];
     if (chunk_state[13] + 1 != chunk) {
-      this.cancel_file(
-        chunk_id,
-        `chunk number mismatch, expected ${
-          chunk_state[13] + 1
-        } but got ${chunk}`
-      );
+      this.cancel_file(chunk_id, `chunk number mismatch, expected ${chunk_state[13] + 1} but got ${chunk}`);
       return;
     }
     //update chunk number:
@@ -4709,10 +4498,7 @@ class XpraClient {
     this.receive_chunks_in_progress.delete(chunk_id);
     //check file size and digest then process it:
     if (written != filesize) {
-      this.cancel_file(
-        chunk_id,
-        `file size mismatch: expected a file of ${filesize} bytes but got ${written}`
-      );
+      this.cancel_file(chunk_id, `file size mismatch: expected a file of ${filesize} bytes but got ${written}`);
       return;
     }
     const options = chunk_state[7];
@@ -4770,9 +4556,7 @@ class XpraClient {
     if (mimetype == "") {
       mimetype = "application/octet-binary";
     }
-    this.log(
-      `saving ${data.length} bytes of ${mimetype} data to filename ${filename}`
-    );
+    this.log(`saving ${data.length} bytes of ${mimetype} data to filename ${filename}`);
     Utilities.saveFile(filename, data, { type: mimetype });
   }
 
@@ -4823,9 +4607,7 @@ class XpraClient {
     const chunk_size = Math.min(FILE_CHUNKS_SIZE, this.remote_file_chunks || 0);
     if (chunk_size > 0 && size > chunk_size) {
       if (this.send_chunks_in_progress.size >= MAX_CONCURRENT_FILES) {
-        throw Exception(
-          `too many file transfers in progress:${this.send_chunks_in_progress.size}`
-        );
+        throw Exception(`too many file transfers in progress:${this.send_chunks_in_progress.size}`);
       }
       //chunking is supported and the file is big enough
       const chunk_id = Utilities.getHexUUID();

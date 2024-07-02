@@ -98,22 +98,10 @@ class XpraWindow {
     this.icon = null;
 
     // get offsets
-    this.leftoffset = Number.parseInt(
-      jQuery(this.div).css("border-left-width"),
-      10
-    );
-    this.rightoffset = Number.parseInt(
-      jQuery(this.div).css("border-right-width"),
-      10
-    );
-    this.topoffset = Number.parseInt(
-      jQuery(this.div).css("border-top-width"),
-      10
-    );
-    this.bottomoffset = Number.parseInt(
-      jQuery(this.div).css("border-bottom-width"),
-      10
-    );
+    this.leftoffset = Number.parseInt(jQuery(this.div).css("border-left-width"), 10);
+    this.rightoffset = Number.parseInt(jQuery(this.div).css("border-right-width"), 10);
+    this.topoffset = Number.parseInt(jQuery(this.div).css("border-top-width"), 10);
+    this.bottomoffset = Number.parseInt(jQuery(this.div).css("border-bottom-width"), 10);
 
     // update metadata that is safe before window is drawn
     this.update_metadata(metadata, true);
@@ -435,17 +423,7 @@ class XpraWindow {
     } else if (oldy >= wh - min_visible) {
       this.y = Math.min(oldy, wh - min_visible);
     }
-    this.debug(
-      "geometry",
-      "ensure_visible() oldx=",
-      oldx,
-      "oldy=",
-      oldy,
-      "x=",
-      this.x,
-      "y=",
-      this.y
-    );
+    this.debug("geometry", "ensure_visible() oldx=", oldx, "oldy=", oldy, "x=", this.x, "y=", this.y);
     if (oldx != this.x || oldy != this.y) {
       this.updateCSSGeometry();
       return false;
@@ -496,17 +474,7 @@ class XpraWindow {
     this.outerY = this.y - this.topoffset;
     jQuery(this.div).css("left", this.outerX);
     jQuery(this.div).css("top", this.outerY);
-    this.debug(
-      "geometry",
-      "updateCSSGeometry() left=",
-      this.outerX,
-      ", top=",
-      this.outerY,
-      ", width=",
-      this.outerW,
-      ", height=",
-      this.outerH
-    );
+    this.debug("geometry", "updateCSSGeometry() left=", this.outerX, ", top=", this.outerY, ", width=", this.outerW, ", height=", this.outerH);
   }
 
   focus() {
@@ -525,12 +493,7 @@ class XpraWindow {
 
       // Update the icon
       if (this.icon !== null) {
-        const source = this.update_icon(
-          this.icon.width,
-          this.icon.height,
-          this.icon.encoding,
-          this.icon.img_data
-        );
+        const source = this.update_icon(this.icon.width, this.icon.height, this.icon.encoding, this.icon.img_data);
         jQuery("#favicon").attr("href", source);
       } else {
         jQuery("#favicon").attr("href", "favicon.png");
@@ -579,11 +542,7 @@ class XpraWindow {
     let z = 5000 + this.stacking_layer;
     if (this.tray) {
       z = 0;
-    } else if (
-      this.override_redirect ||
-      this.client.server_is_desktop ||
-      this.client.server_is_shadow
-    ) {
+    } else if (this.override_redirect || this.client.server_is_desktop || this.client.server_is_shadow) {
       z = 30_000;
     } else if (
       this.windowtype == "DROPDOWN" ||
@@ -687,11 +646,7 @@ class XpraWindow {
         //remove any existing "wmclass-" classes not in the new wm_class list:
         for (const class_ of classes) {
           const tclass = `${class_}`;
-          if (
-            tclass.indexOf("wmclass-") === 0 &&
-            wm_class &&
-            !wm_class.includes(tclass)
-          ) {
+          if (tclass.indexOf("wmclass-") === 0 && wm_class && !wm_class.includes(tclass)) {
             jQuery(this.div).removeClass(tclass);
           }
         }
@@ -787,11 +742,7 @@ class XpraWindow {
       w: this.w,
       h: this.h,
     };
-    this.debug(
-      "geometry",
-      "save_geometry() saved-geometry=",
-      this.saved_geometry
-    );
+    this.debug("geometry", "save_geometry() saved-geometry=", this.saved_geometry);
   }
   /**
    * Restores the saved geometry (if it exists).
@@ -804,11 +755,7 @@ class XpraWindow {
     this.y = this.saved_geometry["y"];
     this.w = this.saved_geometry["w"];
     this.h = this.saved_geometry["h"];
-    this.debug(
-      "geometry",
-      "restore_geometry() saved-geometry=",
-      this.saved_geometry
-    );
+    this.debug("geometry", "restore_geometry() saved-geometry=", this.saved_geometry);
     // delete saved geometry
     this.saved_geometry = null;
     // then call local resized callback
@@ -871,15 +818,7 @@ class XpraWindow {
         this.client.auto_focus();
       }
     } else {
-      this.client.send([
-        "map-window",
-        this.wid,
-        geom.x,
-        geom.y,
-        geom.w,
-        geom.h,
-        this.client_properties,
-      ]);
+      this.client.send(["map-window", this.wid, geom.x, geom.y, geom.w, geom.h, this.client_properties]);
       //force focus switch:
       this.client.focus = -1;
       this.client.set_focus(this);
@@ -913,23 +852,14 @@ class XpraWindow {
   }
 
   _set_decorated(decorated) {
-    this.topoffset = Number.parseInt(
-      jQuery(this.div).css("border-top-width"),
-      10
-    );
+    this.topoffset = Number.parseInt(jQuery(this.div).css("border-top-width"), 10);
     if (decorated) {
       jQuery(`#head${this.wid}`).show();
       jQuery(this.div).removeClass("undecorated");
       jQuery(this.div).addClass("window");
       if (this.d_header) {
         this.topoffset = this.topoffset + Number.parseInt(jQuery(this.d_header).css("height"), 10);
-        this.debug(
-          "geometry",
-          "_set_decorated(",
-          decorated,
-          ") new topoffset=",
-          self.topoffset
-        );
+        this.debug("geometry", "_set_decorated(", decorated, ") new topoffset=", self.topoffset);
       }
     } else {
       jQuery(`#head${this.wid}`).hide();
@@ -1040,16 +970,7 @@ class XpraWindow {
   recenter(force_update_geometry) {
     let x = this.x;
     let y = this.y;
-    this.debug(
-      "geometry",
-      "recenter() x=",
-      x,
-      ", y=",
-      y,
-      ", desktop size: ",
-      this.client.desktop_width,
-      this.client.desktop_height
-    );
+    this.debug("geometry", "recenter() x=", x, ", y=", y, ", desktop size: ", this.client.desktop_width, this.client.desktop_height);
     x = Math.round((this.client.desktop_width - this.w) / 2);
     y = Math.round((this.client.desktop_height - this.h) / 2);
     if (this.x != x || this.y != y || force_update_geometry) {
@@ -1147,22 +1068,9 @@ class XpraWindow {
     this.move_resize(this.x, this.y, w, h);
   }
 
-  initiate_moveresize(
-    mousedown_event,
-    x_root,
-    y_root,
-    direction,
-    button,
-    source_indication
-  ) {
+  initiate_moveresize(mousedown_event, x_root, y_root, direction, button, source_indication) {
     const dir_str = MOVERESIZE_DIRECTION_STRING[direction];
-    this.log("initiate_moveresize", dir_str, [
-      x_root,
-      y_root,
-      direction,
-      button,
-      source_indication,
-    ]);
+    this.log("initiate_moveresize", dir_str, [x_root, y_root, direction, button, source_indication]);
     if (direction == MOVERESIZE_MOVE && mousedown_event) {
       const e = mousedown_event;
       e.type = "mousedown.draggable";
@@ -1327,13 +1235,8 @@ class XpraWindow {
    * if we're not already in the process of painting something.
    */
   may_paint_now() {
-    this.debug(
-      "draw",
-      "may_paint_now() paint pending=",
-      this.paint_pending,
-      ", paint queue length=",
-      this.paint_queue.length
-    );
+    this.debug("draw", "may_paint_now() paint pending=", this.paint_pending,
+               ", paint queue length=", this.paint_queue.length);
     let now = performance.now();
     while (
       (this.paint_pending == 0 || now - this.paint_pending >= 2000) &&
@@ -1413,10 +1316,7 @@ class XpraWindow {
           return;
         }
         const rgb_data = decode_rgb(packet);
-        const img = this.offscreen_canvas_ctx.createImageData(
-          enc_width,
-          enc_height
-        );
+        const img = this.offscreen_canvas_ctx.createImageData(enc_width, enc_height);
         img.data.set(rgb_data);
         this.offscreen_canvas_ctx.putImageData(img, x, y, 0, 0, width, height);
         painted();

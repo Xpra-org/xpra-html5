@@ -21,11 +21,10 @@ class XpraPaintWorker {
 
   add_canvas(wid, canvas, debug) {
     this.offscreen_canvas.set(wid, canvas);
-    this.offscreen_canvas_still.set(
-      wid,
-      new OffscreenCanvas(canvas.width, canvas.height)
-    );
-    if (debug) this.debug = true;
+    this.offscreen_canvas_still.set(wid, new OffscreenCanvas(canvas.width, canvas.height));
+    if (debug) {
+      this.debug = true;
+    }
   }
 
   update_canvas(wid, w, h) {
@@ -80,16 +79,9 @@ class XpraPaintWorker {
         const sh = scroll_data[3];
         const xdelta = scroll_data[4];
         const ydelta = scroll_data[5];
-        context.drawImage(
-          canvas,
-          sx,
-          sy,
-          sw,
-          sh,
-          sx + xdelta,
-          sy + ydelta,
-          sw,
-          sh
+        context.drawImage(canvas,
+          sx, sy, sw, sh,
+          sx + xdelta, sy + ydelta, sw, sh,
         );
         this.paint_box(coding, context, sx, sy, sw, sh);
       }
@@ -101,7 +93,9 @@ class XpraPaintWorker {
     image = null;
 
     //Call update_still in callback
-    if (KEEP_STILLS) setTimeout(() => this.update_still(wid), 0);
+    if (KEEP_STILLS) {
+      setTimeout(() => this.update_still(wid), 0);
+    }
   }
 
   paint_box(coding, context, px, py, pw, ph) {
@@ -120,18 +114,9 @@ class XpraPaintWorker {
   update_still(wid) {
     let canvas = this.offscreen_canvas.get(wid);
     let still = this.offscreen_canvas_still.get(wid);
-    still
-      .getContext("2d")
-      .drawImage(
-        canvas,
-        0,
-        0,
-        canvas.width,
-        canvas.height,
-        0,
-        0,
-        canvas.width,
-        canvas.height
+    still.getContext("2d").drawImage(canvas,
+        0, 0, canvas.width, canvas.height,
+        0, 0, canvas.width, canvas.height,
       );
   }
 
@@ -144,23 +129,12 @@ class XpraPaintWorker {
     if (KEEP_STILLS) {
       let canvas = this.offscreen_canvas.get(wid);
       let still = this.offscreen_canvas_still.get(wid);
-      canvas
-        .getContext("2d")
-        .drawImage(
-          still,
-          0,
-          0,
-          still.width,
-          still.height,
-          0,
-          0,
-          still.width,
-          still.height
+      canvas.getContext("2d").drawImage(still,
+          0, 0, still.width, still.height,
+          0, 0, still.width, still.height
         );
     } else {
-      console.warn(
-        `PaintWorker was asked for a redraw on window ${wid} but no still is available!`
-      );
+      console.warn(`PaintWorker was asked for a redraw on window ${wid} but no still is available!`);
     }
   }
 }
@@ -171,28 +145,14 @@ onmessage = function (e) {
   const data = e.data;
   switch (data.cmd) {
     case "paint":
-      xpraPaintWorker.paint_packet(
-        data.wid,
-        data.coding,
-        data.image,
-        data.x,
-        data.y,
-        data.w,
-        data.h
-      );
+      xpraPaintWorker.paint_packet(data.wid, data.coding, data.image, data.x, data.y, data.w, data.h);
       data.image = null;
       break;
     case "remove":
       xpraPaintWorker.delete_canvas(data.wid);
       break;
     case "canvas":
-      console.log(
-        "canvas transfer for window",
-        data.wid,
-        ":",
-        data.canvas,
-        data.debug
-      );
+      console.log("canvas transfer for window", data.wid, ":", data.canvas, data.debug);
       if (data.canvas) {
         xpraPaintWorker.add_canvas(data.wid, data.canvas, data.debug);
       }

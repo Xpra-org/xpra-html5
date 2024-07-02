@@ -14,13 +14,7 @@ class XpraImageDecoder {
     const coding = packet[6];
     if (coding.startsWith("rgb")) {
       const data = decode_rgb(packet);
-      const bitmap = await createImageBitmap(
-        new ImageData(new Uint8ClampedArray(data.buffer), width, height),
-        0,
-        0,
-        width,
-        height
-      );
+      const bitmap = await createImageBitmap(new ImageData(new Uint8ClampedArray(data.buffer), width, height), 0, 0, width, height);
       packet[6] = `bitmap:${coding}`;
       packet[7] = bitmap;
     } else {
