@@ -4,7 +4,7 @@
 # later version. See the file COPYING for details.
 
 %define version 14
-%define release 1.r1569%{?dist}
+%define release 1.r0%{?dist}
 %define minifier uglifyjs
 %define python python3
 

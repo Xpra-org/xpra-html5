@@ -1,4 +1,4 @@
-xpra-html5 (14-r1569-1) UNRELEASED; urgency=low
+xpra-html5 (14-r0-1) UNRELEASED; urgency=low
   * security fixes:
     - prevent XSS from server menu data - low concern
     - always reject insecure xor digest
