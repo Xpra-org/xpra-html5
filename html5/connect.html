@@ -892,8 +892,7 @@
         const disconnect_reason = getparam("disconnect");
         if (disconnect_reason) {
           document.getElementById("alert-disconnect").style.display = "block";
-          document.getElementById("disconnect-reason").innerText =
-            disconnect_reason;
+          document.getElementById("disconnect-reason").innerText = disconnect_reason;
         }
 
         //Populate the form:
@@ -902,10 +901,7 @@
         link.setAttribute("href", url);
         let pathname = link.pathname;
         if (pathname && pathname.endsWith("connect.html")) {
-          pathname = pathname.substring(
-            0,
-            pathname.length - "connect.html".length
-          );
+          pathname = pathname.substring(0, pathname.length - "connect.html".length);
         }
         if (pathname && pathname == "/") {
           pathname = "";
@@ -945,9 +941,7 @@
         $("span#encryption-key-span").hide();
         function hide_aes_key_input() {
             $("select#encryption").hide();
-            $("select#encryption").append(
-              '<option value="" selected="selected"></option>'
-            );
+            $("select#encryption").append('<option value="" selected="selected"></option>');
             $("img#toggle-key").hide();
             $("span#aes-label").show();
             $("span#encryption-key-span").hide();
@@ -1024,10 +1018,7 @@
           }
         }
         $("#toggle-password").on("click", function () {
-          $("#toggle-password").attr(
-            "src",
-            "./icons/" + toggle_reveal("password")
-          );
+          $("#toggle-password").attr("src", "./icons/" + toggle_reveal("password"));
         });
         $("#toggle-key").on("click", function () {
           $("#toggle-key").attr("src", "./icons/" + toggle_reveal("key"));
@@ -1138,9 +1129,7 @@
           Utilities.json_action(url, success_fn, error_fn);
         }
 
-        const command_category_icon = document.getElementById(
-          "command_category_icon"
-        );
+        const command_category_icon = document.getElementById("command_category_icon");
         const command_category = document.getElementById("command_category");
         const command_entry_icon =
           document.getElementById("command_entry_icon");
@@ -1206,19 +1195,11 @@
                   let command_exec = entry.TryExec || entry.Exec;
                   if (default_start == command_exec) {
                     $("select#command_entry").append(
-                      '<option selected="selected" value="' +
-                        command_exec +
-                        '">' +
-                        entry.Name +
-                        "</option>"
+                      '<option selected="selected" value="' + command_exec +'">' + entry.Name + "</option>"
                     );
                   } else {
                     $("select#command_entry").append(
-                      '<option value="' +
-                        command_exec +
-                        '">' +
-                        entry.Name +
-                        "</option>"
+                      '<option value="' + command_exec + '">' + entry.Name + "</option>"
                     );
                   }
                 }
@@ -1293,21 +1274,12 @@
                 let attributes = response[desktop_session];
                 let command_exec = attributes.TryExec || attributes.Exec;
                 let selected = "";
-                if (
-                  default_start_desktop &&
-                  default_start_desktop == command_exec
-                ) {
+                if (default_start_desktop && default_start_desktop == command_exec) {
                   selected = ' selected="selected" ';
                   default_start_desktop = null;
                 }
                 $("select#desktop_entry").append(
-                  "<option" +
-                    selected +
-                    ' value="' +
-                    command_exec +
-                    '">' +
-                    desktop_session +
-                    "</option>"
+                  "<option" + selected + ' value="' + command_exec + '">' + desktop_session + "</option>"
                 );
               }
               desktop_entry_changed();
@@ -1328,9 +1300,7 @@
             "Displays",
             function (xhr, response) {
               var displays = Object.keys(response);
-              const select_shadow_display = document.getElementById(
-                "select_shadow_display"
-              );
+              const select_shadow_display = document.getElementById("select_shadow_display");
               select_shadow_display.innerText = null;
               for (let d in displays) {
                 let display_option = displays[d];
@@ -1349,9 +1319,7 @@
               }
               if (displays.length == 0) {
                 $("span#select_shadow_display_warning").show();
-                $("span#select_shadow_display_warning").text(
-                  "no displays found"
-                );
+                $("span#select_shadow_display_warning").text("no displays found");
               } else {
                 $("span#select_shadow_display_warning").hide();
                 $("span#select_shadow_display_warning").text("");
@@ -1395,13 +1363,7 @@
                   selected = ' selected="selected" ';
                 }
                 $("select#select_display").append(
-                  "<option" +
-                    selected +
-                    " value=" +
-                    session +
-                    ">" +
-                    session_string +
-                    "</option>"
+                  "<option" + selected + " value=" + session + ">" + session_string + "</option>"
                 );
                 count += 1;
               }
@@ -1477,15 +1439,8 @@
             function (xhr, response) {
               Utilities.log("Info=", response);
               let mode = response.mode || "";
-              if (
-                mode.indexOf("seamless") >= 0 ||
-                mode.indexOf("desktop") >= 0 ||
-                mode.indexOf("shadow") >= 0
-              ) {
-                show_mode(mode, false);
-              } else {
-                show_mode(mode, true);
-              }
+              const is_proxy = mode.indexOf("seamless") < 0 && mode.indexOf("desktop") < 0 && mode.indexOf("shadow") < 0;
+              show_mode(mode, is_proxy);
             },
             function (error) {
               show_mode("", true);
@@ -1581,9 +1536,7 @@
         }
         document.getElementById("keyboard_layout").value = keyboard_layout;
         json_action("favicon.png?echo-headers", function (xhr, response) {
-          const headers = Utilities.ParseResponseHeaders(
-            xhr.getAllResponseHeaders()
-          );
+          const headers = Utilities.ParseResponseHeaders(xhr.getAllResponseHeaders());
           Utilities.debug("headers:", headers);
           let lang = headers["Echo-Accept-Language"];
           //ie: lang = "en-gb,en-us;q=0.8,en;q=0.6"
@@ -1605,10 +1558,7 @@
         });
         const audio_codec = getparam("audio_codec") || "";
         const audio_codec_select = document.getElementById("audio_codec");
-        const ignore_audio_blacklist = getboolparam(
-          "ignore_audio_blacklist",
-          false
-        );
+        const ignore_audio_blacklist = getboolparam("ignore_audio_blacklist", false);
         if (ignore_audio_blacklist) {
           $("input#ignore_audio_blacklist").prop("value", true);
         }
@@ -1641,10 +1591,7 @@
           };
         }
         const sound = getboolparam("sound");
-        $("input#sound").prop(
-          "checked",
-          sound && Object.keys(codecs_supported).length > 0
-        );
+        $("input#sound").prop("checked", sound && Object.keys(codecs_supported).length > 0);
 
         const bool_props = [
           "keyboard",
