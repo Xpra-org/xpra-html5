@@ -3,7 +3,7 @@
 # Xpra is released under the terms of the GNU GPL v2, or, at your option, any
 # later version. See the file COPYING for details.
 
-%define version 13
+%define version 14
 %define release 1.r1569%{?dist}
 %define minifier uglifyjs
 %define python python3
@@ -78,6 +78,27 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Tue Jul 02 2024 Antoine Martin <antoine@xpra.org> 14-1569-1
+- security fixes:
+    prevent XSS from server menu data - low concern
+    always reject insecure xor digest
+- major features:
+    WebTransport
+- bug fixes:
+    `text/plain` as default clipboard preferred format
+    preserve disconnection message when failing early
+    show `insecure` checkbox for all insecure connections, but not for `localhost`
+- authentication:
+    fail fast if digest is unsafe
+    restoring tab does not prompt for authentication
+    show keyboard focus on the password prompt dialog
+    trigger login with keyboard focus
+- modernization:
+    remove more IE compatibility workarounds
+- cleanups and cosmetic: too many to list them all
+    highlight invalid endpoint
+    constify
+
 * Thu May 23 2024 Antoine Martin <antoine@xpra.org> 13-6-1
 - bug fixes:
    do increase video size with offscreen decoding

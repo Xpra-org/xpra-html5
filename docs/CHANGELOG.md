@@ -1,6 +1,27 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+## [14.0] 2024-07-02
+- security fixes:
+  - [prevent XSS from server menu data](https://github.com/Xpra-org/xpra-html5/commit/dab26753459258258e2958d507f072595129838a) - low concern
+  - [always reject insecure xor digest](https://github.com/Xpra-org/xpra-html5/commit/ccea3a180cd8111eccf4db31fbd8722c55299b56)
+- major features:
+  - [WebTransport](https://github.com/Xpra-org/xpra-html5/issues/143)
+- bug fixes:
+  - [`text/plain` as default clipboard preferred format](https://github.com/Xpra-org/xpra-html5/commit/aad8e6c116089180eee60f200b11e8301a5cd915)
+  - [preserve disconnection message when failing early](https://github.com/Xpra-org/xpra-html5/commit/ee17975b7768d815396cd0b8d867e83d7d2a40eb)
+  - [show `insecure` checkbox for all insecure connections](https://github.com/Xpra-org/xpra-html5/commit/aaa33be56c64823d245b9ff2ba4f4cd26dfa83ac), [but not for `localhost`](https://github.com/Xpra-org/xpra-html5/commit/149eb5f600796687ec3912b575c549926630c5cf)
+- authentication:
+  - [fail fast if digest is unsafe](https://github.com/Xpra-org/xpra-html5/commit/14a74259ee1716c53140afaf8c886fa6c87180d1)
+  - [restoring tab does not prompt for authentication](https://github.com/Xpra-org/xpra-html5/issues/308) 
+  - [show keyboard focus on the password prompt dialog](https://github.com/Xpra-org/xpra-html5/commit/b3d8b5ba89f9fbf1c6f5c0b3855d9de37c2995a4)
+  - [trigger login with keyboard focus](https://github.com/Xpra-org/xpra-html5/commit/50297b773c9d740f4e7df0b323ceddd9202c5440)
+- modernization:
+  - [remove more IE compatibility workarounds](https://github.com/Xpra-org/xpra-html5/commit/f071b44a6111cb60b4a98f94a5844fa1fad3c5e7), [everywhere](https://github.com/Xpra-org/xpra-html5/commit/a3fbe72f202e71ac7b0d769a0db133b6d69c004c)
+- cleanups and cosmetic: too many to list them all
+  - [highlight invalid endpoint](https://github.com/Xpra-org/xpra-html5/commit/a25c2d69370662961b123a82b93bcaf44c9b0372)
+  - [constify](https://github.com/Xpra-org/xpra-html5/commit/bbf2dfbc9c0b31ad7bc1243f207b0e080c5fa8da)
+
 ## [13.0] 2024-05-23
 - bug fixes:
   - [do increase video size with offscreen decoding](https://github.com/Xpra-org/xpra-html5/commit/69c4e7d36ba1dca420f7b4e07224133b20298489) + [fixup](https://github.com/Xpra-org/xpra-html5/commit/eb9cb20b568a3ef18e7a73c1b0af597ea212a326)
