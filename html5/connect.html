@@ -661,9 +661,7 @@
       }
 
       function doConnect() {
-        let url =
-          "./index.html" +
-          add_prop("submit", true, true);
+        let url = "./index.html" + add_prop("submit", true, true);
         let i = 0;
         for (const [prop, value] of get_URL_action()) {
           add_prop(prop, value, i==0);
@@ -1142,8 +1140,7 @@
 
         const command_category_icon = document.getElementById("command_category_icon");
         const command_category = document.getElementById("command_category");
-        const command_entry_icon =
-          document.getElementById("command_entry_icon");
+        const command_entry_icon = document.getElementById("command_entry_icon");
         const command_entry = document.getElementById("command_entry");
         function load_icon(icon, src) {
           const url = get_host_address(true) + src;
@@ -1159,8 +1156,7 @@
           icon.src = url;
         }
         function command_entry_changed() {
-          var cc =
-            command_category.options[command_category.selectedIndex].innerHTML;
+          var cc = command_category.options[command_category.selectedIndex].innerHTML;
           var c = command_entry.options[command_entry.selectedIndex].innerHTML;
           Utilities.log("command_category=", cc, ", command_entry=", c);
           load_icon(command_entry_icon, `MenuIcon/${cc}/${c}`);
@@ -1168,8 +1164,7 @@
         }
         command_entry.addEventListener("change", command_entry_changed);
         function command_category_changed() {
-          var cc =
-            command_category.options[command_category.selectedIndex].innerHTML;
+          var cc = command_category.options[command_category.selectedIndex].innerHTML;
           Utilities.log("command_category=", cc);
           load_icon(command_category_icon, `MenuIcon/${cc}`);
           $("#command_category_icon").show();
@@ -1270,8 +1265,7 @@
                     let desktop_session = desktop_sessions[d];
                     if (desktop_session.toLowerCase() == de) {
                       let attributes = response[desktop_session];
-                      default_start_desktop =
-                        attributes.TryExec || attributes.Exec;
+                      default_start_desktop = attributes.TryExec || attributes.Exec;
                       break;
                     }
                   }
@@ -1394,8 +1388,7 @@
                 if (session) {
                   let attributes = response[session];
                   if (attributes && attributes.username) {
-                    document.getElementById("username").value =
-                      attributes.username;
+                    document.getElementById("username").value = attributes.username;
                   }
                 }
               }
@@ -1587,9 +1580,7 @@
         for (let codec_option in codecs_supported) {
           const option = document.createElement("option");
           option.value = codec_option;
-          option.textContent =
-            MediaSourceConstants.CODEC_DESCRIPTION[codec_option] ||
-            codecs_supported[codec_option];
+          option.textContent = MediaSourceConstants.CODEC_DESCRIPTION[codec_option] || codecs_supported[codec_option];
           option.selected = codec_option == best_codec;
           audio_codec_select.add(option);
         }
