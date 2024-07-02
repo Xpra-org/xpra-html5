@@ -729,7 +729,6 @@
         const port = getparam("port") || window.location.port;
         const ssl = getboolparam("ssl", https);
         const webtransport = getboolparam("webtransport", false);
-        console.error("webtransport=", webtransport);
         const path = getparam("path") || window.location.pathname;
         const encryption = getparam("encryption") || null;
         const key = getparam("key") || null;
