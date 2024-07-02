@@ -943,6 +943,15 @@
         webtransport_input.checked = webtransport;
         const has_session_storage = Utilities.hasSessionStorage();
         $("span#encryption-key-span").hide();
+        function hide_aes_key_input() {
+            $("select#encryption").hide();
+            $("select#encryption").append(
+              '<option value="" selected="selected"></option>'
+            );
+            $("img#toggle-key").hide();
+            $("span#aes-label").show();
+            $("span#encryption-key-span").hide();
+        }
         aes_input.onchange = function () {
           if (aes_input.checked) {
             $("select#encryption").find("option[value='']").remove();
@@ -955,13 +964,7 @@
               key_input.focus();
             }
           } else {
-            $("select#encryption").hide();
-            $("select#encryption").append(
-              '<option value="" selected="selected"></option>'
-            );
-            $("img#toggle-key").hide();
-            $("span#aes-label").show();
-            $("span#encryption-key-span").hide();
+            hide_aes_key_input();
           }
         };
         const encryption = (getparam("encryption") || "").toUpperCase();
@@ -980,6 +983,7 @@
           aes_input.disabled = webtransport_input.checked;
           if (webtransport_input.checked) {
             aes_input.checked = false;
+            hide_aes_key_input();
             if (!ssl_input.checked) {
               ssl_input.checked = true;
               host_address_changed();
