@@ -2798,7 +2798,7 @@ class XpraClient {
   }
 
   is_digest_safe(digest) {
-    return digest != "xor" || this.ssl || this.encryption || this.insecure || this.host == "localhost" || this.host == "127.0.0.1" || this.host=="::1";
+    return digest != "xor" || this.ssl || this.encryption || this.insecure || Utilities.isSafeHost(this.host);
   }
 
 

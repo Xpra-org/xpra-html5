@@ -549,6 +549,10 @@ const Utilities = {
     return value;
   },
 
+  isSafeHost(host) {
+    return host && ["localhost", "127.0.0.1", "::1"].indexOf(host) >= 0;
+  },
+
   /**
    * XmlHttpRequest's getAllResponseHeaders() method returns a string of response
    * headers according to the format described here:

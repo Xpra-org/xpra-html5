@@ -942,12 +942,13 @@
         function is_secure_connection() {
           return webtransport_input.checked || ssl_input.checked || aes_input.checked;
         }
-        function is_digest_safe() {
-          return is_secure_connection() || insecure_input.checked;
+        function is_password_safe() {
+          const host = document.getElementById("server").value;
+          return is_secure_connection() || insecure_input.checked || Utilities.isSafeHost(host);
         }
 
         function update_password_input() {
-          const safe = is_digest_safe();
+          const safe = is_password_safe();
           password_input.disabled = !safe;
           if (!safe) {
             password_input.value = "";
@@ -957,7 +958,8 @@
           update_password_input();
         };
         function update_insecure() {
-          const safe = is_secure_connection();
+          const host = document.getElementById("server").value;
+          const safe = is_secure_connection() || Utilities.isSafeHost(host);
           insecure_span.style.display = safe ? "none" : "block";
           insecure_input.disabled = safe;
           if (safe) {
