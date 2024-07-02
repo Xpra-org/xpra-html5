@@ -3,8 +3,8 @@
 # Xpra is released under the terms of the GNU GPL v2, or, at your option, any
 # later version. See the file COPYING for details.
 
-%define version 14
-%define release 1.r1569%{?dist}
+%define version 15
+%define release 1.r1604%{?dist}
 %define minifier uglifyjs
 %define python python3
 
@@ -78,6 +78,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Tue Jul 02 2024 Antoine Martin <antoine@xpra.org> 15-1604-1
+- TODO
+
 * Tue Jul 02 2024 Antoine Martin <antoine@xpra.org> 14-1569-1
 - security fixes:
     prevent XSS from server menu data - low concern
