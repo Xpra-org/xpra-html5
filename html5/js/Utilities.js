@@ -35,6 +35,11 @@ const Utilities = {
     );
   },
 
+  removeChars(validChars, inputString) {
+    var regex = new RegExp('[^' + validChars + ']', 'g');
+    return inputString.replace(regex, '');
+  },
+
   getHexUUID() {
     const s = [];
     const hexDigits = "0123456789abcdef";

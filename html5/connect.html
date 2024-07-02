@@ -1192,20 +1192,27 @@
                   }
                 }
               }
+              function safe_command(command) {
+                return Utilities.removeChars('a-zA-Z0-9\-%_/\\"', command);
+              }
+              function safe_name(name) {
+                return Utilities.removeChars('a-zA-Z0-9\-%"', name);
+              }
               function populate_commands() {
                 let selected_category = command_category.value;
                 let entries = response[selected_category].Entries;
                 command_entry.innerText = null;
                 for (let e in entries) {
                   let entry = entries[e];
-                  let command_exec = entry.TryExec || entry.Exec;
+                  const command_exec = safe_command(entry.TryExec || entry.Exec);
+                  const name = safe_name(entry.Name);
                   if (default_start == command_exec) {
                     $("select#command_entry").append(
-                      '<option selected="selected" value="' + command_exec +'">' + entry.Name + "</option>"
+                      '<option selected="selected" value="' + command_exec +'">' + name + "</option>"
                     );
                   } else {
                     $("select#command_entry").append(
-                      '<option value="' + command_exec + '">' + entry.Name + "</option>"
+                      '<option value="' + command_exec + '">' + name + "</option>"
                     );
                   }
                 }
@@ -1216,7 +1223,7 @@
               command_category.addEventListener("change", populate_commands);
               command_category.innerText = null;
               for (let c in categories) {
-                let category = categories[c];
+                let category = safe_name(categories[c]);
                 if (category == current_category) {
                   $("select#command_category").append(
                     '<option selected="selected">' + category + "</option>"
@@ -1277,14 +1284,14 @@
               for (let d in desktop_sessions) {
                 let desktop_session = desktop_sessions[d];
                 let attributes = response[desktop_session];
-                let command_exec = attributes.TryExec || attributes.Exec;
+                let command_exec = safe_command(attributes.TryExec || attributes.Exec);
                 let selected = "";
                 if (default_start_desktop && default_start_desktop == command_exec) {
                   selected = ' selected="selected" ';
                   default_start_desktop = null;
                 }
                 $("select#desktop_entry").append(
-                  "<option" + selected + ' value="' + command_exec + '">' + desktop_session + "</option>"
+                  "<option" + selected + ' value="' + command_exec + '">' + safe_name(desktop_session) + "</option>"
                 );
               }
               desktop_entry_changed();
@@ -1299,6 +1306,9 @@
           );
         }
 
+        function safe_session(name) {
+          return Utilities.removeChars('a-zA-Z0-9\:-%"', name);
+        }
         const display = getparam("display") || "";
         function init_shadow_display() {
           json_action(
@@ -1309,7 +1319,7 @@
               select_shadow_display.innerText = null;
               for (let d in displays) {
                 let display_option = displays[d];
-                let label = display_option;
+                let label = safe_session(display_option);
                 let selected = "";
                 let attr = response[display_option];
                 if (attr && attr.wmname) {
@@ -1368,7 +1378,7 @@
                   selected = ' selected="selected" ';
                 }
                 $("select#select_display").append(
-                  "<option" + selected + " value=" + session + ">" + session_string + "</option>"
+                  "<option" + selected + " value=" + session + ">" + safe_session(session_string) + "</option>"
                 );
                 count += 1;
               }
