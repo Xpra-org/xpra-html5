@@ -932,21 +932,43 @@
         const webtransport = getboolparam("webtransport", false);
         const ssl_input = document.getElementById("ssl");
         const insecure_input = document.getElementById("insecure");
+        const insecure_span = document.getElementById("insecure-span");
         const webtransport_input = document.getElementById("webtransport");
         const aes_input = document.getElementById("aes");
+        const password_input = document.getElementById("password");
         ssl_input.checked = ssl;
         insecure_input.checked = insecure;
         webtransport_input.checked = webtransport;
         const has_session_storage = Utilities.hasSessionStorage();
-        $("span#encryption-key-span").hide();
-        function hide_aes_key_input() {
-            $("select#encryption").hide();
-            $("select#encryption").append('<option value="" selected="selected"></option>');
-            $("img#toggle-key").hide();
-            $("span#aes-label").show();
-            $("span#encryption-key-span").hide();
+
+        function is_secure_connection() {
+          return webtransport_input.checked || ssl_input.checked || aes_input.checked;
         }
-        aes_input.onchange = function () {
+        function is_digest_safe() {
+          return is_secure_connection() || insecure_input.checked;
+        }
+
+        function update_password_input() {
+          const safe = is_digest_safe();
+          password_input.disabled = !safe;
+          if (!safe) {
+            password_input.value = "";
+          }
+        }
+        insecure_input.onchange = function () {
+          update_password_input();
+        };
+        function update_insecure() {
+          const safe = is_secure_connection();
+          insecure_span.style.display = safe ? "none" : "block";
+          insecure_input.disabled = safe;
+          if (safe) {
+            // uncheck it since it is not needed
+            insecure_input.checked = false;
+          }
+          update_password_input();
+        }
+        function update_aes() {
           if (aes_input.checked) {
             $("select#encryption").find("option[value='']").remove();
             $("select#encryption").show();
@@ -958,9 +980,14 @@
               key_input.focus();
             }
           } else {
-            hide_aes_key_input();
+            $("select#encryption").hide();
+            $("select#encryption").append('<option value="" selected="selected"></option>');
+            $("img#toggle-key").hide();
+            $("span#aes-label").show();
+            $("span#encryption-key-span").hide();
           }
-        };
+          update_insecure();
+        }
         const encryption = (getparam("encryption") || "").toUpperCase();
         if (encryption) {
           let enc = encryption.split("-")[0];
@@ -970,20 +997,27 @@
             document.getElementById("encryption").value = "AES-" + enc_mode;
           }
         }
-        aes_input.onchange();
         webtransport_input.onchange = function () {
+          // disable ssl and aes:
           ssl_input.disabled = webtransport_input.checked;
-          insecure_input.disabled = webtransport_input.checked;
           aes_input.disabled = webtransport_input.checked;
           if (webtransport_input.checked) {
+            // ssl is implied, so show it as enabled:
+            ssl_input.checked = true;
             aes_input.checked = false;
-            hide_aes_key_input();
-            if (!ssl_input.checked) {
-              ssl_input.checked = true;
-              host_address_changed();
-            }
           }
+          update_aes();
+          host_address_changed();
+          update_insecure();
         }
+        ssl_input.onchange = function () {
+          if (ssl_input.checked) {
+            aes_input.checked = false;
+          }
+          update_insecure();
+        }
+        aes_input.onchange = update_aes;
+        update_aes();
         webtransport_input.onchange();
 
         //vrefresh:
@@ -1023,29 +1057,6 @@
         $("#toggle-key").on("click", function () {
           $("#toggle-key").attr("src", "./icons/" + toggle_reveal("key"));
         });
-
-        if (!has_session_storage) {
-          //passwords would be sent on URL,
-          //so show insecure checkbox whenever ssl is off:
-          ssl_input.onchange = function () {
-            const safe = ssl_input.checked || insecure_input.checked;
-            $("input#password").prop("disabled", !safe);
-            if (ssl_input.checked) {
-              $("span#insecure-span").hide();
-              aes_input.checked = false;
-              aes_input.onchange();
-            } else {
-              $("span#insecure-span").show();
-            }
-          };
-        } else {
-          //local storage makes this secure
-          $("span#insecure-span").hide();
-        }
-        insecure_input.onchange = function () {
-          $("input#password").prop("disabled", !has_session_storage && !ssl_input.checked && !insecure_input.checked);
-        };
-        insecure_input.onchange();
 
         // keep track of the currently selected action
         // and update the label of the main action button:
@@ -1449,28 +1460,28 @@
         }
         init_mode();
 
-        let target_changed_timer = 0;
+        var target_changed_timer = 0;
         let ajax_delay = 2000;
         let watched_elements = ["server", "port", "ssl", "encryption", "aes"];
-        let host_address = "";
+        var host_address = "";
+        function cancel_changed_timer() {
+          if (target_changed_timer) {
+            clearTimeout(target_changed_timer);
+            target_changed_timer = 0;
+          }
+        }
+        function host_address_changed() {
+          cancel_changed_timer();
+          const url = get_host_address();
+          if (url != host_address) {
+            host_address = url;
+            Utilities.debug("host address changed to", url);
+            init_mode();
+          }
+        }
         for (var i = 0, l = watched_elements.length; i < l; i++) {
           let watched_element = watched_elements[i];
           let el = $("#" + watched_element);
-          function cancel_changed_timer() {
-            if (target_changed_timer) {
-              clearTimeout(target_changed_timer);
-              target_changed_timer = 0;
-            }
-          }
-          function host_address_changed() {
-            cancel_changed_timer();
-            const url = get_host_address();
-            if (url != host_address) {
-              host_address = url;
-              Utilities.debug("host address changed to", url);
-              init_mode();
-            }
-          }
           el.on("change", function () {
             Utilities.log(watched_element, "changed");
             host_address_changed();
