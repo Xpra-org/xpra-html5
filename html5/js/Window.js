@@ -263,8 +263,7 @@ class XpraWindow {
       jQuery(this.d_minimizebtn).hide();
     }
     // adjust top offset
-    this.topoffset =
-      this.topoffset + Number.parseInt(jQuery(this.d_header).css("height"), 10);
+    this.topoffset = this.topoffset + Number.parseInt(jQuery(this.d_header).css("height"), 10);
     // stop propagation if we're over the window:
     jQuery(this.div).mousedown((e) => e.stopPropagation());
     //bug 2418: if we stop 'mouseup' propagation,
@@ -923,9 +922,7 @@ class XpraWindow {
       jQuery(this.div).removeClass("undecorated");
       jQuery(this.div).addClass("window");
       if (this.d_header) {
-        this.topoffset =
-          this.topoffset +
-          Number.parseInt(jQuery(this.d_header).css("height"), 10);
+        this.topoffset = this.topoffset + Number.parseInt(jQuery(this.d_header).css("height"), 10);
         this.debug(
           "geometry",
           "_set_decorated(",
@@ -966,8 +963,7 @@ class XpraWindow {
     this.x = this.leftoffset;
     this.y = this.topoffset;
     this.w = screen_size[0] - this.leftoffset - this.rightoffset;
-    this.h =
-      screen_size[1] - this.topoffset - this.bottomoffset - TASKBAR_HEIGHT;
+    this.h = screen_size[1] - this.topoffset - this.bottomoffset - TASKBAR_HEIGHT;
     this.debug("geometry", "fill_screen() ", this.x, this.y, this.w, this.h);
   }
 
@@ -1018,13 +1014,8 @@ class XpraWindow {
    * if it is fullscreen or maximized.
    */
   screen_resized() {
-    this.debug(
-      "geometry",
-      "screen_resized() server_is_desktop=",
-      this.client.server_is_desktop,
-      ", server_is_shadow=",
-      this.client.server_is_shadow
-    );
+    this.debug("geometry", "screen_resized() server_is_desktop=", this.client.server_is_desktop,
+      ", server_is_shadow=", this.client.server_is_shadow);
     if (this.client.server_is_desktop) {
       this.match_screen_size();
     }
@@ -1307,12 +1298,7 @@ class XpraWindow {
   draw() {
     //pass the 'buffer' canvas directly to visible canvas context
     if (this.has_alpha || this.tray) {
-      this.canvas_ctx.clearRect(
-        0,
-        0,
-        this.draw_canvas.width,
-        this.draw_canvas.height
-      );
+      this.canvas_ctx.clearRect(0, 0, this.draw_canvas.width, this.draw_canvas.height);
     }
     this.canvas_ctx.drawImage(this.draw_canvas, 0, 0);
   }
@@ -1386,33 +1372,10 @@ class XpraWindow {
     const bitmap = coding.startsWith("bitmap:");
     if (bitmap) {
       coding = coding.split(":")[1];
-      this.debug(
-        "draw",
-        coding,
-        img_data,
-        " at ",
-        `${x},${y}`,
-        ") focused=",
-        this.focused
-      );
+      this.debug("draw", coding, img_data, " at ", `${x},${y}`, ") focused=", this.focused);
     } else {
-      this.debug(
-        "draw",
-        "do_paint(",
-        img_data.length,
-        " bytes of",
-        coding,
-        " data ",
-        width,
-        "x",
-        height,
-        " at ",
-        x,
-        ",",
-        y,
-        ") focused=",
-        this.focused
-      );
+      this.debug("draw", "do_paint(", img_data.length, " bytes of", coding, " data ", width, "x", height,
+        " at ", x, ",", y, ") focused=", this.focused);
     }
 
     function painted(skip_box) {
@@ -1458,11 +1421,7 @@ class XpraWindow {
         this.offscreen_canvas_ctx.putImageData(img, x, y, 0, 0, width, height);
         painted();
         this.may_paint_now();
-      } else if (
-        coding == "jpeg" ||
-        coding.startsWith("png") ||
-        coding == "webp"
-      ) {
+      } else if (coding == "jpeg" || coding.startsWith("png") || coding == "webp") {
         if (bitmap) {
           paint_bitmap();
           return;
@@ -1499,14 +1458,8 @@ class XpraWindow {
           const ydelta = scroll_data[5];
           this.offscreen_canvas_ctx.drawImage(
             this.draw_canvas,
-            sx,
-            sy,
-            sw,
-            sh,
-            sx + xdelta,
-            sy + ydelta,
-            sw,
-            sh
+            sx, sy, sw, sh,
+            sx + xdelta, sy + ydelta, sw, sh
           );
           if (this.debug_categories.includes("draw")) {
             this.paint_box("brown", sx + xdelta, sy + ydelta, sw, sh);
