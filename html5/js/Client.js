@@ -2767,6 +2767,10 @@ class XpraClient {
       client.do_process_challenge(digest, server_salt, salt_digest, password);
     }
     if (this.passwords.length > 0) {
+      if (!this.is_digest_safe(digest)) {
+        this.callback_close("refusing to send a password over an insecure connection");
+        return;
+      }
       const password = this.passwords.shift();
       call_do_process_challenge(password);
       return;
@@ -2775,7 +2779,12 @@ class XpraClient {
       this.cancel_hello_timer();
       this.keycloak_prompt_fn(server_salt, call_do_process_challenge);
       return;
-    } else if (this.password_prompt_fn) {
+    }
+    if (this.password_prompt_fn && this.is_digest_safe(digest)) {
+      if (!this.is_digest_safe(digest)) {
+        this.callback_close("refusing to prompt for a password over an insecure connection");
+        return;
+      }
       const address = `${client.host}:${client.port}`;
       this.cancel_hello_timer();
       this.password_prompt_fn(`The server at ${address} requires a ${prompt}`, call_do_process_challenge);
@@ -2784,12 +2793,17 @@ class XpraClient {
     this.callback_close("No password specified for authentication challenge");
   }
 
+  is_digest_safe(digest) {
+    return digest != "xor" || this.ssl || this.encryption || this.insecure || this.host == "localhost" || this.host == "127.0.0.1" || this.host=="::1";
+  }
+
+
   do_process_challenge(digest, server_salt, salt_digest, password) {
     this.schedule_hello_timer();
     let client_salt = null;
     let l = server_salt.length;
     //don't use xor over unencrypted connections unless explicitly allowed:
-    if (digest == "xor" && !this.ssl && !this.encryption && !this.insecure && this.host != "localhost" && this.host != "127.0.0.1") {
+    if (!this.is_digest_safe(digest)) {
       this.callback_close(`server requested digest xor, cowardly refusing to use it without encryption with ${this.host}`);
       return;
     }
