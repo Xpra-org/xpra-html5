@@ -1417,13 +1417,15 @@
           Utilities.debug("show_mode(", mode, ", ", is_proxy, ")");
           let server_info = "";
           let host_address = get_host_address(true);
-          if (mode.length > 0) {
+          const got_mode = mode.length > 0;
+          if (got_mode > 0) {
             server_info = host_address + " is a '" + mode + "' server";
           }
           else {
             server_info = "no information available for " + host_address;
           }
           document.getElementById("server-info").innerText = server_info;
+          document.getElementById("server-info").className = got_mode ? "" : "warning";
           if (is_proxy) {
             //show all options:
             $("#action_connect_group").show();
