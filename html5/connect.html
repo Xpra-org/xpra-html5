@@ -1413,8 +1413,9 @@
           );
         }
 
-        function show_mode(mode, is_proxy) {
-          Utilities.debug("show_mode(", mode, ", ", is_proxy, ")");
+        function show_mode(mode) {
+          const is_proxy = mode == "" || (mode.indexOf("seamless") < 0 && mode.indexOf("desktop") < 0 && mode.indexOf("shadow") < 0);
+          Utilities.debug("show_mode(", mode, ")");
           let server_info = "";
           let host_address = get_host_address(true);
           const got_mode = mode.length > 0;
@@ -1455,11 +1456,10 @@
             function (xhr, response) {
               Utilities.log("Info=", response);
               let mode = response.mode || "";
-              const is_proxy = mode.indexOf("seamless") < 0 && mode.indexOf("desktop") < 0 && mode.indexOf("shadow") < 0;
-              show_mode(mode, is_proxy);
+              show_mode(mode);
             },
             function (error) {
-              show_mode("", true);
+              show_mode("");
             }
           );
         }
