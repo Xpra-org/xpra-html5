@@ -1003,25 +1003,29 @@
         if (!debug_main) {
           client.callback_close = function (reason) {
             clog("closing: ", reason);
-            if (submit) {
-              let message = "Connection closed (socket closed)";
-              if (reason) {
-                message = reason;
-              }
-              let url = "./connect.html";
-              const has_session_storage = Utilities.hasSessionStorage();
-              function add_prop(prop, value) {
-                if (has_session_storage) {
-                  Utilities.setSessionStorageValue(prop, value);
-                } else {
-                  if (value === null || value === "undefined") {
-                    value = "";
-                  }
-                  url = url + "&" + prop + "=" + encodeURIComponent("" + value);
+            if (!submit) {
+              // if we didn't submit through the form, silently redirect to the connect gui
+              window.location = "connect.html";
+              return;
+            }
+            let message = "Connection closed (socket closed)";
+            if (reason) {
+              message = reason;
+            }
+            let url = "./connect.html";
+            const has_session_storage = Utilities.hasSessionStorage();
+            function add_prop(prop, value) {
+              if (has_session_storage) {
+                Utilities.setSessionStorageValue(prop, value);
+              } else {
+                if (value === null || value === "undefined") {
+                  value = "";
                 }
+                url = url + "&" + prop + "=" + encodeURIComponent("" + value);
               }
-              add_prop("disconnect", message);
-              const props = {
+            }
+            add_prop("disconnect", message);
+            const props = {
                 username: username,
                 insecure: insecure,
                 server: server,
@@ -1060,27 +1064,23 @@
                 floating_menu: floating_menu,
                 toolbar_position: toolbar_position,
                 autohide: autohide,
-              };
-              for (let i = 0; i < client.debug_categories.length; i++) {
-                const category = client.debug_categories[i];
-                props["debug_" + category] = true;
-              }
-              if (insecure || Utilities.hasSessionStorage()) {
-                for (let i = 0; i < passwords.length; i++) {
-                  add_prop("password"+i, passwords[i]);
-                }
-              } else {
-                props["password"] = "";
-              }
-              for (let name in props) {
-                const value = props[name];
-                add_prop(name, value);
-              }
-              window.location = url;
-            } else {
-              // if we didn't submit through the form, silently redirect to the connect gui
-              window.location = "connect.html";
+            };
+            for (let i = 0; i < client.debug_categories.length; i++) {
+              const category = client.debug_categories[i];
+              props["debug_" + category] = true;
             }
+            if (insecure || Utilities.hasSessionStorage()) {
+              for (let i = 0; i < passwords.length; i++) {
+                add_prop("password"+i, passwords[i]);
+              }
+            } else {
+              props["password"] = "";
+            }
+            for (let name in props) {
+              const value = props[name];
+              add_prop(name, value);
+            }
+            window.location = url;
           };
         }
         client.init(ignore_audio_blacklist);
