@@ -505,7 +505,10 @@ def make_rpm():
 
 def sdist():
     record_vcs_info()
-    from distutils.core import setup
+    try:
+        from setuptools import setup
+    except ImportError:
+        from distutils.core import setup
     setup(name = "xpra-html5",
           version = VERSION,
           license = "MPL-2",
