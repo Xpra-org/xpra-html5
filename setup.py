@@ -385,23 +385,23 @@ def set_version(NEW_VERSION):
     BRANCH = vcs_info.get("BRANCH", "master")
     for filename, replace in {
         "./packaging/debian/control" : {
-            r"Version: %s.*" % VERSION : r"Version: %s-r%s-1" % (NEW_VERSION, REVISION),
+            r"Version:\s*%s.*" % VERSION : r"Version: %s-r%s-1" % (NEW_VERSION, REVISION),
             },
         "./packaging/rpm/xpra-html5.spec" : {
             r"%%define version %s" % VERSION : r"%%define version %s" % NEW_VERSION,
             r"%%define release .*" : r"%%define release 1.r%s%%{?dist}" % REVISION,
             },
         "./html5/js/Utilities.js" : {
-            r'VERSION : "%s"' % VERSION : r'VERSION : "%s"' % NEW_VERSION,
-            r"REVISION : [0-9]*" : r"REVISION : %s" % REVISION,
-            r'LOCAL_MODIFICATIONS : [0-9]*' : r'LOCAL_MODIFICATIONS : %s' % LOCAL_MODIFICATIONS,
-            r'BRANCH : "[a-zA-Z]*"' : r'BRANCH : "%s"' % BRANCH,
+            r'VERSION\s*:\s*"%s"' % VERSION : r'VERSION : "%s"' % NEW_VERSION,
+            r"REVISION\s*:\*[0-9]*" : r"REVISION : %s" % REVISION,
+            r'LOCAL_MODIFICATIONS\s*:\s*[0-9]*' : r'LOCAL_MODIFICATIONS : %s' % LOCAL_MODIFICATIONS,
+            r'BRANCH\s*:\s*"[a-zA-Z]*"' : r'BRANCH : "%s"' % BRANCH,
             },
         "./html5/index.html" : {
-            r"<h3>Version .*</h3>" : "<h3>Version %s</h3>" % NEW_VERSION,
+            r"<h3>Version\s*.*</h3>" : "<h3>Version %s</h3>" % NEW_VERSION,
             },
         "./setup.py" : {
-            r'VERSION = "%s"' % VERSION : r'VERSION = "%s"' % NEW_VERSION,
+            r'VERSION\s*=\s*"%s"' % VERSION : r'VERSION = "%s"' % NEW_VERSION,
             },
         }.items():
         file_sub(filename, replace)
