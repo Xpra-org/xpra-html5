@@ -3,7 +3,7 @@
 # Xpra is released under the terms of the GNU GPL v2, or, at your option, any
 # later version. See the file COPYING for details.
 
-%define version 5.4
+%define version 5.5
 %define release 0%{?dist}
 %define minifier uglifyjs
 %define python python3
@@ -77,6 +77,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Wed Jul 03 2024 Antoine Martin <antoine@xpra.org> 5.5-1-1
+- TODO
+
 * Tue Nov 28 2023 Antoine Martin <antoine@xpra.org> 5.4-1
 - update jquery and jquery-ui libraries
 - don't show the clock menu entry until we have the time

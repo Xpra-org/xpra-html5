@@ -10,8 +10,8 @@
 'use strict';
 
 const Utilities = {
-	VERSION : "5.4",
-	REVISION : 2,
+	VERSION : "5.5",
+	REVISION : 1,
 	LOCAL_MODIFICATIONS : 0,
 	BRANCH : "v5.x",
 

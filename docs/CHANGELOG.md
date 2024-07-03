@@ -1,6 +1,8 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+## [5.5] 2024-07-03
+* 
 
 ## [5.4] 2023-11-28
 * update libraries: jquery and jquery-ui
