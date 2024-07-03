@@ -437,6 +437,9 @@ const Utilities = {
 	},
 
 	Uint8ToString : function(u8a){
+		if (typeof u8a == "string") {
+			return u8a;
+		}
 		const CHUNK_SZ = 0x8000;
 		const c = [];
 		for (let i=0; i < u8a.length; i+=CHUNK_SZ) {
