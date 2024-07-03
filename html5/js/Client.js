@@ -402,7 +402,7 @@ XpraClient.prototype.connect = function() {
 	// open the web socket, started it in a worker if available
 	// check we have enough information for encryption
 	if(this.encryption && ((!this.encryption_key) || (this.encryption_key == ""))) {
-		this.callback_close("no key specified for encryption");
+		this.disconnect("no key specified for encryption");
 		return;
 	}
 	this.initialize_workers();
@@ -1163,7 +1163,7 @@ XpraClient.prototype._check_echo_timeout = function(ping_time) {
 		}
 		else {
 			// no point in telling the server here...
-			this.callback_close("server ping timeout, waited "+ this.PING_TIMEOUT +"ms without a response");
+			this.disconnect("server ping timeout, waited "+ this.PING_TIMEOUT +"ms without a response");
 		}
 	}
 };
@@ -2180,8 +2180,7 @@ XpraClient.prototype.schedule_hello_timer = function() {
 	this.cancel_hello_timer();
 	const me = this;
 	this.hello_timer = setTimeout(function () {
-		me.disconnect_reason = "Did not receive hello before timeout reached, not an Xpra server?";
-		me.close();
+		me.disconnect("Did not receive hello before timeout reached, not an Xpra server?");
 	}, this.HELLO_TIMEOUT);
 }
 XpraClient.prototype.cancel_hello_timer = function() {
@@ -2273,6 +2272,11 @@ XpraClient.prototype._process_close = function(packet, ctx) {
 		ctx.close();
 	}
 };
+
+XpraClient.prototype.disconnect = function(reason) {
+	this.disconnect_reason = reason || "unknown";
+	this.close();
+}
 
 XpraClient.prototype.close = function() {
 	if (this.reconnect_in_progress) {
@@ -2393,14 +2397,12 @@ XpraClient.prototype._process_hello = function(packet, ctx) {
 			vno[i] = parseInt(vparts[i]);
 		}
 		if (vno[0]<=0 && vno[1]<10) {
-			ctx.callback_close("unsupported version: " + version);
-			ctx.close();
+			ctx.disconnect("unsupported version: " + version);
 			return;
 		}
 	}
 	catch (e) {
-		ctx.callback_close("error parsing version number '" + version + "'");
-		ctx.close();
+		ctx.disconnect("error parsing version number '" + version + "'");
 		return;
 	}
 	ctx.log("got hello: server version", version, "accepted our connection");
@@ -2657,7 +2659,7 @@ XpraClient.prototype._process_challenge = function(packet, ctx) {
 			ctx.cipher_out_caps = packet[2];
 			ctx.protocol.set_cipher_out(ctx.cipher_out_caps, ctx.encryption_key);
 		} else {
-			ctx.callback_close("challenge does not contain encryption details to use for the response");
+			ctx.disconnect("challenge does not contain encryption details to use for the response");
 			return;
 		}
 	}
@@ -2668,8 +2670,7 @@ XpraClient.prototype._process_challenge = function(packet, ctx) {
 	ctx.clog("process challenge:", digest);
 	function do_process_challenge(password) {
 		if (password==null) {
-			ctx.disconnect_reason = "password prompt cancelled";
-			ctx.close();
+			ctx.disconnect("password prompt cancelled");
 			return;
 		}
 		const challenge_digest = digest.startsWith("keycloak") ? "xor" : digest;
@@ -2690,7 +2691,7 @@ XpraClient.prototype._process_challenge = function(packet, ctx) {
 		ctx.password_prompt_fn("The server at "+address+" requires a "+prompt, do_process_challenge);
 		return;
 	}
-	ctx.callback_close("No password specified for authentication challenge");
+	ctx.disconnect("No password specified for authentication challenge");
 }
 
 XpraClient.prototype.do_process_challenge = function(digest, server_salt, salt_digest, password) {
@@ -2701,12 +2702,12 @@ XpraClient.prototype.do_process_challenge = function(digest, server_salt, salt_d
 		//don't use xor over unencrypted connections unless explicitly allowed:
 		if (digest == "xor") {
 			if((!this.ssl) && (!this.encryption) && (!this.insecure) && (this.host!="localhost") && (this.host!="127.0.0.1")) {
-				ctx.callback_close("server requested digest xor, cowardly refusing to use it without encryption with "+this.host);
+				ctx.disconnect("server requested digest xor, cowardly refusing to use it without encryption with "+this.host);
 				return;
 			}
 		}
 		if (l<16 || l>256) {
-			this.callback_close("invalid server salt length for xor digest:"+l);
+			this.disconnect("invalid server salt length for xor digest:"+l);
 			return;
 		}
 	}
@@ -2718,7 +2719,7 @@ XpraClient.prototype.do_process_challenge = function(digest, server_salt, salt_d
 	this.clog("challenge using salt digest", salt_digest);
 	const salt = this._gendigest(salt_digest, client_salt, server_salt);
 	if (!salt) {
-		this.callback_close("server requested an unsupported salt digest " + salt_digest);
+		this.disconnect("server requested an unsupported salt digest " + salt_digest);
 		return;
 	}
 	this.clog("challenge using digest", digest);
@@ -2727,7 +2728,7 @@ XpraClient.prototype.do_process_challenge = function(digest, server_salt, salt_d
 		this.do_send_hello(challenge_response, client_salt);
 	}
 	else {
-		this.callback_close("server requested an unsupported digest " + digest);
+		this.disconnect("server requested an unsupported digest " + digest);
 	}
 };
 
