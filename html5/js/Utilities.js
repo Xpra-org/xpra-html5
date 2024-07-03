@@ -75,6 +75,12 @@ const Utilities = {
 		return ["true", "on", "1", "yes", "enabled"].indexOf(String(v).toLowerCase())!==-1;
 	},
 
+
+	removeChars: function(validChars, inputString) {
+		var regex = new RegExp('[^' + validChars + ']', 'g');
+		return inputString.replace(regex, '');
+	},
+
 	getHexUUID: function() {
 		const s = [];
 		const hexDigits = "0123456789abcdef";

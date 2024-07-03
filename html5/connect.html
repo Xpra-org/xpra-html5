@@ -767,6 +767,16 @@ function fill_form(default_settings) {
 	}
 	command_category.addEventListener("change", command_category_changed);
 
+	function safe_command(command) {
+		return Utilities.removeChars('a-zA-Z0-9\-%_/\\"', command);
+	}
+	function safe_name(name) {
+		return Utilities.removeChars('a-zA-Z0-9\-%"', name);
+	}
+	function safe_session(name) {
+		return Utilities.removeChars('a-zA-Z0-9\:-%"', name);
+	}
+
 	function init_command_menu() {
 		$('#command_category_icon').hide();
 		$('#command_entry_icon').hide();
@@ -793,12 +803,13 @@ function fill_form(default_settings) {
 				command_entry.innerText = null;
 				for (let e in entries) {
 					let entry = entries[e];
-					let command_exec = entry.TryExec || entry.Exec;
+					let command_exec = safe_command(entry.TryExec || entry.Exec);
+					let name = safe_name(entry.Name);
 					if (default_start==command_exec) {
-						$('select#command_entry').append('<option selected="selected" value="'+command_exec+'">'+entry.Name+'</option>');
+						$('select#command_entry').append('<option selected="selected" value="'+command_exec+'">'+name+'</option>');
 					}
 					else {
-						$('select#command_entry').append('<option value="'+command_exec+'">'+entry.Name+'</option>');
+						$('select#command_entry').append('<option value="'+command_exec+'">'+name+'</option>');
 					}
 				}
 				$('select#command_entry').show();
@@ -810,10 +821,10 @@ function fill_form(default_settings) {
 			for (let c in categories) {
 				let category = categories[c];
 				if (category==current_category) {
-					$('select#command_category').append('<option selected="selected">'+category+'</option>');
+					$('select#command_category').append('<option selected="selected">'+safe_name(category)+'</option>');
 				}
 				else {
-					$('select#command_category').append('<option>'+category+'</option>');
+					$('select#command_category').append('<option>'+safe_name(category)+'</option>');
 				}
 			}
 			command_category_changed();
@@ -864,14 +875,14 @@ function fill_form(default_settings) {
 			for (let d in desktop_sessions) {
 				let desktop_session = desktop_sessions[d];
 				let attributes = response[desktop_session];
-				let command_exec = attributes.TryExec || attributes.Exec;
+				let command_exec = safe_command(attributes.TryExec || attributes.Exec);
 				let selected='';
 				if (default_start_desktop && default_start_desktop==command_exec) {
 					selected=' selected="selected" ';
 					default_start_desktop = null;
 				}
 				$('select#desktop_entry').append('<option'+selected+' value="'+command_exec+'">'+
-					desktop_session+
+					safe_session(desktop_session)+
 					'</option>');
 			}
 			desktop_entry_changed();
@@ -893,7 +904,7 @@ function fill_form(default_settings) {
 			select_shadow_display.innerText = null;
 			for (let d in displays) {
 				let display_option = displays[d];
-				let label = display_option;
+				let label = safe_session(display_option);
 				let selected = "";
 				let attr = response[display_option];
 				if (attr && attr.wmname) {
@@ -947,7 +958,7 @@ function fill_form(default_settings) {
 				if (display==session) {
 					selected=' selected="selected" ';
 				}
-				$('select#select_display').append('<option'+selected+' value='+session+'>'+session_string+'</option>');
+				$('select#select_display').append('<option'+selected+' value='+safe_session(session)+'>'+safe_session(session_string)+'</option>');
 				count += 1;
 			}
 			if (count==0) {
