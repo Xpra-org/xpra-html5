@@ -2494,6 +2494,10 @@ XpraClient.prototype._process_hello = function(packet, ctx) {
 
 	ctx.remote_open_files = Boolean(hello["open-files"]);
 	ctx.remote_file_transfer = Boolean(hello["file-transfer"]);
+	if (!ctx.remote_file_transfer) {
+		$("#upload_menu_entry").hide();
+		$("#download_menu_entry").hide();
+	}
 	ctx.remote_printing = Boolean(hello["printing"]);
 	if (ctx.remote_printing && ctx.printing) {
 		// send our printer definition
