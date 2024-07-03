@@ -119,6 +119,7 @@
 								<ul>
 									<li id="clock_menu_entry"><a href="#" data-icon="access_time" onclick="return false" id="clock_menu_text"></a></li>
 									<li><a href="#" data-icon="cloud_upload" onclick="upload_file(event); return false">Upload file</a></li>
+									<li id="download_menu_entry"><a href="#" data-icon="cloud_download" onclick="download_file(event); return false">Download file</a></li>
 									<li><a href="#" data-icon="exit_to_app" onclick="confirm_shutdown_server(event); return false">Shutdown Server</a></li>
 								</ul>
 							</li>
@@ -354,7 +355,11 @@
 				$('.menu-content').slideUp();
 				$('#upload').click();
 			}
-
+			function download_file(event) {
+				$(".menu-content").slideUp();
+				const command = ["xpra", "send-file"]
+				client.send(["start-command", "Client-Download-File", command, true, true]);
+			}
 			function cleanup_dialogs() {
 				$('.menu-content').slideUp();
 				$('#about').hide();
