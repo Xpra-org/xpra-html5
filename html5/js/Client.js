@@ -2673,8 +2673,7 @@ XpraClient.prototype._process_challenge = function(packet, ctx) {
 			ctx.disconnect("password prompt cancelled");
 			return;
 		}
-		const challenge_digest = digest.startsWith("keycloak") ? "xor" : digest;
-		ctx.do_process_challenge(challenge_digest, server_salt, salt_digest, password);
+		ctx.do_process_challenge(digest, server_salt, salt_digest, password);
 	}
 	if (ctx.passwords.length>0) {
 		const password = ctx.passwords.shift();
@@ -2698,14 +2697,14 @@ XpraClient.prototype.do_process_challenge = function(digest, server_salt, salt_d
 	this.schedule_hello_timer();
 	let client_salt = null;
 	let l = server_salt.length;
+
+	//don't use xor over unencrypted connections unless explicitly allowed:
+	if (digest == "xor" && !this.ssl && !this.encryption && !this.insecure && this.host != "localhost" && this.host != "127.0.0.1") {
+		this.callback_close(`server requested digest xor, cowardly refusing to use it without encryption with ${this.host}`);
+		return;
+	}
+
 	if (salt_digest=="xor") {
-		//don't use xor over unencrypted connections unless explicitly allowed:
-		if (digest == "xor") {
-			if((!this.ssl) && (!this.encryption) && (!this.insecure) && (this.host!="localhost") && (this.host!="127.0.0.1")) {
-				ctx.disconnect("server requested digest xor, cowardly refusing to use it without encryption with "+this.host);
-				return;
-			}
-		}
 		if (l<16 || l>256) {
 			this.disconnect("invalid server salt length for xor digest:"+l);
 			return;
@@ -2722,8 +2721,9 @@ XpraClient.prototype.do_process_challenge = function(digest, server_salt, salt_d
 		this.disconnect("server requested an unsupported salt digest " + salt_digest);
 		return;
 	}
-	this.clog("challenge using digest", digest);
-	const challenge_response = this._gendigest(digest, password, salt);
+	const challenge_digest = digest.startsWith("keycloak") ? "xor" : digest;
+	this.clog("challenge using digest", challenge_digest);
+	const challenge_response = this._gendigest(challenge_digest, password, salt);
 	if (challenge_response) {
 		this.do_send_hello(challenge_response, client_salt);
 	}
