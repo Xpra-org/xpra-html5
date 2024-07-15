@@ -687,7 +687,7 @@
         if (username) {
           url += username;
         }
-        if (password) {
+        if (password && is_password_safe()) {
           url += ":"+password;
         }
         if (username || password) {
@@ -943,8 +943,16 @@
           return webtransport_input.checked || ssl_input.checked || aes_input.checked;
         }
         function is_password_safe() {
+          if (insecure_input.checked) {
+            return True;
+          }
+          if (!has_session_storage) {
+            // don't show the password on the URL
+            // which can be seen in the top bar and captured in the server logs
+            return False;
+          }
           const host = document.getElementById("server").value;
-          return is_secure_connection() || insecure_input.checked || Utilities.isSafeHost(host);
+          return is_secure_connection() || Utilities.isSafeHost(host);
         }
 
         function update_password_input() {
@@ -952,6 +960,10 @@
           password_input.disabled = !safe;
           if (!safe) {
             password_input.value = "";
+            password_input.title = "Typing a password would be insecure with these settings";
+          }
+          else {
+            password_input.title = "Session Password";
           }
         }
         insecure_input.onchange = function () {
@@ -1491,18 +1503,22 @@
           let el = $("#" + watched_element);
           el.on("change", function () {
             Utilities.log(watched_element, "changed");
+            update_password_input();
             host_address_changed();
           });
           el.on("paste", function () {
             Utilities.log(watched_element, "pasted");
+            update_password_input();
             host_address_changed();
           });
           el.on("keyup", function () {
             Utilities.log(watched_element, "key event");
+            update_password_input();
             cancel_changed_timer();
             target_changed_timer = setTimeout(host_address_changed, ajax_delay);
           });
           el.on("keydown", function () {
+            update_password_input();
             cancel_changed_timer();
           });
         }
