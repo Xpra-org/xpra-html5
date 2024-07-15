@@ -78,8 +78,19 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
-* Wed Jul 03 2024 Antoine Martin <antoine@xpra.org> 5.5-1-1
-- TODO
+* Mon Jul 15 2024 Antoine Martin <antoine@xpra.org> 5.5-1-1
+- fail fast if digest is unsafe
+- refuse to use xor digest for passwords over insecure connections
+- add RHEL10 builds
+- prevent simple XSS from server menu data
+- preserve disconnection message
+- hide file transfers if not supported by the server
+- add 'Download' file menu entry
+- password attribute is a list
+- don't try to convert strings to strings
+- ignore whitespace when updating vcs info
+- newer python compatibility: prefer setuptools, also add setuptools to the build dependencies
+- consistency: always return a string
 
 * Tue Nov 28 2023 Antoine Martin <antoine@xpra.org> 5.4-1
 - update jquery and jquery-ui libraries

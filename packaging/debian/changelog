@@ -1,7 +1,18 @@
 xpra-html5 (5.5-r1-1) UNRELEASED; urgency=low
-  * TODO
+  * fail fast if digest is unsafe
+  * refuse to use xor digest for passwords over insecure connections
+  * add RHEL10 builds
+  * prevent simple XSS from server menu data
+  * preserve disconnection message
+  * hide file transfers if not supported by the server
+  * add 'Download' file menu entry
+  * password attribute is a list
+  * don't try to convert strings to strings
+  * ignore whitespace when updating vcs info
+  * newer python compatibility: prefer setuptools, also add setuptools to the build dependencies
+  * consistency: always return a string
 
- -- Antoine Martin antoine@xpra.org  Wed, 03 Jul 2024 15:49:51 +0700 +700
+ -- Antoine Martin antoine@xpra.org  Mon, 15 Jul 2024 12:20:52 +0700 +700
 
 xpra-html5 (5.4-r0-1) UNRELEASED; urgency=low
   * update jquery and jquery-ui libraries

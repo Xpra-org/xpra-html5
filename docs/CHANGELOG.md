@@ -1,8 +1,19 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
-## [5.5] 2024-07-03
-* 
+## [5.5] 2024-07-15
+* fail fast if digest is unsafe
+* refuse to use xor digest for passwords over insecure connections
+* add RHEL10 builds
+* prevent simple XSS from server menu data
+* preserve disconnection message
+* hide file transfers if not supported by the server
+* add 'Download' file menu entry
+* password attribute is a list
+* don't try to convert strings to strings
+* ignore whitespace when updating vcs info
+* newer python compatibility: prefer setuptools, also add setuptools to the build dependencies
+* consistency: always return a string
 
 ## [5.4] 2023-11-28
 * update libraries: jquery and jquery-ui
