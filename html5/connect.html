@@ -944,12 +944,12 @@
         }
         function is_password_safe() {
           if (insecure_input.checked) {
-            return True;
+            return true;
           }
           if (!has_session_storage) {
             // don't show the password on the URL
             // which can be seen in the top bar and captured in the server logs
-            return False;
+            return false;
           }
           const host = document.getElementById("server").value;
           return is_secure_connection() || Utilities.isSafeHost(host);
@@ -957,8 +957,8 @@
 
         function update_password_input() {
           const safe = is_password_safe();
-          password_input.disabled = !safe;
-          if (!safe) {
+          password_input.disabled = !safe && !insecure_input.checked;
+          if (password_input.disabled) {
             password_input.value = "";
             password_input.title = "Typing a password would be insecure with these settings";
           }
