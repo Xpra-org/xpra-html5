@@ -100,7 +100,7 @@ class XpraClient {
     this.start_new_session = null;
     this.clipboard_enabled = false;
     this.clipboard_poll = false;
-    this.clipboard_preferred_format = "text/plain";
+    this.clipboard_preferred_format = TEXT_PLAIN;
     this.file_transfer = false;
     this.remote_file_size_limit = 0;
     this.remote_file_chunks = 0;
@@ -1858,15 +1858,8 @@ class XpraClient {
         e.preventDefault();
         return;
       }
-      let html = e.clipboardData.getData("text/html");
-      if (html) {
-        this.cdebug("clipboard", "paste event, html=", html);
-        this.clipboard_buffer = html;
-        const data = Utilities.StringToUint8(html);
-        this.send_clipboard_token(data, [TEXT_HTML]);
-        return;
-      }
-      if (navigator.clipboard && navigator.clipboard.readText) {
+      const fmt = this.clipboard_preferred_format;
+      if (fmt == TEXT_PLAIN && navigator.clipboard && navigator.clipboard.readText) {
         navigator.clipboard.readText().then(
           (text) => {
             this.cdebug("clipboard", "paste event, text=", text);
@@ -1876,16 +1869,15 @@ class XpraClient {
           },
           (error) => this.cdebug("clipboard", "paste event failed:", error)
         );
-      } else {
-        let text = clipboardData.getData(TEXT_HTML);
-        let datatype = TEXT_HTML;
-        if (!text) {
-            text = clipboardData.getData(TEXT_PLAIN);
-            cdebug("clipboard", "paste event, text=", text);
-        }
-        this.clipboard_buffer = text;
-        const data = Utilities.StringToUint8(text);
-        this.send_clipboard_token(data, [datatype]);
+        return;
+      }
+      let clipboard_buffer = clipboardData.getData(fmt);
+      if (clipboard_buffer) {
+        this.cdebug("clipboard", "paste event, ", fmt, "=", clipboard_buffer);
+        this.clipboard_buffer = clipboard_buffer;
+        const data = Utilities.StringToUint8(clipboard_buffer);
+        this.send_clipboard_token(data, [fmt]);
+        return;
       }
     });
     window.addEventListener("copy", (e) => {
