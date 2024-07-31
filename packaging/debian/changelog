@@ -1,7 +1,8 @@
-xpra-html5 (15-r1604-1) UNRELEASED; urgency=low
-  * TODO
+xpra-html5 (15-r0-1) UNRELEASED; urgency=low
+  * try harder to prevent password input with insecure settings, but also allow password input with 'insecure' option
+  * honour preferred clipboard format
 
- -- Antoine Martin antoine@xpra.org  Tue, 02 Jul 2024 23:44:00 +0700 +700
+ -- Antoine Martin antoine@xpra.org  Wed, 31 Jul 2024 20:16:19 +0700 +700
 
 xpra-html5 (14-r1569-1) UNRELEASED; urgency=low
   * security fixes:
