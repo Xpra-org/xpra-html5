@@ -404,7 +404,7 @@ def set_version(new_version: str) -> None:
             "%define release .*": f"%define release 1.r{revision}%{{?dist}}",
         },
         "./html5/js/Utilities.js": {
-            fr'VERSION\s*: "{VERSION}"': f'VERSION = "{new_version}"',
+            fr'VERSION\s*: "{VERSION}"': f'VERSION : "{new_version}"',
             fr"REVISION\s*: [0-9]*": f"REVISION : {revision}",
             r'LOCAL_MODIFICATIONS\s*: [0-9]*': f'LOCAL_MODIFICATIONS: {local_modifications}',
             r'BRANCH\s*: "[a-zA-Z]*"': f'BRANCH: "{branch}"',
