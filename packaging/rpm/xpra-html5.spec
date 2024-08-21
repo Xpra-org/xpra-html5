@@ -3,7 +3,7 @@
 # Xpra is released under the terms of the GNU GPL v2, or, at your option, any
 # later version. See the file COPYING for details.
 
-%define version 15
+%define version 15.1
 %define release 1.r0%{?dist}
 %define minifier uglifyjs
 %define python python3
@@ -78,6 +78,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Wed Aug 21 2024 Antoine Martin <antoine@xpra.org> 15.1-0-1
+- syntax error
+
 * Wed Jul 31 2024 Antoine Martin <antoine@xpra.org> 15-0-1
 - try harder to prevent password input with insecure settings, but also allow password input with 'insecure' option
 - honour preferred clipboard format

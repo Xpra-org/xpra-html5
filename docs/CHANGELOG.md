@@ -1,6 +1,9 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+## [15.1] 2024-08-21
+- [syntax error](https://github.com/Xpra-org/xpra-html5/commit/11909d82d71f4461508527d8ff3a11abbc336cad)
+
 ## [15.0] 2024-07-31
 - [try harder to prevent password input with insecure settings](https://github.com/Xpra-org/xpra-html5/commit/5425c1a856badf46d9727cba585b8ab9c1a0e735) [but also allow password input with 'insecure' option](https://github.com/Xpra-org/xpra-html5/commit/bebca925ef289342d5af44ef203fb3498b31c9ed)
 - [honour preferred clipboard format](https://github.com/Xpra-org/xpra-html5/commit/c5c8cf6de46633cca45a2df8dce8d02f38e0ed16)
