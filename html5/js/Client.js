@@ -2575,7 +2575,7 @@ class XpraClient {
 
     // start sending our own pings
     this._send_ping();
-    this.ping_timer = setInterval(this._send_ping, this.PING_FREQUENCY);
+    this.ping_timer = setInterval(() => this._send_ping(), this.PING_FREQUENCY);
     this.reconnect_attempt = 0;
     // Drop start_new_session to avoid creating new displays
     // on reconnect
