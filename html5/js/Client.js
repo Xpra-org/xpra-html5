@@ -2312,7 +2312,7 @@ class XpraClient {
   _process_error(packet) {
     const code = Number.parseInt(packet[2]);
     let reconnect = this.reconnect || this.reconnect_attempt < this.reconnect_count;
-    if (reconnect && code >= 0 && [0, 1006, 1008, 1010, 1014, 1015].includes(code)) {
+    if (reconnect && [0, 1006, 1008, 1010, 1014, 1015].includes(code)) {
       // don't re-connect unless we had actually managed to connect
       // (because these specific websocket error codes are likely permanent)
       reconnect = this.connected;
