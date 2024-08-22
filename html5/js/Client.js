@@ -496,6 +496,7 @@ class XpraClient {
     if (this.ssl) {
       details += " with ssl";
     }
+    this.schedule_hello_timer();
     this.on_connection_progress("Connecting to server", details, 40);
     // open the web socket, started it in a worker if available
     // check we have enough information for encryption
@@ -1354,6 +1355,7 @@ class XpraClient {
     }
     // send the packet
     this.send([PACKET_TYPES.hello, this.capabilities]);
+    this.schedule_hello_timer();
   }
 
   _make_hello_base() {
@@ -2288,7 +2290,6 @@ class XpraClient {
     // call the send_hello function
     this.on_connection_progress("WebSocket connection established", "", 80);
     // wait timeout seconds for a hello, then bomb
-    this.schedule_hello_timer();
     this._send_hello();
     this.on_open();
   }
@@ -2395,6 +2396,7 @@ class XpraClient {
       return;
     }
     this.clog("client closed");
+    this.cancel_hello_timer();
     this.cancel_all_files();
     this.emit_connection_lost();
     this.remove_windows();
@@ -2738,6 +2740,7 @@ class XpraClient {
   }
 
   _process_challenge(packet) {
+    this.cancel_hello_timer();
     if (this.encryption) {
       if (packet.length >= 3) {
         this.cipher_out_caps = packet[2];
@@ -2783,7 +2786,6 @@ class XpraClient {
         return;
       }
       const address = `${client.host}:${client.port}`;
-      this.cancel_hello_timer();
       this.password_prompt_fn(`The server at ${address} requires a ${prompt}`, call_do_process_challenge);
       return;
     }
@@ -2796,7 +2798,7 @@ class XpraClient {
 
 
   do_process_challenge(digest, server_salt, salt_digest, password) {
-    this.schedule_hello_timer();
+    this.cancel_hello_timer();
     let client_salt = null;
     let l = server_salt.length;
     //don't use xor over unencrypted connections unless explicitly allowed:
