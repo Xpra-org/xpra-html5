@@ -121,6 +121,7 @@ class XpraClient {
     this.reconnect_attempt = 0;
     this.swap_keys = Utilities.isMacOS();
     this.HELLO_TIMEOUT = 30_000;
+    this.OPEN_TIMEOUT = 2_000;
     this.PING_TIMEOUT = 15_000;
     this.PING_GRACE = 2000;
     this.PING_FREQUENCY = 5000;
@@ -282,6 +283,7 @@ class XpraClient {
     this.remote_open_files = false;
     // hello
     this.hello_timer = null;
+    this.open_timer = null;
     this.info_timer = null;
     this.info_request_pending = false;
     this.server_last_info = {};
@@ -496,7 +498,7 @@ class XpraClient {
     if (this.ssl) {
       details += " with ssl";
     }
-    this.schedule_hello_timer();
+    this.schedule_open_timer();
     this.on_connection_progress("Connecting to server", details, 40);
     // open the web socket, started it in a worker if available
     // check we have enough information for encryption
@@ -2287,11 +2289,35 @@ class XpraClient {
   }
 
   _process_open() {
+    this.cancel_open_timer();
     // call the send_hello function
     this.on_connection_progress("WebSocket connection established", "", 80);
     // wait timeout seconds for a hello, then bomb
     this._send_hello();
     this.on_open();
+  }
+
+  schedule_open_timer() {
+    this.cancel_open_timer();
+    this.open_timer = setTimeout(() => {
+      let reconnect = this.reconnect || this.reconnect_attempt < this.reconnect_count;
+      if (reconnect) {
+        this.close_protocol();
+        this.reconnect_attempt++;
+        this.do_reconnect();
+      }
+      else {
+        this.disconnect_reason = "failed to open connection";
+        this.close();
+      }
+    }, this.OPEN_TIMEOUT);
+  }
+
+  cancel_open_timer() {
+    if (this.open_timer) {
+      clearTimeout(this.open_timer);
+      this.open_timer = null;
+    }
   }
 
   schedule_hello_timer() {
@@ -2396,6 +2422,7 @@ class XpraClient {
       return;
     }
     this.clog("client closed");
+    this.cancel_open_timer();
     this.cancel_hello_timer();
     this.cancel_all_files();
     this.emit_connection_lost();
@@ -2433,6 +2460,7 @@ class XpraClient {
   }
 
   _process_hello(packet) {
+    this.cancel_open_timer();
     this.cancel_hello_timer();
     const hello = packet[1];
     this.clog("received hello capabilities", hello);
@@ -2740,6 +2768,7 @@ class XpraClient {
   }
 
   _process_challenge(packet) {
+    this.cancel_open_timer();
     this.cancel_hello_timer();
     if (this.encryption) {
       if (packet.length >= 3) {
@@ -2776,7 +2805,6 @@ class XpraClient {
       return;
     }
     if (digest.startsWith("keycloak") && this.keycloak_prompt_fn) {
-      this.cancel_hello_timer();
       this.keycloak_prompt_fn(server_salt, call_do_process_challenge);
       return;
     }
@@ -2798,7 +2826,6 @@ class XpraClient {
 
 
   do_process_challenge(digest, server_salt, salt_digest, password) {
-    this.cancel_hello_timer();
     let client_salt = null;
     let l = server_salt.length;
     //don't use xor over unencrypted connections unless explicitly allowed:
