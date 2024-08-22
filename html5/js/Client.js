@@ -2377,6 +2377,7 @@ class XpraClient {
     this.packet_disconnect_reason(packet);
     if (this.reconnect && this.reconnect_attempt < this.reconnect_count) {
       this.emit_connection_lost();
+      this.close_protocol();
       this.reconnect_attempt++;
       this.do_reconnect();
     } else {
