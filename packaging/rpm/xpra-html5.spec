@@ -78,8 +78,12 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
-* Tue Jul 02 2024 Antoine Martin <antoine@xpra.org> 15-1604-1
-- TODO
+* Wed Aug 21 2024 Antoine Martin <antoine@xpra.org> 15.1-0-1
+- syntax error
+
+* Wed Jul 31 2024 Antoine Martin <antoine@xpra.org> 15-0-1
+- try harder to prevent password input with insecure settings, but also allow password input with 'insecure' option
+- honour preferred clipboard format
 
 * Tue Jul 02 2024 Antoine Martin <antoine@xpra.org> 14-1569-1
 - security fixes:
