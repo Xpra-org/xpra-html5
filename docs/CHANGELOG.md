@@ -1,6 +1,13 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+## [16.0] 2024-08-23
+- re-connection fixes:
+  - hangs
+  - does not timeout
+  - retry WebSocket connection
+- ping packets not sent
+
 ## [15.1] 2024-08-21
 - [syntax error](https://github.com/Xpra-org/xpra-html5/commit/11909d82d71f4461508527d8ff3a11abbc336cad)
 
