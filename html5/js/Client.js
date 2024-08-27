@@ -1558,6 +1558,8 @@ class XpraClient {
     } else {
       this.log("no clipboard write support: no images, navigator.clipboard=", navigator.clipboard);
     }
+    this.log("clipboard targets: ", this.clipboard_targets);
+    this.log("clipboard preferred format: ", this.clipboard_preferred_format);
 
     return {
       "enabled" : this.clipboard_enabled,
@@ -1863,13 +1865,13 @@ class XpraClient {
         return;
       }
       const fmt = this.clipboard_preferred_format;
-      if (fmt == TEXT_PLAIN && navigator.clipboard && navigator.clipboard.readText) {
+      if ((fmt == TEXT_PLAIN || fmt == UTF8_STRING) && navigator.clipboard && navigator.clipboard.readText) {
         navigator.clipboard.readText().then(
           (text) => {
             this.cdebug("clipboard", "paste event, text=", text);
             this.clipboard_buffer = text;
             const data = Utilities.StringToUint8(text);
-            this.send_clipboard_token(data, [TEXT_PLAIN]);
+            this.send_clipboard_token(data);
           },
           (error) => this.cdebug("clipboard", "paste event failed:", error)
         );
@@ -2038,7 +2040,7 @@ class XpraClient {
         if (clipboard_buffer != this.clipboard_buffer) {
           this.debug("clipboard", "clipboard contents have changed");
           this.clipboard_buffer = clipboard_buffer;
-          this.send_clipboard_token(clipboard_buffer, [TEXT_PLAIN]);
+          this.send_clipboard_token(clipboard_buffer);
           this.clipboard_delayed_event_time = performance.now() + CLIPBOARD_EVENT_DELAY;
         }
         this.clipboard_pending = false;
@@ -4046,7 +4048,14 @@ class XpraClient {
     const claim = true; //Boolean(navigator.clipboard && navigator.clipboard.readText && navigator.clipboard.writeText);
     const greedy = true;
     const synchronous = true;
-    const actual_data_format = data_format || [UTF8_STRING, TEXT_PLAIN];
+    let actual_data_format = data_format;
+    if (!actual_data_format) {
+      actual_data_format = [TEXT_PLAIN, UTF8_STRING];
+      if (this.clipboard_preferred_format == UTF8_STRING) {
+        actual_data_format = [UTF8_STRING, TEXT_PLAIN];
+      }
+    }
+
     this.debug("clipboard", "sending clipboard token with data:", data, "as", actual_data_format);
     let packet;
     packet = data
