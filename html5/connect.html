@@ -1321,7 +1321,7 @@
         }
 
         function safe_session(name) {
-          return Utilities.removeChars('a-zA-Z0-9\:-%"', name);
+          return Utilities.removeChars('a-zA-Z0-9\\:\\-%"', name);
         }
         const display = getparam("display") || "";
         function init_shadow_display() {
