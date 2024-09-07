@@ -1185,6 +1185,12 @@
         }
         command_category.addEventListener("change", command_category_changed);
 
+        function safe_command(command) {
+           return Utilities.removeChars('a-zA-Z0-9\\-%_/\\"', command);
+        }
+        function safe_name(name) {
+           return Utilities.removeChars('a-zA-Z0-9\\-%"', name);
+        }
         function init_command_menu() {
           $("#command_category_icon").hide();
           $("#command_entry_icon").hide();
@@ -1205,12 +1211,6 @@
                     current_category = category;
                   }
                 }
-              }
-              function safe_command(command) {
-                return Utilities.removeChars('a-zA-Z0-9\-%_/\\"', command);
-              }
-              function safe_name(name) {
-                return Utilities.removeChars('a-zA-Z0-9\-%"', name);
               }
               function populate_commands() {
                 let selected_category = command_category.value;
