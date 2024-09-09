@@ -1,10 +1,13 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
-## [16.0] 2024-08-27
+## [16.0] 2024-09-09
 - [retry WebSocket connection](https://github.com/Xpra-org/xpra-html5/commit/8614719f724b06ce99a9fb1f3093464274ad5d25)
 - [ping packets not sent](https://github.com/Xpra-org/xpra-html5/commit/4f148c36a363b4cb2b0fe3fb2daa59ebe8568b7d)
 - [honour preferred clipboard format](https://github.com/Xpra-org/xpra-html5/commit/c90e479d973c665e6cc9900a8caf66f5773f0c58)
+- [desktop session parsing error](https://github.com/Xpra-org/xpra-html5/commit/f3858c4725b572877deccf3bf327e593c3f99b00)
+- [more readable session description](https://github.com/Xpra-org/xpra-html5/commit/68d31a8c4d4cfa761c911e22444d1af08ca1b724)
+- [regular expression parsing error](https://github.com/Xpra-org/xpra-html5/commit/1cabbad0793fa690b0395429fab66fd7cfaad5c2)
 
 ## [15.1] 2024-08-21
 - [syntax error](https://github.com/Xpra-org/xpra-html5/commit/11909d82d71f4461508527d8ff3a11abbc336cad)

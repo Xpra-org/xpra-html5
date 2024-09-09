@@ -78,12 +78,15 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
-* Fri Aug 23 2024 Antoine Martin <antoine@xpra.org> 16-0-1
+* Mon Sep 09 2024 Antoine Martin <antoine@xpra.org> 16-0-1
 - re-connection fixes:
     hangs
     does not timeout
     retry WebSocket connection
 - ping packets not sent
+- desktop session parsing error
+- more readable session description
+- regular expression parsing error
 
 * Wed Aug 21 2024 Antoine Martin <antoine@xpra.org> 15.1-0-1
 - syntax error

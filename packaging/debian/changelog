@@ -4,8 +4,11 @@ xpra-html5 (16-r0-1) UNRELEASED; urgency=low
     - does not timeout
     - retry WebSocket connection
   * ping packets not sent
+  * desktop session parsing error
+  * more readable session description
+  * regular expression parsing error
 
- -- Antoine Martin antoine@xpra.org  Fri, 23 Aug 2024 14:00:27 +0700 +700
+ -- Antoine Martin antoine@xpra.org  Mon, 09 Sep 2024 21:10:44 +0700 +700
 
 xpra-html5 (15.1-r0-1) UNRELEASED; urgency=low
   * syntax error
