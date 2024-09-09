@@ -1,3 +1,8 @@
+xpra-html5 (17-r0-1) UNRELEASED; urgency=low
+  * TODO
+
+ -- Antoine Martin antoine@xpra.org  Mon, 09 Sep 2024 21:20:58 +0700 +700
+
 xpra-html5 (16-r0-1) UNRELEASED; urgency=low
   * re-connection fixes:
     - hangs
