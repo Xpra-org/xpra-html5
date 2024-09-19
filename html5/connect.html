@@ -1546,9 +1546,10 @@
         const encoding = getparam("encoding") || "auto";
         document.getElementById("encoding").value = encoding;
 
-        const offscreen = getboolparam("offscreen", XpraOffscreenWorker.isAvailable());
+        const ssl_enabled = document.getElementById("ssl").checked;
+        const offscreen = getboolparam("offscreen", XpraOffscreenWorker.isAvailable(ssl_enabled));
         document.getElementById("offscreen").checked = offscreen;
-        if (!XpraOffscreenWorker.isAvailable()) {
+        if (!XpraOffscreenWorker.isAvailable(ssl_enabled)) {
           document.getElementById("offscreen").disabled = true;
           document.getElementById("offscreen").setAttribute("title", "not available in your browser");
           document.getElementById("offscreen_label").classList.add("disabled");
