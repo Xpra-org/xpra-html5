@@ -163,10 +163,8 @@ class XpraClient {
       "void",
       "avif",
     ];
-    let video_max_size = [1024, 768];
-    if (this.offscreen_api) {
-      video_max_size = [4096, 4096];
-    }
+    // this may be overriden after detecting the offscreen worker:
+    const video_max_size = [1024, 768];
     this.encoding_options = {
       "": this.encoding,
       "icons" : {
