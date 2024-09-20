@@ -529,9 +529,12 @@ class XpraClient {
       this._do_connect(false);
       return;
     }
-    this.offscreen_api = DECODE_WORKER && XpraOffscreenWorker.isAvailable(this.ssl);
     if (this.offscreen_api) {
-      this.set_encoding_option('video_max_size',[4096, 4096]);
+      // check that it is actually available:
+      this.offscreen_api = DECODE_WORKER && XpraOffscreenWorker.isAvailable(this.ssl);
+      if (this.offscreen_api) {
+        this.set_encoding_option('video_max_size',[4096, 4096]);
+      }
     }
     this.clog("we have webworker support");
     // spawn worker that checks for a websocket
