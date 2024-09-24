@@ -7,6 +7,8 @@ importScripts("./RgbHelpers.js");
 
 const on_hold = new Map();
 
+let zerocopy = true;
+
 function decode_eos(wid) {}
 
 function decode_draw_packet(packet, start) {
@@ -131,7 +133,11 @@ function decode_draw_packet(packet, start) {
         release();
         return;
       }
-      const blob = new Blob([data.buffer], { type: `image/${coding}` });
+      let buffer = data;
+      if (zerocopy) {
+        buffer = data.buffer;
+      }
+      const blob = new Blob([buffer], { type: `image/${coding}` });
       hold();
       createImageBitmap(blob, bitmap_options).then(
         function (bitmap) {
@@ -142,11 +148,16 @@ function decode_draw_packet(packet, start) {
         },
         function (error) {
           console.info(`decode worker failed to create ${coding} image bitmap: ${error}`);
-          console.info(`using ${blob} + ${bitmap_options} from data=${data}`);
+          console.info(`using ${blob} + ${JSON.stringify(bitmap_options)} from data=${data}`);
+          console.info(`data from ${buffer.constructor.name} of length ${data.length}`);
           // maybe the regular paint function will succeed?
           console.info("sending it back for decoding directly in the client");
           send_back([]);
           release();
+          if (zerocopy) {
+            console.warn("turning off zerocopy");
+            zerocopy = false;
+          }
         }
       );
     } else {
