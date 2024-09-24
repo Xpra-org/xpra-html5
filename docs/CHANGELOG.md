@@ -1,6 +1,13 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+## [17.0] 2024-09-24
+- [toggling ssl affects offscreen decoding](https://github.com/Xpra-org/xpra-html5/commit/d75129ac69870a0c068430a0c29c5e5695a6028a)
+- [bump max video size when offscreen is actually used](https://github.com/Xpra-org/xpra-html5/commit/69faf56c5fd11b15087334c1b1f54eefd486e854)
+- [honour offscreen toggle](https://github.com/Xpra-org/xpra-html5/commit/345d3d228d796afabbc19e451fce6158ab0583a70)
+- [try to fallback to client decoding when worker fails](https://github.com/Xpra-org/xpra-html5/commit/345d3d228d796afabbc19e451fce6158ab0583a7)
+- [disable decode worker zero-copy on errors](https://github.com/Xpra-org/xpra-html5/commit/194cbbf7bade77a1730a08521704d28600b0ee03)
+
 ## [16.0] 2024-09-09
 - [retry WebSocket connection](https://github.com/Xpra-org/xpra-html5/commit/8614719f724b06ce99a9fb1f3093464274ad5d25)
 - [ping packets not sent](https://github.com/Xpra-org/xpra-html5/commit/4f148c36a363b4cb2b0fe3fb2daa59ebe8568b7d)
