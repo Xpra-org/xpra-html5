@@ -1,3 +1,8 @@
+xpra-html5 (16.1-r0-1) UNRELEASED; urgency=low
+  * decode worker failures with some inlined packets
+
+ -- Antoine Martin antoine@xpra.org  Tue, 24 Sep 2024 15:59:29 +0700 +700
+
 xpra-html5 (16-r0-1) UNRELEASED; urgency=low
   * re-connection fixes:
     - hangs

@@ -1,6 +1,9 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+## [16.1] 2024-09-24
+- [decode worker failures with some inlined packets](https://github.com/Xpra-org/xpra-html5/commit/0ce5a899ed22bbec8c9219e10defa8c8764a0a3d)
+
 ## [16.0] 2024-09-09
 - [retry WebSocket connection](https://github.com/Xpra-org/xpra-html5/commit/8614719f724b06ce99a9fb1f3093464274ad5d25)
 - [ping packets not sent](https://github.com/Xpra-org/xpra-html5/commit/4f148c36a363b4cb2b0fe3fb2daa59ebe8568b7d)
