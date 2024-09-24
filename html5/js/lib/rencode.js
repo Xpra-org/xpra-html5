@@ -292,7 +292,7 @@ function rdecode_string(dec) {
 	const bytes = dec.buf.subarray(dec.pos, dec.pos+str_len);
 	dec.pos += str_len;
 	if (binary) {
-		return bytes;
+		return new Uint8Array(bytes);
 	}
 	if (str_len==0) {
 		return "";
