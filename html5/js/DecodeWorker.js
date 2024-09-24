@@ -141,9 +141,11 @@ function decode_draw_packet(packet, start) {
           release();
         },
         function (error) {
-          decode_error(
-            `failed to create image bitmap from ${coding} ${blob}, data=${data}: ${error}`
-          );
+          console.info(`decode worker failed to create ${coding} image bitmap: ${error}`);
+          console.info(`using ${blob} + ${bitmap_options} from data=${data}`);
+          // maybe the regular paint function will succeed?
+          console.info("sending it back for decoding directly in the client");
+          send_back([]);
           release();
         }
       );
