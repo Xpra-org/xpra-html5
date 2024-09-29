@@ -82,7 +82,22 @@ class XpraProtocolWorkerHost {
   set_cipher_out = function (caps, key) {
     this.worker.postMessage({ c: "x", p: caps, k: key });
   };
+}
 
+
+function u8(value) {
+  const type = typeof value;
+  if (type === 'object' && value.constructor === Uint8Array) {
+    return value;
+  }
+  if (type == "string") {
+    return Uint8Array.from(value.split("").map(x => x.charCodeAt()));
+  }
+  return new Uint8Array(value);
+}
+
+function arrayhex(arr) {
+    return Array.from(arr).map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
 /*
@@ -95,9 +110,12 @@ class XpraProtocol {
     this.packet_handler = null;
     this.websocket = null;
     this.raw_packets = [];
-    this.cipher_in = null;
     this.cipher_in_block_size = null;
-    this.cipher_out = null;
+    this.cipher_in_params = null;
+    this.cipher_in_key = null;
+    this.cipher_out_block_size = null;
+    this.cipher_out_params = null;
+    this.cipher_out_key = null;
     this.rQ = []; // Receive queue
     this.sQ = []; // Send queue
     this.mQ = []; // Worker message queue
@@ -216,7 +234,7 @@ class XpraProtocol {
   }
 
   process_receive_queue() {
-    while (this.websocket && this.do_process_receive_queue());
+    while (this.websocket && this.rQ.length > 0 && this.do_process_receive_queue());
   }
 
   error() {
@@ -227,6 +245,10 @@ class XpraProtocol {
   }
 
   do_process_receive_queue() {
+    /*
+     * process data from this.rQ until we have enough for one packet chunk
+     * then calls this.process_packet_data
+     */
     if (this.header.length < 8 && this.rQ.length > 0) {
       //add from receive queue data to header until we get the 8 bytes we need:
       while (this.header.length < 8 && this.rQ.length > 0) {
@@ -261,57 +283,37 @@ class XpraProtocol {
 
     if (this.header.length < 8) {
       //we need more data to continue
-      return false;
+      return true;
     }
 
-    let proto_flags = this.header[1];
-    const proto_crypto = proto_flags & 0x2;
-    if (proto_crypto) {
+    //ignore 0x8: this flag is unused client-side:
+    let proto_flags = this.header[1] & ~0x8;
+    const encrypted = proto_flags & 0x2;
+    if (encrypted) {
       proto_flags = proto_flags & ~0x2;
     }
-
-    if (proto_flags & 0x8) {
-      //this flag is unused client-side, so just ignore it:
-      proto_flags = proto_flags & ~0x8;
-    }
-
     if (proto_flags > 1 && proto_flags != 0x10) {
       this.protocol_error(`we can't handle this protocol flag yet: ${proto_flags}`);
-      return;
+      return false;
     }
 
-    const level = this.header[2];
-    if (level & 0x20) {
-      this.protocol_error("lzo compression is not supported");
-      return false;
-    }
-    const index = this.header[3];
-    if (index >= 20) {
-      this.protocol_error(`invalid packet index: ${index}`);
-      return false;
-    }
-    let packet_size = [4, 5, 6, 7].reduce(
-      (accumulator, value) => accumulator * 0x1_00 + this.header[value],
-      0
-    );
+    let packet_size = [4, 5, 6, 7].reduce((accumulator, value) => accumulator * 0x1_00 + this.header[value], 0);
 
     // work out padding if necessary
     let padding = 0;
-    if (proto_crypto && this.cipher_in_block_size > 0) {
+    if (encrypted && this.cipher_in_block_size > 0) {
       padding = this.cipher_in_block_size - (packet_size % this.cipher_in_block_size);
       packet_size += padding;
     }
 
     // verify that we have enough data for the full payload:
-    let rsize = this.rQ.reduce(
-      (accumulator, value) => accumulator + value.length,
-      0
-    );
+    let rsize = this.rQ.reduce((accumulator, value) => accumulator + value.length, 0);
     if (rsize < packet_size) {
       return false;
     }
 
     // done parsing the header, the next packet will need a new one:
+    const header = this.header;
     this.header = [];
 
     let packet_data;
@@ -340,28 +342,39 @@ class XpraProtocol {
     }
 
     // decrypt if needed
-    if (proto_crypto) {
-      this.cipher_in.update(forge.util.createBuffer(Utilities.Uint8ToString(packet_data)));
-      const decrypted = this.cipher_in.output.getBytes();
-      if (!decrypted || decrypted.length < packet_size - padding) {
-        this.error("error decrypting packet using", this.cipher_in);
-        if (decrypted.length < packet_size - padding) {
-          this.error(
-            ` expected ${packet_size - padding} bytes, but got ${
-              decrypted.length
-            }`
-          );
-        } else {
-          this.error(" decrypted:", decrypted);
-        }
-        this.raw_packets = [];
-        return this.rQ.length > 0;
+    if (encrypted) {
+      if (!this.cipher_in_key) {
+        this.protocol_error("encrypted packet received, but no decryption is configured");
+        return false;
       }
-      packet_data = Utilities.StringToUint8(
-        decrypted.slice(0, packet_size - padding)
-      );
+      console.log("decrypt", JSON.stringify(this.cipher_in_params), packet_data);
+      crypto.subtle.decrypt(this.cipher_in_params, this.cipher_in_key, packet_data)
+      .then(decrypted => {
+        // console.log("decrypted", decrypted.length, "bytes");
+        if (!decrypted || decrypted.length < packet_size - padding) {
+          this.protocol_error(` expected ${packet_size - padding} bytes, but got ${decrypted.length}`);
+          return false;
+        }
+        packet_data = decrypted.slice(0, packet_size - padding);
+        // console.log("packet data:", packet_data);
+        this.process_packet_data(header, packet_data);
+      })
+      .catch(err => this.protocol_error("failed to decrypt data: "+err));
+    return true;
     }
 
+    this.process_packet_data(header, packet_data);
+    return true;
+  }
+
+  process_packet_data(header, packet_data) {
+    /*
+     * the packet data has been decrypted (if needed),
+     * decompress it (if needed),
+     * then either store it if it is a chunk,
+     * or decode the packet if we have received all the chunks (chunk no is 0)
+     */
+    const level = header[2];
     //decompress it if needed:
     if (level != 0) {
       let inflated;
@@ -370,56 +383,55 @@ class XpraProtocol {
       } else if (level & 0x40) {
         inflated = new Uint8Array(BrotliDecode(packet_data));
       } else {
-        throw "zlib is no longer supported";
+        throw `unsupported compressor specified: ${level}`;
       }
       packet_data = inflated;
     }
 
     //save it for later? (partial raw packet)
+    const index = this.header[3];
     if (index > 0) {
+      if (index >= 20) {
+        this.protocol_error(`invalid packet index: ${index}`);
+        return;
+      }
       this.raw_packets[index] = packet_data;
       if (this.raw_packets.length >= 4) {
         this.protocol_error(`too many raw packets: ${this.raw_packets.length}`);
-        return false;
       }
-    } else {
-      //decode raw packet string into objects:
-      let packet = null;
-      try {
-        if (proto_flags == 0x10) {
-          packet = rdecode(packet_data);
-        } else if (proto_flags == 0x1) {
-          throw `rencode legacy mode is not supported, protocol flag: ${proto_flags}`;
-        } else {
-          throw `invalid packet encoder flags ${proto_flags}`;
-        }
-        for (const index in this.raw_packets) {
-          packet[index] = this.raw_packets[index];
-        }
-        this.raw_packets = {};
-      } catch (error) {
-        //FIXME: maybe we should error out and disconnect here?
-        this.error("error decoding packet", error);
-        this.error(`packet=${packet_data}`);
-        this.error(`protocol flags=${proto_flags}`);
-        this.raw_packets = [];
-        return this.rQ.length > 0;
-      }
-      try {
-        // pass to our packet handler
-        if (this.is_worker) {
-          this.mQ[this.mQ.length] = packet;
-          setTimeout(() => this.process_message_queue(), this.process_interval);
-        } else {
-          this.packet_handler(packet);
-        }
-      } catch (error) {
-        //FIXME: maybe we should error out and disconnect here?
-        this.error(`error processing packet ${packet[0]}: ${error}`);
-        this.error(` packet data: ${packet_data}`)
-      }
+      return;
     }
-    return this.rQ.length > 0;
+
+    //decode raw packet data into objects:
+    let packet = null;
+    try {
+      packet = rdecode(packet_data);
+      for (const index in this.raw_packets) {
+        packet[index] = this.raw_packets[index];
+      }
+      this.raw_packets = {};
+    } catch (error) {
+      //FIXME: maybe we should error out and disconnect here?
+      this.error("error decoding packet", error);
+      this.error(`packet=${packet_data}`);
+      this.error(`protocol flags=${proto_flags}`);
+      this.raw_packets = [];
+      return;
+    }
+
+    try {
+      // call the packet handler
+      if (this.is_worker) {
+        this.mQ[this.mQ.length] = packet;
+        setTimeout(() => this.process_message_queue(), this.process_interval);
+      } else {
+        this.packet_handler(packet);
+      }
+    } catch (error) {
+      //FIXME: maybe we should error out and disconnect here?
+      this.error(`error processing packet ${packet[0]}: ${error}`);
+      this.error(` packet data: ${packet_data}`)
+    }
   }
 
   process_send_queue() {
@@ -438,46 +450,45 @@ class XpraProtocol {
         continue;
       }
       const payload_size = bdata.length;
-      // encryption
-      if (this.cipher_out) {
-        proto_flags |= 0x2;
-        const padding_size =
-          this.cipher_out_block_size -
-          (payload_size % this.cipher_out_block_size);
-        let input_data =
-          typeof bdata === "string" ? bdata : Utilities.Uint8ToString(bdata);
-        if (padding_size) {
-          const padding_char = String.fromCharCode(padding_size);
-          input_data += padding_char.repeat(padding_size);
-        }
-        this.cipher_out.update(forge.util.createBuffer(input_data), "utf8");
-        bdata = this.cipher_out.output.getBytes();
-      }
-      const actual_size = bdata.length;
 
-      const packet_data = new Uint8Array(actual_size + 8);
-      const level = 0;
-      //header:
-      packet_data[0] = "P".charCodeAt(0);
-      packet_data[1] = proto_flags;
-      packet_data[2] = level;
-      packet_data[3] = 0;
+      if (this.cipher_out_key) {
+        console.log("encrypt", JSON.stringify(params), bdata);
+        crypto.subtle.encrypt(this.cipher_out_params, this.cipher_out_key, bdata)
+        .then(encrypted => this.send_packet(encrypted, payload_size, true))
+        .catch(err => this.protocol_error("failed to encrypt packet!"));
+        return;
+      }
+      this.send_packet(bdata, payload_size, false);
+    }
+  }
+
+  make_packet_header(proto_flags, level, payload_size) {
+      const header = new Uint8Array(8);
+      header[0] = "P".charCodeAt(0);
+      header[1] = proto_flags;
+      header[2] = level;
+      header[3] = 0;
       //size header:
       for (let index = 0; index < 4; index++) {
-        packet_data[7 - index] = (payload_size >> (8 * index)) & 0xff;
+        header[7 - index] = (payload_size >> (8 * index)) & 0xff;
       }
-      if (typeof bdata === "object" && bdata.constructor === Uint8Array) {
-        packet_data.set(bdata, 8);
-      } else {
-        //copy string one character at a time..
-        for (let index = 0; index < actual_size; index++) {
-          packet_data[8 + index] = Utilities.ord(bdata[index]);
-        }
-      }
-      // put into buffer before send
-      if (this.websocket) {
-        this.websocket.send(new Uint8Array(packet_data).buffer);
-      }
+      return header;
+  }
+
+  send_packet(bdata, payload_size, encrypted) {
+    const level = 0;
+    let proto_flags = 0x10;
+    if (encrypted) {
+      proto_flags |= 0x2;
+    }
+    const header = this.make_packet_header(proto_flags, level, payload_size);
+    const actual_size = bdata.length;
+    const packet = new Uint8Array(8 + actual_size);
+    packet.set(header, 0);
+    packet.set(bdata, 8);
+    // put into buffer before send
+    if (this.websocket) {
+      this.websocket.send(packet.buffer);
     }
   }
 
@@ -509,72 +520,108 @@ class XpraProtocol {
   }
 
   set_cipher_in(caps, key) {
-    this.setup_cipher(caps, key, (cipher, block_size, secret, iv) => {
+    this.setup_cipher(caps, key, "decrypt", (block_size, params, crypto_key) => {
       this.cipher_in_block_size = block_size;
-      this.cipher_in = forge.cipher.createDecipher(cipher, secret);
-      this.cipher_in.start({ iv });
+      this.cipher_in_params = params;
+      this.cipher_in_key = crypto_key;
     });
   }
 
   set_cipher_out(caps, key) {
-    this.setup_cipher(caps, key, (cipher, block_size, secret, iv) => {
+    this.setup_cipher(caps, key, "encrypt", (block_size, params, crypto_key) => {
       this.cipher_out_block_size = block_size;
-      this.cipher_out = forge.cipher.createCipher(cipher, secret);
-      this.cipher_out.start({ iv });
+      this.cipher_out_params = params;
+      this.cipher_out_key = crypto_key;
     });
   }
 
-  setup_cipher(caps, key, setup_function) {
+  setup_cipher(caps, key, usage, setup_function) {
     if (!key) {
       throw "missing encryption key";
     }
+
     const cipher = caps["cipher"] || "AES";
     if (cipher != "AES") {
       throw `unsupported encryption specified: '${cipher}'`;
     }
-    let key_salt = caps["cipher.key_salt"];
-    if (typeof key_salt !== "string") {
-      key_salt = String.fromCharCode.apply(null, key_salt);
-    }
-    const iterations = caps["cipher.key_stretch_iterations"];
-    if (iterations < 0) {
-      throw `invalid number of iterations: ${iterations}`;
-    }
-    const DEFAULT_KEYSIZE = 32;
-    const key_size = caps["cipher.key_size"] || DEFAULT_KEYSIZE;
-    if (![32, 24, 16].includes(key_size)) {
-      throw `invalid key size '${key_size}'`;
-    }
-    const key_stretch = caps["cipher.key_stretch"] || "PBKDF2";
-    if (key_stretch.toUpperCase() != "PBKDF2") {
-      throw `invalid key stretching function ${key_stretch}`;
-    }
-    const DEFAULT_KEY_HASH = "SHA1";
-    const key_hash = (
-      caps["cipher.key_hash"] || DEFAULT_KEY_HASH
-    ).toLowerCase();
-    const secret = forge.pkcs5.pbkdf2(
-      key,
-      key_salt,
-      iterations,
-      key_size,
-      key_hash
-    );
+
     const DEFAULT_MODE = "CBC";
-    const mode = caps["cipher.mode"] || DEFAULT_MODE;
+    const mode = caps["mode"] || DEFAULT_MODE;
     let block_size = 0;
     if (mode == "CBC") {
       block_size = 32;
-    } else if (!["CFB", "CTR"].includes(mode)) {
+    } else if (!["GCM", "CTR"].includes(mode)) {
       throw `unsupported AES mode '${mode}'`;
     }
-    // start the cipher
-    const iv = caps["cipher.iv"];
+
+    const iv = caps["iv"];
     if (!iv) {
       throw "missing IV";
     }
-    //ie: setup_fn("AES-CBC", "THESTRETCHEDKEYVALUE", "THEIVVALUE");
-    setup_function(`${cipher}-${mode}`, block_size, secret, iv);
+
+    const salt = u8(caps["key_salt"]);
+    if (!salt) {
+      throw "missing salt";
+    }
+
+    const iterations = caps["key_stretch_iterations"];
+    if (iterations <= 0 || iterations >= 10000) {
+      throw `invalid number of iterations: ${iterations}`;
+    }
+
+    const DEFAULT_KEYSIZE = 32;
+    const key_size = caps["key_size"] || DEFAULT_KEYSIZE;
+    if (![32, 24, 16].includes(key_size)) {
+      throw `invalid key size '${key_size}'`;
+    }
+
+    const DEFAULT_KEYSTRETCH = "PBKDF2";
+    const key_stretch = caps["key_stretch"] || DEFAULT_KEYSTRETCH;
+    if (key_stretch.toUpperCase() != "PBKDF2") {
+      throw `invalid key stretching function ${key_stretch}`;
+    }
+
+    const DEFAULT_KEY_HASH = "SHA-1";
+    let key_hash = (caps["key_hash"] || DEFAULT_KEY_HASH).toUpperCase();
+    if (key_hash.startsWith("SHA") && !key_hash.startsWith("SHA-")) {
+        key_hash = "SHA-"+key_hash.substring(3);
+    }
+
+    const params = {
+      name: "AES-"+mode,   //ie: "AES-CBC"
+      iv: u8(iv),
+    }
+
+    console.log("importing", "PBKDF2", "key", key);
+    crypto.subtle.importKey("raw", u8(key), { name: "PBKDF2" }, false, ["deriveKey", "deriveBits"])
+    .then(imported_key => {
+        console.log("imported key:", imported_key);
+        console.log("deriving", mode, "key with:", iterations, key_hash, mode, key_size*8);
+        console.log("salt=", salt);
+        // now stretch it to get the real key:
+        crypto.subtle.deriveKey(
+            {
+                name: "PBKDF2",
+                salt: salt,
+                iterations: iterations,
+                hash: {name: key_hash},
+            }, imported_key,
+            {
+                name: "AES-"+mode,
+                length: key_size * 8,
+            }, false, [usage],
+        )
+        .then(crypto_key => {
+          console.log("derived key for", usage, "usage:", crypto_key);
+          setup_function(block_size, params, crypto_key);
+        })
+        .catch(err => {
+          this.protocol_error("failed to derive AES key: "+err);
+        });
+    })
+    .catch(err => {
+      this.protocol_error("failed to import AES key: "+err);
+    });
   }
 }
 
@@ -593,7 +640,6 @@ if (
   importScripts(
     "lib/lz4.js",
     "lib/brotli_decode.js",
-    "lib/forge.js",
     "lib/rencode.js",
     "Utilities.js"
   );

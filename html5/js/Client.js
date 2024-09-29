@@ -1336,13 +1336,9 @@ class XpraClient {
       this._make_hello();
     }
     if (challenge_response) {
-      this._update_capabilities({
-        challenge_response,
-      });
+      this._update_capabilities({"challenge_response": challenge_response});
       if (client_salt) {
-        this._update_capabilities({
-          challenge_client_salt: client_salt,
-        });
+        this._update_capabilities({"challenge_client_salt": client_salt});
       }
     }
     this.clog("sending hello capabilities", this.capabilities);
@@ -1387,6 +1383,7 @@ class XpraClient {
     if (this.encryption) {
       this.cipher_in_caps = this._get_cipher_caps()
       this._update_capabilities({"encryption" : this.cipher_in_caps});
+      console.info("setting cipher in caps=", JSON.stringify(this.cipher_in_caps));
       this.protocol.set_cipher_in(this.cipher_in_caps, this.encryption_key);
     }
     if (this.start_new_session) {
@@ -1468,19 +1465,20 @@ class XpraClient {
   }
 
   _get_digests() {
-    const digests = ["hmac", "hmac+md5", "xor", "keycloak"];
-    if (typeof forge !== "undefined") {
+    const digests = ["xor", "keycloak"];
+
+    if (typeof crypto.subtle !== "undefined") {
       try {
-        this.debug("network", "forge.md.algorithms=", forge.md.algorithms);
-        for (const hash in forge.md.algorithms) {
-          digests.push(`hmac+${hash}`);
+        this.debug("network", "crypto.subtle=", crypto.subtle);
+        for (const hash of ["sha1", "sha256", "sha384", "sha512"]) {
+          digests.push("hmac+"+hash);
         }
         this.debug("network", "digests:", digests);
       } catch {
-        this.cerror("Error probing forge crypto digests");
+        this.cerror("Error probing crypto.subtle digests");
       }
     } else {
-      this.clog("cryptography library 'forge' not found");
+      this.clog("cryptography library 'crypto.subtle' not found");
     }
     return digests;
   }
@@ -2500,6 +2498,7 @@ class XpraClient {
         }
         this.cipher_out_caps[cipher_key] = value;
       }
+      console.info("cipher out caps=", JSON.stringify(this.cipher_out_caps));
       this.protocol.set_cipher_out(this.cipher_out_caps, this.encryption_key);
     }
     if (!hello["rencodeplus"]) {
@@ -2828,7 +2827,6 @@ class XpraClient {
     return digest != "xor" || this.ssl || this.encryption || this.insecure || Utilities.isSafeHost(this.host);
   }
 
-
   do_process_challenge(digest, server_salt, salt_digest, password) {
     let client_salt = null;
     let l = server_salt.length;
@@ -2847,40 +2845,49 @@ class XpraClient {
       //other digest, 32 random bytes is enough:
       l = 32;
     }
-    client_salt = Utilities.getSecureRandomString(l);
-    this.clog("challenge using salt digest", salt_digest);
-    const salt = this._gendigest(salt_digest, client_salt, server_salt);
-    if (!salt) {
-      this.disconnect(`server requested an unsupported salt digest ${salt_digest}`);
-      return;
-    }
     const challenge_digest = digest.startsWith("keycloak") ? "xor" : digest;
     this.clog("challenge using digest", challenge_digest);
-    const challenge_response = this._gendigest(challenge_digest, password, salt);
-    if (challenge_response) {
-      this.do_send_hello(challenge_response, client_salt);
-    } else {
-      this.disconnect(`server requested an unsupported digest ${digest}`);
-    }
+    client_salt = Utilities.getSecureRandomString(l);
+    this.clog("challenge using salt digest", salt_digest);
+    this._gendigest(salt_digest, client_salt, server_salt)
+    .then(salt => {
+      this._gendigest(challenge_digest, password, salt)
+      .then(challenge_response => {
+        this.do_send_hello(arrayhex(challenge_response), client_salt)
+      })
+      .catch(err => this.disconnect("failed to generate challenge response: "+err));
+    })
+    .catch(err => this.disconnect("failed to generate salt: "+err));
   }
 
   _gendigest(digest, password, salt) {
-    if (digest.startsWith("hmac")) {
-      let hash = "md5";
-      if (digest.indexOf("+") > 0) {
-        hash = digest.split("+")[1];
-      }
-      this.clog("hmac using hash", hash);
-      const hmac = forge.hmac.create();
-      hmac.start(hash, password);
-      hmac.update(salt);
-      return hmac.digest().toHex();
-    } else if (digest == "xor") {
+    if (digest == "xor") {
       const trimmed_salt = salt.slice(0, password.length);
-      return Utilities.xorString(trimmed_salt, password);
-    } else {
-      return null;
+      return new Promise(function(resolve, reject) {
+        resolve(Utilities.xorString(trimmed_salt, password));
+      });
     }
+    if (!digest.startsWith("hmac")) {
+      return new Promise(function(resolve, reject) {
+        reject(new Error("unsupported digest "+digest));
+      });
+    }
+    let hash = "SHA-1";
+    if (digest.indexOf("+") > 0) {
+      // "hmac+sha512" -> "sha512"
+      hash = digest.split("+")[1];
+    }
+    hash = hash.toUpperCase();
+    if (hash.startsWith("SHA") && !hash.startsWith("SHA-")) {
+      hash = "SHA-" + hash.substring(3);
+    }
+    this.clog("hmac using hash", hash);
+    const u8pass = u8(password);
+    const u8salt = u8(salt);
+    const u8src = new Uint8Array(u8pass.length + u8salt.length);
+    u8src.set(u8pass, 0);
+    u8src.set(u8salt, u8pass.length);
+    return window.crypto.subtle.digest({ name : hash}, u8src);
   }
 
   _send_ping() {
@@ -3919,14 +3926,11 @@ class XpraClient {
     if (this._audio_ready() && (this.audio_buffers_count > 0 || ab.length >= MIN_START_BUFFERS)) {
       if (CONCAT) {
         if (ab.length == 1) {
-          //shortcut
+          // shortcut, no need to copy!
           buf = ab[0];
         } else {
-          //concatenate all pending buffers into one:
-          let size = ab.reduce(
-            (accumulator, value) => accumulator + value.length,
-            0
-          );
+          // concatenate all pending buffers into one:
+          let size = ab.reduce((accumulator, value) => accumulator + value.length, 0);
           buf = new Uint8Array(size);
           size = 0;
           for (let index = 0, stop = ab.length; index < stop; ++index) {
@@ -4331,17 +4335,7 @@ class XpraClient {
       this.error("send-file: invalid data size, received", data.length, "bytes, expected", filesize);
       return;
     }
-    let digest = null;
-    for (const hash_function of ["sha512", "sha384", "sha256", "sha224", "sha1"]) {
-      if (options[hash_function]) {
-        try {
-          digest = forge.md[hash_function].create();
-          break;
-        } catch (error) {
-          this.error("Error: no", hash_function, "checksum available:", error);
-        }
-      }
-    }
+    // removed hash checks because crypto.subtle is asynchronous, which is a pain
     if (data.length == filesize) {
       //got the whole file
       if (digest) {

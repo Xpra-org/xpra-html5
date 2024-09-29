@@ -456,10 +456,10 @@ const Utilities = {
       return new Uint8Array(0);
     }
     const type = typeof v;
-      if (type === 'object' && v.constructor===Uint8Array) {
-        return v;
-      }
-     return StringToUint8(v.toString());
+    if (type === 'object' && v.constructor===Uint8Array) {
+      return v;
+    }
+    return StringToUint8(v.toString());
   },
 
   ArrayBufferToString(uintArray) {
