@@ -1498,6 +1498,7 @@ class XpraClient {
       "key_hash": "SHA1",
       "key_stretch_iterations": 1000,
       "padding.options": ["PKCS#7"],
+      "always-pad": true,
     }
   }
 
@@ -2489,6 +2490,7 @@ class XpraClient {
         ".key_stretch_iterations",
         ".padding",
         ".padding.options",
+        ".always-pad",
       ];
       for (const CIPHER_CAP of CIPHER_CAPS) {
         const cipher_key = `cipher${CIPHER_CAP}`;

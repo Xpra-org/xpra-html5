@@ -302,7 +302,9 @@ class XpraProtocol {
     // work out padding if necessary
     let padding = 0;
     if (encrypted && this.cipher_in_block_size > 0) {
-      padding = this.cipher_in_block_size - (packet_size % this.cipher_in_block_size);
+      // PKCS#7 has always at least one byte of padding!
+      padding = this.cipher_in_block_size + 1 - (packet_size + 1) % this.cipher_in_block_size;
+
       packet_size += padding;
     }
 
@@ -355,7 +357,12 @@ class XpraProtocol {
           this.protocol_error(` expected ${packet_size - padding} bytes, but got ${decrypted.length}`);
           return false;
         }
-        packet_data = decrypted.slice(0, packet_size - padding);
+        if (decrypted.length == packet_size - padding) {
+            packet_data = decrypted;
+        }
+        else {
+            packet_data = decrypted.slice(0, packet_size - padding);
+        }
         // console.log("packet data:", packet_data);
         this.process_packet_data(header, packet_data);
       })
