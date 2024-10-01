@@ -1493,7 +1493,7 @@ class XpraClient {
       "cipher": enc,
       "mode": mode,
       "iv": Utilities.getSecureRandomString(16),
-      "key_salt": Utilities.getSecureRandomString(32),
+      "key_salt": Utilities.getSecureRandomBytes(64),
       "key_size": 32, //256 bits
       "key_hash": "SHA1",
       "key_stretch_iterations": 1000,
@@ -2477,6 +2477,7 @@ class XpraClient {
       Utilities.error = () => this.error(arguments);
       Utilities.exc = () => this.exc(arguments);
     }
+
     // check for server encryption caps update
     if (this.encryption) {
       this.cipher_out_caps = {};

@@ -60,17 +60,14 @@ const Utilities = {
     return c.charCodeAt(0);
   },
 
-  getSecureRandomString(length_) {
-    const crypto = window.crypto || window.mscrypto;
-    if (!crypto) {
-      let s = "";
-      while (s.length < length_) {
-        s += Utilities.getHexUUID();
-      }
-      return s.slice(0, Math.max(0, length_));
-    }
-    const u = new Uint8Array(length_);
+  getSecureRandomBytes(len) {
+    const u = new Uint8Array(len);
     crypto.getRandomValues(u);
+    return u;
+  },
+
+  getSecureRandomString(len) {
+    const u = Utilities.getSecureRandomBytes(len);
     return String.fromCharCode.apply(null, u);
   },
 
