@@ -68,7 +68,7 @@
         const key = "this is our secret";
         const salt = u8("0000000000000000");
         const key_size = 32;
-        const iterations = 1000;
+        const iterations = 10000;
         const mode = "CBC";
         const key_hash = "SHA-1";
         const usage = "encrypt";
@@ -121,7 +121,7 @@
                 .catch(err => update_info("failed to encrypt message"));
 
                 // try again with hard-coded encrypted message:
-                let encrypted = hexarray("ad1e476da9b779bfb4c8743b72055fd8926c2c5f1af71ff8b6a79e5d30baccdb");
+                let encrypted = hexarray("6339a0861384e208ed20313a649122980c79458182b8882dbf1cca137a0f88bd");
                 decrypt(crypto_key, encrypted);
             })
             .catch(err => {
