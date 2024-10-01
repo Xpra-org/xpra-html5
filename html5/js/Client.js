@@ -2466,6 +2466,10 @@ class XpraClient {
     this.cancel_hello_timer();
     const hello = packet[1];
     this.clog("received hello capabilities", hello);
+    if (!hello["rencodeplus"]) {
+      throw "no common packet encoders, 'rencodeplus' is required by this client";
+    }
+
     this.server_display = hello["display"] || "";
     this.server_platform = hello["platform"] || "";
     this.server_remote_logging = hello["remote-logging.multi-line"];
@@ -2499,9 +2503,6 @@ class XpraClient {
         this.cipher_out_caps[cipher_key] = value;
       }
       this.protocol.set_cipher_out(this.cipher_out_caps, this.encryption_key);
-    }
-    if (!hello["rencodeplus"]) {
-      throw "no common packet encoders, 'rencodeplus' is required by this client";
     }
 
     const version = Utilities.s(hello["version"]);
