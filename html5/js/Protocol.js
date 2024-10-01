@@ -573,7 +573,7 @@ class XpraProtocol {
     }
 
     const iterations = caps["key_stretch_iterations"];
-    if (iterations <= 0 || iterations >= 10000) {
+    if (iterations < 1000 || iterations > 1000000) {
       throw `invalid number of iterations: ${iterations}`;
     }
 
