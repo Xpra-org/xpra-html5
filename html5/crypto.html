@@ -44,7 +44,16 @@
         }
 
         function arrayhex(arr) {
-            return Array.from(arr).map((b) => b.toString(16).padStart(2, "0")).join("");
+            const u8array = new Uint8Array(arr);
+            return Array.from(u8array).map((b) => b.toString(16).padStart(2, "0")).join("");
+        }
+
+        function hexarray(hex) {
+            var bytes = new Uint8Array(Math.ceil(hex.length / 2));
+            for (var i = 0; i < bytes.length; i++) {
+                bytes[i] = parseInt(hex.substr(i * 2, 2), 16);
+            }
+            return bytes;
         }
 
         function update_info(newtext) {
@@ -64,6 +73,19 @@
         const key_hash = "SHA-1";
         const usage = "encrypt";
         const iv = "0000000000000000";
+
+        const params = {
+            name: "AES-"+mode,   //ie: "AES-CBC"
+            iv: u8(iv),
+        }
+
+        function decrypt(crypto_key, encrypted) {
+            crypto.subtle.decrypt(params, crypto_key, encrypted)
+            .then(decrypted => {
+                update_info("decrypted="+str(new Uint8Array(decrypted)));
+            })
+            .catch(err => update_info("failed to decrypt message: "+arrayhex(encrypted)));
+        }
 
         update_info("importing key '"+key+"'");
         crypto.subtle.importKey("raw", u8(key), { name: "PBKDF2" }, false, ["deriveKey", "deriveBits"])
@@ -88,25 +110,19 @@
             .then(crypto_key => {
                 update_info("derived key for " + usage + " usage: " + crypto_key);
 
-                const params = {
-                  name: "AES-"+mode,   //ie: "AES-CBC"
-                  iv: u8(iv),
-                }
-
                 const message = "some message1234";
                 update_info("encrypting: '"+message+"' ("+message.length+" bytes)");
 
                 crypto.subtle.encrypt(params, crypto_key, u8(message))
                 .then(encrypted => {
-                    update_info("encrypted="+arrayhex(new Uint8Array(encrypted)));
-                    crypto.subtle.decrypt(params, crypto_key, encrypted)
-                    .then(decrypted => {
-                        update_info("decrypted="+str(new Uint8Array(decrypted)));
-                    })
-                    .catch(err => update_info("failed to decrypt message"));
+                    update_info("encrypted="+arrayhex(encrypted)+", "+encrypted.byteLength+" bytes");
+                    decrypt(crypto_key, encrypted);
                 })
                 .catch(err => update_info("failed to encrypt message"));
 
+                // try again with hard-coded encrypted message:
+                let encrypted = hexarray("ad1e476da9b779bfb4c8743b72055fd8926c2c5f1af71ff8b6a79e5d30baccdb");
+                decrypt(crypto_key, encrypted);
             })
             .catch(err => {
                 update_info("failed to derive AES key: "+err);
