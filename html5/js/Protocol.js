@@ -352,16 +352,16 @@ class XpraProtocol {
       console.log("decrypt", JSON.stringify(this.cipher_in_params), packet_data);
       crypto.subtle.decrypt(this.cipher_in_params, this.cipher_in_key, packet_data)
       .then(decrypted => {
-        // console.log("decrypted", decrypted.length, "bytes");
-        if (!decrypted || decrypted.length < packet_size - padding) {
+        // console.log("decrypted", decrypted.byteLength, "bytes, padding=", padding);
+        if (!decrypted || decrypted.byteLength < packet_size - padding) {
           this.protocol_error(` expected ${packet_size - padding} bytes, but got ${decrypted.length}`);
           return false;
         }
-        if (decrypted.length == packet_size - padding) {
-            packet_data = decrypted;
+        if (decrypted.byteLength == packet_size - padding) {
+            packet_data = new Uint8Array(decrypted);
         }
         else {
-            packet_data = decrypted.slice(0, packet_size - padding);
+            packet_data = new Uint8Array(decrypted.slice(0, packet_size - padding));
         }
         // console.log("packet data:", packet_data);
         this.process_packet_data(header, packet_data);
