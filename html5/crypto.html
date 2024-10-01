@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!--
+	Copyright (c) 2024 Antoine Martin <antoine@xpra.org>
+	Licensed under MPL 2.0
+	-->
+
+    <title>Xpra HTML5 Clipboard Test Page</title>
+    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
+    <link rel="icon" type="image/png" href="favicon.png" />
+
+  </head>
+
+  <body>
+    <div class="container">
+      <div>
+        <pre id="info"></pre>
+      </div>
+
+    </div>
+
+    <script>
+        const info = document.getElementById("info");
+        const lines = [];
+
+        function u8(value) {
+            const type = typeof value;
+            if (type === 'object' && value.constructor === Uint8Array) {
+                return value;
+            }
+            if (type == "string") {
+                return Uint8Array.from(value.split("").map(x => x.charCodeAt()));
+            }
+            return new Uint8Array(value);
+        }
+
+        function str(u8array) {
+            var s = "";
+            for (var i = 0; i < u8array.length; i++) {
+                s += String.fromCharCode(u8array[i]);
+            }
+            return s;
+        }
+
+        function arrayhex(arr) {
+            return Array.from(arr).map((b) => b.toString(16).padStart(2, "0")).join("");
+        }
+
+        function update_info(newtext) {
+            console.log(newtext);
+            while (lines.length>10) {
+                lines.shift();
+            }
+            lines.push(newtext);
+            info.innerText = lines.join("\n");
+        }
+
+        const key = "this is our secret";
+        const salt = u8("0000000000000000");
+        const key_size = 32;
+        const iterations = 1000;
+        const mode = "CBC";
+        const key_hash = "SHA-1";
+        const usage = "encrypt";
+        const iv = "0000000000000000";
+
+        update_info("importing key '"+key+"'");
+        crypto.subtle.importKey("raw", u8(key), { name: "PBKDF2" }, false, ["deriveKey", "deriveBits"])
+        .then(imported_key => {
+            update_info("imported key: "+imported_key);
+            update_info("deriving " + mode + " key");
+            update_info(" " + iterations + " iterations, " + key_hash + " hash, " + (key_size * 8)+ " bits");
+            update_info(" salt=" + salt);
+            // now stretch it to get the real key:
+            crypto.subtle.deriveKey(
+                {
+                    name: "PBKDF2",
+                    salt: salt,
+                    iterations: iterations,
+                    hash: {name: key_hash},
+                }, imported_key,
+                {
+                    name: "AES-"+mode,
+                    length: key_size * 8,
+                }, false, ["encrypt", "decrypt"],
+            )
+            .then(crypto_key => {
+                update_info("derived key for " + usage + " usage: " + crypto_key);
+
+                const params = {
+                  name: "AES-"+mode,   //ie: "AES-CBC"
+                  iv: u8(iv),
+                }
+
+                const message = "some message1234";
+                update_info("encrypting: '"+message+"' ("+message.length+" bytes)");
+
+                crypto.subtle.encrypt(params, crypto_key, u8(message))
+                .then(encrypted => {
+                    update_info("encrypted="+arrayhex(new Uint8Array(encrypted)));
+                    crypto.subtle.decrypt(params, crypto_key, encrypted)
+                    .then(decrypted => {
+                        update_info("decrypted="+str(new Uint8Array(decrypted)));
+                    })
+                    .catch(err => update_info("failed to decrypt message"));
+                })
+                .catch(err => update_info("failed to encrypt message"));
+
+            })
+            .catch(err => {
+                update_info("failed to derive AES key: "+err);
+            });
+        })
+        .catch(err => {
+            update_info("failed to import AES key: "+err);
+        });
+    </script>
+  </body>
+</html>
