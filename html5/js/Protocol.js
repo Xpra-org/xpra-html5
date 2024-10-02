@@ -557,7 +557,7 @@ class XpraProtocol {
     const mode = caps["mode"] || DEFAULT_MODE;
     let block_size = 0;
     if (mode == "CBC") {
-      block_size = 32;
+      block_size = 16;
     } else if (!["GCM", "CTR"].includes(mode)) {
       throw `unsupported AES mode '${mode}'`;
     }
