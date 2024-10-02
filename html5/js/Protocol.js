@@ -460,7 +460,7 @@ class XpraProtocol {
       const payload_size = bdata.length;
 
       if (this.cipher_out_key) {
-        console.log("encrypt", JSON.stringify(params), bdata);
+        console.log("encrypt", JSON.stringify(this.cipher_out_params), bdata);
         crypto.subtle.encrypt(this.cipher_out_params, this.cipher_out_key, bdata)
         .then(encrypted => this.send_packet(encrypted, payload_size, true))
         .catch(err => this.protocol_error("failed to encrypt packet!"));
