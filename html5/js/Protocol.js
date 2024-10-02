@@ -349,7 +349,7 @@ class XpraProtocol {
         this.protocol_error("encrypted packet received, but no decryption is configured");
         return false;
       }
-      console.log("decrypt", JSON.stringify(this.cipher_in_params), packet_data);
+      // console.log("decrypt", packet_data.byteLength, "bytes, padding=", padding, JSON.stringify(this.cipher_in_params), packet_data);
       crypto.subtle.decrypt(this.cipher_in_params, this.cipher_in_key, packet_data)
       .then(decrypted => {
         // console.log("decrypted", decrypted.byteLength, "bytes, padding=", padding);
@@ -600,11 +600,11 @@ class XpraProtocol {
       iv: u8(iv),
     }
 
-    console.log("importing", "PBKDF2", "key", key);
+    console.log("importing", "PBKDF2", "key", "'"+key+"'");
     crypto.subtle.importKey("raw", u8(key), { name: "PBKDF2" }, false, ["deriveKey", "deriveBits"])
     .then(imported_key => {
         console.log("imported key:", imported_key);
-        console.log("deriving", mode, "key with:", iterations, key_hash, mode, key_size*8);
+        console.log("deriving", key_size*8, "bits", mode, "key with:", iterations, key_hash);
         console.log("salt=", salt);
         // now stretch it to get the real key:
         crypto.subtle.deriveKey(
