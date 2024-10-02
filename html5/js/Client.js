@@ -2484,27 +2484,7 @@ class XpraClient {
 
     // check for server encryption caps update
     if (this.encryption) {
-      this.cipher_out_caps = {};
-      const CIPHER_CAPS = [
-        "",
-        ".mode",
-        ".iv",
-        ".key_salt",
-        ".key_size",
-        ".key_hash",
-        ".key_stretch_iterations",
-        ".padding",
-        ".padding.options",
-        ".always-pad",
-      ];
-      for (const CIPHER_CAP of CIPHER_CAPS) {
-        const cipher_key = `cipher${CIPHER_CAP}`;
-        let value = hello[cipher_key];
-        if (typeof value === "object" && value.constructor === Uint8Array) {
-          value = String.fromCharCode.apply(null, value);
-        }
-        this.cipher_out_caps[cipher_key] = value;
-      }
+      this.cipher_out_caps = hello["encryption"];
       console.info("cipher out caps=", JSON.stringify(this.cipher_out_caps));
       this.protocol.set_cipher_out(this.cipher_out_caps, this.encryption_key);
     }
