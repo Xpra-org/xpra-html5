@@ -460,10 +460,10 @@ class XpraProtocol {
       const payload_size = bdata.length;
 
       if (this.cipher_out_key) {
-        console.log("encrypt", JSON.stringify(this.cipher_out_params), bdata);
+        //console("encrypting", packet[0], "packet using", JSON.stringify(this.cipher_out_params), ":", bdata);
         crypto.subtle.encrypt(this.cipher_out_params, this.cipher_out_key, bdata)
         .then(encrypted => this.send_packet(encrypted, payload_size, true))
-        .catch(err => this.protocol_error("failed to encrypt packet!"));
+        .catch(err => this.protocol_error("failed to encrypt packet: "+err));
         return;
       }
       this.send_packet(bdata, payload_size, false);
@@ -484,13 +484,14 @@ class XpraProtocol {
   }
 
   send_packet(bdata, payload_size, encrypted) {
+    // console.log("send_packet", payload_size);
     const level = 0;
     let proto_flags = 0x10;
     if (encrypted) {
       proto_flags |= 0x2;
     }
     const header = this.make_packet_header(proto_flags, level, payload_size);
-    const actual_size = bdata.length;
+    const actual_size = bdata.byteLength;
     const packet = new Uint8Array(8 + actual_size);
     packet.set(header, 0);
     packet.set(bdata, 8);
