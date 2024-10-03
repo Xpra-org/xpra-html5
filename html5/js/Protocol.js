@@ -382,6 +382,9 @@ class XpraProtocol {
      * or decode the packet if we have received all the chunks (chunk no is 0)
      */
     const level = header[2];
+    const index = header[3];
+    // console.log("process packet data, header=", header, packet_data.byteLength, "bytes, index=", index, "level=", level);
+
     //decompress it if needed:
     if (level != 0) {
       let inflated;
@@ -396,7 +399,6 @@ class XpraProtocol {
     }
 
     //save it for later? (partial raw packet)
-    const index = this.header[3];
     if (index > 0) {
       if (index >= 20) {
         this.protocol_error(`invalid packet index: ${index}`);
@@ -423,6 +425,8 @@ class XpraProtocol {
       this.error(`packet=${packet_data}`);
       const proto_flags = header[1];
       this.error(`protocol flags=${proto_flags}`);
+      this.error(` level=${level}`);
+      this.error(` index=${index}`);
       this.raw_packets = [];
       return;
     }
@@ -529,7 +533,9 @@ class XpraProtocol {
   }
 
   set_cipher_in(caps, key) {
+    // console.log("configuring cipher in:", caps);
     this.setup_cipher(caps, key, "decrypt", (block_size, params, crypto_key) => {
+      // console.log("cipher in configured, params=", JSON.stringify(params));
       this.cipher_in_block_size = block_size;
       this.cipher_in_params = params;
       this.cipher_in_key = crypto_key;
@@ -537,7 +543,9 @@ class XpraProtocol {
   }
 
   set_cipher_out(caps, key) {
+    // console.log("configuring cipher out:", caps);
     this.setup_cipher(caps, key, "encrypt", (block_size, params, crypto_key) => {
+      // console.log("cipher out configured, params=", JSON.stringify(params));
       this.cipher_out_block_size = block_size;
       this.cipher_out_params = params;
       this.cipher_out_key = crypto_key;
