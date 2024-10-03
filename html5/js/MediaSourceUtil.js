@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Antoine Martin <antoine@xpra.org>
+ * Copyright (c) 2016-2024 Antoine Martin <antoine@xpra.org>
  * Licensed under MPL 2.0
  *
  */
@@ -173,9 +173,7 @@ const MediaSourceUtil = {
         }
         codecs_supported[codec_option] = codec_string;
       } catch (error) {
-        Utilities.error(
-          `audio error probing codec '${codec_string}' / '${codec_string}': ${error}`
-        );
+        Utilities.error(`audio error probing codec '${codec_string}' / '${codec_string}': ${error}`);
         codecs_failed[codec_option] = codec_string;
       }
     }
@@ -289,9 +287,7 @@ const MediaSourceUtil = {
   get_supported_codecs(mediasource, aurora, ignore_audio_blacklist) {
     const codecs_supported = {};
     if (mediasource) {
-      const mediasource_codecs = MediaSourceUtil.getMediaSourceAudioCodecs(
-        ignore_audio_blacklist
-      );
+      const mediasource_codecs = MediaSourceUtil.getMediaSourceAudioCodecs(ignore_audio_blacklist);
       for (const codec_option in mediasource_codecs) {
         codecs_supported[`mediasource:${codec_option}`] =
           MediaSourceConstants.CODEC_DESCRIPTION[codec_option];
@@ -304,9 +300,7 @@ const MediaSourceUtil = {
           //we already have native MediaSource support!
           continue;
         }
-        codecs_supported[
-          `aurora:${codec_option}`
-        ] = `legacy: ${MediaSourceConstants.CODEC_DESCRIPTION[codec_option]}`;
+        codecs_supported[`aurora:${codec_option}`] = `legacy: ${MediaSourceConstants.CODEC_DESCRIPTION[codec_option]}`;
       }
     }
     return codecs_supported;
