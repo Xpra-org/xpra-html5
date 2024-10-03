@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2019 Antoine Martin <antoine@xpra.org>
+ * Copyright (c) 2013-2024s Antoine Martin <antoine@xpra.org>
  * Copyright (c) 2016 David Brushinski <dbrushinski@spikes.com>
  * Copyright (c) 2014 Joshua Higgins <josh@kxes.net>
  * Copyright (c) 2015 Spikes, Inc.
@@ -96,9 +96,11 @@ function u8(value) {
   return new Uint8Array(value);
 }
 
+
 function arrayhex(arr) {
     return Array.from(arr).map((b) => b.toString(16).padStart(2, "0")).join("");
 }
+
 
 /*
 The main Xpra wire protocol
@@ -367,7 +369,7 @@ class XpraProtocol {
         this.process_packet_data(header, packet_data);
       })
       .catch(err => this.protocol_error("failed to decrypt data: "+err));
-    return true;
+      return true;
     }
 
     this.process_packet_data(header, packet_data);
