@@ -96,8 +96,8 @@
             const eu8 = u8(expected);
             const au8 = u8(actual);
             show(" mismatch:");
-            show("  expected "+eu8.length+" bytes: " + eu8);
-            show("  but got  "+au8.length+" bytes: " + au8);
+            show("  expected "+eu8.length+" bytes: " + arrayhex(eu8));
+            show("  but got  "+au8.length+" bytes: " + arrayhex(au8));
         }
 
         function show_value(what, value) {
