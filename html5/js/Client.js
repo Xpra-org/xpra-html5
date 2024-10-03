@@ -2556,6 +2556,9 @@ class XpraClient {
       this._connection_change();
     }
 
+    // don't send clipboard packets to servers that don't want them:
+    this.clipboard_enabled = Boolean(hello["clipboard"] || false);
+
     // file transfer attributes:
     this.remote_file_size_limit = hello["max-file-size"];
     this.remote_file_chunks = Math.max(0, Math.min(this.remote_file_size_limit, hello["file-chunks"] || 0));
