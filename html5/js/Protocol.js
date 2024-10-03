@@ -301,11 +301,11 @@ class XpraProtocol {
 
     let packet_size = [4, 5, 6, 7].reduce((accumulator, value) => accumulator * 0x1_00 + this.header[value], 0);
 
-    // work out padding if necessary
+    // add padding if encryption is enabled
     let padding = 0;
     if (encrypted && this.cipher_in_block_size > 0) {
       // PKCS#7 has always at least one byte of padding!
-      padding = this.cipher_in_block_size + 1 - (packet_size + 1) % this.cipher_in_block_size;
+      padding = this.cipher_in_block_size - packet_size % this.cipher_in_block_size;
 
       packet_size += padding;
     }
