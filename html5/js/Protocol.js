@@ -351,12 +351,17 @@ class XpraProtocol {
         this.protocol_error("encrypted packet received, but no decryption is configured");
         return false;
       }
+      // extract the iv:
+      const iv = packet_data.slice(0, 16);
+      const encrypted_data = packet_data.subarray(16);
+      this.cipher_in_params["iv"] = iv;
       // console.log("decrypt", packet_data.byteLength, "bytes, padding=", padding, JSON.stringify(this.cipher_in_params), packet_data);
-      crypto.subtle.decrypt(this.cipher_in_params, this.cipher_in_key, packet_data)
+      crypto.subtle.decrypt(this.cipher_in_params, this.cipher_in_key, encrypted_data)
       .then(decrypted => {
         // console.log("decrypted", decrypted.byteLength, "bytes, padding=", padding);
-        if (!decrypted || decrypted.byteLength < packet_size - padding) {
-          this.protocol_error(` expected ${packet_size - padding} bytes, but got ${decrypted.length}`);
+        const expected_length = packet_size - padding - iv.length;
+        if (!decrypted || decrypted.byteLength < expected_length) {
+          this.protocol_error(` expected ${expected_length} bytes, but got ${decrypted.byteLength}`);
           return false;
         }
         if (decrypted.byteLength == packet_size - padding) {
@@ -463,12 +468,21 @@ class XpraProtocol {
         this.error(error);
         continue;
       }
-      const payload_size = bdata.length;
+      let payload_size = bdata.length;
 
       if (this.cipher_out_key) {
         //console("encrypting", packet[0], "packet using", JSON.stringify(this.cipher_out_params), ":", bdata);
+        const iv = Utilities.getSecureRandomBytes(16);
+        this.cipher_out_params["iv"] = iv;
         crypto.subtle.encrypt(this.cipher_out_params, this.cipher_out_key, bdata)
-        .then(encrypted => this.send_packet(new Uint8Array(encrypted), payload_size, true))
+        .then(encrypted => {
+            const enc_u8 = new Uint8Array(encrypted);
+            const packet_data = new Uint8Array(iv.byteLength + enc_u8.byteLength);
+            packet_data.set(iv, 0);
+            packet_data.set(enc_u8, iv.byteLength);
+            payload_size += iv.byteLength;
+            this.send_packet(packet_data, payload_size, true);
+        })
         .catch(err => this.protocol_error("failed to encrypt packet: "+err));
         return;
       }
@@ -490,7 +504,6 @@ class XpraProtocol {
   }
 
   send_packet(bdata, payload_size, encrypted) {
-    // console.log("send_packet", payload_size);
     const level = 0;
     let proto_flags = 0x10;
     if (encrypted) {
