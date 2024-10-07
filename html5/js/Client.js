@@ -1499,6 +1499,7 @@ class XpraClient {
       "key_stretch_iterations": 1000,
       "padding.options": ["PKCS#7"],
       "always-pad": true,
+      "stream": false,
     }
   }
 
