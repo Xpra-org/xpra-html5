@@ -1,3 +1,11 @@
+xpra-html5 (16.2-r0-1) UNRELEASED; urgency=low
+  * fallback to client decoding
+  * missing start menu after connecting
+  * don't send clipboard packets to servers that don't want them
+  * fail early if server doesn't support `rencodeplus`
+
+ -- Antoine Martin antoine@xpra.org  Tue, 08 Oct 2024 15:29:19 +0700 +700
+
 xpra-html5 (16.1-r0-1) UNRELEASED; urgency=low
   * decode worker failures with some inlined packets
 

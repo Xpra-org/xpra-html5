@@ -3,7 +3,7 @@
 # Xpra is released under the terms of the GNU GPL v2, or, at your option, any
 # later version. See the file COPYING for details.
 
-%define version 16.1
+%define version 16.2
 %define release 1.r0%{?dist}
 %define minifier uglifyjs
 %define python python3
@@ -78,6 +78,12 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Tue Oct 08 2024 Antoine Martin <antoine@xpra.org> 16.2-0-1
+- fallback to client decoding
+- missing start menu after connecting
+- don't send clipboard packets to servers that don't want them
+- fail early if server doesn't support `rencodeplus`
+
 * Tue Sep 24 2024 Antoine Martin <antoine@xpra.org> 16.1-0-1
 - decode worker failures with some inlined packets
 
