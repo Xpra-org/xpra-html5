@@ -1,7 +1,7 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
-## [16.1] 2024-10-08
+## [16.2] 2024-10-08
 - [fallback to client decoding](https://github.com/Xpra-org/xpra-html5/commit/e3767393aecc91453efc3ca87a6e20e42ae87c6c)
 - [missing start menu after connecting](https://github.com/Xpra-org/xpra-html5/commit/48b576f940d8ab5294616e92b748fe7f1373873f)
 - [don't send clipboard packets to servers that don't want them](https://github.com/Xpra-org/xpra-html5/commit/6cf8b8a5e09f5911295125756e85ff2aaf0417a6)
