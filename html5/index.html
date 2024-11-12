@@ -922,7 +922,7 @@
             client.set_encoding_option(key, v);
           }
         }
-        client.offscreen_api = offscreen && client.offscreen_api;
+        client.offscreen_api = offscreen;
 
         if (action && action != "connect") {
           const sns = {
