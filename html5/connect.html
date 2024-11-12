@@ -955,6 +955,27 @@
           return is_secure_connection() || Utilities.isSafeHost(host);
         }
 
+        function update_offscreen() {
+          const ssl_enabled = document.getElementById("ssl").checked;
+          const offscreen = getboolparam("offscreen", XpraOffscreenWorker.isAvailable(ssl_enabled));
+          document.getElementById("offscreen").checked = offscreen;
+          const offscreen_available = XpraOffscreenWorker.isAvailable(ssl_enabled);
+          const offscreen_input = document.getElementById("offscreen");
+          const offscreen_label = document.getElementById("offscreen_label");
+          offscreen_input.disabled = !offscreen_available;
+          let status_message = "";
+          if (offscreen_available) {
+            offscreen_label.classList.remove("disabled");
+          }
+          else {
+            status_message = "not available in your browser";
+            offscreen_label.classList.add("disabled");
+          }
+
+          offscreen_input.setAttribute("title", status_message);
+          offscreen_label.setAttribute("title", status_message);
+        }
+
         function update_password_input() {
           const safe = is_password_safe();
           password_input.disabled = !safe && !insecure_input.checked;
@@ -1027,9 +1048,11 @@
             aes_input.checked = false;
           }
           update_insecure();
+          update_offscreen();
         }
         aes_input.onchange = update_aes;
         update_aes();
+        update_offscreen();
         webtransport_input.onchange();
 
         //vrefresh:
@@ -1545,16 +1568,6 @@
 
         const encoding = getparam("encoding") || "auto";
         document.getElementById("encoding").value = encoding;
-
-        const ssl_enabled = document.getElementById("ssl").checked;
-        const offscreen = getboolparam("offscreen", XpraOffscreenWorker.isAvailable(ssl_enabled));
-        document.getElementById("offscreen").checked = offscreen;
-        if (!XpraOffscreenWorker.isAvailable(ssl_enabled)) {
-          document.getElementById("offscreen").disabled = true;
-          document.getElementById("offscreen").setAttribute("title", "not available in your browser");
-          document.getElementById("offscreen_label").classList.add("disabled");
-          document.getElementById("offscreen_label").setAttribute("title", "not available in your browser");
-        }
 
         let bandwidth_limit = getparam("bandwidth_limit");
         if (bandwidth_limit == null) {
