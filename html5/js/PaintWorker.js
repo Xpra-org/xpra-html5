@@ -10,6 +10,8 @@
  * Worker for offscreen painting.
  */
 
+importScripts("./Constants.js");
+
 const KEEP_STILLS = false; // Keep a screenshot of each window for repaint. This seems to affect performance.
 
 class XpraPaintWorker {

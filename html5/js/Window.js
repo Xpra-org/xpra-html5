@@ -1285,7 +1285,7 @@ class XpraWindow {
       me.paint_pending = 0;
       if (!skip_box && me.debug_categories.includes("draw")) {
         const color = DEFAULT_BOX_COLORS[coding] || "white";
-        this.paint_box(color, x, y, width, height);
+        me.paint_box(color, x, y, width, height);
       }
       decode_callback();
     }
