@@ -529,13 +529,6 @@ class XpraClient {
       this._do_connect(false);
       return;
     }
-    if (this.offscreen_api) {
-      // check that it is actually available:
-      this.offscreen_api = DECODE_WORKER && XpraOffscreenWorker.isAvailable(this.ssl);
-      if (this.offscreen_api) {
-        this.set_encoding_option('video_max_size',[4096, 4096]);
-      }
-    }
     this.clog("we have webworker support");
     // spawn worker that checks for a websocket
     const worker = new Worker("js/lib/wsworker_check.js");
@@ -567,10 +560,16 @@ class XpraClient {
     if (!DECODE_WORKER) {
       this.supported_encodings = safe_encodings;
       this.decode_worker = false;
+      this.offscreen_api = false;
       return;
     }
     let decode_worker;
     if (this.offscreen_api) {
+      // check that it is actually available:
+      this.offscreen_api = DECODE_WORKER && XpraOffscreenWorker.isAvailable(this.ssl);
+    }
+    if (this.offscreen_api) {
+      this.set_encoding_option('video_max_size',[4096, 4096]);
       this.clog("using offscreen decode worker");
       decode_worker = new Worker("js/OffscreenDecodeWorker.js");
     } else {
