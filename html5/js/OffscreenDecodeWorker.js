@@ -1,7 +1,7 @@
 /*
  * This file is part of Xpra.
  * Copyright (C) 2021 Tijs van der Zwaan <tijzwa@vpo.nl>
- * Copyright (c) 2022 Antoine Martin <antoine@xpra.org>
+ * Copyright (c) 2022-2024 Antoine Martin <antoine@xpra.org>
  * Licensed under MPL 2.0, see:
  * http://www.mozilla.org/MPL/2.0/
  *
@@ -36,9 +36,8 @@ if (XpraVideoDecoderLoader.hasNativeDecoder()) {
   // We can support native H264 & VP8 decoding
   video_coding.push("h264", "vp8");
 } else {
-  console.warn(
-    "Offscreen decoding is available for images only. Please consider using Google Chrome 94+ in a secure (SSL or localhost) context for h264 offscreen decoding support."
-  );
+  console.warn("Offscreen decoding is available for images only");
+  console.warn("Please consider using Google Chrome 94+ in a secure (SSL or localhost) context for h264 offscreen decoding support.");
 }
 
 const all_encodings = new Set([
@@ -227,11 +226,8 @@ onmessage = function (e) {
       if (wd) {
         wd.queue_draw_packet(packet);
       } else {
-        send_decode_error(
-          packet,
-          `no window decoder found for wid ${wid}, only:${[
-            ...window_decoders.keys(),
-          ].join(",")}`
+        send_decode_error(packet,
+                          `no window decoder found for wid ${wid}, only:${[...window_decoders.keys(),].join(",")}`
         );
       }
       break;
@@ -243,13 +239,7 @@ onmessage = function (e) {
       });
       break;
     case "canvas":
-      console.log(
-        "canvas transfer for window",
-        data.wid,
-        ":",
-        data.canvas,
-        data.debug
-      );
+      console.log("canvas transfer for window", data.wid, ":", data.canvas, data.debug);
       if (data.canvas) {
         window_decoders.set(
           data.wid,
