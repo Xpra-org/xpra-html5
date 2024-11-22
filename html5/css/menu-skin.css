@@ -23,6 +23,26 @@ SOFTWARE.
 
 */
 
+#float_menu_button {
+  background: white;
+  height: 50px;
+  width: 12px;
+  border-radius: 0px 10px 10px 0px;
+
+  position: relative;
+  left: 30px;
+  top: -125px;
+}
+
+#float_menu_arrow {
+  color: black;
+  border-color: black;
+
+  position: relative;
+  right: 14px;
+  top: 5px;
+}
+
 #float_menu {
   display: none;
   height: 30px;
@@ -55,7 +75,7 @@ SOFTWARE.
 .menu-content-left {
   white-space: nowrap;
   float: left;
-  width: 24px;
+  width: 0px;
   height: 24px;
   padding: 3px 2px;
   vertical-align: middle;
@@ -66,7 +86,7 @@ SOFTWARE.
 .menu-content-right {
   white-space: nowrap;
   float: right;
-  width: 16px;
+  width: 0px;
   height: 16px;
   padding: 7px 2px;
   vertical-align: middle;
@@ -81,6 +101,11 @@ SOFTWARE.
 .Menu {
   color: black;
 }
+
+.Menu.-vertical {
+  border-radius: 0px 3px 3px 0px;
+}
+
 /* Foreground */
 .Menu,
 .Menu li.-hasSubmenu > a:after {

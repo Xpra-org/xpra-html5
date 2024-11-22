@@ -2968,18 +2968,25 @@ class XpraClient {
 
   position_float_menu() {
     const float_menu_element = $(FLOAT_MENU_SELECTOR);
+    const toolbar_height = float_menu_element.height();
     const toolbar_width = float_menu_element.width();
     let left = float_menu_element.offset().left || 0;
-    const top = float_menu_element.offset().top || 0;
+    let top = float_menu_element.offset().top || 0;
     const screen_width = $("#screen").width();
+    const screen_height = $("#screen").height();
+
     if (this.toolbar_position == "custom") {
       //no calculations needed
     } else if (this.toolbar_position == "top-left") {
-      //no calculations needed
+      left = 0;
+      top = 0;
     } else if (this.toolbar_position == "top") {
       left = screen_width / 2 - toolbar_width / 2;
     } else if (this.toolbar_position == "top-right") {
       left = screen_width - toolbar_width - 100;
+    } else if (this.toolbar_position == "novnc") {
+      left = 0;
+      top = screen_height / 2 - toolbar_height / 2 - 100;
     }
     float_menu_element.offset({ top, left });
   }

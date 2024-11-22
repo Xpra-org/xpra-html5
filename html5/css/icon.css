@@ -15,6 +15,8 @@
   font-size: 24px;
   text-align: center;
 
+  color: black;
+
   content: attr(data-icon);
 
   /* This is important for IE, which has it off by default */
