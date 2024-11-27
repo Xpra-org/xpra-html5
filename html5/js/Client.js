@@ -1803,7 +1803,7 @@ class XpraClient {
     const apy = Math.abs(py);
     if (this.server_precise_wheel) {
       if (apx > 0) {
-        const button_x = px >= 0 ? 6 : 7;
+        const button_x = px >= 0 ? 7 : 6;
         const xdist = Math.round((px * 1000) / 120);
         this.send([PACKET_TYPES.wheel_motion, wid, button_x, -xdist, [x, y], modifiers, buttons]);
       }
@@ -1828,7 +1828,7 @@ class XpraClient {
     //send synthetic click+release as many times as needed:
     let wx = Math.abs(this.wheel_delta_x);
     let wy = Math.abs(this.wheel_delta_y);
-    const button_x = this.wheel_delta_x >= 0 ? 6 : 7;
+    const button_x = this.wheel_delta_x >= 0 ? 7 : 6;
     const button_y = this.wheel_delta_y >= 0 ? 5 : 4;
     while (wx >= 120) {
       wx -= 120;
