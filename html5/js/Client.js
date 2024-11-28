@@ -2724,6 +2724,10 @@ class XpraClient {
       li.append(ul);
       startmenu.append(li);
     }
+
+    if (this.xdg_menu.length === 0) {
+      startmenu.children().css("box-shadow", "none");
+    }
   }
 
   _process_setting_change(packet) {
