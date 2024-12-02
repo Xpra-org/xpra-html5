@@ -26,3 +26,11 @@
 .Icon.-small {
   font-size: 18px;
 }
+
+.icon-toggled:before {
+  color: #777777;
+}
+
+.icon-paused:before {
+  color: gold;
+}

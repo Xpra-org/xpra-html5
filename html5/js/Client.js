@@ -327,7 +327,7 @@ class XpraClient {
     const screen_element = jQuery("#screen");
     screen_element.mousedown((e) => this.on_mousedown(e));
     screen_element.mouseup((e) => this.on_mouseup(e));
-    screen_element.mousemove((e) => this.on_mousemove(e));
+    document.getElementById("screen").addEventListener("mousemove", (e) => this.on_mousemove(e));
 
     const div = document.querySelector("#screen");
     function on_mousescroll(e) {
@@ -1591,9 +1591,16 @@ class XpraClient {
    * Mouse handlers
    */
   getMouse(e) {
+    const windowIsLocked = Boolean(document.pointerLockElement);
+
     // get mouse position take into account scroll
     let mx = e.clientX + jQuery(document).scrollLeft();
     let my = e.clientY + jQuery(document).scrollTop();
+
+    if (windowIsLocked) {
+      mx = e.movementX;
+      my = e.movementY;
+    }
 
     if (this.scale !== 1) {
       mx = Math.round(mx * this.scale);
@@ -1612,6 +1619,10 @@ class XpraClient {
         my = 0;
       }
     } else {
+      if (windowIsLocked) {
+        this.last_mouse_x += mx;
+        this.last_mouse_y += my;
+      }
       this.last_mouse_x = mx;
       this.last_mouse_y = my;
     }
@@ -1624,8 +1635,15 @@ class XpraClient {
       // IE, Opera (zero based)
       mbutton = Math.max(0, e.button) + 1;
 
+    mx = this.last_mouse_x;
+    my = this.last_mouse_y;
+
     // We return a simple javascript object (a hash) with x and y defined
-    return { x: mx, y: my, button: mbutton };
+    return {
+      x: mx,
+      y: my,
+      button: mbutton
+    };
   }
 
   on_mousedown(e, win) {
@@ -1720,6 +1738,12 @@ class XpraClient {
     if (wid > 0 && this.focus != wid) {
       this.set_focus(win);
     }
+
+    if (window.cursor_lock) {
+      $("#cursor-lock-button").removeClass("icon-paused");
+      win.canvas.requestPointerLock();
+    }
+
     let button = mouse.button;
     const lbe = this.last_button_event;
     if (lbe[0] == button && lbe[1] == pressed && lbe[2] == x && lbe[3] == y) {

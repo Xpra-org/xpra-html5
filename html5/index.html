@@ -108,149 +108,83 @@
       </div>
     </div>
 
-    <div id="screen" style="width: 100%; height: 100%">
-      <div id="float_menu">
-        <ul class="Menu -horizontal">
-          <li class="-hasSubmenu -noChevron">
-            <a href="#" title="Xpra" class="noDrag" data-icon="menu"></a>
-            <ul id="menu_list">
-              <li class="-hasSubmenu" id="startmenuentry" style="display: none">
-                <a data-icon="apps" href="#">Start</a>
-                <ul id="startmenu"></ul>
-              </li>
-              <li class="-hasSubmenu">
-                <a href="#" data-icon="kitchen">Server</a>
-                <ul>
-                  <li id="clock_menu_entry">
-                    <a
-                      href="#"
-                      data-icon="access_time"
-                      onclick="return false"
-                      id="clock_menu_text"
-                    ></a>
-                  </li>
-                  <li id="upload_menu_entry">
-                    <a
-                      href="#"
-                      data-icon="cloud_upload"
-                      onclick="upload_file(event); return false"
-                      >Upload file</a
-                    >
-                  </li>
-                  <li id="download_menu_entry">
-                    <a
-                      href="#"
-                      data-icon="cloud_download"
-                      onclick="download_file(event); return false"
-                      >Download file</a
-                    >
-                  </li>
-                  <li id="shutdown_menu_entry">
-                    <a
-                      href="#"
-                      data-icon="exit_to_app"
-                      onclick="confirm_shutdown_server(event); return false"
-                      >Shutdown Server</a
-                    >
-                  </li>
-                </ul>
-              </li>
-              <li class="-hasSubmenu">
-                <a href="#" data-icon="info">Information</a>
-                <ul>
-                  <li>
-                    <a
-                      href="#"
-                      data-icon="info"
-                      onclick="show_about(event); return false"
-                      >About Xpra</a
-                    >
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      data-icon="trending_up"
-                      onclick="show_sessioninfo(event); return false"
-                      >Session Info</a
-                    >
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      data-icon="bug_report"
-                      onclick="show_bugreport(event); return false"
-                      >Bug Report</a
-                    >
-                  </li>
-                </ul>
-              </li>
-              <li>
-                <a href="#" data-icon="refresh" onclick="location.reload()"
-                  >Reload</a
-                >
-              </li>
-              <li>
-                <a
-                  href="#"
-                  data-icon="exit_to_app"
-                  onclick="client.disconnect_reason='User request'; client.close(); return false"
-                  >Disconnect</a
-                >
-              </li>
-            </ul>
-          </li>
-          <li class="-hasSubmenu -noChevron">
-            <a
-              href="#"
-              title="Open Windows"
-              data-icon="filter"
-              id="open_windows"
-            ></a>
-            <ul id="open_windows_list"></ul>
-          </li>
-          <li class="-hasSubmenu -noChevron">
-            <a
-              href="#"
-              id="fullscreen_button"
-              title="Fullscreen"
-              data-icon="fullscreen"
-            ></a>
-          </li>
-          <li class="-hasSubmenu -noChevron">
-            <a
-              href="#"
-              id="keyboard_button"
-              title="Keyboard"
-              data-icon="keyboard"
-            ></a>
-          </li>
-          <li class="-hasSubmenu -noChevron">
-            <a
-              href="#"
-              id="clipboard_button"
-              title="Clipboard Copy"
-              data-icon="content_copy"
-            ></a>
-          </li>
-          <li class="-hasSubmenu -noChevron">
-            <a
-              href="#"
-              id="sound_button"
-              title="Audio"
-              data-icon="volume_off"
-            ></a>
-          </li>
-        </ul>
-        <div id="float_menu_button">
-          <a
-            href="#"
-            id="float_menu_arrow"
-            title="Expand Menu"
-            data-icon="chevron_right"
-          ></a>
-        </div>
-        <div id="float_tray" class="menu-divright"></div>
+    <div id="float_menu">
+      <ul class="Menu -horizontal">
+        <li class="-hasSubmenu -noChevron">
+          <a href="#" title="Xpra" class="noDrag" data-icon="menu"></a>
+          <ul id="menu_list">
+            <li class="-hasSubmenu" id="startmenuentry" style="display: none">
+              <a data-icon="apps" href="#">Start</a>
+              <ul id="startmenu"></ul>
+            </li>
+            <li class="-hasSubmenu">
+              <a href="#" data-icon="kitchen">Server</a>
+              <ul>
+                <li id="clock_menu_entry">
+                  <a href="#" data-icon="access_time" onclick="return false" id="clock_menu_text"></a>
+                </li>
+                <li id="upload_menu_entry">
+                  <a href="#" data-icon="cloud_upload" onclick="upload_file(event); return false">Upload
+                    file</a>
+                </li>
+                <li id="download_menu_entry">
+                  <a href="#" data-icon="cloud_download" onclick="download_file(event); return false">Download file</a>
+                </li>
+                <li id="shutdown_menu_entry">
+                  <a href="#" data-icon="exit_to_app" onclick="confirm_shutdown_server(event); return false">Shutdown Server</a>
+                </li>
+              </ul>
+            </li>
+            <li class="-hasSubmenu">
+              <a href="#" data-icon="info">Information</a>
+              <ul>
+                <li>
+                  <a href="#" data-icon="info" onclick="show_about(event); return false">About Xpra</a>
+                </li>
+                <li>
+                  <a href="#" data-icon="trending_up" onclick="show_sessioninfo(event); return false">Session Info</a>
+                </li>
+                <li>
+                  <a href="#" data-icon="bug_report" onclick="show_bugreport(event); return false">Bug
+                    Report</a>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <a href="#" data-icon="refresh" onclick="location.reload()">Reload</a>
+            </li>
+            <li>
+              <a href="#" data-icon="exit_to_app" onclick="client.disconnect_reason='User request'; client.close(); return false">Disconnect</a>
+            </li>
+          </ul>
+        </li>
+        <li class="-hasSubmenu -noChevron">
+          <a href="#" title="Open Windows" data-icon="filter" id="open_windows"></a>
+          <ul id="open_windows_list"></ul>
+        </li>
+        <li class="-hasSubmenu -noChevron">
+          <a href="#" id="fullscreen_button" title="Fullscreen" data-icon="fullscreen"></a>
+        </li>
+        <li class="-hasSubmenu -noChevron">
+          <a href="#" id="keyboard_button" title="Keyboard" data-icon="keyboard"></a>
+        </li>
+        <li class="-hasSubmenu -noChevron">
+          <a href="#" id="clipboard_button" title="Clipboard Copy" data-icon="content_copy"></a>
+        </li>
+        <li class="-hasSubmenu -noChevron">
+          <a href="#" id="sound_button" title="Audio" data-icon="volume_off"></a>
+        </li>
+        <li class="-hasSubmenu -noChevron">
+          <a href="#" id="cursor_lock_button" title="Lock Cursor (Gaming cursor mode)" data-icon="videogame_asset"></a>
+        </li>
+      </ul>
+      <div id="float_menu_button">
+        <a href="#" id="float_menu_arrow" title="Expand Menu" data-icon="chevron_right"></a>
       </div>
+      <div id="float_tray" class="menu-divright"></div>
+    </div>
+
+    <div id="screen" style="width: 100%; height: 100%">
       <img id="shadow_pointer" alt="shadow pointer" />
     </div>
 
@@ -412,7 +346,7 @@
         return v;
       };
 
-      const float_menu_item_count = 6;
+      const float_menu_item_count = 7;
       const float_menu_item_size = 30;
       const float_menu_padding = 20;
       let float_menu_width = float_menu_item_size * float_menu_item_count + float_menu_padding;
@@ -1188,18 +1122,18 @@
         const keyboard = getboolparam("keyboard", Utilities.isMobile());
         if (!keyboard) {
           $(".simple-keyboard").hide();
-          $("#keyboard_button").css("color", "#777");
+          $("#keyboard_button").removeClass("icon-toggled");
         } else {
           $(".simple-keyboard").show();
-          $("#keyboard_button").css("color", "#111");
+          $("#keyboard_button").addClass("icon-toggled");
         }
       }
       function toggle_keyboard() {
         $(".simple-keyboard").toggle();
         if ($(".simple-keyboard").is(":visible")) {
-          $("#keyboard_button").css("color", "#111");
+          $("#keyboard_button").addClass("icon-toggled");
         } else {
-          $("#keyboard_button").css("color", "#777");
+          $("#keyboard_button").removeClass("icon-toggled");
         }
       }
 
@@ -1457,7 +1391,9 @@
           });
         } else {
           $("#float_menu_button").hide();
-          float_menu_element.css({ "max-width": "202px" });
+          float_menu_element.css({
+            "max-width": "232px"
+          });
         }
         if (!floating_menu) {
           //nothing to do, it starts hidden
@@ -1493,11 +1429,14 @@
       }
 
       let client;
+
       function init_page() {
         clog("initializing page");
         const touchaction = getparam("touchaction") || "scroll";
         touchaction_scroll = touchaction == "scroll";
         set_touchaction();
+
+        window.cursor_lock = false;
 
         init_auth_autosubmit();
 
@@ -1585,6 +1524,48 @@
 
         $("#clipboard_button").on("click", function (e) {
           client.read_clipboard(e);
+        });
+
+        $(".windowinfocus").children("canvas").on("click", function(e) {
+          const isPointerLocked = Boolean(document.pointerLockElement);
+
+          if (isPointerLocked) {
+            return;
+          }
+
+          if (window.cursor_lock && !isPointerLocked) {
+            const focusedWindow = document.getElementById(client.topwindow.toString());
+            focusedWindow.querySelector("canvas").requestPointerLock();
+
+            $("#cursor_lock_button").removeClass("icon-paused");
+          }
+        });
+
+        $("#cursor_lock_button").on("click", function(e) {
+          if (!window.cursor_lock) {
+            window.cursor_lock = true;
+
+            window.alert("You are now in cursor lock mode. Press ESC to temporarily exit, and click on the screen to enter it again.");
+
+            const focusedWindow = client.id_to_window[client.topwindow];
+            focusedWindow.canvas.requestPointerLock();
+
+            $("#cursor_lock_button").addClass("icon-toggled");
+
+            return;
+          }
+
+          window.cursor_lock = false;
+
+          document.exitPointerLock();
+
+          $("#cursor_lock_button").removeClass("icon-toggled icon-paused");
+        });
+
+        document.addEventListener("pointerlockchange", function(e) {
+          if (!(Boolean(document.pointerLockElement)) && window.cursor_lock) {
+            $("#cursor_lock_button").addClass("icon-paused");
+          }
         });
 
         // Configure Xpra tray window list right click behavior.
