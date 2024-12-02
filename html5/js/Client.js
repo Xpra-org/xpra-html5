@@ -121,7 +121,7 @@ class XpraClient {
     this.reconnect_attempt = 0;
     this.swap_keys = Utilities.isMacOS();
     this.HELLO_TIMEOUT = 30_000;
-    this.OPEN_TIMEOUT = 2_000;
+    this.OPEN_TIMEOUT = 10_000;
     this.PING_TIMEOUT = 15_000;
     this.PING_GRACE = 2000;
     this.PING_FREQUENCY = 5000;
