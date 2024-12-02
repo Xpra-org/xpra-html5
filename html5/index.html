@@ -1188,18 +1188,18 @@
         const keyboard = getboolparam("keyboard", Utilities.isMobile());
         if (!keyboard) {
           $(".simple-keyboard").hide();
-          $("#keyboard_button").css("color", "#777");
+          $("#keyboard_button").removeClass("icon-toggled");
         } else {
           $(".simple-keyboard").show();
-          $("#keyboard_button").css("color", "#111");
+          $("#keyboard_button").addClass("icon-toggled");
         }
       }
       function toggle_keyboard() {
         $(".simple-keyboard").toggle();
         if ($(".simple-keyboard").is(":visible")) {
-          $("#keyboard_button").css("color", "#111");
+          $("#keyboard_button").addClass("icon-toggled");
         } else {
-          $("#keyboard_button").css("color", "#777");
+          $("#keyboard_button").removeClass("icon-toggled");
         }
       }
 
