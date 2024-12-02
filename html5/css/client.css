@@ -99,6 +99,7 @@ canvas {
 }
 .window.desktop {
   box-shadow: none;
+  top: 0px;
 }
 
 .window-NORMAL {
