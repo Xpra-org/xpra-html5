@@ -22,6 +22,7 @@ const FILE_SIZE_LIMIT = 4 * 1024 * 1024 * 1024; //are we even allowed to allocat
 const FILE_CHUNKS_SIZE = 128 * 1024;
 const MAX_CONCURRENT_FILES = 5;
 const CHUNK_TIMEOUT = 10 * 1000;
+const MODAL_FOCUS = true;
 
 const TEXT_PLAIN = "text/plain";
 const UTF8_STRING = "UTF8_STRING";
@@ -2068,12 +2069,26 @@ class XpraClient {
       //tell server to map it:
       win.toggle_minimized();
     }
+
+    // keep modal windows on top:
+    let modal = false;
+    if (MODAL_FOCUS) {
+      for (const index in this.id_to_window) {
+        const win = this.id_to_window[index];
+        modal = modal || win.metadata.modal;
+      }
+    }
+    if (modal && !win.metadata.modal) {
+      // don't take focus from a modal window
+      return;
+    }
+
     const wid = win.wid;
     if (this.focus == wid) {
       return;
     }
 
-    // Keep DESKTOP-type windows per default setttings lower than all other windows.
+    // Keep DESKTOP-type windows per default settings lower than all other windows.
     // Only allow focus if all other windows are minimized.
     if (
       default_settings !== undefined &&
@@ -3278,9 +3293,22 @@ class XpraClient {
   auto_focus() {
     let highest_window = null;
     let highest_stacking = -1;
+    let modal = false;
+    if (MODAL_FOCUS) {
+      for (const index in this.id_to_window) {
+        const win = this.id_to_window[index];
+        modal = modal || win.metadata.modal;
+      }
+    }
     for (const index in this.id_to_window) {
       const win = this.id_to_window[index];
-      if (!win.minimized && win.stacking_layer > highest_stacking && !win.tray) {
+      if (win.minimized || win.tray) {
+        continue;
+      }
+      if (modal && !win.metadata.modal) {
+        continue;
+      }
+      if (win.stacking_layer > highest_stacking) {
         highest_window = win;
         highest_stacking = win.stacking_layer;
       }
