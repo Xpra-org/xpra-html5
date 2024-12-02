@@ -351,8 +351,8 @@ class XpraWindow {
         this.pointer_last_y = event_.offsetY;
       }
     });
-    canvas.addEventListener("pointermove", (event_) => {
-      this.debug("mouse", "pointermove:", event_);
+    canvas.addEventListener("mousemove", (event_) => {
+      this.debug("mouse", "mousemove:", event_);
       if (this.pointer_down == event_.pointerId) {
         const dx = event_.offsetX - this.pointer_last_x;
         const dy = event_.offsetY - this.pointer_last_y;
