@@ -1228,8 +1228,13 @@ class XpraClient {
     let name = "HTML";
     if (navigator.userAgentData) {
       const brands = navigator.userAgentData.brands;
-      if (brands.length > 0) {
-        name = brands[0].brand + " " + brands[0].version;
+
+      for (let index = 0; index < brands.length; index++) {
+        const brand_info = brands[index];
+        const brand = brand_info.brand;
+        if (brand && !brand.startsWith("Not") && !brand.endsWith("Brand")) {
+          name = brand + " " + brand_info.version;
+        }
       }
     }
     const screen = [
