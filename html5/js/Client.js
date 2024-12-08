@@ -2770,7 +2770,7 @@ class XpraClient {
     }
 
     if (this.xdg_menu.length === 0) {
-      startmenu.children().css("box-shadow", "none");
+      startmenu.css("box-shadow", "none");
     }
   }
 
