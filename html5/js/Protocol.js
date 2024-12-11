@@ -85,23 +85,6 @@ class XpraProtocolWorkerHost {
 }
 
 
-function u8(value) {
-  const type = typeof value;
-  if (type === 'object' && value.constructor === Uint8Array) {
-    return value;
-  }
-  if (type == "string") {
-    return Uint8Array.from(value.split("").map(x => x.charCodeAt()));
-  }
-  return new Uint8Array(value);
-}
-
-
-function arrayhex(arr) {
-    return Array.from(arr).map((b) => b.toString(16).padStart(2, "0")).join("");
-}
-
-
 /*
 The main Xpra wire protocol
 */
@@ -591,7 +574,7 @@ class XpraProtocol {
       throw "missing IV";
     }
 
-    const salt = u8(caps["key_salt"]);
+    const salt = Utilities.u8(caps["key_salt"]);
     if (!salt) {
       throw "missing salt";
     }
@@ -621,11 +604,11 @@ class XpraProtocol {
 
     const params = {
       name: "AES-"+mode,   //ie: "AES-CBC"
-      iv: u8(iv),
+      iv: Utilities.u8(iv),
     }
 
     console.log("importing", "PBKDF2", "key", "'"+key+"'");
-    crypto.subtle.importKey("raw", u8(key), { name: "PBKDF2" }, false, ["deriveKey", "deriveBits"])
+    crypto.subtle.importKey("raw", Utilities.u8(key), { name: "PBKDF2" }, false, ["deriveKey", "deriveBits"])
     .then(imported_key => {
         console.log("imported key:", imported_key);
         console.log("deriving", key_size*8, "bits", mode, "key with:", iterations, key_hash);

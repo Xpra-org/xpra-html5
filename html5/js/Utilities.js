@@ -72,18 +72,27 @@ const Utilities = {
   },
 
   xorString(string1, string2) {
-    let result = "";
     if (string1.length !== string2.length) {
       throw "strings must be equal length";
     }
-    for (const index in string1) {
+    let result = "";
+    for (let index = 0; index < string1.length; index++) {
       const character1 = string1[index];
       const character2 = string2[index];
-      result += String.fromCharCode(
-        character1.charCodeAt(0) ^ character2.charCodeAt(0)
-      );
+      result += String.fromCharCode(character1.charCodeAt(0) ^ character2.charCodeAt(0));
     }
     return result;
+  },
+
+  u8(value) {
+    const type = typeof value;
+    if (type === 'object' && value.constructor === Uint8Array) {
+      return value;
+    }
+    if (type == "string") {
+      return Uint8Array.from(value.split("").map(x => x.charCodeAt()));
+    }
+    return new Uint8Array(value);
   },
 
   trimString(string_, trimLength) {
@@ -112,8 +121,20 @@ const Utilities = {
     return str;
   },
 
+  arrayhex(arr) {
+    return Array.from(arr).map((b) => b.toString(16).padStart(2, "0")).join("");
+  },
+
   arrayToHex(buffer) {
     return Array.prototype.map.call(buffer, x => ('00' + x.toString(16)).slice(-2)).join('');
+  },
+
+  hexarray(hex) {
+    var bytes = new Uint8Array(Math.ceil(hex.length / 2));
+    for (var i = 0; i < bytes.length; i++) {
+      bytes[i] = parseInt(hex.substr(i * 2, 2), 16);
+    }
+    return bytes;
   },
 
   getPlatformProcessor() {
@@ -465,7 +486,7 @@ const Utilities = {
     if (type === 'object' && v.constructor===Uint8Array) {
       return v;
     }
-    return StringToUint8(v.toString());
+    return Utilities.StringToUint8(v.toString());
   },
 
   ArrayBufferToString(uintArray) {

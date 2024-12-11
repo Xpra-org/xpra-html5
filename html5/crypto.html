@@ -9,6 +9,7 @@
     <title>Xpra HTML5 AES Test Page</title>
     <link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
     <link rel="icon" type="image/png" href="favicon.png" />
+    <script type="text/javascript" src="js/Utilities.js"></script>
 
   </head>
 
@@ -24,38 +25,6 @@
         const info = document.getElementById("info");
         const lines = [];
 
-        function u8(value) {
-            const type = typeof value;
-            if (type === 'object' && value.constructor === Uint8Array) {
-                return value;
-            }
-            if (type == "string") {
-                return Uint8Array.from(value.split("").map(x => x.charCodeAt()));
-            }
-            return new Uint8Array(value);
-        }
-
-        function str(u8array) {
-            var s = "";
-            for (var i = 0; i < u8array.length; i++) {
-                s += String.fromCharCode(u8array[i]);
-            }
-            return s;
-        }
-
-        function arrayhex(arr) {
-            const u8array = new Uint8Array(arr);
-            return Array.from(u8array).map((b) => b.toString(16).padStart(2, "0")).join("");
-        }
-
-        function hexarray(hex) {
-            var bytes = new Uint8Array(Math.ceil(hex.length / 2));
-            for (var i = 0; i < bytes.length; i++) {
-                bytes[i] = parseInt(hex.substr(i * 2, 2), 16);
-            }
-            return bytes;
-        }
-
         function show(newtext) {
             console.log(newtext);
             lines.push(newtext);
@@ -63,7 +32,7 @@
         }
 
         const key = "this is our secret";
-        const salt = u8("0000000000000000");
+        const salt = Utilities.u8("0000000000000000");
         const key_size = 32;
         const iterations = 10000;
         const mode = "CBC";
@@ -73,12 +42,12 @@
 
         const params = {
             name: "AES-"+mode,   //ie: "AES-CBC"
-            iv: u8(iv),
+            iv: Utilities.u8(iv),
         }
 
         function cmp(v1, v2) {
-            const a1 = u8(v1);
-            const a2 = u8(v2);
+            const a1 = Utilities.u8(v1);
+            const a2 = Utilities.u8(v2);
             if (a1.length != a2.length) {
                 return false;
             }
@@ -93,16 +62,16 @@
                 show("             (all "+expected.length+" bytes match the expected value)");
                 return;
             }
-            const eu8 = u8(expected);
-            const au8 = u8(actual);
+            const eu8 = Utilities.u8(expected);
+            const au8 = Utilities.u8(actual);
             show(" mismatch:");
-            show("  expected "+eu8.length+" bytes: " + arrayhex(eu8));
-            show("  but got  "+au8.length+" bytes: " + arrayhex(au8));
+            show("  expected "+eu8.length+" bytes: " + Utilities.arrayhex(eu8));
+            show("  but got  "+au8.length+" bytes: " + Utilities.arrayhex(au8));
         }
 
         function show_value(what, value) {
             const u8array = new Uint8Array(value);
-            show(""+what+": "+JSON.stringify(str(u8array))+" ("+u8array.length+" bytes)");
+            show(""+what+": "+JSON.stringify(Utilities.ArrayBufferToString(u8array))+" ("+u8array.length+" bytes)");
         }
 
         function decrypt(crypto_key, encrypted, expected) {
@@ -111,13 +80,13 @@
                 show_value("decrypted ", decrypted);
                 verify(expected, decrypted);
             })
-            .catch(err => show("failed to decrypt "+encrypted.byteLength+" bytes message: "+arrayhex(encrypted)));
+            .catch(err => show("failed to decrypt "+encrypted.byteLength+" bytes message: "+Utilities.arrayhex(encrypted)));
         }
 
         function encrypt(crypto_key, message, expected) {
             show_value("encrypting", message);
 
-            crypto.subtle.encrypt(params, crypto_key, u8(message))
+            crypto.subtle.encrypt(params, crypto_key, Utilities.u8(message))
             .then(encrypted => {
                 show_value("encrypted ", encrypted);
                 verify(expected, encrypted);
@@ -127,7 +96,7 @@
         }
 
         show("importing key '"+key+"'");
-        crypto.subtle.importKey("raw", u8(key), { name: "PBKDF2" }, false, ["deriveKey", "deriveBits"])
+        crypto.subtle.importKey("raw", Utilities.u8(key), { name: "PBKDF2" }, false, ["deriveKey", "deriveBits"])
         .then(imported_key => {
             show("imported key: "+imported_key);
             show("deriving " + mode + " key");
@@ -153,15 +122,15 @@
                 show("-------------------------------------");
 
                 let message = "some message1234";
-                encrypt(crypto_key, u8(message));
+                encrypt(crypto_key, Utilities.u8(message));
 
                 // try again with hard-coded encrypted message:
-                let encrypted = hexarray("6339a0861384e208ed20313a649122980c79458182b8882dbf1cca137a0f88bd");
+                let encrypted = Utilities.hexarray("6339a0861384e208ed20313a649122980c79458182b8882dbf1cca137a0f88bd");
                 decrypt(crypto_key, encrypted, message);
 
                 function hexdata_test(data, enc_value) {
-                    let packet_data = hexarray(data);
-                    let enc_data = hexarray(enc_value);
+                    let packet_data = Utilities.hexarray(data);
+                    let enc_data = Utilities.hexarray(enc_value);
                     encrypt(crypto_key, packet_data, enc_data);
                 }
 
