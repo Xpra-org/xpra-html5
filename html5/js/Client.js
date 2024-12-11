@@ -2881,48 +2881,21 @@ class XpraClient {
       l = 32;
     }
     const challenge_digest = digest.startsWith("keycloak") ? "xor" : digest;
-    this.clog("challenge using digest", challenge_digest);
     client_salt = Utilities.getSecureRandomString(l);
-    this.clog("challenge using salt digest", salt_digest);
-    this._gendigest(salt_digest, client_salt, server_salt)
+    this.clog("combining client salt:", Utilities.convertToHex(client_salt));
+    this.clog("with server salt:", Utilities.convertToHex(server_salt));
+    this.clog("using", salt_digest);
+    Utilities.gendigest(salt_digest, client_salt, server_salt)
     .then(salt => {
-      this._gendigest(challenge_digest, password, salt)
+      this.clog(salt_digest, ":", Utilities.convertToHex(salt));
+      const hex_salt = Utilities.convertToHex(salt);
+      Utilities.gendigest(challenge_digest, password, hex_salt)
       .then(challenge_response => {
-        this.do_send_hello(arrayhex(challenge_response), client_salt)
+        this.do_send_hello(challenge_response, client_salt)
       })
       .catch(err => this.disconnect("failed to generate challenge response: "+err));
     })
     .catch(err => this.disconnect("failed to generate salt: "+err));
-  }
-
-  _gendigest(digest, password, salt) {
-    if (digest == "xor") {
-      const trimmed_salt = salt.slice(0, password.length);
-      return new Promise(function(resolve, reject) {
-        resolve(Utilities.xorString(trimmed_salt, password));
-      });
-    }
-    if (!digest.startsWith("hmac")) {
-      return new Promise(function(resolve, reject) {
-        reject(new Error("unsupported digest "+digest));
-      });
-    }
-    let hash = "SHA-1";
-    if (digest.indexOf("+") > 0) {
-      // "hmac+sha512" -> "sha512"
-      hash = digest.split("+")[1];
-    }
-    hash = hash.toUpperCase();
-    if (hash.startsWith("SHA") && !hash.startsWith("SHA-")) {
-      hash = "SHA-" + hash.substring(3);
-    }
-    this.clog("hmac using hash", hash);
-    const u8pass = u8(password);
-    const u8salt = u8(salt);
-    const u8src = new Uint8Array(u8pass.length + u8salt.length);
-    u8src.set(u8pass, 0);
-    u8src.set(u8salt, u8pass.length);
-    return window.crypto.subtle.digest({ name : hash}, u8src);
   }
 
   _send_ping() {

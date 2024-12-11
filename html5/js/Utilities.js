@@ -95,6 +95,58 @@ const Utilities = {
     return new Uint8Array(value);
   },
 
+  gendigest(digest, password, salt) {
+    if (digest == "xor") {
+      const trimmed_salt = salt.slice(0, password.length);
+      // Utilities.debug("xoring with trimmed salt:", Utilities.convertToHex(trimmed_salt));
+      const promise = new Promise(function(resolve, reject) {
+        const xored = Utilities.xorString(trimmed_salt, password);
+        resolve(xored);
+      });
+      return promise;
+    }
+    if (!digest.startsWith("hmac")) {
+      return new Promise(function(resolve, reject) {
+        reject(new Error("unsupported digest '"+digest+"'"));
+      });
+    }
+    let hash = "SHA-1";
+    if (digest.indexOf("+") > 0) {
+      // "hmac+sha512" -> "sha512"
+      hash = digest.split("+")[1];
+    }
+    hash = hash.toUpperCase();
+    if (hash.startsWith("SHA") && !hash.startsWith("SHA-")) {
+      hash = "SHA-" + hash.substring(3);
+    }
+
+    const promise = new Promise(function(resolve, reject) {
+      crypto.subtle.importKey("raw", Utilities.u8(password), { name: "HMAC", hash: hash }, false, ["sign", "verify"])
+      .then(
+        (key) => {
+          Utilities.cdebug("imported hmac key: ", key);
+          const u8salt = Utilities.u8(salt);
+          crypto.subtle.sign("HMAC", key, u8salt).then(
+            (result) => {
+              const u8digest = new Uint8Array(result);
+              Utilities.clog("hmac result=", u8digest);
+              resolve(Utilities.ArrayBufferToString(u8digest));
+            },
+            (error) => {
+              Utilities.clog("hmac signing failed:", error);
+              reject(error);
+            }
+          );
+        },
+        (error) => {
+          Utilities.clog("hmac key import failed:", error);
+          reject(error);
+        }
+      );
+    });
+    return promise;
+  },
+
   trimString(string_, trimLength) {
     if (!string_) {
       return "";
