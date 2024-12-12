@@ -310,6 +310,14 @@
         return v;
       };
 
+      const ALLOWED_CHARS = "0-9A-Za-z _\+-:";
+      const getstrparam = function(prop, allowed_chars) {
+        const value = getparam(prop) || "";
+        const chars = allowed_chars || ALLOWED_CHARS;
+        const re = new RegExp(`[^${chars}]`, "g");
+        return value.replace(re, "");
+      }
+
       const getboolparam = function (prop, default_value) {
         const v = getparam(prop);
         return Utilities.stristrue(v, default_value);
@@ -645,23 +653,23 @@
           }
         }
         const sound = getboolparam("sound", true) || null;
-        const audio_codec = getparam("audio_codec") || null;
+        const audio_codec = getstrparam("audio_codec") || null;
         const offscreen = getboolparam("offscreen", true);
-        const encoding = getparam("encoding") || null;
+        const encoding = getstrparam("encoding") || null;
         const bandwidth_limit = getintparam("bandwidth_limit", 0) || 0;
-        const action = getparam("action") || "connect";
-        const display = getparam("display") || "";
-        const shadow_display = getparam("shadow_display") || "";
+        const action = getstrparam("action") || "connect";
+        const display = getstrparam("display") || "";
+        const shadow_display = getstrparam("shadow_display") || "";
         const submit = getboolparam("submit", true);
-        const server = getparam("server") || window.location.hostname;
-        const port = getparam("port") || window.location.port;
+        const server = getstrparam("server") || window.location.hostname;
+        const port = getintparam("port") || window.location.port;
         const ssl = getboolparam("ssl", https);
         const webtransport = getboolparam("webtransport", false);
-        const path = getparam("path") || window.location.pathname;
-        const encryption = getparam("encryption") || null;
-        const key = getparam("key") || null;
-        const keyboard_layout = getparam("keyboard_layout") || null;
-        const start = getparam("start");
+        const path = getstrparam("path", ALLOWED_CHARS + "/") || window.location.pathname;
+        const encryption = getstrparam("encryption") || "";
+        const key = getstrparam("key") || null;
+        const keyboard_layout = getstrparam("keyboard_layout") || null;
+        const start = getstrparam("start");
         const exit_with_children = getboolparam("exit_with_children", false);
         const exit_with_client = getboolparam("exit_with_client", false);
         const sharing = getboolparam("sharing", false);
@@ -680,7 +688,7 @@
           cpoll = !ssl;
         }
         const clipboard_poll = getboolparam("clipboard_poll", cpoll);
-        const clipboard_preferred_format = getparam("clipboard_preferred_format") || "text/plain";
+        const clipboard_preferred_format = getstrparam("clipboard_preferred_format") || "text/plain";
         const printing = getboolparam("printing", true);
         const file_transfer = getboolparam("file_transfer", true);
         const steal = getboolparam("steal", true);
@@ -689,7 +697,7 @@
         const scroll_reverse_x = getboolparam("scroll_reverse_x", false);
         const scroll_reverse_y = getboolautoparam("scroll_reverse_y", null);
         const floating_menu = getboolparam("floating_menu", true);
-        const toolbar_position = getparam("toolbar_position");
+        const toolbar_position = getstrparam("toolbar_position");
         const autohide = getboolparam("autohide", false);
         const override_width = getfloatparam("override_width", window.innerWidth);
         vrefresh = getintparam("vrefresh", -1);
@@ -919,7 +927,7 @@
 
         // check for encryption parameters
         if (encryption && ["0", "false", "no", "disabled"].indexOf(encryption.toLowerCase()) < 0) {
-          client.encryption = encryption.toUpperCase();
+          client.encryption = encryption.toUpperCase().replace(/[^0-9A-Z_\+-]/gi, '');
           if (key) {
             client.encryption_key = key;
           }
@@ -1370,7 +1378,7 @@
       }
 
       function init_float_menu() {
-        const toolbar_position = getparam("toolbar_position");
+        const toolbar_position = getstrparam("toolbar_position");
         const floating_menu = getboolparam("floating_menu", true);
         const autohide = getboolparam("autohide", false);
         const float_menu_element = $("#float_menu");
@@ -1432,7 +1440,7 @@
 
       function init_page() {
         clog("initializing page");
-        const touchaction = getparam("touchaction") || "scroll";
+        const touchaction = getstrparam("touchaction") || "scroll";
         touchaction_scroll = touchaction == "scroll";
         set_touchaction();
 
@@ -1470,7 +1478,7 @@
           }
           client.capture_keyboard = true;
         };
-        const blocked_hosts = (getparam("blocked-hosts") || "").split(",");
+        const blocked_hosts = (getstrparam("blocked-hosts") || "").split(",");
         if (blocked_hosts.indexOf(client.host.toLowerCase()) >= 0) {
           const sane_host = client.host.replace(/[^A-Za-z0-9\.\:]/g, "");
           client.callback_close("connection to host '" + sane_host + "' blocked");

@@ -871,6 +871,15 @@
           }
           return v;
         };
+
+        const ALLOWED_CHARS = "0-9A-Za-z _\+-:";
+        const getstrparam = function(prop, allowed_chars) {
+          const value = getparam(prop) || "";
+          const chars = allowed_chars || ALLOWED_CHARS;
+          const re = new RegExp(`[^${chars}]`, "g");
+          return value.replace(re, "");
+        }
+
         const getboolparam = function (prop, default_value) {
           let v = Utilities.getparam(prop);
           if (v === undefined && prop in default_settings) {
@@ -885,8 +894,20 @@
             ) !== -1
           );
         };
+        const getintparam = function (prop, default_value) {
+          let v = getparam(prop);
+          try {
+            v = parseInt(v);
+          } catch (e) {
+            return default_value;
+          }
+          if (v === null || isNaN(v)) {
+            return default_value;
+          }
+          return v;
+        };
 
-        const disconnect_reason = getparam("disconnect");
+        const disconnect_reason = getstrparam("disconnect");
         if (disconnect_reason) {
           document.getElementById("alert-disconnect").style.display = "block";
           document.getElementById("disconnect-reason").innerText = disconnect_reason;
@@ -903,7 +924,7 @@
         if (pathname && pathname == "/") {
           pathname = "";
         }
-        var path = getparam("path");
+        var path = getstrparam("path", ALLOWED_CHARS+"/");
         if (path && path.endsWith("/index.html")) {
           path = path.substr(0, path.lastIndexOf("/"));
         }
@@ -912,12 +933,12 @@
         if (https) {
           protocol_port = 443;
         }
-        document.getElementById("server").value = getparam("server") || link.hostname;
-        document.getElementById("port").value = getparam("port") || link.port || protocol_port;
+        document.getElementById("server").value = getstrparam("server") || link.hostname;
+        document.getElementById("port").value = getintparam("port", 0) || link.port || protocol_port;
         document.getElementById("path").value = path || pathname;
-        document.getElementById("username").value = getparam("username") || "";
+        document.getElementById("username").value = getstrparam("username", ALLOWED_CHARS+"@") || "";
 
-        const override_width = getparam("override_width");
+        const override_width = getintparam("override_width", 0);
         if (override_width) {
           document.getElementById("override_width").value = override_width;
         } else {
@@ -1020,7 +1041,7 @@
           }
           update_insecure();
         }
-        const encryption = (getparam("encryption") || "").toUpperCase();
+        const encryption = (getstrparam("encryption") || "").toUpperCase();
         if (encryption) {
           let enc = encryption.split("-")[0];
           if (enc == "AES") {
@@ -1112,7 +1133,7 @@
           }, false);
         }
 
-        const action = getparam("action") || "";
+        const action = getstrparam("action") || "";
         if (action == "shadow") {
           action_shadow.checked = true;
           main_action_button.text = "Shadow";
@@ -1126,7 +1147,7 @@
           action_connect.checked = true;
           main_action_button.text = "Connect";
         }
-        const start = getparam("start") || "";
+        const start = getstrparam("start") || "";
 
         function get_host_address(skip_credentials) {
           let url = "http";
@@ -1345,7 +1366,7 @@
         function safe_session(name) {
           return Utilities.removeChars('a-zA-Z0-9\\:\\-% \\(\\)"', name);
         }
-        const display = getparam("display") || "";
+        const display = getstrparam("display") || "";
         function init_shadow_display() {
           json_action(
             "Displays",
@@ -1562,14 +1583,14 @@
         });
         $('input:radio[value="' + action + '"]').click();
 
-        const clipboard_preferred_format = getparam("clipboard_preferred_format") || "text/plain";
+        const clipboard_preferred_format = getstrparam("clipboard_preferred_format") || "text/plain";
         document.getElementById("clipboard_preferred_format").value = clipboard_preferred_format;
 
-        const encoding = getparam("encoding") || "auto";
+        const encoding = getstrparam("encoding") || "auto";
         document.getElementById("encoding").value = encoding;
 
-        let bandwidth_limit = getparam("bandwidth_limit");
-        if (bandwidth_limit == null) {
+        let bandwidth_limit = getintparam("bandwidth_limit", 0);
+        if (bandwidth_limit > 0) {
           const ci = Utilities.getConnectionInfo();
           if (ci) {
             bandwidth_limit = ci["downlink"];
@@ -1577,7 +1598,7 @@
         }
         document.getElementById("bandwidth_limit").value = bandwidth_limit || 0;
 
-        let keyboard_layout = getparam("keyboard_layout");
+        let keyboard_layout = getstrparam("keyboard_layout");
         if (keyboard_layout == null) {
           keyboard_layout = Utilities.getKeyboardLayout();
         }
@@ -1603,7 +1624,7 @@
             }
           }
         });
-        const audio_codec = getparam("audio_codec") || "";
+        const audio_codec = getstrparam("audio_codec") || "";
         const audio_codec_select = document.getElementById("audio_codec");
         const ignore_audio_blacklist = getboolparam("ignore_audio_blacklist", false);
         if (ignore_audio_blacklist) {
@@ -1692,7 +1713,7 @@
         }
         floating_menu_checkbox.change(set_menu_attributes_visibility);
         set_menu_attributes_visibility();
-        let toolbar_position = getparam("toolbar_position") || "top";
+        let toolbar_position = getstrparam("toolbar_position") || "top";
         if (toolbar_position) {
           document.getElementById("toolbar_position").value = toolbar_position;
         }
