@@ -2523,6 +2523,8 @@ XpraClient.prototype._process_hello = function(packet, ctx) {
 		};
 		ctx._connection_change();
 	}
+	// don't send clipboard packets to servers that don't want them:
+	ctx.clipboard_enabled = Boolean(hello["clipboard"] || false);
 
 	// start sending our own pings
 	ctx._send_ping();
