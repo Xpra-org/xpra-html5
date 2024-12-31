@@ -2265,6 +2265,7 @@ XpraClient.prototype._process_close = function(packet, ctx) {
 	ctx.packet_disconnect_reason(packet);
 	if (ctx.reconnect && ctx.reconnect_attempt<ctx.reconnect_count) {
 		ctx.emit_connection_lost();
+		ctx.close_protocol();
 		ctx.reconnect_attempt++;
 		ctx.do_reconnect();
 	}
