@@ -315,7 +315,7 @@ div.windowinfocus div.windowhead {
 	position: fixed;
 	margin: auto;
 	width: 640px;
-	height: 280px;
+	height: fit-content;
 	top: 50%;
 	left: 50%;
 	margin-left: -320px;
@@ -338,6 +338,7 @@ div.windowinfocus div.windowhead {
 
 table#sessiondata {
 	width: 90%;
+	margin: auto;
 }
 table#sessiondata th {
 	text-align: left;
