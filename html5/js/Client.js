@@ -1311,6 +1311,7 @@ XpraClient.prototype._make_hello_base = function() {
 	if (SHOW_START_MENU) {
 		this._update_capabilities({
 			"xdg-menu-update"			: true,
+			"xdg-menu"			: true,
 			});
 	}
 	if (this.bandwidth_limit>0) {
