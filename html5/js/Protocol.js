@@ -637,7 +637,7 @@ XpraProtocol.prototype.setup_cipher = function(caps, key, setup_fn) {
 		key_salt = String.fromCharCode.apply(null, key_salt);
 	}
 	const iterations = caps["cipher.key_stretch_iterations"];
-	if (iterations<0) {
+	if (iterations<100 || iterations > 1000000) {
 		throw "invalid number of iterations: "+iterations;
 	}
 	const DEFAULT_KEYSIZE = 32;
