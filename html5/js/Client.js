@@ -2627,6 +2627,10 @@ XpraClient.prototype.process_xdg_menu = function() {
 		li.appendChild(ul);
 		startmenu.appendChild(li);
 	}
+
+	if (this.xdg_menu.length === 0) {
+		startmenu.children().css("box-shadow", "none");
+	}
 };
 
 
