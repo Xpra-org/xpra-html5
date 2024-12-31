@@ -436,6 +436,9 @@ XpraWindow.prototype.updateCSSGeometry = function() {
 	// set size of canvas
 	this.updateCanvasGeometry();
 	if (this.client.server_is_desktop || this.client.server_is_shadow) {
+		if (this.client.server_resize_exact) {
+			jQuery(this.div).css("top",  0);
+		}
 		jQuery(this.div).position({of : jQuery("#screen")});
 		return;
 	}
