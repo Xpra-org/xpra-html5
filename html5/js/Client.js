@@ -398,6 +398,7 @@ XpraClient.prototype.connect = function() {
 	if (this.ssl) {
 		details += " with ssl";
 	}
+	this.schedule_hello_timer();
 	this.on_connection_progress("Connecting to server", details, 40);
 	// open the web socket, started it in a worker if available
 	// check we have enough information for encryption
@@ -1244,6 +1245,7 @@ XpraClient.prototype.do_send_hello = function(challenge_response, client_salt) {
 	}
 	// send the packet
 	this.send(["hello", this.capabilities]);
+	this.schedule_hello_timer();
 };
 
 XpraClient.prototype._make_hello_base = function() {
@@ -2283,6 +2285,7 @@ XpraClient.prototype.close = function() {
 	if (this.reconnect_in_progress) {
 		return;
 	}
+        this.cancel_hello_timer();
 	this.emit_connection_lost();
 	this.remove_windows();
 	this.close_audio();
@@ -2655,6 +2658,7 @@ XpraClient.prototype.on_connect = function() {
 };
 
 XpraClient.prototype._process_challenge = function(packet, ctx) {
+	ctx.cancel_hello_timer();
 	if(ctx.encryption) {
 		if(packet.length >=3) {
 			ctx.cipher_out_caps = packet[2];
@@ -2708,7 +2712,7 @@ XpraClient.prototype.is_digest_safe = function(digest) {
 }
 
 XpraClient.prototype.do_process_challenge = function(digest, server_salt, salt_digest, password) {
-	this.schedule_hello_timer();
+	this.cancel_hello_timer();
 	let client_salt = null;
 	let l = server_salt.length;
 
