@@ -21,6 +21,7 @@ const CLIPBOARD_EVENT_DELAY = 100;
 const DECODE_WORKER = !!window.createImageBitmap;
 const rencode_ok = rencode && rencode_selftest();
 const SHOW_START_MENU = true;
+const MODAL_FOCUS = true;
 
 
 function truncate(input) {
@@ -1965,12 +1966,27 @@ XpraClient.prototype._window_set_focus = function(win) {
 		//tell server to map it:
 		win.toggle_minimized();
 	}
+
+	// keep modal windows on top:
+	let modal = false;
+	if (MODAL_FOCUS) {
+		for (const index in this.id_to_window) {
+			const win = this.id_to_window[index];
+			modal = modal || win.metadata.modal;
+		}
+	}
+	if (modal && !win.metadata.modal) {
+		// don't take focus from a modal window
+		return;
+	}
+
+
 	const wid = win.wid;
 	if (client.focus == wid) {
 		return;
 	}
 
-	// Keep DESKTOP-type windows per default setttings lower than all other windows.
+	// Keep DESKTOP-type windows per default settings lower than all other windows.
 	// Only allow focus if all other windows are minimized.
 	if (default_settings !== undefined && default_settings.auto_fullscreen_desktop_class !== undefined && default_settings.auto_fullscreen_desktop_class.length > 0) {
 		var auto_fullscreen_desktop_class = default_settings.auto_fullscreen_desktop_class;
@@ -3197,9 +3213,22 @@ XpraClient.prototype._process_lost_window = function(packet, ctx) {
 XpraClient.prototype.auto_focus = function() {
 	let highest_window = null;
 	let highest_stacking = -1;
+	let modal = false;
+	if (MODAL_FOCUS) {
+		for (const index in this.id_to_window) {
+			const win = this.id_to_window[index];
+			modal = modal || win.metadata.modal;
+		}
+	}
 	for (const i in this.id_to_window) {
 		let iwin = this.id_to_window[i];
-		if (!iwin.minimized && iwin.stacking_layer>highest_stacking && !iwin.tray) {
+		if (iwin.minimized || iwin.tray) {
+			continue;
+		}
+		if (modal && !iwin.metadata.modal) {
+			continue;
+		}
+		if (iwin.stacking_layer > highest_stacking) {
 			highest_window = iwin;
 			highest_stacking = iwin.stacking_layer;
 		}
