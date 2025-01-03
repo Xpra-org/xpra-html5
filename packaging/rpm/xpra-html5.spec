@@ -3,7 +3,7 @@
 # Xpra is released under the terms of the GNU GPL v2, or, at your option, any
 # later version. See the file COPYING for details.
 
-%define version 5.5
+%define version 5.6
 %define release 0%{?dist}
 %define minifier uglifyjs
 %define python python3
@@ -78,27 +78,29 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
-* Wed Jan 01 2025 Antoine Martin <antoine@xpra.org> 5.5-1-1
-- fail fast if digest is unsafe
-- refuse to use xor digest for passwords over insecure connections
+* Wed Jan 01 2025 Antoine Martin <antoine@xpra.org> 5.6-1-1
 - safer AES key stretching iterations range
-- add RHEL10 builds
 - support repository build target file
-- prevent simple XSS from server menu data
-- preserve disconnection message
 - re-connection failures
 - check for timeout when re-connecting
 - keep modal windows on top
 - don't send clipboard packets to servers that don't want them
-- hide file transfers if not supported by the server
 - missing start menu with newer server versions
 - hide start menu if empty
 - session info box too small
 - desktop mode small offset
+- chrome obfuscates the monitor names
+
+* Mon Jul 15 2024 Antoine Martin <antoine@xpra.org> 5.5-1-1
+- fail fast if digest is unsafe
+- refuse to use xor digest for passwords over insecure connections
+- add RHEL10 builds
+- prevent simple XSS from server menu data
+- preserve disconnection message
+- hide file transfers if not supported by the server
 - add 'Download' file menu entry
 - password attribute is a list
 - don't try to convert strings to strings
-- chrome obfuscates the monitor names
 - ignore whitespace when updating vcs info
 - newer python compatibility: prefer setuptools, also add setuptools to the build dependencies
 - consistency: always return a string

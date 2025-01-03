@@ -12,7 +12,7 @@ import shutil
 import os.path
 from subprocess import Popen, PIPE
 
-VERSION = "5.5"
+VERSION = "5.6"
 AUTHOR = "Antoine Martin"
 AUTHOR_EMAIL = "antoine@xpra.org"
 
