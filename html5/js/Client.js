@@ -675,6 +675,7 @@ class XpraClient {
     this.connected = false;
     if (this.protocol) {
       this.protocol.close();
+      this.protocol.terminate();
       this.protocol = null;
     }
   }
@@ -2397,7 +2398,6 @@ class XpraClient {
   do_reconnect() {
     //try again:
     this.reconnect_in_progress = true;
-    const protocol = this.protocol;
     setTimeout(() => {
       try {
         this.remove_windows();
@@ -2405,10 +2405,7 @@ class XpraClient {
         this.cancel_all_files();
         this.clear_timers();
         this.init_state();
-        if (protocol) {
-          this.protocol = null;
-          protocol.terminate();
-        }
+        this.close_protocol();
         this.emit_connection_lost();
         this.connect();
       } finally {
