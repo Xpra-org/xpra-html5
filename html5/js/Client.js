@@ -520,7 +520,7 @@ class XpraClient {
       "scroll",
       "void",
     ];
-    // detect websocket in webworker support and degrade gracefully
+    // detect webworker support and degrade gracefully
     if (!window.Worker) {
       // no webworker support
       this.supported_encodings = safe_encodings;
@@ -531,32 +531,7 @@ class XpraClient {
       return;
     }
     this.clog("we have webworker support");
-    // spawn worker that checks for a websocket
-    const worker = new Worker("js/lib/wsworker_check.js");
-    worker.addEventListener(
-      "message",
-      (e) => {
-        const data = e.data;
-        switch (data["result"]) {
-          case true:
-            // yey, we can use websocket in worker!
-            this.clog("we can use websocket in webworker");
-            this._do_connect(true);
-            break;
-          case false:
-            this.clog("we can't use websocket in webworker, won't use webworkers");
-            this._do_connect(false);
-            break;
-          default:
-            this.clog("client got unknown message from worker");
-            this._do_connect(false);
-        }
-      },
-      false
-    );
-    // ask the worker to check for websocket support, when we receive a reply
-    // through the eventlistener above, _do_connect() will finish the job
-    worker.postMessage({ cmd: "check" });
+    this._do_connect(true);
 
     if (!DECODE_WORKER) {
       this.supported_encodings = safe_encodings;
