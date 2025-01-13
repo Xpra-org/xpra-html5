@@ -138,5 +138,33 @@ $(function () {
     client.mouse_grabbed = false;
     client.toolbar_position = "custom";
     client.reconfigure_all_trays();
+
+    if (float_menu.children(".Menu").hasClass("-vertical")) {
+      return;
+    }
+
+    // If the float menu is in the upper half of the screen, the menu_list and open_windows_list will open downwards, and vice versa.
+    const float_menu_top_css = float_menu.css("top")
+    const float_menu_top = float_menu_top_css.substring(0, float_menu_top_css.length - 2);
+
+    if (Number(float_menu_top) > client.desktop_height / 2) {
+      $("#menu_list").css("bottom", "30px");
+      $("#open_windows_list").css({
+        "bottom": "30px",
+        "border-top-left-radius": "3px",
+        "border-top-right-radius": "3px",
+        "border-bottom-left-radius": "0px",
+        "border-bottom-right-radius": "0px"
+      });
+    } else {
+      $("#menu_list").css("bottom", "unset");
+      $("#open_windows_list").css({
+        "bottom": "unset",
+        "border-top-left-radius": "0px",
+        "border-top-right-radius": "0px",
+        "border-bottom-left-radius": "3px",
+        "border-bottom-right-radius": "3px"
+      });
+    }
   });
 });
