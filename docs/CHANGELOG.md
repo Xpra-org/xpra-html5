@@ -1,12 +1,48 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
-## [17.0] 2024-09-24
-- [toggling ssl affects offscreen decoding](https://github.com/Xpra-org/xpra-html5/commit/d75129ac69870a0c068430a0c29c5e5695a6028a)
-- [bump max video size when offscreen is actually used](https://github.com/Xpra-org/xpra-html5/commit/69faf56c5fd11b15087334c1b1f54eefd486e854)
-- [honour offscreen toggle](https://github.com/Xpra-org/xpra-html5/commit/345d3d228d796afabbc19e451fce6158ab0583a70)
-- [try to fallback to client decoding when worker fails](https://github.com/Xpra-org/xpra-html5/commit/345d3d228d796afabbc19e451fce6158ab0583a7)
-- [disable decode worker zero-copy on errors](https://github.com/Xpra-org/xpra-html5/commit/194cbbf7bade77a1730a08521704d28600b0ee03)
+## [17.0] 2025-01-14
+- Build and packaging:
+  - [nodejs-less formatting script](https://github.com/Xpra-org/xpra-html5/pull/332)
+  - [remove unused modules](https://github.com/Xpra-org/xpra-html5/pull/333)
+  - [compatibility with newer build scripts require a repository target](https://github.com/Xpra-org/xpra-html5/commit/67e9bcbe5a6df1d21c2e455ae89711bbc0938b5c)
+- New Features:
+  - [gaming cursor mode](https://github.com/Xpra-org/xpra-html5/pull/335)
+  - [use builtin browser crypto functions](https://github.com/Xpra-org/xpra-html5/issues/314)
+  - [noVNC-style vertical retractable floating menu](https://github.com/Xpra-org/xpra-html5/pull/330)
+- Fixes:
+  - [missing start menu with some servers](https://github.com/Xpra-org/xpra-html5/commit/0aa77036fb9ffadff54aa98cc6d9d235d5531d08)
+  - [horizontal scrolling was inverted](https://github.com/Xpra-org/xpra-html5/pull/331)
+  - [keep modal windows on top](https://github.com/Xpra-org/xpra-html5/issues/336)
+  - [offset in desktop mode](https://github.com/Xpra-org/xpra-html5/commit/f706e8f4f135663e6a8065c3eeabca9812c92661)
+- Network:
+  - [WebSocket connections linger and cause re-connect](https://github.com/Xpra-org/xpra-html5/issues/345)
+  - [longer WebSocket connection timeout](https://github.com/Xpra-org/xpra-html5/commit/af1b036612609e2743b3c824ba3c2ea2211faf5f)
+- Decoding:
+  - [bump max video size when offscreen is actually used](https://github.com/Xpra-org/xpra-html5/commit/69faf56c5fd11b15087334c1b1f54eefd486e854)
+  - [honour offscreen toggle](https://github.com/Xpra-org/xpra-html5/commit/345d3d228d796afabbc19e451fce6158ab0583a70), [override detection](https://github.com/Xpra-org/xpra-html5/commit/e74030354f74f844c07da405bc7acdb04aff2dcb)
+  - [try to fallback to client decoding when worker fails](https://github.com/Xpra-org/xpra-html5/commit/345d3d228d796afabbc19e451fce6158ab0583a7)
+  - [disable decode worker zero-copy on errors](https://github.com/Xpra-org/xpra-html5/commit/194cbbf7bade77a1730a08521704d28600b0ee03)
+  - [errors when debug logging is enabled](https://github.com/Xpra-org/xpra-html5/commit/bbc3fc3a670055bbdc1f61ba89f1e4d262e9fdf4)
+- Connect dialog:
+  - [update 'offscreen' availability when `ssl`](https://github.com/Xpra-org/xpra-html5/commit/988b1509c14d8f24428ac13d2ad451ca211c8891) [is toggled](https://github.com/Xpra-org/xpra-html5/commit/d75129ac69870a0c068430a0c29c5e5695a6028a)
+  - [consistent and less ugly font](https://github.com/Xpra-org/xpra-html5/pull/346)
+- Minor:
+  - [fail fast if `rencodeplus` packet encoder is missing](https://github.com/Xpra-org/xpra-html5/commit/a0256fc3a43a18ea30a56cbeaac81d3dc7023c16)
+  - [don't send clipboard packets to servers that don't want them](https://github.com/Xpra-org/xpra-html5/commit/20094daaf1b98d03619b50670903daffe3919139)
+  - [restrict allowed characters](https://github.com/Xpra-org/xpra-html5/commit/a178df013ca5c5d8f60278c4c26f9b82c7f94629)
+  - [prevent the float menu from overflowing](https://github.com/Xpra-org/xpra-html5/pull/352)
+- Cosmetic:
+  - [float menu keyboard icon not changing colours](https://github.com/Xpra-org/xpra-html5/commit/95b3cdbd5515f6b3d4f7c31244c283bc53f35e3f)
+  - [hide start menu when there are no entries](https://github.com/Xpra-org/xpra-html5/pull/334)
+  - [undo formatting mess](https://github.com/Xpra-org/xpra-html5/commit/9e30e97b4efcdde481166043679d962fa76484ab)
+  - [code move](https://github.com/Xpra-org/xpra-html5/commit/b09b8bb1c7f4b689b8413cb1ba9cf382fdabf76c) [and refactoring](https://github.com/Xpra-org/xpra-html5/commit/75b55513a6f4ee32073127e1a1210dc0caef4e3b)
+  - [remove unused icons](https://github.com/Xpra-org/xpra-html5/commit/2b2cb3c0c5e2c881aada96c447917d95356a1e8f), [update ancient 'Material' icons](https://github.com/Xpra-org/xpra-html5/commit/f4fa5c9bd815acd0ec0164b40785049e76b04f9a)
+  - [remove redundant check](https://github.com/Xpra-org/xpra-html5/pull/348)
+  - [remove legacy headers](https://github.com/Xpra-org/xpra-html5/pull/351)
+  - [workaround ugly Chrome obfuscation](https://github.com/Xpra-org/xpra-html5/commit/c6a04b7cabd059785439382052b6ad1704579327)
+  - [remove legacy bootstrap](https://github.com/Xpra-org/xpra-html5/commit/26b1b8549bcb8bdf08a46a5faafbd8f2c4930567)
+  - [session info box not big enough](https://github.com/Xpra-org/xpra-html5/pull/343)
 
 ## [16.0] 2024-09-09
 - [retry WebSocket connection](https://github.com/Xpra-org/xpra-html5/commit/8614719f724b06ce99a9fb1f3093464274ad5d25)

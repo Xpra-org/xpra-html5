@@ -78,14 +78,54 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
-* Mon Sep 09 2024 Antoine Martin <antoine@xpra.org> 17-0-1
-- TODO
+* Tue Jan 14 2024 Antoine Martin <antoine@xpra.org> 17-0-1
+- Build and packaging:
+   nodejs-less formatting script
+   remove unused modules
+   compatibility with newer build scripts require a repository target
+- New Features:
+   gaming cursor mode
+   use builtin browser crypto functions
+   noVNC-style vertical retractable floating menu
+- Fixes:
+   missing start menu with some servers
+   horizontal scrolling was inverted
+   keep modal windows on top
+   offset in desktop mode
+- Network:
+   WebSocket connections linger and cause re-connect
+   longer WebSocket connection timeout
+- Decoding:
+   bump max video size when offscreen is actually used
+   honour offscreen toggle, override detection
+   try to fallback to client decoding when worker fails
+   disable decode worker zero-copy on errors
+   errors when debug logging is enabled
+- Connect dialog:
+   update 'offscreen' availability when `ssl` is toggled
+   consistent and less ugly font
+- Minor:
+   fail fast if `rencodeplus` packet encoder is missing
+   don't send clipboard packets to servers that don't want them
+   restrict allowed characters
+   prevent the float menu from overflowing
+- Cosmetic:
+   float menu keyboard icon not changing colours
+   hide start menu when there are no entries
+   undo formatting mess
+   code move and refactoring
+   remove unused icons, update ancient 'Material' icons
+   remove redundant check
+   remove legacy headers
+   workaround ugly Chrome obfuscation
+   remove legacy bootstrap
+   session info box not big enough
 
 * Mon Sep 09 2024 Antoine Martin <antoine@xpra.org> 16-0-1
 - re-connection fixes:
-    hangs
-    does not timeout
-    retry WebSocket connection
+   hangs
+   does not timeout
+   retry WebSocket connection
 - ping packets not sent
 - desktop session parsing error
 - more readable session description
@@ -217,7 +257,7 @@ rm -rf $RPM_BUILD_ROOT
 - throttle video decoder to prevent flooding
 - disable offscreen decode worker with Firefox to prevent flickering
 - workaround for setuptools breakage in version 61 and later
-- native video decoding is fast enough not to require much downscaling](https://github.com/Xpra-org/xpra-html5/commit/ed4b0d72f40864cea4fb4b91b5c400085eb44fa8)
+- native video decoding is fast enough not to require much downscaling
 - propagate error messages
 - truncate large clipboard buffers in log messages
 - `scroll` draw packets can hang the connection
