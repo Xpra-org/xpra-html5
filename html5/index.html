@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
   <head>
     <!--
             Copyright (c) 2013-2022 Antoine Martin <antoine@xpra.org>
@@ -81,29 +82,19 @@
     <div id="login-overlay">
       <div id="login-box">
         <form id="login_form">
-        <div id="login-innerbox">
-          <span id="login-header"></span>
-          <br />
-          <input type="text" name="username" id="username" value="" autocomplete="username" style="display: none;">
-          <div id="password-box">
-            <input
-              title="Password"
-              type="password"
-              id="password"
-              autocomplete="current-password"
-              placeholder="Password"
-              size="16"
-              maxlength="256"
-              tabindex="1"
-              required
-            />
+          <div id="login-innerbox">
+            <span id="login-header"></span>
+            <br />
+            <input type="text" name="username" id="username" value="" autocomplete="username" style="display: none;">
+            <div id="password-box">
+              <input title="Password" type="password" id="password" autocomplete="current-password" placeholder="Password" size="16" maxlength="256" tabindex="1" required />
+            </div>
+            <br />
+            <div id="login-buttons">
+              <a class="login-button" role="button" tabindex="2" id="login_cancel" onclick="login_cancel();">Cancel</a>
+              <a class="login-button" role="button" tabindex="3" id="login_connect" onclick="login_connect();">Connect</a>
+            </div>
           </div>
-          <br />
-          <div id="login-buttons">
-            <a class="login-button" role="button" tabindex="2" id="login_cancel" onclick="login_cancel();">Cancel</a>
-            <a class="login-button" role="button" tabindex="3" id="login_connect" onclick="login_connect();">Connect</a>
-          </div>
-        </div>
         </form>
       </div>
     </div>
@@ -258,13 +249,7 @@
       <br />
       <form>
         Summary:
-        <input
-          id="bugreport_summary"
-          type="text"
-          size="48"
-          maxlength="128"
-          value=""
-        />
+        <input id="bugreport_summary" type="text" size="48" maxlength="128" value="" />
         <br />
         Description:
         <br />
@@ -273,33 +258,21 @@
         <button id="bugreport_cancel" type="button" onclick="hide_bugreport()">
           Cancel
         </button>
-        <button
-          id="bugreport_submit"
-          type="button"
-          onclick="generate_bugreport()"
-          disabled
-        >
+        <button id="bugreport_submit" type="button" onclick="generate_bugreport()" disabled>
           Generate Report
         </button>
       </form>
     </div>
 
     <div>
-      <textarea
-        id="pasteboard"
-        readonly
-        style="display: block; position: absolute; left: -99em"
-      ></textarea>
+      <textarea id="pasteboard" readonly style="display: block; position: absolute; left: -99em"></textarea>
     </div>
 
-    <div
-      class="simple-keyboard"
-      style="display: block; position: fixed; bottom: 0; width: 100%"
-    ></div>
+    <div class="simple-keyboard" style="display: block; position: fixed; bottom: 0; width: 100%"></div>
 
     <script>
       const default_settings = {};
-      const getparam = function (prop) {
+      const getparam = function(prop) {
         let v = Utilities.getparam(prop);
         if (v == undefined && prop in default_settings) {
           v = default_settings[prop];
@@ -318,18 +291,18 @@
         return value.replace(re, "");
       }
 
-      const getboolparam = function (prop, default_value) {
+      const getboolparam = function(prop, default_value) {
         const v = getparam(prop);
         return Utilities.stristrue(v, default_value);
       };
-      const getboolautoparam = function (prop, default_value) {
+      const getboolautoparam = function(prop, default_value) {
         const v = getparam(prop);
         if (v == "auto") {
           return "auto";
         }
         return Utilities.stristrue(v, default_value);
       };
-      const getintparam = function (prop, default_value) {
+      const getintparam = function(prop, default_value) {
         let v = getparam(prop);
         try {
           v = parseInt(v);
@@ -341,7 +314,7 @@
         }
         return v;
       };
-      const getfloatparam = function (prop, default_value) {
+      const getfloatparam = function(prop, default_value) {
         let v = getparam(prop);
         try {
           v = parseFloat(v);
@@ -359,10 +332,10 @@
       const float_menu_padding = 20;
       let float_menu_width = float_menu_item_size * float_menu_item_count + float_menu_padding;
 
-      let cdebug = function () {
+      let cdebug = function() {
         Utilities.clog.apply(Utilities, arguments);
       };
-      let clog = function () {
+      let clog = function() {
         Utilities.clog.apply(Utilities, arguments);
       };
 
@@ -370,6 +343,7 @@
       let animation_times = [];
       let fps = -1;
       let vrefresh = -1;
+
       function animation_cb(now) {
         let l = animation_times.push(now);
         if (l > 100) {
@@ -410,6 +384,7 @@
         hide_sessioninfo();
         hide_bugreport();
       }
+
       function connection_established() {
         //this may be a re-connection,
         //so make sure we cleanup any left-overs
@@ -417,6 +392,7 @@
         cleanup_dialogs();
         $("button.menu-button").prop("disabled", false);
       }
+
       function connection_lost() {
         clog("connection-lost");
         cleanup_dialogs();
@@ -425,14 +401,14 @@
       document.addEventListener("connection-established", connection_established);
       document.addEventListener("connection-lost", connection_lost);
 
-      $("body").click(function () {
+      $("body").click(function() {
         $(".menu-content").slideUp();
         $("#about").hide();
         hide_sessioninfo();
       });
 
       function enable_clipboard_autofocus() {
-        $("#pasteboard").blur(function () {
+        $("#pasteboard").blur(function() {
           //force focus back to our capture widget:
           if (client.capture_keyboard) {
             $("#pasteboard").focus();
@@ -442,6 +418,7 @@
         pasteboard_element.prop("autofocus");
         pasteboard_element.focus();
       }
+
       function cancel_clipboard_autofocus() {
         $("#pasteboard").removeAttr("autofocus");
       }
@@ -462,13 +439,14 @@
         client.start_info_timer();
         event.stopPropagation();
       }
+
       function hide_sessioninfo() {
         $("#sessioninfo").hide();
         client.stop_info_timer();
       }
       document.addEventListener(
         "info-response",
-        function (e) {
+        function(e) {
           const info = e.data;
           $("#endpoint").html(client.uri);
           $("#server_display").html(client.server_display);
@@ -478,6 +456,7 @@
           } else {
             $("#server_load").html("" + client.server_load);
           }
+
           function toHHMMSS(t) {
             let s = "";
             const hh = Math.floor(t / 1000 / 60 / 60);
@@ -506,12 +485,14 @@
         $("#bugreport_submit").prop("disabled", false);
         document.removeEventListener("info-response", enable_bugreport_submit);
       }
+
       function hide_bugreport() {
         $("#bugreport").hide();
         if (client.clipboard_enabled) {
           enable_clipboard_autofocus();
         }
       }
+
       function show_bugreport(event) {
         //stop capturing input, so we can interact with the bugreport form:
         client.capture_keyboard = false;
@@ -525,15 +506,16 @@
         document.addEventListener("info-response", enable_bugreport_submit);
         client.send_info_request();
       }
+
       function generate_bugreport() {
         client.capture_keyboard = true;
         const zip = new JSZip();
         zip.file(
           "Summary.txt",
           "" +
-            $("#bugreport_summary").val() +
-            "\n\n" +
-            $("#bugreport_description").val()
+          $("#bugreport_summary").val() +
+          "\n\n" +
+          $("#bugreport_description").val()
         );
         zip.file(
           "Server-Info.txt",
@@ -555,19 +537,23 @@
             Utilities.convertDataURIToBinary(png_base64)
           );
         }
-        zip.generateAsync({ type: "blob" }).then(function (content) {
+        zip.generateAsync({
+          type: "blob"
+        }).then(function(content) {
           saveAs(content, "bugreport.zip");
         });
         hide_bugreport();
       }
       const password_input = document.getElementById("password");
       let login_callback = null;
+
       function login_cancel() {
         $("#login-overlay").fadeOut();
         password_input.removeEventListener("keydown", password_special_keys);
         password_input.value = "";
         login_callback(null);
       }
+
       function login_connect() {
         $("#login-overlay").fadeOut();
         const password = password_input.value;
@@ -575,6 +561,7 @@
         password_input.value = "";
         login_callback(password);
       }
+
       function password_special_keys(e) {
         if (e.keyCode == 13) {
           e.preventDefault();
@@ -585,6 +572,7 @@
           login_cancel();
         }
       }
+
       function password_prompt_fn(heading, callback) {
         login_callback = callback;
         $("#login-overlay").fadeIn();
@@ -599,20 +587,27 @@
         const error = params.get("error");
         if (error) {
           const error_description = params.get("error_description");
-          callback(JSON.stringify({ error, error_description }));
+          callback(JSON.stringify({
+            error,
+            error_description
+          }));
         } else if (!code) {
           window.location.href = url;
         } else {
           history.replaceState({}, "", window.location.pathname);
-          callback(JSON.stringify({ code }));
+          callback(JSON.stringify({
+            code
+          }));
         }
       }
 
       let touchaction_scroll = true;
+
       function toggle_touchaction() {
         touchaction_scroll = !touchaction_scroll;
         set_touchaction();
       }
+
       function set_touchaction() {
         let touchaction, label;
         if (touchaction_scroll) {
@@ -706,12 +701,12 @@
         }
 
         try {
-          Utilities.setSessionStorageValue("password",null);
+          Utilities.setSessionStorageValue("password", null);
         } catch (e) {
           //ignore
         }
         try {
-          Utilities.setSessionStorageValue("token",null);
+          Utilities.setSessionStorageValue("token", null);
         } catch (e) {
           //ignore
         }
@@ -820,16 +815,16 @@
 
         if (debug) {
           //example of client event hooks:
-          client.on_open = function () {
+          client.on_open = function() {
             cdebug("network", "connection open");
           };
-          client.on_connect = function () {
+          client.on_connect = function() {
             cdebug("network", "connection established");
           };
-          client.on_first_ui_event = function () {
+          client.on_first_ui_event = function() {
             cdebug("network", "first ui event");
           };
-          client.on_last_window = function () {
+          client.on_last_window = function() {
             cdebug("network", "last window disappeared");
           };
         }
@@ -858,15 +853,15 @@
           client.set_encoding(encoding);
         }
         for (const key of [
-          "scaling.control",
-          "initial_quality",
-          "initial_speed",
-          "auto_refresh_delay",
-          "speed",
-          "min-speed",
-          "quality",
-          "min-quality",
-        ]) {
+            "scaling.control",
+            "initial_quality",
+            "initial_speed",
+            "auto_refresh_delay",
+            "speed",
+            "min-speed",
+            "quality",
+            "min-quality",
+          ]) {
           const v = getintparam(key, -1);
           if (v >= 0) {
             client.set_encoding_option(key, v);
@@ -937,7 +932,7 @@
         // attach a callback for when client closes
         const debug_main = getboolparam("debug_main", false);
         if (!debug_main) {
-          client.callback_close = function (reason) {
+          client.callback_close = function(reason) {
             clog("closing: ", reason);
             if (!submit) {
               // if we didn't submit through the form, silently redirect to the connect gui
@@ -950,6 +945,7 @@
             }
             let url = "./connect.html";
             const has_session_storage = Utilities.hasSessionStorage();
+
             function add_prop(prop, value) {
               if (has_session_storage) {
                 Utilities.setSessionStorageValue(prop, value);
@@ -962,44 +958,44 @@
             }
             add_prop("disconnect", message);
             const props = {
-                username: username,
-                insecure: insecure,
-                server: server,
-                port: port,
-                ssl: ssl,
-                webtransport: webtransport,
-                path: path,
-                encryption: encryption,
-                encoding: encoding,
-                bandwidth_limit: bandwidth_limit,
-                keyboard_layout: keyboard_layout,
-                swap_keys: swap_keys,
-                scroll_reverse_x: scroll_reverse_x,
-                scroll_reverse_y: scroll_reverse_y,
-                reconnect: reconnect,
-                action: action,
-                display: display,
-                shadow_display: shadow_display,
-                start: start,
-                sound: sound,
-                audio_codec: audio_codec,
-                keyboard: keyboard,
-                clipboard: clipboard,
-                clipboard_poll: clipboard_poll,
-                clipboard_preferred_format: clipboard_preferred_format,
-                printing: printing,
-                file_transfer: file_transfer,
-                exit_with_children: exit_with_children,
-                exit_with_client: exit_with_client,
-                sharing: sharing,
-                steal: steal,
-                video: video,
-                mediasource_video: mediasource_video,
-                remote_logging: remote_logging,
-                ignore_audio_blacklist: ignore_audio_blacklist,
-                floating_menu: floating_menu,
-                toolbar_position: toolbar_position,
-                autohide: autohide,
+              username: username,
+              insecure: insecure,
+              server: server,
+              port: port,
+              ssl: ssl,
+              webtransport: webtransport,
+              path: path,
+              encryption: encryption,
+              encoding: encoding,
+              bandwidth_limit: bandwidth_limit,
+              keyboard_layout: keyboard_layout,
+              swap_keys: swap_keys,
+              scroll_reverse_x: scroll_reverse_x,
+              scroll_reverse_y: scroll_reverse_y,
+              reconnect: reconnect,
+              action: action,
+              display: display,
+              shadow_display: shadow_display,
+              start: start,
+              sound: sound,
+              audio_codec: audio_codec,
+              keyboard: keyboard,
+              clipboard: clipboard,
+              clipboard_poll: clipboard_poll,
+              clipboard_preferred_format: clipboard_preferred_format,
+              printing: printing,
+              file_transfer: file_transfer,
+              exit_with_children: exit_with_children,
+              exit_with_client: exit_with_client,
+              sharing: sharing,
+              steal: steal,
+              video: video,
+              mediasource_video: mediasource_video,
+              remote_logging: remote_logging,
+              ignore_audio_blacklist: ignore_audio_blacklist,
+              floating_menu: floating_menu,
+              toolbar_position: toolbar_position,
+              autohide: autohide,
             };
             for (let i = 0; i < client.debug_categories.length; i++) {
               const category = client.debug_categories[i];
@@ -1007,7 +1003,7 @@
             }
             if (insecure || Utilities.hasSessionStorage()) {
               for (let i = 0; i < passwords.length; i++) {
-                add_prop("password"+i, passwords[i]);
+                add_prop("password" + i, passwords[i]);
               }
             } else {
               props["password"] = "";
@@ -1032,7 +1028,7 @@
       function init_tablet_input(client) {
         //keyboard input for tablets:
         const pasteboard = $("#pasteboard");
-        pasteboard.on("input", function (e) {
+        pasteboard.on("input", function(e) {
           const txt = pasteboard.val();
           pasteboard.val("");
           cdebug("keyboard", "oninput: '" + txt + "'");
@@ -1091,34 +1087,41 @@
         });
         window.kb = kb;
         window.keyboardShifted = false;
+
         function onChange(input) {
           clog("Input changed", input);
         }
+
         function onKeyPress(button) {
           forward_key(true, button);
           if (button == "{shift}" || button == "{lock}") {
             if (window.keyboardShifted) {
-              window.kb.setOptions({ layoutName: "default" });
+              window.kb.setOptions({
+                layoutName: "default"
+              });
             } else {
-              window.kb.setOptions({ layoutName: "shift" });
+              window.kb.setOptions({
+                layoutName: "shift"
+              });
             }
             window.keyboardShifted = !window.keyboardShifted;
           }
         }
+
         function onKeyReleased(button) {
           forward_key(false, button);
         }
+
         function forward_key(pressed, button) {
-          let key =
-            {
-              "{bksp}": "Backspace",
-              "{enter}": "Return",
-              "{space}": "Space",
-              "{tab}": "Tab",
-              "{lock}": "CapsLock",
-              "{shift}": "Shift",
-              ".com": "|",
-            }[button] || button;
+          let key = {
+            "{bksp}": "Backspace",
+            "{enter}": "Return",
+            "{space}": "Space",
+            "{tab}": "Tab",
+            "{lock}": "CapsLock",
+            "{shift}": "Shift",
+            ".com": "|",
+          } [button] || button;
           let e = {
             which: 0,
             keyCode: 0,
@@ -1136,6 +1139,7 @@
           $("#keyboard_button").addClass("icon-toggled");
         }
       }
+
       function toggle_keyboard() {
         $(".simple-keyboard").toggle();
         if ($(".simple-keyboard").is(":visible")) {
@@ -1156,6 +1160,7 @@
           evt.preventDefault();
           client.send_all_files(evt.dataTransfer.files);
         }
+
         function handleDragOver(evt) {
           evt.stopPropagation();
           evt.preventDefault();
@@ -1165,13 +1170,13 @@
         screen.addEventListener("dragover", handleDragOver, false);
         screen.addEventListener("drop", handleFileSelect, false);
 
-        $("#upload").on("change", function (evt) {
+        $("#upload").on("change", function(evt) {
           evt.stopPropagation();
           evt.preventDefault();
           client.send_all_files(this.files);
           return false;
         });
-        $("#upload_form").on("submit", function (evt) {
+        $("#upload_form").on("submit", function(evt) {
           evt.preventDefault();
         });
       }
@@ -1181,6 +1186,7 @@
         if (!enabled) {
           return;
         }
+
         function update_clock() {
           const now = new Date().getTime();
           const server_time =
@@ -1224,7 +1230,7 @@
       }
 
       function init_audio(client) {
-        client.on_audio_state_change = function (newstate, details) {
+        client.on_audio_state_change = function(newstate, details) {
           if (client.audio_state == newstate) {
             return;
           }
@@ -1250,7 +1256,7 @@
           sound_button_element.attr("data-icon", data_icon);
           sound_button_element.attr("title", tooltip);
         };
-        $("#sound_button").click(function () {
+        $("#sound_button").click(function() {
           clog("speaker icon clicked, audio_enabled=", client.audio_enabled);
           if (!client.audio_enabled) {
             client.audio_state = "disabled";
@@ -1352,7 +1358,10 @@
 
         $("#float_menu_arrow").attr("data-icon", "chevron_left");
 
-        $("#float_menu_button").css({ left: "30px", top: "-125px" });
+        $("#float_menu_button").css({
+          left: "30px",
+          top: "-125px"
+        });
 
         float_menu_expanded = true;
       }
@@ -1363,7 +1372,10 @@
 
         $("#float_menu_arrow").attr("data-icon", "chevron_right");
 
-        $("#float_menu_button").css({ left: "0px", top: "70px" });
+        $("#float_menu_button").css({
+          left: "0px",
+          top: "70px"
+        });
 
         float_menu_expanded = false;
       }
@@ -1454,8 +1466,9 @@
           () => {
             clog("onunload()");
             client.close();
-          },
-          { capture: true }
+          }, {
+            capture: true
+          }
         );
 
         addEventListener(
@@ -1468,10 +1481,11 @@
               event.returnValue = "There are file transfers in progress.\nAre you sure you want to leave?";
             }
             return event.returnValue;
-          },
-          { capture: true }
+          }, {
+            capture: true
+          }
         );
-        client.on_connect = function () {
+        client.on_connect = function() {
           init_float_menu();
           if (client.clipboard_enabled) {
             enable_clipboard_autofocus();
@@ -1488,12 +1502,12 @@
 
         //from now on, send log and debug to client function
         //which may forward it to the server once connected:
-        clog = function () {
+        clog = function() {
           if (client) {
             client.log.apply(client, arguments);
           }
         };
-        cdebug = function () {
+        cdebug = function() {
           if (client) {
             client.debug.apply(client, arguments);
           }
@@ -1505,7 +1519,7 @@
         init_keyboard(client);
         init_clock(client, getboolparam("clock", true));
         init_audio(client);
-        document.addEventListener("visibilitychange", function (e) {
+        document.addEventListener("visibilitychange", function(e) {
           const window_ids = Object.keys(client.id_to_window).map(Number);
           clog("visibilitychange hidden=", document.hidden, "connected=", client.connected);
           if (client.connected) {
@@ -1518,19 +1532,19 @@
         });
         client.password_prompt_fn = password_prompt_fn;
         client.keycloak_prompt_fn = keycloak_prompt_fn;
-        $("#fullscreen").on("click", function (e) {
+        $("#fullscreen").on("click", function(e) {
           toggle_fullscreen();
         });
 
-        $("#fullscreen_button").on("click", function (e) {
+        $("#fullscreen_button").on("click", function(e) {
           toggle_fullscreen();
         });
 
-        $("#keyboard_button").on("click", function (e) {
+        $("#keyboard_button").on("click", function(e) {
           toggle_keyboard();
         });
 
-        $("#clipboard_button").on("click", function (e) {
+        $("#clipboard_button").on("click", function(e) {
           client.read_clipboard(e);
         });
 
@@ -1586,7 +1600,7 @@
           });
 
         const screen_change_events = "webkitfullscreenchange mozfullscreenchange fullscreenchange MSFullscreenChange";
-        $(document).on(screen_change_events, function () {
+        $(document).on(screen_change_events, function() {
           const f_el =
             document.fullscreenElement ||
             document.mozFullScreen ||
@@ -1599,7 +1613,7 @@
           }
         });
         // disable right click menu:
-        window.oncontextmenu = function (e) {
+        window.oncontextmenu = function(e) {
           const direction = client.clipboard_direction;
           if (client.clipboard_enabled && (direction === "to-client" || direction === "both")) {
             client._poll_clipboard(e);
@@ -1636,7 +1650,7 @@
       function load_default_settings() {
         const xhr = new XMLHttpRequest();
         xhr.open("GET", "./default-settings.txt");
-        xhr.onload = function () {
+        xhr.onload = function() {
           const tmp_default_settings = Utilities.parseINIString(
             xhr.responseText
           );
@@ -1648,21 +1662,23 @@
           }
           init_page();
         };
-        xhr.onerror = function () {
+        xhr.onerror = function() {
           clog("network", "default settings request failed with code", xhr.status);
           init_page();
         };
-        xhr.onabort = function () {
+        xhr.onabort = function() {
           clog("network", "default settings request aborted");
           init_page();
         };
         xhr.send();
       }
 
-      $(document).ready(function () {
+      $(document).ready(function() {
         clog("document is ready, browser is", navigator.platform, "64-bit:", Utilities.is_64bit());
         load_default_settings();
       });
+
     </script>
   </body>
+
 </html>

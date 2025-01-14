@@ -1723,7 +1723,7 @@ const CHARCODE_TO_NAME = {
   222: "apostrophe",
 };
 for (let index = 0; index < 26; index++) {
-  CHARCODE_TO_NAME[65 + index] = "abcdefghijklmnopqrstuvwxyz"[index];
+  CHARCODE_TO_NAME[65 + index] = "abcdefghijklmnopqrstuvwxyz" [index];
 }
 for (let index = 0; index < 10; index++) {
   CHARCODE_TO_NAME[48 + index] = `${index}`;

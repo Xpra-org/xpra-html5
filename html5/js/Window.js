@@ -122,11 +122,11 @@ class XpraWindow {
     } else if (this.override_redirect) {
       jQuery(this.div).addClass("override-redirect");
     } else if (!fullscreen && (
-      this.windowtype == "" ||
-      this.windowtype == "NORMAL" ||
-      this.windowtype == "DIALOG" ||
-      this.windowtype == "UTILITY"
-    )) {
+        this.windowtype == "" ||
+        this.windowtype == "NORMAL" ||
+        this.windowtype == "DIALOG" ||
+        this.windowtype == "UTILITY"
+      )) {
       this.resizable = true;
     }
 
@@ -193,9 +193,13 @@ class XpraWindow {
     jQuery(this.div).prepend(head);
     // make draggable
     if (this.scale !== 1) {
-      jQuery(this.div).draggable({ transform: true });
+      jQuery(this.div).draggable({
+        transform: true
+      });
     }
-    jQuery(this.div).draggable({ cancel: "canvas" });
+    jQuery(this.div).draggable({
+      cancel: "canvas"
+    });
     jQuery(`#head${wid}`).click((event_) => {
       if (!this.minimized) {
         this.focus();
@@ -214,7 +218,9 @@ class XpraWindow {
     // This disables helper highlight, so we
     // move the resizable borders in transform plugin
     if (this.scale !== 1) {
-      jQuery(this.div).resizable({ transform: true });
+      jQuery(this.div).resizable({
+        transform: true
+      });
     }
     // attach resize handles
     jQuery(this.div).resizable({
@@ -299,8 +305,7 @@ class XpraWindow {
 
   transfer_canvas(canvas) {
     const offscreen_handle = canvas.transferControlToOffscreen();
-    this.client.decode_worker.postMessage(
-      {
+    this.client.decode_worker.postMessage({
         cmd: "canvas",
         wid: this.wid,
         canvas: offscreen_handle,
@@ -377,6 +382,7 @@ class XpraWindow {
     });
     //wheel events on a window:
     const me = this;
+
     function on_mousescroll(e) {
       me.on_mousescroll(e);
       e.stopPropagation();
@@ -461,10 +467,12 @@ class XpraWindow {
     this.updateCanvasGeometry();
     if (this.client.server_is_desktop || this.client.server_is_shadow) {
       if (this.client.server_resize_exact) {
-        jQuery(this.div).css("top",  0);
+        jQuery(this.div).css("top", 0);
       }
 
-      jQuery(this.div).position({ of: jQuery("#screen") });
+      jQuery(this.div).position({
+        of: jQuery("#screen")
+      });
       return;
     }
     // work out outer size
@@ -1159,6 +1167,7 @@ class XpraWindow {
     const window_element = jQuery(`#${this.wid}`);
     const cursor_url = this.construct_base64_image_url(encoding, img_data);
     const me = this;
+
     function set_cursor_url(url, x, y, w, h) {
       const url_string = `url('${url}')`;
       window_element.css("cursor", `${url_string}, default`);
@@ -1240,7 +1249,7 @@ class XpraWindow {
    */
   may_paint_now() {
     this.debug("draw", "may_paint_now() paint pending=", this.paint_pending,
-               ", paint queue length=", this.paint_queue.length);
+      ", paint queue length=", this.paint_queue.length);
     let now = performance.now();
     while (
       (this.paint_pending == 0 || now - this.paint_pending >= 2000) &&

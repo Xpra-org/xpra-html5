@@ -66,7 +66,7 @@ const XpraOffscreenWorker = {
     }
     console.warn(
       "Offscreen decoding is not available. Please consider using " +
-        "Google Chrome, Firefox >= 108 for better performance."
+      "Google Chrome, Firefox >= 108 for better performance."
     );
     return false;
   },

@@ -70,7 +70,9 @@ class XpraVideoDecoder {
       codec: this.codec,
       hardwareAcceleration: "no-preference",
       optimizeForLatency: true,
-      colorSpace: new VideoColorSpace({fullRange: true})
+      colorSpace: new VideoColorSpace({
+        fullRange: true
+      })
     });
     this.last_timestamp = 0;
     this.initialized = true;
@@ -177,7 +179,9 @@ class XpraVideoDecoder {
       }
 
       this.had_first_key = true;
-      this.decoder_queue.push({ p: packet });
+      this.decoder_queue.push({
+        p: packet
+      });
       const init = {
         type: options["type"] == "IDR" ? "key" : "delta",
         data,

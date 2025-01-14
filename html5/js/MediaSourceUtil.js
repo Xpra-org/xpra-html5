@@ -218,16 +218,16 @@ const MediaSourceUtil = {
       }
       console.debug(message);
     }
-    media_source.addEventListener("sourceopen", function (e) {
+    media_source.addEventListener("sourceopen", function(e) {
       debug_source_event("open");
     });
-    media_source.addEventListener("sourceended", function (e) {
+    media_source.addEventListener("sourceended", function(e) {
       debug_source_event("ended");
     });
-    media_source.addEventListener("sourceclose", function (e) {
+    media_source.addEventListener("sourceclose", function(e) {
       debug_source_event("close");
     });
-    media_source.addEventListener("error", function (e) {
+    media_source.addEventListener("error", function(e) {
       debug_source_event("error");
     });
   },
@@ -236,31 +236,31 @@ const MediaSourceUtil = {
     function debug_me_event(event) {
       console.debug(`${element_type} ${event}`);
     }
-    media_element.addEventListener("waiting", function () {
+    media_element.addEventListener("waiting", function() {
       debug_me_event("waiting");
     });
-    media_element.addEventListener("stalled", function () {
+    media_element.addEventListener("stalled", function() {
       debug_me_event("stalled");
     });
-    media_element.addEventListener("playing", function () {
+    media_element.addEventListener("playing", function() {
       debug_me_event("playing");
     });
-    media_element.addEventListener("loadstart", function () {
+    media_element.addEventListener("loadstart", function() {
       debug_me_event("loadstart");
     });
-    media_element.addEventListener("loadedmetadata", function () {
+    media_element.addEventListener("loadedmetadata", function() {
       debug_me_event("loadedmetadata");
     });
-    media_element.addEventListener("loadeddata", function () {
+    media_element.addEventListener("loadeddata", function() {
       debug_me_event("loadeddata");
     });
-    media_element.addEventListener("error", function () {
+    media_element.addEventListener("error", function() {
       debug_me_event("error");
     });
-    media_element.addEventListener("canplay", function () {
+    media_element.addEventListener("canplay", function() {
       debug_me_event("canplay");
     });
-    media_element.addEventListener("play", function () {
+    media_element.addEventListener("play", function() {
       debug_me_event("play");
     });
   },
@@ -270,16 +270,16 @@ const MediaSourceUtil = {
       const message = `${element_type} buffer ${event}`;
       console.debug(message);
     }
-    asb.addEventListener("updatestart", function (e) {
+    asb.addEventListener("updatestart", function(e) {
       debug_buffer_event("updatestart");
     });
-    asb.addEventListener("updateend", function (e) {
+    asb.addEventListener("updateend", function(e) {
       debug_buffer_event("updateend");
     });
-    asb.addEventListener("error", function (e) {
+    asb.addEventListener("error", function(e) {
       debug_buffer_event("error");
     });
-    asb.addEventListener("abort", function (e) {
+    asb.addEventListener("abort", function(e) {
       debug_buffer_event("abort");
     });
   },

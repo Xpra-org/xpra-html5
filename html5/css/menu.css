@@ -28,6 +28,7 @@ SOFTWARE.
   position: relative;
   z-index: 100000;
 }
+
 /* Three basic menu layouts */
 /* This also enforces that menu is a ul, and that
      * layout modifier is specified
@@ -36,6 +37,7 @@ ul.Menu.-horizontal,
 ul.Menu.-vertical {
   display: inline-block;
 }
+
 ul.Menu.-floating {
   display: block;
   position: absolute;
@@ -44,81 +46,95 @@ ul.Menu.-floating {
 /* Menu and menu-item layout */
 .Menu,
 .Menu li,
-.Menu li > ul {
+.Menu li>ul {
   list-style: none;
   padding: 0px;
   margin: 0px;
 }
+
 .Menu li {
   display: block;
   position: relative;
   white-space: nowrap;
   word-break: keep-all;
 }
-.Menu.-horizontal > li {
+
+.Menu.-horizontal>li {
   display: inline-block;
   float: left;
 }
-.Menu li > * {
+
+.Menu li>* {
   display: block;
   position: relative;
 }
-.Menu li > ul {
+
+.Menu li>ul {
   position: absolute;
   min-width: 100%;
   top: 0px;
   left: 100%;
 }
-.Menu.-horizontal.-alignRight li > ul {
+
+.Menu.-horizontal.-alignRight li>ul {
   left: auto;
   right: 100%;
 }
-.Menu.-horizontal.-alignRight > li > ul {
+
+.Menu.-horizontal.-alignRight>li>ul {
   right: 0px;
 }
-.Menu.-horizontal > li > ul {
+
+.Menu.-horizontal>li>ul {
   top: auto;
   left: auto;
 }
 
 /* Menu behaviour */
-.Menu li > ul,
+.Menu li>ul,
 .Menu.-floating {
   display: none;
 }
-.Menu li > ul.-visible,
+
+.Menu li>ul.-visible,
 ul.Menu.-floating.-visible {
   display: block;
 }
 
 /* Menu animation */
-.Menu li > ul,
-.Menu.-horizontal.-alignRight li > ul,
+.Menu li>ul,
+.Menu.-horizontal.-alignRight li>ul,
 .Menu.-floating {
   opacity: 1;
   transform: scale(1) translateY(0px);
   transform-origin: left top;
 }
-.Menu.-alignRight li > ul,
+
+.Menu.-alignRight li>ul,
 .Menu.-floating.-alignRight {
   transform-origin: right top;
 }
-.Menu li > ul.-animating,
+
+.Menu li>ul.-animating,
 .Menu.-floating.-animating {
   opacity: 0 !important;
   transform: scale(0.96) translateX(-16px);
 }
-.Menu li > ul.-animating {
+
+.Menu li>ul.-animating {
   z-index: -1 !important;
 }
-.Menu.-horizontal > li > ul.-animating {
+
+.Menu.-horizontal>li>ul.-animating {
   transform: scale(0.96) translateY(-16px);
 }
-.Menu.-alignRight li > ul.-animating,
+
+.Menu.-alignRight li>ul.-animating,
 .Menu.-floating.-alignRight.-animating {
   transform: scale(0.96) translateX(16px);
 }
-.Menu.-horizontal.-alignRight > li > ul.-animating {
+
+.Menu.-horizontal.-alignRight>li>ul.-animating {
   transform: scale(0.96) translateY(-16px);
 }
 
@@ -130,20 +146,23 @@ ul.Menu.-floating.-visible {
   bottom: 0px;
   margin: auto 0px;
 }
+
 .Menu .Icon,
 .Menu *[data-icon]:before {
   line-height: inherit;
 }
+
 .Menu .Icon {
   padding: 0px;
 }
+
 .Menu *:empty[data-icon] {
   padding-left: 0px !important;
   padding-right: 0px !important;
 }
 
 /* Submenu chevrons */
-.Menu li.-hasSubmenu > a:after {
+.Menu li.-hasSubmenu>a:after {
   display: block;
   position: absolute;
 
@@ -161,7 +180,8 @@ ul.Menu.-floating.-visible {
 
   content: "";
 }
-.Menu.-horizontal > li.-hasSubmenu > a:after {
+
+.Menu.-horizontal>li.-hasSubmenu>a:after {
   width: 4px;
   height: 4px;
   bottom: 4px;
@@ -172,7 +192,8 @@ ul.Menu.-floating.-visible {
 
   border-style: none solid solid none;
 }
-.Menu li.-hasSubmenu.-noChevron > a:after {
+
+.Menu li.-hasSubmenu.-noChevron>a:after {
   display: none;
 }
 
@@ -184,16 +205,19 @@ ul.Menu.-floating.-visible {
 .Menu {
   line-height: 30px;
 }
+
 .Menu.-horizontal,
 .Menu li,
-.Menu li > :first-child {
+.Menu li> :first-child {
   height: 30px;
 }
+
 .Menu *[data-icon]:before,
 .Menu .Icon {
   width: 30px;
   height: 30px;
 }
+
 .Menu *[data-icon] {
   min-width: 30px;
   min-height: 30px;
@@ -211,10 +235,11 @@ ul.Menu.-floating.-visible {
 .Menu .Icon {
   font-size: 24px;
 }
+
 /* For submenus */
-.Menu > li ul .Icon,
+.Menu>li ul .Icon,
 .Menu.-floating .Icon,
-.Menu > li ul *[data-icon]:before,
+.Menu>li ul *[data-icon]:before,
 .Menu.-floating *[data-icon]:before {
   font-size: 18px;
 }
@@ -222,10 +247,12 @@ ul.Menu.-floating.-visible {
 /* Colouring of menus */
 /* Foreground */
 .Menu,
-.Menu li.-hasSubmenu > a:after {
+.Menu li.-hasSubmenu>a:after {
   color: black;
-  border-color: black; /* chevron colour */
+  border-color: black;
+  /* chevron colour */
 }
+
 /* Background */
 .Menu ul,
 .Menu.-floating {
@@ -233,45 +260,47 @@ ul.Menu.-floating.-visible {
 }
 
 /* Padding for each menu item */
-.Menu li > * {
+.Menu li>* {
   padding: 0px 12px;
 }
+
 /* Indent of chevron */
-.Menu li li.-hasSubmenu > a:after,
-.Menu:not(.-horizontal) > li.-hasSubmenu > a:after {
+.Menu li li.-hasSubmenu>a:after,
+.Menu:not(.-horizontal)>li.-hasSubmenu>a:after {
   right: 12px;
 }
-.Menu li li.-hasSubmenu > a,
-.Menu:not(.-horizontal) > li.-hasSubmenu > a {
+
+.Menu li li.-hasSubmenu>a,
+.Menu:not(.-horizontal)>li.-hasSubmenu>a {
   padding-right: 28px;
 }
 
 /* Minimum width of dropdown menus */
-.Menu.-horizontal li > ul,
+.Menu.-horizontal li>ul,
 .Menu.-floating {
   min-width: 200px;
 }
 
 /* Animation speed of dropdown menus */
-.Menu li > ul,
+.Menu li>ul,
 .Menu.-floating {
   transition: width 0.1s, height 0.1s, transform 0.1s, opacity 0.1s;
 }
 
 /* Styling of hyperlink text */
-.Menu li > a {
+.Menu li>a {
   text-decoration: none;
   color: inherit;
 }
 
 /* Animation speed of :hover shading */
-.Menu li > a:first-child {
+.Menu li>a:first-child {
   transition: background-color 0.2s;
 }
 
 /* Colour of :hover shading */
-.Menu li:hover > a:first-child,
-.Menu li.-active > a:first-child {
+.Menu li:hover>a:first-child,
+.Menu li.-active>a:first-child {
   background-color: rgba(0, 0, 0, 0.1);
 }
 

@@ -8,8 +8,8 @@
  */
 
 const Utilities = {
-  VERSION : "17",
-  REVISION : 0,
+  VERSION: "17",
+  REVISION: 0,
   LOCAL_MODIFICATIONS: 0,
   BRANCH: "master",
 
@@ -107,7 +107,7 @@ const Utilities = {
     }
     if (!digest.startsWith("hmac")) {
       return new Promise(function(resolve, reject) {
-        reject(new Error("unsupported digest '"+digest+"'"));
+        reject(new Error("unsupported digest '" + digest + "'"));
       });
     }
     let hash = "SHA-1";
@@ -121,28 +121,31 @@ const Utilities = {
     }
 
     const promise = new Promise(function(resolve, reject) {
-      crypto.subtle.importKey("raw", Utilities.u8(password), { name: "HMAC", hash: hash }, false, ["sign", "verify"])
-      .then(
-        (key) => {
-          Utilities.cdebug("imported hmac key: ", key);
-          const u8salt = Utilities.u8(salt);
-          crypto.subtle.sign("HMAC", key, u8salt).then(
-            (result) => {
-              const u8digest = new Uint8Array(result);
-              Utilities.clog("hmac result=", u8digest);
-              resolve(Utilities.ArrayBufferToString(u8digest));
-            },
-            (error) => {
-              Utilities.clog("hmac signing failed:", error);
-              reject(error);
-            }
-          );
-        },
-        (error) => {
-          Utilities.clog("hmac key import failed:", error);
-          reject(error);
-        }
-      );
+      crypto.subtle.importKey("raw", Utilities.u8(password), {
+          name: "HMAC",
+          hash: hash
+        }, false, ["sign", "verify"])
+        .then(
+          (key) => {
+            Utilities.cdebug("imported hmac key: ", key);
+            const u8salt = Utilities.u8(salt);
+            crypto.subtle.sign("HMAC", key, u8salt).then(
+              (result) => {
+                const u8digest = new Uint8Array(result);
+                Utilities.clog("hmac result=", u8digest);
+                resolve(Utilities.ArrayBufferToString(u8digest));
+              },
+              (error) => {
+                Utilities.clog("hmac signing failed:", error);
+                reject(error);
+              }
+            );
+          },
+          (error) => {
+            Utilities.clog("hmac key import failed:", error);
+            reject(error);
+          }
+        );
     });
     return promise;
   },
@@ -151,9 +154,9 @@ const Utilities = {
     if (!string_) {
       return "";
     }
-    return string_.length > trimLength
-      ? `${string_.slice(0, Math.max(0, trimLength - 3))}...`
-      : string_;
+    return string_.length > trimLength ?
+      `${string_.slice(0, Math.max(0, trimLength - 3))}...` :
+      string_;
   },
 
   convertToHex(string_) {
@@ -168,7 +171,7 @@ const Utilities = {
     var hex = hexval.toString();
     var str = '';
     for (var i = 0; i < hex.length; i += 2) {
-        str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
+      str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
     }
     return str;
   },
@@ -427,7 +430,7 @@ const Utilities = {
 
   //https://github.com/facebook/fixed-data-table/blob/master/src/vendor_upstream/dom/normalizeWheel.js
   //BSD license
-  normalizeWheel(/*object*/ event) /*object*/ {
+  normalizeWheel( /*object*/ event) /*object*/ {
     // Reasonable defaults
     const PIXEL_STEP = 10;
     const LINE_HEIGHT = 40;
@@ -535,7 +538,7 @@ const Utilities = {
       return new Uint8Array(0);
     }
     const type = typeof v;
-    if (type === 'object' && v.constructor===Uint8Array) {
+    if (type === 'object' && v.constructor === Uint8Array) {
       return v;
     }
     return Utilities.StringToUint8(v.toString());
@@ -548,9 +551,7 @@ const Utilities = {
     const skip = 10_400;
     if (uintArray.subarray) {
       for (
-        let index = 0, length_ = uintArray.length;
-        index < length_;
-        index += skip
+        let index = 0, length_ = uintArray.length; index < length_; index += skip
       ) {
         s += String.fromCharCode.apply(
           null,
@@ -559,9 +560,7 @@ const Utilities = {
       }
     } else {
       for (
-        let index = 0, length_ = uintArray.length;
-        index < length_;
-        index += skip
+        let index = 0, length_ = uintArray.length; index < length_; index += skip
       ) {
         s += String.fromCharCode.apply(
           null,
@@ -672,7 +671,7 @@ const Utilities = {
   getparam(property) {
     let getParameter = window.location.getParameter;
     if (!getParameter) {
-      getParameter = function (key) {
+      getParameter = function(key) {
         if (!window.location.queryStringParams)
           window.location.queryStringParams = Utilities.parseParams(
             window.location.search.slice(1)
@@ -680,15 +679,15 @@ const Utilities = {
         return window.location.queryStringParams[key];
       };
     }
-    
+
     let value = getParameter(property);
-    
+
     if (value === undefined) {
       try {
         value = Utilities.getSessionStorageValue(property);
       } catch {}
     }
-    
+
     return value;
   },
 
@@ -796,7 +795,7 @@ const Utilities = {
       xhr.setRequestHeader("Authorization", `Basic ${credentials}`);
     }
     xhr.responseType = "json";
-    xhr.addEventListener("load", function () {
+    xhr.addEventListener("load", function() {
       Utilities.log("loaded", url, "status", xhr.status);
       const status = xhr.status;
       if (status === 200) {
@@ -808,13 +807,13 @@ const Utilities = {
         }
       }
     });
-    xhr.addEventListener("error", function (e) {
+    xhr.addEventListener("error", function(e) {
       Utilities.log(uri, "error:", e);
       if (error_function) {
         error_function(e);
       }
     });
-    xhr.addEventListener("abort", function (e) {
+    xhr.addEventListener("abort", function(e) {
       Utilities.log(uri, "abort:", e);
       if (error_function) {
         error_function(e);

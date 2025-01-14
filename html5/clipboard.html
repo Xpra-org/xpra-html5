@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
   <head>
     <!--
 	Copyright (c) 2024 Antoine Martin <antoine@xpra.org>
@@ -18,14 +19,7 @@
 
         <div>
           <label for="input">Input</label>
-          <input
-            title="Input"
-            type="text"
-            class="form-control"
-            id="input"
-            placeholder="Input"
-            maxlength="256"
-          />
+          <input title="Input" type="text" class="form-control" id="input" placeholder="Input" maxlength="256" />
         </div>
 
         <hr />
@@ -33,21 +27,21 @@
         <div>
           <input type="checkbox" id="autofocus" />
           <br />
-          <label for="pasteboard">Pasteboard:</label><br/>
+          <label for="pasteboard">Pasteboard:</label><br />
           <textarea id="pasteboard" readonly></textarea>
         </div>
 
         <hr />
 
         <div>
-          <label for="contents">Contents:</label><br/>
+          <label for="contents">Contents:</label><br />
           <pre id="contents"></pre>
         </div>
 
         <hr />
 
         <div>
-          <label for="info">Events:</label><br/>
+          <label for="info">Events:</label><br />
           <pre id="info"></pre>
         </div>
 
@@ -74,7 +68,7 @@
 
       function update_info(newtext) {
         console.log(newtext);
-        while (lines.length>10) {
+        while (lines.length > 10) {
           lines.shift();
         }
         lines.push(newtext);
@@ -90,7 +84,7 @@
         }
       }
 
-      autofocus.onchange = function () {
+      autofocus.onchange = function() {
         pasteboard.autofocus = autofocus.checked;
         if (autofocus.checked) {
           pasteboard.focus();
@@ -103,62 +97,59 @@
         update_info("`navigator.clipboard` found");
         if (navigator.clipboard.clipboardData) {
           update_info("`navigator.clipboard.clipboardData` found");
-        }
-        else {
+        } else {
           update_info("No `navigator.clipboard.clipboardData`");
         }
-      }
-      else {
+      } else {
         update_info("Error: `navigator.clipboard` is missing!");
       }
 
       function read_clipboard_data(format) {
-        update_info("requesting "+format);
+        update_info("requesting " + format);
         navigator.clipboard.read().then((data) => {
-          update_info("got "+format+" clipboard data: "+data);
-          for (const item of data) {
-            for (const type of item.types) {
-              const item_data = item.getType(type).then((item_data) => {
-                update_info("got "+type+"="+item_data);
-                const fileReader = new FileReader();
-                fileReader.addEventListener("load", (event) => {
-                  update_info("loaded "+type+"="+event+" using "+event.target);
-                  update_info("result="+event.target.result);
-                },
-                (error) => {
-                  update_info("failed to load "+type+" clipboard data: "+error);
-                });
-                fileReader.readAsText(item_data);
-              },
-              (error) => {
-                update_info("failed to get "+type+" clipboard data: "+error);
-              });
+            update_info("got " + format + " clipboard data: " + data);
+            for (const item of data) {
+              for (const type of item.types) {
+                const item_data = item.getType(type).then((item_data) => {
+                    update_info("got " + type + "=" + item_data);
+                    const fileReader = new FileReader();
+                    fileReader.addEventListener("load", (event) => {
+                        update_info("loaded " + type + "=" + event + " using " + event.target);
+                        update_info("result=" + event.target.result);
+                      },
+                      (error) => {
+                        update_info("failed to load " + type + " clipboard data: " + error);
+                      });
+                    fileReader.readAsText(item_data);
+                  },
+                  (error) => {
+                    update_info("failed to get " + type + " clipboard data: " + error);
+                  });
+              }
             }
-          }
-          contents.innerText = data;
-        },
-        (error) => {
-          update_info("failed to read "+format+": "+error);
-        });
+            contents.innerText = data;
+          },
+          (error) => {
+            update_info("failed to read " + format + ": " + error);
+          });
       }
       if (navigator.clipboard.read) {
         read_clipboard_data("text/html");
         read_clipboard_data("text/plain");
-      }
-      else {
+      } else {
         update_info("missing `navigator.clipboard.read`");
       }
 
       function read_clipboard_text() {
         update_info("requesting contents via readText()");
         navigator.clipboard.readText().then((text) => {
-          update_info("readText() clipboard data: '"+text+"'");
-          contents.innerHTML = text;
-          // const clipboard_buffer = unescape(encodeURIComponent(text));
-        },
-        (error) => {
-          update_info("failed to readText(): "+error);
-        });
+            update_info("readText() clipboard data: '" + text + "'");
+            contents.innerHTML = text;
+            // const clipboard_buffer = unescape(encodeURIComponent(text));
+          },
+          (error) => {
+            update_info("failed to readText(): " + error);
+          });
       }
       read_clipboard_text();
 
@@ -185,16 +176,17 @@
       exec_copy.onclick = function(e) {
         input.select();
         const copy = document.execCommand("copy");
-        update_info("copy="+copy);
+        update_info("copy=" + copy);
       }
 
       const exec_paste = document.getElementById("exec-paste");
       exec_paste.onclick = function(e) {
         input.select();
         const paste = document.execCommand("paste");
-        update_info("paste="+paste);
+        update_info("paste=" + paste);
       }
 
     </script>
   </body>
+
 </html>

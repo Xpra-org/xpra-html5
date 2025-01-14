@@ -48,13 +48,11 @@ SOFTWARE.
   height: 30px;
   padding: 0px 0px 0px 20px;
   z-index: 100000;
-  background: repeating-linear-gradient(
-    90deg,
-    white,
-    white 1px,
-    black 1px,
-    black 2px
-  );
+  background: repeating-linear-gradient(90deg,
+      white,
+      white 1px,
+      black 1px,
+      black 2px);
 
   border-color: grey;
   border-width: 1px;
@@ -108,9 +106,10 @@ SOFTWARE.
 
 /* Foreground */
 .Menu,
-.Menu li.-hasSubmenu > a:after {
+.Menu li.-hasSubmenu>a:after {
   color: black;
-  border-color: black; /* chevron colour */
+  border-color: black;
+  /* chevron colour */
 }
 
 /* Background */
@@ -129,15 +128,18 @@ SOFTWARE.
 .Menu.-floating {
   border-radius: 3px;
 }
-.Menu.-horizontal > li > ul {
+
+.Menu.-horizontal>li>ul {
   border-top-left-radius: 0px;
   border-top-right-radius: 0px;
 }
-.Menu:not(.-alignRight) li > ul,
+
+.Menu:not(.-alignRight) li>ul,
 .Menu.-floating:not(.-alignRight) {
   border-top-left-radius: 0px;
 }
-.Menu.-alignRight li > ul,
+
+.Menu.-alignRight li>ul,
 .Menu.-floating.-alignRight {
   border-top-right-radius: 0px;
 }
