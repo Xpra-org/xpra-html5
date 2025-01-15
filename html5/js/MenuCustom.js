@@ -38,12 +38,12 @@ function addWindowListItem(win, wid, title) {
   const a = document.createElement("a");
 
   a.id = `windowlistitemlink${wid}`;
-  a.addEventListener("mouseover", function (e) {
+  a.addEventListener("mouseover", function(e) {
     if (e.ctrlKey) {
       client._window_set_focus(win);
     }
   });
-  a.addEventListener("click", function (e) {
+  a.addEventListener("click", function(e) {
     // Skip handling minimize, maximize, close events.
     if ($(e.target).hasClass(MENU_CONTENT_RIGHT_CLASS_NAME)) return;
     if (win.minimized) {
@@ -81,7 +81,7 @@ function addWindowListItem(win, wid, title) {
   img2.src = "icons/close.png";
   img2.title = "Close";
   img2.className = MENU_CONTENT_RIGHT_CLASS_NAME;
-  img2.addEventListener("click", function (e) {
+  img2.addEventListener("click", function(e) {
     client.send_close_window(win);
     e.stopPropagation();
     hideWindowList();
@@ -90,7 +90,7 @@ function addWindowListItem(win, wid, title) {
   img3.id = `windowlistitemmax${wid}`;
   img3.src = "icons/maximize.png";
   img3.title = "Maximize";
-  img3.addEventListener("click", function (e) {
+  img3.addEventListener("click", function(e) {
     win.toggle_maximized();
     e.stopPropagation();
     hideWindowList();
@@ -100,7 +100,7 @@ function addWindowListItem(win, wid, title) {
   img4.id = `windowlistitemmin${wid}`;
   img4.src = "icons/minimize.png";
   img4.title = "Minimize";
-  img4.addEventListener("click", function (e) {
+  img4.addEventListener("click", function(e) {
     win.toggle_minimized();
     e.stopPropagation();
     hideWindowList();
@@ -124,17 +124,17 @@ function removeWindowListItem(itemId) {
   }
 }
 
-$(function () {
+$(function() {
   const float_menu = $("#float_menu");
   float_menu.draggable({
     cancel: ".noDrag",
     containment: "window",
     scroll: false,
   });
-  float_menu.on("dragstart", function (event_, ui) {
+  float_menu.on("dragstart", function(event_, ui) {
     client.mouse_grabbed = true;
   });
-  float_menu.on("dragstop", function (event_, ui) {
+  float_menu.on("dragstop", function(event_, ui) {
     client.mouse_grabbed = false;
     client.toolbar_position = "custom";
     client.reconfigure_all_trays();

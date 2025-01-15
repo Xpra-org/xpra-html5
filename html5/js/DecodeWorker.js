@@ -17,6 +17,7 @@ function decode_draw_packet(packet, start) {
   const height = packet[5];
   const coding = packet[6];
   const packet_sequence = packet[8];
+
   function send_back(raw_buffers) {
     const wid_hold = on_hold.get(wid);
     if (wid_hold) {
@@ -37,11 +38,20 @@ function decode_draw_packet(packet, start) {
     }
     do_send_back(packet, raw_buffers);
   }
+
   function do_send_back(p, raw_buffers) {
-    self.postMessage({ draw: p, start }, raw_buffers);
+    self.postMessage({
+      draw: p,
+      start
+    }, raw_buffers);
   }
+
   function decode_error(message) {
-    self.postMessage({ error: `${message}`, packet, start });
+    self.postMessage({
+      error: `${message}`,
+      packet,
+      start
+    });
   }
 
   function hold() {
@@ -90,13 +100,13 @@ function decode_draw_packet(packet, start) {
     );
     hold();
     createImageBitmap(img, 0, 0, actual_width, actual_height, options).then(
-      function (bitmap) {
+      function(bitmap) {
         packet[6] = "bitmap:rgb32";
         packet[7] = bitmap;
         send_back([bitmap]);
         release();
       },
-      function (error) {
+      function(error) {
         decode_error(
           `failed to create ${actual_width}x${actual_height} rgb32 bitmap from buffer ${data}`
         );
@@ -137,16 +147,18 @@ function decode_draw_packet(packet, start) {
       if (zerocopy) {
         buffer = data.buffer;
       }
-      const blob = new Blob([buffer], { type: `image/${coding}` });
+      const blob = new Blob([buffer], {
+        type: `image/${coding}`
+      });
       hold();
       createImageBitmap(blob, bitmap_options).then(
-        function (bitmap) {
+        function(bitmap) {
           packet[6] = `bitmap:${coding}`;
           packet[7] = bitmap;
           send_back([bitmap]);
           release();
         },
-        function (error) {
+        function(error) {
           console.info(`decode worker failed to create ${coding} image bitmap: ${error}`);
           console.info(`using ${blob} + ${JSON.stringify(bitmap_options)} from data=${data}`);
           console.info(`data from ${buffer.constructor.name} of length ${data.length}`);
@@ -185,19 +197,21 @@ function check_image_decode(
     );
   }
   try {
-    const timer = setTimeout(function () {
+    const timer = setTimeout(function() {
       fail_callback(format, `timeout, no ${format} picture decoded`);
     }, 2000);
     const data = new Uint8Array(image_bytes);
-    const blob = new Blob([data], { type: `image/${format}` });
+    const blob = new Blob([data], {
+      type: `image/${format}`
+    });
     createImageBitmap(blob, {
       premultiplyAlpha: "none",
     }).then(
-      function () {
+      function() {
         clearTimeout(timer);
         success_callback(format);
       },
-      function (error) {
+      function(error) {
         clearTimeout(timer);
         fail_callback(format, `${error}`);
       }
@@ -207,7 +221,7 @@ function check_image_decode(
   }
 }
 
-onmessage = function (e) {
+onmessage = function(e) {
   const data = e.data;
   switch (data.cmd) {
     case "check": {
@@ -275,9 +289,15 @@ onmessage = function (e) {
         delete CHECKS[format];
         if (Object.keys(CHECKS).length === 0) {
           if (errors.length === 0) {
-            self.postMessage({ result: true, formats });
+            self.postMessage({
+              result: true,
+              formats
+            });
           } else {
-            self.postMessage({ result: false, errors });
+            self.postMessage({
+              result: false,
+              errors
+            });
           }
         }
       };

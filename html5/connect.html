@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
   <head>
     <!--
 	Copyright (c) 2013-2024 Antoine Martin <antoine@xpra.org>
@@ -38,69 +39,26 @@
         <h2 class="form-signin-heading">Xpra HTML5 Client</h2>
         <h5>Version 17 beta</h5>
 
-        <div
-          id="alert-disconnect"
-          class="alert alert-info"
-          role="alert"
-          style="display: none"
-        >
+        <div id="alert-disconnect" class="alert alert-info" role="alert" style="display: none">
           <p>You were disconnected for the following reason:</p>
           <p><span id="disconnect-reason"></span></p>
         </div>
 
         <div class="form-group form-inline">
           <label class="sr-only" for="server">Server</label>
-          <input
-            title="Server"
-            type="text"
-            class="form-control"
-            id="server"
-            placeholder="Server"
-            maxlength="256"
-          />
+          <input title="Server" type="text" class="form-control" id="server" placeholder="Server" maxlength="256" />
           <label class="sr-only" for="port">Port</label>
-          <input
-            title="Port"
-            type="text"
-            class="form-control"
-            id="port"
-            placeholder="Port"
-            size="5"
-            maxlength="5"
-          />
+          <input title="Port" type="text" class="form-control" id="port" placeholder="Port" size="5" maxlength="5" />
           <br />
           <div id="server-info-box">
             <span id="server-info" />
             <br />
           </div>
           <label class="sr-only" for="username">Username</label>
-          <input
-            title="Username"
-            type="text"
-            class="form-control"
-            id="username"
-            autocomplete="username"
-            placeholder="Username"
-            size="16"
-            maxlength="256"
-          />
+          <input title="Username" type="text" class="form-control" id="username" autocomplete="username" placeholder="Username" size="16" maxlength="256" />
           <label class="sr-only" for="password">Password</label>
-          <input
-            title="Password"
-            type="password"
-            class="form-control"
-            id="password"
-            autocomplete="current-password"
-            placeholder="Password"
-            size="16"
-            maxlength="256"
-          />
-          <img
-            id="toggle-password"
-            class="field-icon"
-            src="./icons/eye-slash.png"
-            alt="toggle password visibility"
-          />
+          <input title="Password" type="password" class="form-control" id="password" autocomplete="current-password" placeholder="Password" size="16" maxlength="256" />
+          <img id="toggle-password" class="field-icon" src="./icons/eye-slash.png" alt="toggle password visibility" />
           <br />
           <div class="security-box">
             <span id="ssl-span">
@@ -121,21 +79,8 @@
               </select>
             </span>
             <span id="encryption-key-span">
-              <input
-                type="password"
-                class="form-control"
-                id="key"
-                autocomplete="on"
-                placeholder="AES-KEY"
-                size="32"
-                maxlength="256"
-              />
-              <img
-                id="toggle-key"
-                class="field-icon"
-                src="./icons/eye-slash.png"
-                alt="toggle encryption key visibility"
-              />
+              <input type="password" class="form-control" id="key" autocomplete="on" placeholder="AES-KEY" size="32" maxlength="256" />
+              <img id="toggle-key" class="field-icon" src="./icons/eye-slash.png" alt="toggle encryption key visibility" />
             </span>
             <br />
             <span id="insecure-span">
@@ -146,150 +91,46 @@
           <div class="panel-group">
             <ul class="list-style-none action">
               <li id="action_connect_group">
-                <label
-                  ><input
-                    type="radio"
-                    name="action"
-                    class="radiobox"
-                    value="connect"
-                    id="action_connect"
-                    checked="checked"
-                  />
-                  Connect:</label
-                >
-                <input
-                  title="display"
-                  type="text"
-                  class="form-control command"
-                  id="display"
-                  placeholder="Display (optional)"
-                  size="20"
-                  maxlength="256"
-                />
-                <select id="select_display" style="display: none"></select
-                ><span id="select_display_warning" class="warning"></span>
+                <label><input type="radio" name="action" class="radiobox" value="connect" id="action_connect" checked="checked" />
+                  Connect:</label>
+                <input title="display" type="text" class="form-control command" id="display" placeholder="Display (optional)" size="20" maxlength="256" />
+                <select id="select_display" style="display: none"></select><span id="select_display_warning" class="warning"></span>
               </li>
               <li id="action_start_group">
                 <div style="display: inline-block; vertical-align: top">
-                  <label
-                    ><input
-                      type="radio"
-                      name="action"
-                      class="radiobox"
-                      value="start"
-                      id="action_start"
-                      checked="checked"
-                    />
-                    Start Command:</label
-                  >
-                  <input
-                    title="command"
-                    type="text"
-                    class="form-control command"
-                    id="start_command"
-                    placeholder="Command"
-                    size="20"
-                    maxlength="256"
-                  />
+                  <label><input type="radio" name="action" class="radiobox" value="start" id="action_start" checked="checked" />
+                    Start Command:</label>
+                  <input title="command" type="text" class="form-control command" id="start_command" placeholder="Command" size="20" maxlength="256" />
                 </div>
                 <div style="display: inline-block">
                   <select id="command_category" style="display: none"></select>
-                  <img
-                    class="command-icon"
-                    id="command_category_icon"
-                    alt="desktop command category icon"
-                    src="./icons/noicon.png"
-                  />
+                  <img class="command-icon" id="command_category_icon" alt="desktop command category icon" src="./icons/noicon.png" />
                   <br />
                   <select id="command_entry" style="display: none"></select>
-                  <img
-                    class="command-icon"
-                    id="command_entry_icon"
-                    alt="desktop command icon"
-                    src="./icons/noicon.png"
-                  />
+                  <img class="command-icon" id="command_entry_icon" alt="desktop command icon" src="./icons/noicon.png" />
                 </div>
               </li>
               <li id="action_start_desktop_group">
-                <label
-                  ><input
-                    type="radio"
-                    name="action"
-                    class="radiobox"
-                    value="start-desktop"
-                    id="action_start_desktop"
-                    checked="checked"
-                  />
-                  Start Desktop:</label
-                >
-                <input
-                  title="desktop command"
-                  type="text"
-                  class="form-control command"
-                  id="start_desktop_command"
-                  placeholder="Desktop Command"
-                  size="20"
-                  maxlength="256"
-                />
-                <img
-                  class="command-icon"
-                  id="desktop_entry_icon"
-                  alt="desktop command icon"
-                  src="./icons/noicon.png"
-                />
-                <select id="desktop_entry" style="display: none"></select
-                ><span id="desktop_entry_warning" class="warning"></span>
+                <label><input type="radio" name="action" class="radiobox" value="start-desktop" id="action_start_desktop" checked="checked" />
+                  Start Desktop:</label>
+                <input title="desktop command" type="text" class="form-control command" id="start_desktop_command" placeholder="Desktop Command" size="20" maxlength="256" />
+                <img class="command-icon" id="desktop_entry_icon" alt="desktop command icon" src="./icons/noicon.png" />
+                <select id="desktop_entry" style="display: none"></select><span id="desktop_entry_warning" class="warning"></span>
               </li>
               <li id="action_shadow_group">
-                <label
-                  ><input
-                    type="radio"
-                    name="action"
-                    class="radiobox"
-                    value="shadow"
-                    id="action_shadow"
-                    checked="checked"
-                  />
-                  Shadow:</label
-                >
-                <input
-                  title="display"
-                  type="text"
-                  class="form-control command"
-                  id="shadow_display"
-                  placeholder="Display (optional)"
-                  size="20"
-                  maxlength="256"
-                />
-                <select
-                  id="select_shadow_display"
-                  style="display: none"
-                ></select
-                ><span
-                  id="select_shadow_display_warning"
-                  class="warning"
-                ></span>
+                <label><input type="radio" name="action" class="radiobox" value="shadow" id="action_shadow" checked="checked" />
+                  Shadow:</label>
+                <input title="display" type="text" class="form-control command" id="shadow_display" placeholder="Display (optional)" size="20" maxlength="256" />
+                <select id="select_shadow_display" style="display: none"></select><span id="select_shadow_display_warning" class="warning"></span>
               </li>
             </ul>
           </div>
         </div>
 
         <div class="form-group">
-          <a class="btn btn-lg btn-success" role="button" id="main_action_button" onclick="doConnect();"
-            >Connect</a
-          >
-          <a
-            class="btn btn-lg btn-success"
-            role="button"
-            onclick="doConnectURI();"
-            >Client URI</a
-          >
-          <a
-            class="btn btn-lg btn-success"
-            role="button"
-            onclick="downloadConnectionFile();"
-            >Connection File</a
-          >
+          <a class="btn btn-lg btn-success" role="button" id="main_action_button" onclick="doConnect();">Connect</a>
+          <a class="btn btn-lg btn-success" role="button" onclick="doConnectURI();">Client URI</a>
+          <a class="btn btn-lg btn-success" role="button" onclick="downloadConnectionFile();">Connection File</a>
         </div>
 
         <div class="panel-group" role="tablist">
@@ -298,12 +139,7 @@
               <h4 class="panel-title">Advanced options</h4>
             </div>
 
-            <div
-              id="hiddenopts"
-              class="panel-collapse collapse in"
-              role="tabpanel"
-              style="display: none"
-            >
+            <div id="hiddenopts" class="panel-collapse collapse in" role="tabpanel" style="display: none">
               <ul class="list-group">
                 <li class="list-group-item">
                   <select id="bandwidth_limit">
@@ -501,46 +337,29 @@
                 </li>
                 <li class="list-group-item">
                   <input type="checkbox" id="video" />
-                  <span
-                    >Video
+                  <span>Video
                     <input type="checkbox" id="mediasource_video" /> Native
-                    decoding</span
-                  >
+                    decoding</span>
                 </li>
                 <li class="list-group-item">
                   <span>Server Path:</span>
-                  <input
-                    title="path"
-                    type="text"
-                    class="form-control"
-                    id="path"
-                    placeholder=""
-                    size="16"
-                    maxlength="256"
-                  />
+                  <input title="path" type="text" class="form-control" id="path" placeholder="" size="16" maxlength="256" />
                 </li>
                 <li class="list-group-item">
                   <span>Client Screen Width:</span>
-                  <input
-                    title="override_width"
-                    type="text"
-                    class="form-control"
-                    id="override_width"
-                    size="16"
-                    maxlength="256"
-                  />
+                  <input title="override_width" type="text" class="form-control" id="override_width" size="16" maxlength="256" />
                 </li>
                 <li class="list-group-item">
                   <span>Debugging</span>:<br />
-                  <input type="checkbox" id="debug_main" />       <span>Main</span>,
-                  <input type="checkbox" id="debug_keyboard" />   <span>keyboard</span>,
-                  <input type="checkbox" id="debug_geometry" />   <span>geometry</span>,
-                  <input type="checkbox" id="debug_mouse" />      <span>mouse</span>,
-                  <input type="checkbox" id="debug_clipboard" />  <span>clipboard</span>
-                  <input type="checkbox" id="debug_draw" />       <span>draw</span>,
-                  <input type="checkbox" id="debug_audio" />      <span>audio</span>,
-                  <input type="checkbox" id="debug_network" />    <span>network</span>
-                  <input type="checkbox" id="debug_file" />       <span>file</span>
+                  <input type="checkbox" id="debug_main" /> <span>Main</span>,
+                  <input type="checkbox" id="debug_keyboard" /> <span>keyboard</span>,
+                  <input type="checkbox" id="debug_geometry" /> <span>geometry</span>,
+                  <input type="checkbox" id="debug_mouse" /> <span>mouse</span>,
+                  <input type="checkbox" id="debug_clipboard" /> <span>clipboard</span>
+                  <input type="checkbox" id="debug_draw" /> <span>draw</span>,
+                  <input type="checkbox" id="debug_audio" /> <span>audio</span>,
+                  <input type="checkbox" id="debug_network" /> <span>network</span>
+                  <input type="checkbox" id="debug_file" /> <span>file</span>
                 </li>
               </ul>
             </div>
@@ -635,7 +454,9 @@
         //show the on-screen keyboard by default on mobile:
         DEFAULT_ON.push("keyboard");
       }
-      const FILE_TRANSLATION = { server: "host" };
+      const FILE_TRANSLATION = {
+        server: "host"
+      };
 
       function add_prop(prop, value, first) {
         if (Utilities.hasSessionStorage()) {
@@ -660,11 +481,11 @@
         let url = "./index.html" + add_prop("submit", true, true);
         let i = 0;
         for (const [prop, value] of get_URL_action()) {
-          add_prop(prop, value, i==0);
+          add_prop(prop, value, i == 0);
           i++;
         }
         for (const [prop, value] of get_URL_props(VALUE_PROPERTIES.concat(BOOLEAN_PROPERTIES))) {
-          add_prop(prop, value, i==0);
+          add_prop(prop, value, i == 0);
           i++;
         }
         window.location = url;
@@ -684,7 +505,7 @@
           url += username;
         }
         if (password && is_password_safe()) {
-          url += ":"+password;
+          url += ":" + password;
         }
         if (username || password) {
           url += "@";
@@ -707,7 +528,7 @@
         let i = 0;
         for (const [prop, value] of url_action) {
           if (prop != "display" && prop != "action") {
-            url += do_add_prop(prop, value, i==0);
+            url += do_add_prop(prop, value, i == 0);
             i++;
           }
         }
@@ -718,7 +539,7 @@
         props.delete("password");
         for (const [prop, value] of props) {
           if (!prop.startsWith("debug_")) {
-            url += do_add_prop(prop.replaceAll("_", "-"), value, i==0);
+            url += do_add_prop(prop.replaceAll("_", "-"), value, i == 0);
             i++;
           }
         }
@@ -738,7 +559,7 @@
         const url_action = get_URL_action();
         const display = url_action.get("display");
         if (display) {
-          data += "display="+display+"\n";
+          data += "display=" + display + "\n";
         }
         for (let i = 0; i < FILE_PROPERTIES.length; i++) {
           const prop = FILE_PROPERTIES[i];
@@ -750,8 +571,7 @@
             if (value == default_value) {
               continue;
             }
-          }
-          else {
+          } else {
             value = document.getElementById(prop).value;
           }
           if (value !== "") {
@@ -788,7 +608,9 @@
           data += "debug=" + debug + "\n";
         }
         const filename = (document.getElementById("server").value || "session") + ".xpra";
-        Utilities.saveFile(filename, data, { type: "text/plain" });
+        Utilities.saveFile(filename, data, {
+          type: "text/plain"
+        });
       }
 
       function get_visible_value(entry, select) {
@@ -848,8 +670,7 @@
           let value = "";
           if (BOOLEAN_PROPERTIES.includes(prop)) {
             value = element.checked;
-          }
-          else {
+          } else {
             value = element.value;
             if (value === null || value === "undefined") {
               value = "";
@@ -861,7 +682,7 @@
       }
 
       function fill_form(default_settings) {
-        const getparam = function (prop) {
+        const getparam = function(prop) {
           let v = Utilities.getparam(prop);
           if (v === undefined && prop in default_settings) {
             v = default_settings[prop];
@@ -877,7 +698,7 @@
           return value.replace(re, "");
         }
 
-        const getboolparam = function (prop, default_value) {
+        const getboolparam = function(prop, default_value) {
           let v = Utilities.getparam(prop);
           if (v === undefined && prop in default_settings) {
             v = default_settings[prop];
@@ -891,7 +712,7 @@
             ) !== -1
           );
         };
-        const getintparam = function (prop, default_value) {
+        const getintparam = function(prop, default_value) {
           let v = getparam(prop);
           try {
             v = parseInt(v);
@@ -921,7 +742,7 @@
         if (pathname && pathname == "/") {
           pathname = "";
         }
-        var path = getstrparam("path", ALLOWED_CHARS+"/");
+        var path = getstrparam("path", ALLOWED_CHARS + "/");
         if (path && path.endsWith("/index.html")) {
           path = path.substr(0, path.lastIndexOf("/"));
         }
@@ -933,7 +754,7 @@
         document.getElementById("server").value = getstrparam("server") || link.hostname;
         document.getElementById("port").value = getintparam("port", 0) || link.port || protocol_port;
         document.getElementById("path").value = path || pathname;
-        document.getElementById("username").value = getstrparam("username", ALLOWED_CHARS+"@") || "";
+        document.getElementById("username").value = getstrparam("username", ALLOWED_CHARS + "@") || "";
 
         const override_width = getintparam("override_width", 0);
         if (override_width) {
@@ -959,6 +780,7 @@
         function is_secure_connection() {
           return webtransport_input.checked || ssl_input.checked || aes_input.checked;
         }
+
         function is_password_safe() {
           if (insecure_input.checked) {
             return true;
@@ -983,8 +805,7 @@
           let status_message = "";
           if (offscreen_available) {
             offscreen_label.classList.remove("disabled");
-          }
-          else {
+          } else {
             status_message = "not available in your browser";
             offscreen_label.classList.add("disabled");
           }
@@ -999,14 +820,14 @@
           if (password_input.disabled) {
             password_input.value = "";
             password_input.title = "Typing a password would be insecure with these settings";
-          }
-          else {
+          } else {
             password_input.title = "Session Password";
           }
         }
-        insecure_input.onchange = function () {
+        insecure_input.onchange = function() {
           update_password_input();
         };
+
         function update_insecure() {
           const host = document.getElementById("server").value;
           const safe = is_secure_connection() || Utilities.isSafeHost(host);
@@ -1018,6 +839,7 @@
           }
           update_password_input();
         }
+
         function update_aes() {
           if (aes_input.checked) {
             $("select#encryption").find("option[value='']").remove();
@@ -1047,7 +869,7 @@
             document.getElementById("encryption").value = "AES-" + enc_mode;
           }
         }
-        webtransport_input.onchange = function () {
+        webtransport_input.onchange = function() {
           // disable ssl and aes:
           ssl_input.disabled = webtransport_input.checked;
           aes_input.disabled = webtransport_input.checked;
@@ -1060,7 +882,7 @@
           host_address_changed();
           update_insecure();
         }
-        ssl_input.onchange = function () {
+        ssl_input.onchange = function() {
           if (ssl_input.checked) {
             aes_input.checked = false;
           }
@@ -1075,6 +897,7 @@
         //vrefresh:
         let animation_times = [];
         let vrefresh = -1;
+
         function animation_cb(now) {
           let l = animation_times.push(now);
           if (l > 100) {
@@ -1103,10 +926,10 @@
             return "eye-slash.png";
           }
         }
-        $("#toggle-password").on("click", function () {
+        $("#toggle-password").on("click", function() {
           $("#toggle-password").attr("src", "./icons/" + toggle_reveal("password"));
         });
-        $("#toggle-key").on("click", function () {
+        $("#toggle-key").on("click", function() {
           $("#toggle-key").attr("src", "./icons/" + toggle_reveal("key"));
         });
 
@@ -1124,7 +947,7 @@
         action_elements.set("Connect", action_connect);
         for (const [action_label, action_element] of action_elements) {
           console.log(`${action_label} = ${action_element}`);
-          action_element.addEventListener('click', function(){
+          action_element.addEventListener('click', function() {
             console.log(action_label);
             main_action_button.text = action_label;
           }, false);
@@ -1196,19 +1019,21 @@
         const command_category = document.getElementById("command_category");
         const command_entry_icon = document.getElementById("command_entry_icon");
         const command_entry = document.getElementById("command_entry");
+
         function load_icon(icon, src) {
           const url = get_host_address(true) + src;
-          icon.onload = function () {
+          icon.onload = function() {
             Utilities.log("loaded icon", url);
           };
-          icon.onerror = function (e) {
+          icon.onerror = function(e) {
             Utilities.error("error loading icon", url, ":", e);
           };
-          icon.onabort = function (e) {
+          icon.onabort = function(e) {
             Utilities.error("aborted loading icon", url, ":", e);
           };
           icon.src = url;
         }
+
         function command_entry_changed() {
           var cc = command_category.options[command_category.selectedIndex].innerHTML;
           var c = command_entry.options[command_entry.selectedIndex].innerHTML;
@@ -1217,6 +1042,7 @@
           $("#command_entry_icon").show();
         }
         command_entry.addEventListener("change", command_entry_changed);
+
         function command_category_changed() {
           var cc = command_category.options[command_category.selectedIndex].innerHTML;
           Utilities.log("command_category=", cc);
@@ -1226,17 +1052,19 @@
         command_category.addEventListener("change", command_category_changed);
 
         function safe_command(command) {
-           return Utilities.removeChars('a-zA-Z0-9\\-%_/\\"', command);
+          return Utilities.removeChars('a-zA-Z0-9\\-%_/\\"', command);
         }
+
         function safe_name(name) {
-           return Utilities.removeChars('a-zA-Z0-9\\-%"', name);
+          return Utilities.removeChars('a-zA-Z0-9\\-%"', name);
         }
+
         function init_command_menu() {
           $("#command_category_icon").hide();
           $("#command_entry_icon").hide();
           json_action(
             "Menu",
-            function (xhr, response) {
+            function(xhr, response) {
               let categories = Object.keys(response);
               //find the category matching "start":
               let default_start = start || "xterm";
@@ -1252,6 +1080,7 @@
                   }
                 }
               }
+
               function populate_commands() {
                 let selected_category = command_category.value;
                 let entries = response[selected_category].Entries;
@@ -1262,7 +1091,7 @@
                   const name = safe_name(entry.Name);
                   if (default_start == command_exec) {
                     $("select#command_entry").append(
-                      '<option selected="selected" value="' + command_exec +'">' + name + "</option>"
+                      '<option selected="selected" value="' + command_exec + '">' + name + "</option>"
                     );
                   } else {
                     $("select#command_entry").append(
@@ -1293,7 +1122,7 @@
               populate_commands();
               command_entry_changed();
             },
-            function (error) {
+            function(error) {
               $("select#command_category").hide();
               $("select#command_entry").hide();
               $("#start_command").show();
@@ -1303,6 +1132,7 @@
 
         const desktop_entry_icon = document.getElementById("desktop_entry_icon");
         const desktop_entry = document.getElementById("desktop_entry");
+
         function desktop_entry_changed() {
           var de = desktop_entry.options[desktop_entry.selectedIndex].innerHTML;
           Utilities.log("desktop_session=", de);
@@ -1314,7 +1144,7 @@
           $("#desktop_entry_icon").hide();
           json_action(
             "DesktopMenu",
-            function (xhr, response) {
+            function(xhr, response) {
               var desktop_sessions = Object.keys(response);
               desktop_entry.innerText = null;
               let default_start_desktop = start;
@@ -1353,7 +1183,7 @@
               $("#desktop_entry_icon").show();
               $("#start_desktop_command").hide();
             },
-            function (error) {
+            function(error) {
               $("select#desktop_entry").hide();
               $("#start_desktop_command").show();
             }
@@ -1364,10 +1194,11 @@
           return Utilities.removeChars('a-zA-Z0-9\\:\\-% \\(\\)"', name);
         }
         const display = getstrparam("display") || "";
+
         function init_shadow_display() {
           json_action(
             "Displays",
-            function (xhr, response) {
+            function(xhr, response) {
               var displays = Object.keys(response);
               const select_shadow_display = document.getElementById("select_shadow_display");
               select_shadow_display.innerText = null;
@@ -1396,7 +1227,7 @@
               $("select#select_shadow_display").show();
               $("#shadow_display").hide();
             },
-            function (error) {
+            function(error) {
               $("select#select_shadow_display").hide();
               $("#shadow_display").show();
             }
@@ -1406,7 +1237,7 @@
         function init_connect_display() {
           json_action(
             "Sessions",
-            function (xhr, response) {
+            function(xhr, response) {
               var sessions = Object.keys(response);
               const select_display = document.getElementById("select_display");
               select_display.innerText = null;
@@ -1460,7 +1291,7 @@
               select_display.onchange = display_populate_username;
               display_populate_username();
             },
-            function (error) {
+            function(error) {
               $("select#select_display").hide();
               $("#display").show();
             }
@@ -1475,8 +1306,7 @@
           const got_mode = mode.length > 0;
           if (got_mode > 0) {
             server_info = host_address + " is a '" + mode + "' server";
-          }
-          else {
+          } else {
             server_info = "no information available for " + host_address;
           }
           document.getElementById("server-info").innerText = server_info;
@@ -1504,15 +1334,16 @@
             $("#desktop_entry_icon").hide();
           }
         }
+
         function init_mode() {
           json_action(
             "Info",
-            function (xhr, response) {
+            function(xhr, response) {
               Utilities.log("Info=", response);
               let mode = response.mode || "";
               show_mode(mode);
             },
-            function (error) {
+            function(error) {
               show_mode("");
             }
           );
@@ -1523,12 +1354,14 @@
         let ajax_delay = 2000;
         let watched_elements = ["server", "port", "ssl", "encryption", "aes"];
         var host_address = "";
+
         function cancel_changed_timer() {
           if (target_changed_timer) {
             clearTimeout(target_changed_timer);
             target_changed_timer = 0;
           }
         }
+
         function host_address_changed() {
           cancel_changed_timer();
           const url = get_host_address();
@@ -1541,23 +1374,23 @@
         for (var i = 0, l = watched_elements.length; i < l; i++) {
           let watched_element = watched_elements[i];
           let el = $("#" + watched_element);
-          el.on("change", function () {
+          el.on("change", function() {
             Utilities.log(watched_element, "changed");
             update_password_input();
             host_address_changed();
           });
-          el.on("paste", function () {
+          el.on("paste", function() {
             Utilities.log(watched_element, "pasted");
             update_password_input();
             host_address_changed();
           });
-          el.on("keyup", function () {
+          el.on("keyup", function() {
             Utilities.log(watched_element, "key event");
             update_password_input();
             cancel_changed_timer();
             target_changed_timer = setTimeout(host_address_changed, ajax_delay);
           });
-          el.on("keydown", function () {
+          el.on("keydown", function() {
             update_password_input();
             cancel_changed_timer();
           });
@@ -1574,7 +1407,7 @@
             $("input#exit_with_client").prop("checked", false);
           }
         }
-        $(document).on("click", '[name="action"]', function () {
+        $(document).on("click", '[name="action"]', function() {
           const action = $(this).val();
           set_exit_actions(action == "connect");
         });
@@ -1600,7 +1433,7 @@
           keyboard_layout = Utilities.getKeyboardLayout();
         }
         document.getElementById("keyboard_layout").value = keyboard_layout;
-        json_action("favicon.png?echo-headers", function (xhr, response) {
+        json_action("favicon.png?echo-headers", function(xhr, response) {
           const headers = Utilities.ParseResponseHeaders(xhr.getAllResponseHeaders());
           Utilities.debug("headers:", headers);
           let lang = headers["Echo-Accept-Language"];
@@ -1649,7 +1482,7 @@
           $("input#sound").prop("disabled", true);
         } else {
           //enable sound checkbox if the codec is changed:
-          audio_codec_select.onchange = function () {
+          audio_codec_select.onchange = function() {
             document.getElementById("sound").checked = true;
           };
         }
@@ -1699,6 +1532,7 @@
         toggle_mediasource_video();
 
         const floating_menu_checkbox = $("#floating_menu");
+
         function set_menu_attributes_visibility() {
           if (floating_menu_checkbox.is(":checked")) {
             $("#clock").removeAttr("disabled");
@@ -1720,7 +1554,7 @@
         //this may override default values (ie: terminate flags are off for connect mode):
         set_exit_actions(action == "connect" || action == "");
 
-        $("#expandopts").click(function () {
+        $("#expandopts").click(function() {
           $("#hiddenopts").slideToggle();
         });
         //delete session params:
@@ -1729,6 +1563,7 @@
         } catch (e) {
           //ignore
         }
+
         function submit_if_enter(e) {
           if (!e) {
             const e = window.event;
@@ -1746,20 +1581,22 @@
         }
       }
 
-      $(document).ready(function () {
+      $(document).ready(function() {
         const xhr = new XMLHttpRequest();
         xhr.open("GET", "./default-settings.txt");
-        xhr.onload = function () {
+        xhr.onload = function() {
           fill_form(Utilities.parseINIString(xhr.responseText));
         };
-        xhr.onerror = function () {
+        xhr.onerror = function() {
           fill_form({});
         };
-        xhr.onabort = function () {
+        xhr.onabort = function() {
           fill_form({});
         };
         xhr.send();
       });
+
     </script>
   </body>
+
 </html>

@@ -117,9 +117,9 @@ class XpraPaintWorker {
     let canvas = this.offscreen_canvas.get(wid);
     let still = this.offscreen_canvas_still.get(wid);
     still.getContext("2d").drawImage(canvas,
-        0, 0, canvas.width, canvas.height,
-        0, 0, canvas.width, canvas.height,
-      );
+      0, 0, canvas.width, canvas.height,
+      0, 0, canvas.width, canvas.height,
+    );
   }
 
   delete_canvas(wid) {
@@ -132,9 +132,9 @@ class XpraPaintWorker {
       let canvas = this.offscreen_canvas.get(wid);
       let still = this.offscreen_canvas_still.get(wid);
       canvas.getContext("2d").drawImage(still,
-          0, 0, still.width, still.height,
-          0, 0, still.width, still.height
-        );
+        0, 0, still.width, still.height,
+        0, 0, still.width, still.height
+      );
     } else {
       console.warn(`PaintWorker was asked for a redraw on window ${wid} but no still is available!`);
     }
@@ -143,7 +143,7 @@ class XpraPaintWorker {
 
 // Message handling to class
 const xpraPaintWorker = new XpraPaintWorker();
-onmessage = function (e) {
+onmessage = function(e) {
   const data = e.data;
   switch (data.cmd) {
     case "paint":

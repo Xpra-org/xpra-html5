@@ -23,7 +23,7 @@ SOFTWARE.
 
 */
 
-(function () {
+(function() {
   function $(selector, context) {
     context = context || document;
     return context["querySelectorAll"](selector);
@@ -63,7 +63,7 @@ SOFTWARE.
     menu.classList.add(ACTIVE_CLASS_NAME);
     ul.classList.add(ANIMATING_CLASS_NAME);
     ul.classList.add(VISIBLE_CLASS_NAME);
-    setTimeout(function () {
+    setTimeout(function() {
       ul.classList.remove(ANIMATING_CLASS_NAME);
     }, 25);
   }
@@ -76,7 +76,7 @@ SOFTWARE.
 
     menu.classList.remove(ACTIVE_CLASS_NAME);
     ul.classList.add(ANIMATING_CLASS_NAME);
-    setTimeout(function () {
+    setTimeout(function() {
       ul.classList.remove(VISIBLE_CLASS_NAME);
       ul.classList.remove(ANIMATING_CLASS_NAME);
     }, 300);
@@ -89,7 +89,7 @@ SOFTWARE.
         `li.${HAS_SUBMENU_CLASS_NAME}.${ACTIVE_CLASS_NAME}:not(:hover)`,
         menu.parent
       ),
-      function (e) {
+      function(e) {
         e.hideMenu && e.hideMenu();
       }
     );
@@ -97,15 +97,15 @@ SOFTWARE.
 
   function hideAllMenus() {
     const menu = this;
-    forEach($(`li.${HAS_SUBMENU_CLASS_NAME}`, menu.parent), function (e) {
+    forEach($(`li.${HAS_SUBMENU_CLASS_NAME}`, menu.parent), function(e) {
       e.hideMenu && e.hideMenu();
     });
   }
 
-  window.addEventListener("load", function () {
+  window.addEventListener("load", function() {
     forEach(
       $(`.${MENU_CLASS_NAME} li.${HAS_SUBMENU_CLASS_NAME}`),
-      function (e) {
+      function(e) {
         e.showMenu = showMenu;
         e.hideMenu = hideMenu;
       }
@@ -113,14 +113,14 @@ SOFTWARE.
 
     forEach(
       $(`.${MENU_CLASS_NAME} > li.${HAS_SUBMENU_CLASS_NAME}`),
-      function (e) {
+      function(e) {
         e.addEventListener("click", showMenu);
       }
     );
 
     forEach(
       $(`.${MENU_CLASS_NAME} > li.${HAS_SUBMENU_CLASS_NAME} li`),
-      function (e) {
+      function(e) {
         e.addEventListener("mouseenter", hideAllInactiveMenus);
       }
     );
@@ -129,12 +129,12 @@ SOFTWARE.
       $(
         `.${MENU_CLASS_NAME} > li.${HAS_SUBMENU_CLASS_NAME} li.${HAS_SUBMENU_CLASS_NAME}`
       ),
-      function (e) {
+      function(e) {
         e.addEventListener("mouseenter", showMenu);
       }
     );
 
-    forEach($("a"), function (e) {
+    forEach($("a"), function(e) {
       e.addEventListener("click", hideAllMenus);
     });
 

@@ -48,7 +48,10 @@ const all_encodings = new Set([
 
 function send_decode_error(packet, error) {
   packet[7] = null;
-  self.postMessage({ error: `${error}`, packet });
+  self.postMessage({
+    error: `${error}`,
+    packet
+  });
 }
 
 const paint_worker = new Worker("PaintWorker.js");
@@ -57,8 +60,7 @@ class WindowDecoder {
   constructor(wid, canvas, debug) {
     this.wid = wid;
 
-    paint_worker.postMessage(
-      {
+    paint_worker.postMessage({
         cmd: "canvas",
         wid,
         canvas,
@@ -155,12 +157,14 @@ class WindowDecoder {
     clonepacket[10] = options;
 
     // Tell the server we are done with this packet
-    self.postMessage({ draw: clonepacket, start });
+    self.postMessage({
+      draw: clonepacket,
+      start
+    });
 
     // Paint the packet on screen refresh (if we can use requestAnimationFrame in the worker)
     if (packet[6] != "throttle") {
-      paint_worker.postMessage(
-        {
+      paint_worker.postMessage({
           cmd: "paint",
           image: packet[7],
           wid: packet[1],
@@ -195,7 +199,7 @@ class WindowDecoder {
   }
 }
 
-onmessage = function (e) {
+onmessage = function(e) {
   const data = e.data;
   let wd = null;
   switch (data.cmd) {
@@ -203,7 +207,10 @@ onmessage = function (e) {
       // Check if we support the given encodings.
       const encodings = [...data.encodings];
       const common = encodings.filter((value) => all_encodings.has(value));
-      self.postMessage({ result: true, formats: common });
+      self.postMessage({
+        result: true,
+        formats: common
+      });
       break;
     }
     case "eos":
@@ -227,7 +234,7 @@ onmessage = function (e) {
         wd.queue_draw_packet(packet);
       } else {
         send_decode_error(packet,
-                          `no window decoder found for wid ${wid}, only:${[...window_decoders.keys(),].join(",")}`
+          `no window decoder found for wid ${wid}, only:${[...window_decoders.keys(),].join(",")}`
         );
       }
       break;

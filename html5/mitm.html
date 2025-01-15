@@ -1,5 +1,6 @@
 <!-- saved from url=(0055)https://jimmywarting.github.io/StreamSaver.js/mitm.html -->
 <html>
+
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <script>
@@ -36,7 +37,9 @@
           .then((swReg) => {
             return (
               swReg ||
-              navigator.serviceWorker.register("sw.js", { scope: "./" })
+              navigator.serviceWorker.register("sw.js", {
+                scope: "./"
+              })
             );
           })
           .then((swReg) => {
@@ -64,7 +67,11 @@
 
       // Now that we have the Service Worker registered we can process messages
       function onMessage(event) {
-        let { data, ports, origin } = event;
+        let {
+          data,
+          ports,
+          origin
+        } = event;
 
         // It's important to have a messageChannel, don't want to interfere
         // with other simultaneous downloads
@@ -154,9 +161,9 @@
         // then use the transferred port to reply via postMessage(), which
         // will in turn trigger the onmessage handler on messageChannel.port1.
 
-        const transferable = data.readableStream
-          ? [ports[0], data.readableStream]
-          : [ports[0]];
+        const transferable = data.readableStream ?
+          [ports[0], data.readableStream] :
+          [ports[0]];
 
         if (!(data.readableStream || data.transferringReadable)) {
           keepAlive();
@@ -181,7 +188,10 @@
         // shouldn't really be possible?
         keepAlive();
       }
+
     </script>
   </head>
+
   <body></body>
+
 </html>

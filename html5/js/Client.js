@@ -32,15 +32,15 @@ const FLOAT_MENU_SELECTOR = "#float_menu";
 const PASTEBOARD_SELECTOR = "#pasteboard";
 const WINDOW_PREVIEW_SELECTOR = "#window_preview";
 
-const BELL_SOUND =  "data:audio/wav;base64,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qJrx4KOQjahZxWbcZgztj2c49nKmkId44S71j0c8eV9yDK6uPRzx5X18eDvjvQ6yKo9ZSS6l//8elePK/Lf//IInrOF/FvDoADYAGBMGb7FtErm5MXMlmPAJQVgWta7Zx2go+8xJ0UiCb8LHHdftWyLJE0QIAIsI+UbXu67dZMjmgDGCGl1H+vpF4NSDckSIkk7Vd+sxEhBQMRU8j/12UIRhzSaUdQ+rQU5kGeFxm+hb1oh6pWWmv3uvmReDl0UnvtapVaIzo1jZbf/pD6ElLqSX+rUmOQNpJFa/r+sa4e/pBlAABoAAAAA3CUgShLdGIxsY7AUABPRrgCABdDuQ5GC7DqPQCgbbJUAoRSUj+NIEig0YfyWUho1VBBBA//uQZB4ABZx5zfMakeAAAAmwAAAAF5F3P0w9GtAAACfAAAAAwLhMDmAYWMgVEG1U0FIGCBgXBXAtfMH10000EEEEEECUBYln03TTTdNBDZopopYvrTTdNa325mImNg3TTPV9q3pmY0xoO6bv3r00y+IDGid/9aaaZTGMuj9mpu9Mpio1dXrr5HERTZSmqU36A3CumzN/9Robv/Xx4v9ijkSRSNLQhAWumap82WRSBUqXStV/YcS+XVLnSS+WLDroqArFkMEsAS+eWmrUzrO0oEmE40RlMZ5+ODIkAyKAGUwZ3mVKmcamcJnMW26MRPgUw6j+LkhyHGVGYjSUUKNpuJUQoOIAyDvEyG8S5yfK6dhZc0Tx1KI/gviKL6qvvFs1+bWtaz58uUNnryq6kt5RzOCkPWlVqVX2a/EEBUdU1KrXLf40GoiiFXK///qpoiDXrOgqDR38JB0bw7SoL+ZB9o1RCkQjQ2CBYZKd/+VJxZRRZlqSkKiws0WFxUyCwsKiMy7hUVFhIaCrNQsKkTIsLivwKKigsj8XYlwt/WKi2N4d//uQRCSAAjURNIHpMZBGYiaQPSYyAAABLAAAAAAAACWAAAAApUF/Mg+0aohSIRobBAsMlO//Kk4soosy1JSFRYWaLC4qZBYWFRGZdwqKiwkNBVmoWFSJkWFxX4FFRQWR+LsS4W/rFRb/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////VEFHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAU291bmRib3kuZGUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMjAwNGh0dHA6Ly93d3cuc291bmRib3kuZGUAAAAAAAAAACU=";
+const BELL_SOUND = "data:audio/wav;base64,//uQRAAAAWMSLwUIYAAsYkXgoQwAEaYLWfkWgAI0wWs/ItAAAGDgYtAgAyN+QWaAAihwMWm4G8QQRDiMcCBcH3Cc+CDv/7xA4Tvh9Rz/y8QADBwMWgQAZG/ILNAARQ4GLTcDeIIIhxGOBAuD7hOfBB3/94gcJ3w+o5/5eIAIAAAVwWgQAVQ2ORaIQwEMAJiDg95G4nQL7mQVWI6GwRcfsZAcsKkJvxgxEjzFUgfHoSQ9Qq7KNwqHwuB13MA4a1q/DmBrHgPcmjiGoh//EwC5nGPEmS4RcfkVKOhJf+WOgoxJclFz3kgn//dBA+ya1GhurNn8zb//9NNutNuhz31f////9vt///z+IdAEAAAK4LQIAKobHItEIYCGAExBwe8jcToF9zIKrEdDYIuP2MgOWFSE34wYiR5iqQPj0JIeoVdlG4VD4XA67mAcNa1fhzA1jwHuTRxDUQ//iYBczjHiTJcIuPyKlHQkv/LHQUYkuSi57yQT//uggfZNajQ3Vmz+Zt//+mm3Wm3Q576v////+32///5/EOgAAADVghQAAAAA//uQZAUAB1WI0PZugAAAAAoQwAAAEk3nRd2qAAAAACiDgAAAAAAABCqEEQRLCgwpBGMlJkIz8jKhGvj4k6jzRnqasNKIeoh5gI7BJaC1A1AoNBjJgbyApVS4IDlZgDU5WUAxEKDNmmALHzZp0Fkz1FMTmGFl1FMEyodIavcCAUHDWrKAIA4aa2oCgILEBupZgHvAhEBcZ6joQBxS76AgccrFlczBvKLC0QI2cBoCFvfTDAo7eoOQInqDPBtvrDEZBNYN5xwNwxQRfw8ZQ5wQVLvO8OYU+mHvFLlDh05Mdg7BT6YrRPpCBznMB2r//xKJjyyOh+cImr2/4doscwD6neZjuZR4AgAABYAAAABy1xcdQtxYBYYZdifkUDgzzXaXn98Z0oi9ILU5mBjFANmRwlVJ3/6jYDAmxaiDG3/6xjQQCCKkRb/6kg/wW+kSJ5//rLobkLSiKmqP/0ikJuDaSaSf/6JiLYLEYnW/+kXg1WRVJL/9EmQ1YZIsv/6Qzwy5qk7/+tEU0nkls3/zIUMPKNX/6yZLf+kFgAfgGyLFAUwY//uQZAUABcd5UiNPVXAAAApAAAAAE0VZQKw9ISAAACgAAAAAVQIygIElVrFkBS+Jhi+EAuu+lKAkYUEIsmEAEoMeDmCETMvfSHTGkF5RWH7kz/ESHWPAq/kcCRhqBtMdokPdM7vil7RG98A2sc7zO6ZvTdM7pmOUAZTnJW+NXxqmd41dqJ6mLTXxrPpnV8avaIf5SvL7pndPvPpndJR9Kuu8fePvuiuhorgWjp7Mf/PRjxcFCPDkW31srioCExivv9lcwKEaHsf/7ow2Fl1T/9RkXgEhYElAoCLFtMArxwivDJJ+bR1HTKJdlEoTELCIqgEwVGSQ+hIm0NbK8WXcTEI0UPoa2NbG4y2K00JEWbZavJXkYaqo9CRHS55FcZTjKEk3NKoCYUnSQ0rWxrZbFKbKIhOKPZe1cJKzZSaQrIyULHDZmV5K4xySsDRKWOruanGtjLJXFEmwaIbDLX0hIPBUQPVFVkQkDoUNfSoDgQGKPekoxeGzA4DUvnn4bxzcZrtJyipKfPNy5w+9lnXwgqsiyHNeSVpemw4bWb9psYeq//uQZBoABQt4yMVxYAIAAAkQoAAAHvYpL5m6AAgAACXDAAAAD59jblTirQe9upFsmZbpMudy7Lz1X1DYsxOOSWpfPqNX2WqktK0DMvuGwlbNj44TleLPQ+Gsfb+GOWOKJoIrWb3cIMeeON6lz2umTqMXV8Mj30yWPpjoSa9ujK8SyeJP5y5mOW1D6hvLepeveEAEDo0mgCRClOEgANv3B9a6fikgUSu/DmAMATrGx7nng5p5iimPNZsfQLYB2sDLIkzRKZOHGAaUyDcpFBSLG9MCQALgAIgQs2YunOszLSAyQYPVC2YdGGeHD2dTdJk1pAHGAWDjnkcLKFymS3RQZTInzySoBwMG0QueC3gMsCEYxUqlrcxK6k1LQQcsmyYeQPdC2YfuGPASCBkcVMQQqpVJshui1tkXQJQV0OXGAZMXSOEEBRirXbVRQW7ugq7IM7rPWSZyDlM3IuNEkxzCOJ0ny2ThNkyRai1b6ev//3dzNGzNb//4uAvHT5sURcZCFcuKLhOFs8mLAAEAt4UWAAIABAAAAAB4qbHo0tIjVkUU//uQZAwABfSFz3ZqQAAAAAngwAAAE1HjMp2qAAAAACZDgAAAD5UkTE1UgZEUExqYynN1qZvqIOREEFmBcJQkwdxiFtw0qEOkGYfRDifBui9MQg4QAHAqWtAWHoCxu1Yf4VfWLPIM2mHDFsbQEVGwyqQoQcwnfHeIkNt9YnkiaS1oizycqJrx4KOQjahZxWbcZgztj2c49nKmkId44S71j0c8eV9yDK6uPRzx5X18eDvjvQ6yKo9ZSS6l//8elePK/Lf//IInrOF/FvDoADYAGBMGb7FtErm5MXMlmPAJQVgWta7Zx2go+8xJ0UiCb8LHHdftWyLJE0QIAIsI+UbXu67dZMjmgDGCGl1H+vpF4NSDckSIkk7Vd+sxEhBQMRU8j/12UIRhzSaUdQ+rQU5kGeFxm+hb1oh6pWWmv3uvmReDl0UnvtapVaIzo1jZbf/pD6ElLqSX+rUmOQNpJFa/r+sa4e/pBlAABoAAAAA3CUgShLdGIxsY7AUABPRrgCABdDuQ5GC7DqPQCgbbJUAoRSUj+NIEig0YfyWUho1VBBBA//uQZB4ABZx5zfMakeAAAAmwAAAAF5F3P0w9GtAAACfAAAAAwLhMDmAYWMgVEG1U0FIGCBgXBXAtfMH10000EEEEEECUBYln03TTTdNBDZopopYvrTTdNa325mImNg3TTPV9q3pmY0xoO6bv3r00y+IDGid/9aaaZTGMuj9mpu9Mpio1dXrr5HERTZSmqU36A3CumzN/9Robv/Xx4v9ijkSRSNLQhAWumap82WRSBUqXStV/YcS+XVLnSS+WLDroqArFkMEsAS+eWmrUzrO0oEmE40RlMZ5+ODIkAyKAGUwZ3mVKmcamcJnMW26MRPgUw6j+LkhyHGVGYjSUUKNpuJUQoOIAyDvEyG8S5yfK6dhZc0Tx1KI/gviKL6qvvFs1+bWtaz58uUNnryq6kt5RzOCkPWlVqVX2a/EEBUdU1KrXLf40GoiiFXK///qpoiDXrOgqDR38JB0bw7SoL+ZB9o1RCkQjQ2CBYZKd/+VJxZRRZlqSkKiws0WFxUyCwsKiMy7hUVFhIaCrNQsKkTIsLivwKKigsj8XYlwt/WKi2N4d//uQRCSAAjURNIHpMZBGYiaQPSYyAAABLAAAAAAAACWAAAAApUF/Mg+0aohSIRobBAsMlO//Kk4soosy1JSFRYWaLC4qZBYWFRGZdwqKiwkNBVmoWFSJkWFxX4FFRQWR+LsS4W/rFRb/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////VEFHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAU291bmRib3kuZGUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMjAwNGh0dHA6Ly93d3cuc291bmRib3kuZGUAAAAAAAAAACU=";
 
 const METADATA_SUPPORTED = [
-    "fullscreen", "maximized",
-    "iconic", "above", "below",
-    "title", "size-hints",
-    "class-instance", "transient-for", "window-type",
-    "has-alpha", "decorations", "override-redirect",
-    "tray", "modal", "opacity",
+  "fullscreen", "maximized",
+  "iconic", "above", "below",
+  "title", "size-hints",
+  "class-instance", "transient-for", "window-type",
+  "has-alpha", "decorations", "override-redirect",
+  "tray", "modal", "opacity",
 ]
 
 // This option adds the CSS class .gpu-trigger to the windows.
@@ -168,12 +168,14 @@ class XpraClient {
     const video_max_size = [1024, 768];
     this.encoding_options = {
       "": this.encoding,
-      "icons" : {
+      "icons": {
         "max_size": [30, 30],
       },
       "transparency": true,
       "rgb_lz4": (lz4 && lz4.decode != "undefined"),
-      "decoder-speed": { "video": 0 },
+      "decoder-speed": {
+        "video": 0
+      },
       "color-gamut": Utilities.getColorGamut(),
       "video_scaling": true,
       "video_max_size": video_max_size,
@@ -330,14 +332,14 @@ class XpraClient {
     document.getElementById("screen").addEventListener("mousemove", (e) => this.on_mousemove(e));
 
     const div = document.querySelector("#screen");
+
     function on_mousescroll(e) {
       me.on_mousescroll(e);
       return e.preventDefault();
     }
     if (Utilities.isEventSupported("wheel")) {
       div.addEventListener("wheel", on_mousescroll, false);
-    }
-    else {
+    } else {
       this.warn("browser does not support scroll wheel events");
     }
   }
@@ -545,7 +547,7 @@ class XpraClient {
       this.offscreen_api = DECODE_WORKER && XpraOffscreenWorker.isAvailable(this.ssl);
     }
     if (this.offscreen_api) {
-      this.set_encoding_option('video_max_size',[4096, 4096]);
+      this.set_encoding_option('video_max_size', [4096, 4096]);
       this.clog("using offscreen decode worker");
       decode_worker = new Worker("js/OffscreenDecodeWorker.js");
     } else {
@@ -605,10 +607,9 @@ class XpraClient {
   _do_connect(with_worker) {
     if (this.webtransport) {
       this.protocol = new XpraWebTransportProtocol();
-    }
-    else {
-        const use_worker = with_worker && !XPRA_CLIENT_FORCE_NO_WORKER;
-        this.protocol = use_worker ? new XpraProtocolWorkerHost() : new XpraProtocol();
+    } else {
+      const use_worker = with_worker && !XPRA_CLIENT_FORCE_NO_WORKER;
+      this.protocol = use_worker ? new XpraProtocolWorkerHost() : new XpraProtocol();
     }
     this.open_protocol();
   }
@@ -619,20 +620,18 @@ class XpraClient {
     // make uri
     let uri = "";
     if (this.webtransport) {
-        uri = "https";
-    }
-    else {
-        if (this.ssl) {
-            uri = "wss";
-        }
-        else {
-            uri = "ws";
-        }
+      uri = "https";
+    } else {
+      if (this.ssl) {
+        uri = "wss";
+      } else {
+        uri = "ws";
+      }
     }
     uri += "://";
     uri += this.host;
     if (this.port) {
-        uri += `:${this.port}`;
+      uri += `:${this.port}`;
     }
     uri += this.path;
     // do open
@@ -646,7 +645,9 @@ class XpraClient {
     this.send([PACKET_TYPES.buffer_refresh, wid, 0, 100,
       {
         "refresh-now": true,
-        batch: { reset: true },
+        batch: {
+          reset: true
+        },
       },
       {}, //no client_properties
     ]);
@@ -793,9 +794,9 @@ class XpraClient {
           const number_slides = $(".window-preview-item-container").length;
           const current_slide = preview_element.slick("slickCurrentSlide");
           let next_index = current_slide;
-          next_index = e.shiftKey
-            ? (current_slide - 1) % number_slides
-            : (current_slide + 1) % number_slides;
+          next_index = e.shiftKey ?
+            (current_slide - 1) % number_slides :
+            (current_slide + 1) % number_slides;
           preview_element.slick("goTo", next_index, true);
           return e.stopPropagation() || e.preventDefault();
         } else if (e.altKey) {
@@ -1317,9 +1318,13 @@ class XpraClient {
       this._make_hello();
     }
     if (challenge_response) {
-      this._update_capabilities({"challenge_response": challenge_response});
+      this._update_capabilities({
+        "challenge_response": challenge_response
+      });
       if (client_salt) {
-        this._update_capabilities({"challenge_client_salt": client_salt});
+        this._update_capabilities({
+          "challenge_client_salt": client_salt
+        });
       }
     }
     this.clog("sending hello capabilities", this.capabilities);
@@ -1356,14 +1361,16 @@ class XpraClient {
       "mouse.show": true,
       "vrefresh": this.vrefresh,
       "file-chunks": FILE_CHUNKS_SIZE,
-      "setting-change": true,  // Required by v5 servers
-      "xdg-menu-update" : true,
-      "xdg-menu" : true,
+      "setting-change": true, // Required by v5 servers
+      "xdg-menu-update": true,
+      "xdg-menu": true,
     });
     this._update_capabilities(this._get_network_caps());
     if (this.encryption) {
       this.cipher_in_caps = this._get_cipher_caps()
-      this._update_capabilities({"encryption" : this.cipher_in_caps});
+      this._update_capabilities({
+        "encryption": this.cipher_in_caps
+      });
       console.info("setting cipher in caps=", JSON.stringify(this.cipher_in_caps));
       this.protocol.set_cipher_in(this.cipher_in_caps, this.encryption_key);
     }
@@ -1383,7 +1390,7 @@ class XpraClient {
       auto_refresh_delay: 500,
       "metadata.supported": METADATA_SUPPORTED,
       "encodings": {
-        "" : this.supported_encodings,
+        "": this.supported_encodings,
         "core": this.supported_encodings,
         "rgb_formats": this.RGB_FORMATS,
         "window-icon": ["png"],
@@ -1391,11 +1398,11 @@ class XpraClient {
         "packet": true,
       },
       "encoding": this._get_encoding_caps(),
-      "audio" : this._get_audio_caps(),
+      "audio": this._get_audio_caps(),
       "clipboard": this._get_clipboard_caps(),
-      "keymap" : this._get_keymap_caps(),
+      "keymap": this._get_keymap_caps(),
       "file": this._get_file_caps(),
-      "wants" : ["audio", ],
+      "wants": ["audio", ],
       // encoding stuff
       windows: true,
       "window.pre-map": true,
@@ -1405,11 +1412,11 @@ class XpraClient {
       desktop_mode_size: [this.desktop_width, this.desktop_height],
       screen_sizes: this._get_screen_sizes(),
       dpi: {
-        "x" : this._get_DPI(),
-        "y" : this._get_DPI(),
+        "x": this._get_DPI(),
+        "y": this._get_DPI(),
       },
       notifications: {
-        "enabled" : true,
+        "enabled": true,
       },
       cursors: true,
       bell: true,
@@ -1439,8 +1446,8 @@ class XpraClient {
       "lz4": (lz4 && lz4.decode != "undefined"),
       "bandwidth-limit": this.bandwidth_limit,
       "connection-data": Utilities.getConnectionInfo(),
-      "network" : {
-        "pings" : 5,
+      "network": {
+        "pings": 5,
       }
     }
   }
@@ -1452,7 +1459,7 @@ class XpraClient {
       try {
         this.debug("network", "crypto.subtle=", crypto.subtle);
         for (const hash of ["sha1", "sha256", "sha384", "sha512"]) {
-          digests.push("hmac+"+hash);
+          digests.push("hmac+" + hash);
         }
         this.debug("network", "digests:", digests);
       } catch {
@@ -1487,7 +1494,7 @@ class XpraClient {
 
   _get_build_caps() {
     return {
-      "revision" : Utilities.REVISION,
+      "revision": Utilities.REVISION,
       "local_modifications": Utilities.LOCAL_MODIFICATIONS,
       "branch": Utilities.BRANCH,
     }
@@ -1495,7 +1502,7 @@ class XpraClient {
 
   _get_platform_caps() {
     return {
-      "" : Utilities.getPlatformName(),
+      "": Utilities.getPlatformName(),
       "name": Utilities.getPlatformName(),
       "processor": Utilities.getPlatformProcessor(),
       "platform": navigator.appVersion,
@@ -1504,9 +1511,9 @@ class XpraClient {
 
   _get_audio_caps() {
     return {
-      "receive" : true,
-      "send" : true,
-      "decoders" : Object.keys(this.audio_codecs),
+      "receive": true,
+      "send": true,
+      "decoders": Object.keys(this.audio_codecs),
     }
   }
 
@@ -1545,9 +1552,9 @@ class XpraClient {
     this.log("clipboard preferred format: ", this.clipboard_preferred_format);
 
     return {
-      "enabled" : this.clipboard_enabled,
-      "want_targets" : true,
-      "greedy" : true,
+      "enabled": this.clipboard_enabled,
+      "want_targets": true,
+      "greedy": true,
       "selections": selections,
       "preferred-targets": this.clipboard_targets,
     }
@@ -1856,7 +1863,7 @@ class XpraClient {
 
   init_clipboard() {
     this.clog("initializing clipboard: enabled=", this.clipboard_enabled,
-              ", poll=", this.clipboard_poll, ", preferred format=", this.clipboard_preferred_format);
+      ", poll=", this.clipboard_poll, ", preferred format=", this.clipboard_preferred_format);
     if (!this.clipboard_enabled) {
       return;
     }
@@ -2014,9 +2021,9 @@ class XpraClient {
       (text) => {
         this.debug("clipboard", "paste event, text/html=", text);
         if (!text) {
-            // try with plain text:
-            read_clipboard_text();
-            return;
+          // try with plain text:
+          read_clipboard_text();
+          return;
         }
         const clipboard_buffer = text;
         if (clipboard_buffer != this.clipboard_buffer) {
@@ -2129,14 +2136,18 @@ class XpraClient {
       iwin.focused = iwin.wid == wid;
       if (iwin.focused) {
         iwin.stacking_layer = top_stacking_layer;
-        this.send_configure_window(iwin, { focused: true }, true);
+        this.send_configure_window(iwin, {
+          focused: true
+        }, true);
       } else {
         //move it down to fill the gap:
         if (iwin.stacking_layer > old_stacking_layer) {
           iwin.stacking_layer--;
         }
         if (had_focus == index) {
-          this.send_configure_window(iwin, { focused: false }, true);
+          this.send_configure_window(iwin, {
+            focused: false
+          }, true);
         }
       }
       iwin.updateFocus();
@@ -2329,8 +2340,7 @@ class XpraClient {
         this.close_protocol();
         this.reconnect_attempt++;
         this.do_reconnect();
-      }
-      else {
+      } else {
         this.disconnect_reason = "failed to open connection";
         this.close();
       }
@@ -2417,7 +2427,7 @@ class XpraClient {
 
   _process_close(packet) {
     this.clog("websocket closed: ", packet[1], "reason: ", this.disconnect_reason,
-              ", reconnect: ", this.reconnect, ", reconnect attempt: ", this.reconnect_attempt);
+      ", reconnect: ", this.reconnect, ", reconnect attempt: ", this.reconnect_attempt);
     if (this.reconnect_in_progress) {
       return;
     }
@@ -2634,7 +2644,7 @@ class XpraClient {
     this.server_audio_codecs = audio_caps["encoders"];
     if (!this.server_audio_codecs) {
       this.audio_enabled = false;
-       this.on_audio_state_change("disabled", "audio codecs missing on the server");
+      this.on_audio_state_change("disabled", "audio codecs missing on the server");
       return;
     }
     this.log("audio codecs supported by the server:", this.server_audio_codecs);
@@ -2644,9 +2654,9 @@ class XpraClient {
       //find the best codec we can use:
       for (let codec of MediaSourceConstants.PREFERRED_CODEC_ORDER) {
         if (codec in this.audio_codecs && this.server_audio_codecs.includes(codec)) {
-          this.audio_framework = this.mediasource_codecs[codec]
-            ? "mediasource"
-            : "aurora";
+          this.audio_framework = this.mediasource_codecs[codec] ?
+            "mediasource" :
+            "aurora";
           this.audio_codec = codec;
           this.log("using", this.audio_framework, "audio codec", codec);
           break;
@@ -2693,10 +2703,10 @@ class XpraClient {
       const ul = document.createElement("ul");
 
       //TODO need to figure out how to do this properly
-      a.addEventListener("mouseenter", function () {
+      a.addEventListener("mouseenter", function() {
         this.parentElement.childNodes[1].className = "-visible";
       });
-      a.addEventListener("mouseleave", function () {
+      a.addEventListener("mouseleave", function() {
         this.parentElement.childNodes[1].className = "";
       });
 
@@ -2723,15 +2733,15 @@ class XpraClient {
         a2.title = command;
 
         const me = this;
-        a2.addEventListener("click", function () {
+        a2.addEventListener("click", function() {
           const ignore = "False";
           me.start_command(this.innerText, this.title, ignore);
           document.querySelector("#menu_list").className = "-hide";
         });
-        a2.addEventListener("mouseenter", function () {
+        a2.addEventListener("mouseenter", function() {
           this.parentElement.parentElement.className = "-visible";
         });
-        a2.addEventListener("mouseleave", function () {
+        a2.addEventListener("mouseleave", function() {
           this.parentElement.parentElement.className = "";
         });
 
@@ -2762,11 +2772,11 @@ class XpraClient {
   xdg_image(icon_data, icon_type) {
     const img = new Image();
     if (typeof icon_data !== "undefined") {
-      let image_type = "image/"+icon_type;
+      let image_type = "image/" + icon_type;
       if (icon_type == "svg") {
         image_type = "image/svg+xml";
       }
-      img.src = "data:"+image_type+";base64,"+Utilities.ArrayBufferToBase64(icon_data);
+      img.src = "data:" + image_type + ";base64," + Utilities.ArrayBufferToBase64(icon_data);
     }
     img.className = "menu-content-left";
     img.height = 24;
@@ -2796,6 +2806,7 @@ class XpraClient {
     const prompt = (packet[5] || "password").replace(/[^\d+,. /:a-z]/gi, "");
     this.clog("process challenge:", digest);
     const client = this;
+
     function call_do_process_challenge(password) {
       if (!client || !client.protocol) {
         return;
@@ -2859,16 +2870,16 @@ class XpraClient {
     this.clog("with server salt:", Utilities.convertToHex(server_salt));
     this.clog("using", salt_digest);
     Utilities.gendigest(salt_digest, client_salt, server_salt)
-    .then(salt => {
-      this.clog(salt_digest, ":", Utilities.convertToHex(salt));
-      const hex_salt = Utilities.convertToHex(salt);
-      Utilities.gendigest(challenge_digest, password, hex_salt)
-      .then(challenge_response => {
-        this.do_send_hello(challenge_response, client_salt)
+      .then(salt => {
+        this.clog(salt_digest, ":", Utilities.convertToHex(salt));
+        const hex_salt = Utilities.convertToHex(salt);
+        Utilities.gendigest(challenge_digest, password, hex_salt)
+          .then(challenge_response => {
+            this.do_send_hello(challenge_response, client_salt)
+          })
+          .catch(err => this.disconnect("failed to generate challenge response: " + err));
       })
-      .catch(err => this.disconnect("failed to generate challenge response: "+err));
-    })
-    .catch(err => this.disconnect("failed to generate salt: "+err));
+      .catch(err => this.disconnect("failed to generate salt: " + err));
   }
 
   _send_ping() {
@@ -2934,7 +2945,10 @@ class XpraClient {
   }
   send_info_request() {
     if (!this.info_request_pending) {
-      this.send([PACKET_TYPES.info_request, [this.uuid], [], []]);
+      this.send([PACKET_TYPES.info_request, [this.uuid],
+        [],
+        []
+      ]);
       this.info_request_pending = true;
     }
   }
@@ -2981,7 +2995,10 @@ class XpraClient {
       left = 0;
       top = screen_height / 2 - toolbar_height / 2 - 100;
     }
-    float_menu_element.offset({ top, left });
+    float_menu_element.offset({
+      top,
+      left
+    });
   }
 
   _process_new_tray(packet) {
@@ -3012,8 +3029,7 @@ class XpraClient {
     mycanvas.height = h;
     this.id_to_window[wid] = new XpraWindow(this, wid,
       x, y, w, h,
-      metadata, false, true,
-      {},
+      metadata, false, true, {},
       //TODO: send new tray geometry to the server using send_tray_configure
       () => this.debug("tray", "tray geometry changed (ignored)"),
       (event, window) => this.on_mousemove(event, window),
@@ -3261,7 +3277,10 @@ class XpraClient {
       this.auto_focus();
     }
     if (this.decode_worker) {
-      this.decode_worker.postMessage({ cmd: "remove", wid });
+      this.decode_worker.postMessage({
+        cmd: "remove",
+        wid
+      });
     }
   }
 
@@ -3367,6 +3386,7 @@ class XpraClient {
     }
 
     const context = this;
+
     function notify() {
       let icon_url = "";
       if (icon && icon[0] == "png") {
@@ -3392,7 +3412,7 @@ class XpraClient {
         notify();
         return;
       } else if (Notification.permission !== "denied") {
-        Notification.requestPermission(function (permission) {
+        Notification.requestPermission(function(permission) {
           if (permission === "granted") {
             notify();
           }
@@ -3403,10 +3423,10 @@ class XpraClient {
 
     if (window.doNotification) {
       window.doNotification("info", nid, summary, body, expire_timeout, icon, actions, hints,
-        function (nid, action_id) {
+        function(nid, action_id) {
           context.send([PACKET_TYPES.notification_action, nid, action_id]);
         },
-        function (nid, reason, text) {
+        function(nid, reason, text) {
           context.send([PACKET_TYPES.notification_close, nid, reason, text || ""]);
         }
       );
@@ -3483,8 +3503,11 @@ class XpraClient {
       raw_buffers.push(img_data.buffer);
     }
     if (this.decode_worker) {
-      this.decode_worker.postMessage(
-        { cmd: "decode", packet, start: now },
+      this.decode_worker.postMessage({
+          cmd: "decode",
+          packet,
+          start: now
+        },
         raw_buffers
       );
       //the worker draw event will call do_process_draw
@@ -3497,7 +3520,10 @@ class XpraClient {
     this.do_process_draw(packet, 0);
     const wid = packet[1];
     if (this.decode_worker) {
-      this.decode_worker.postMessage({ cmd: "eos", wid });
+      this.decode_worker.postMessage({
+        cmd: "eos",
+        wid
+      });
     }
   }
 
@@ -3508,7 +3534,10 @@ class XpraClient {
     }
 
     if (this.offscreen_api) {
-      this.decode_worker.postMessage({ cmd: "redraw", wid: win.wid });
+      this.decode_worker.postMessage({
+        cmd: "redraw",
+        wid: win.wid
+      });
       return;
     }
     // request that drawing to screen takes place at next available opportunity if possible
@@ -3582,10 +3611,12 @@ class XpraClient {
       return;
     }
     const me = this;
+
     function send_damage_sequence(decode_time, message) {
       me.do_send_damage_sequence(packet_sequence, wid, width, height, decode_time, message);
     }
     const client = this;
+
     function decode_result(error) {
       const flush = options["flush"] || 0;
       let decode_time = Math.round(1000 * performance.now() - 1000 * start);
@@ -3626,7 +3657,7 @@ class XpraClient {
    */
   init_audio(ignore_audio_blacklist) {
     this.debug("audio", "init_audio() enabled=", this.audio_enabled, ", mediasource enabled=",
-        this.audio_mediasource_enabled, ", aurora enabled=", this.audio_aurora_enabled);
+      this.audio_mediasource_enabled, ", aurora enabled=", this.audio_aurora_enabled);
     if (this.audio_mediasource_enabled) {
       this.mediasource_codecs = MediaSourceUtil.getMediaSourceAudioCodecs(ignore_audio_blacklist);
       for (const codec_option in this.mediasource_codecs) {
@@ -3716,6 +3747,7 @@ class XpraClient {
 
   _sound_start_mediasource() {
     const me = this;
+
     function audio_error(event) {
       if (!me.media_source) {
         //already closed
@@ -4065,33 +4097,33 @@ class XpraClient {
 
     this.debug("clipboard", "sending clipboard token with data:", data, "as", actual_data_format);
     let packet;
-    packet = data
-      ? [
-          PACKET_TYPES.clipboard_token,
-          "CLIPBOARD",
-          actual_data_format,
-          UTF8_STRING,
-          UTF8_STRING,
-          8,
-          "bytes",
-          data,
-          claim,
-          greedy,
-          synchronous,
-        ]
-      : [
-          PACKET_TYPES.clipboard_token,
-          "CLIPBOARD",
-          [],
-          "",
-          "",
-          8,
-          "bytes",
-          "",
-          claim,
-          greedy,
-          synchronous,
-        ];
+    packet = data ?
+      [
+        PACKET_TYPES.clipboard_token,
+        "CLIPBOARD",
+        actual_data_format,
+        UTF8_STRING,
+        UTF8_STRING,
+        8,
+        "bytes",
+        data,
+        claim,
+        greedy,
+        synchronous,
+      ] :
+      [
+        PACKET_TYPES.clipboard_token,
+        "CLIPBOARD",
+        [],
+        "",
+        "",
+        8,
+        "bytes",
+        "",
+        claim,
+        greedy,
+        synchronous,
+      ];
     this.send(packet);
   }
 
@@ -4155,9 +4187,13 @@ class XpraClient {
         navigator.clipboard && Object.hasOwn(navigator.clipboard, "write")
       ) {
         this.debug("clipboard", "png image received");
-        const blob = new Blob([wire_data], { type: dtype });
+        const blob = new Blob([wire_data], {
+          type: dtype
+        });
         this.debug("clipboard", "created blob", blob);
-        const item = new ClipboardItem({ "image/png": blob });
+        const item = new ClipboardItem({
+          "image/png": blob
+        });
         this.debug("clipboard", "created ClipboardItem", item);
         const items = [item];
         this.debug("clipboard", "created ClipboardItem list", items);
@@ -4604,7 +4640,9 @@ class XpraClient {
       mimetype = "application/octet-binary";
     }
     this.log(`saving ${data.length} bytes of ${mimetype} data to filename ${filename}`);
-    Utilities.saveFile(filename, data, { type: mimetype });
+    Utilities.saveFile(filename, data, {
+      type: mimetype
+    });
   }
 
   print_document(filename, data, mimetype) {
@@ -4617,19 +4655,24 @@ class XpraClient {
       return;
     }
     this.log(`got ${data.length} bytes of PDF to print`);
-    const file = new Blob([data], { type: mimetype });
+    const file = new Blob([data], {
+      type: mimetype
+    });
     const fileURL = URL.createObjectURL(file);
     const win = window.open(fileURL);
     if (!win || win.closed || typeof win.closed == "undefined") {
       this.warn("popup blocked, saving to file instead");
-      Utilities.saveFile(filename, data, { type: mimetype });
+      Utilities.saveFile(filename, data, {
+        type: mimetype
+      });
     } else {
       win.print();
     }
   }
 
   send_all_files(files) {
-    for (let index = 0, f; (f = files[index]); index++) {
+    for (let index = 0, f;
+      (f = files[index]); index++) {
       this.send_file(f);
     }
   }

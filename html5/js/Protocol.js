@@ -30,7 +30,10 @@ class XpraProtocolWorkerHost {
   open(uri) {
     if (this.worker) {
       //re-use the existing worker:
-      this.worker.postMessage({ c: "o", u: uri });
+      this.worker.postMessage({
+        c: "o",
+        u: uri
+      });
       return;
     }
     this.worker = new Worker("js/Protocol.js");
@@ -40,7 +43,10 @@ class XpraProtocolWorkerHost {
         const data = e.data;
         switch (data.c) {
           case "r":
-            this.worker.postMessage({ c: "o", u: uri });
+            this.worker.postMessage({
+              c: "o",
+              u: uri
+            });
             break;
           case "p":
             if (this.packet_handler) {
@@ -59,28 +65,43 @@ class XpraProtocolWorkerHost {
     );
   }
 
-  close = function () {
-    this.worker.postMessage({ c: "c" });
+  close = function() {
+    this.worker.postMessage({
+      c: "c"
+    });
   };
 
-  terminate = function () {
-    this.worker.postMessage({ c: "t" });
+  terminate = function() {
+    this.worker.postMessage({
+      c: "t"
+    });
   };
 
-  send = function (packet) {
-    this.worker.postMessage({ c: "s", p: packet });
+  send = function(packet) {
+    this.worker.postMessage({
+      c: "s",
+      p: packet
+    });
   };
 
-  set_packet_handler = function (callback) {
+  set_packet_handler = function(callback) {
     this.packet_handler = callback;
   };
 
-  set_cipher_in = function (caps, key) {
-    this.worker.postMessage({ c: "z", p: caps, k: key });
+  set_cipher_in = function(caps, key) {
+    this.worker.postMessage({
+      c: "z",
+      p: caps,
+      k: key
+    });
   };
 
-  set_cipher_out = function (caps, key) {
-    this.worker.postMessage({ c: "x", p: caps, k: key });
+  set_cipher_out = function(caps, key) {
+    this.worker.postMessage({
+      c: "x",
+      p: caps,
+      k: key
+    });
   };
 }
 
@@ -133,9 +154,9 @@ class XpraProtocol {
     if (event.code) {
       try {
         message +=
-          typeof code_mappings[event.code] !== "undefined"
-            ? `'${code_mappings[event.code]}' (${event.code})`
-            : `${event.code}`;
+          typeof code_mappings[event.code] !== "undefined" ?
+          `'${code_mappings[event.code]}' (${event.code})` :
+          `${event.code}`;
         if (event.reason) {
           message += `: '${event.reason}'`;
         }
@@ -158,6 +179,7 @@ class XpraProtocol {
     this.mQ = [];
     this.header = [];
     this.websocket = null;
+
     function handle(packet) {
       me.packet_handler(packet);
     }
@@ -173,7 +195,7 @@ class XpraProtocol {
       return;
     }
     this.websocket.binaryType = "arraybuffer";
-    this.websocket.addEventListener("open", function () {
+    this.websocket.addEventListener("open", function() {
       if (me.verify_connected_timer) {
         clearTimeout(me.verify_connected_timer);
         me.verify_connected_timer = 0;
@@ -185,10 +207,10 @@ class XpraProtocol {
     );
     this.websocket.onerror = (event) =>
       handle(["error", me.close_event_str(event), event.code || 0]);
-    this.websocket.onmessage = function (e) {
+    this.websocket.onmessage = function(e) {
       // push arraybuffer values onto the end
       me.rQ.push(new Uint8Array(e.data));
-      setTimeout(function () {
+      setTimeout(function() {
         me.process_receive_queue();
       }, this.process_interval);
     };
@@ -340,23 +362,22 @@ class XpraProtocol {
       this.cipher_in_params["iv"] = iv;
       // console.log("decrypt", packet_data.byteLength, "bytes, padding=", padding, JSON.stringify(this.cipher_in_params), packet_data);
       crypto.subtle.decrypt(this.cipher_in_params, this.cipher_in_key, encrypted_data)
-      .then(decrypted => {
-        // console.log("decrypted", decrypted.byteLength, "bytes, padding=", padding);
-        const expected_length = packet_size - padding - iv.length;
-        if (!decrypted || decrypted.byteLength < expected_length) {
-          this.protocol_error(` expected ${expected_length} bytes, but got ${decrypted.byteLength}`);
-          return false;
-        }
-        if (decrypted.byteLength == packet_size - padding) {
+        .then(decrypted => {
+          // console.log("decrypted", decrypted.byteLength, "bytes, padding=", padding);
+          const expected_length = packet_size - padding - iv.length;
+          if (!decrypted || decrypted.byteLength < expected_length) {
+            this.protocol_error(` expected ${expected_length} bytes, but got ${decrypted.byteLength}`);
+            return false;
+          }
+          if (decrypted.byteLength == packet_size - padding) {
             packet_data = new Uint8Array(decrypted);
-        }
-        else {
+          } else {
             packet_data = new Uint8Array(decrypted.slice(0, packet_size - padding));
-        }
-        // console.log("packet data:", packet_data);
-        this.process_packet_data(header, packet_data);
-      })
-      .catch(err => this.protocol_error("failed to decrypt data: "+err));
+          }
+          // console.log("packet data:", packet_data);
+          this.process_packet_data(header, packet_data);
+        })
+        .catch(err => this.protocol_error("failed to decrypt data: " + err));
       return true;
     }
 
@@ -458,15 +479,15 @@ class XpraProtocol {
         const iv = Utilities.getSecureRandomBytes(16);
         this.cipher_out_params["iv"] = iv;
         crypto.subtle.encrypt(this.cipher_out_params, this.cipher_out_key, bdata)
-        .then(encrypted => {
+          .then(encrypted => {
             const enc_u8 = new Uint8Array(encrypted);
             const packet_data = new Uint8Array(iv.byteLength + enc_u8.byteLength);
             packet_data.set(iv, 0);
             packet_data.set(enc_u8, iv.byteLength);
             payload_size += iv.byteLength;
             this.send_packet(packet_data, payload_size, true);
-        })
-        .catch(err => this.protocol_error("failed to encrypt packet: "+err));
+          })
+          .catch(err => this.protocol_error("failed to encrypt packet: " + err));
         return;
       }
       this.send_packet(bdata, payload_size, false);
@@ -474,16 +495,16 @@ class XpraProtocol {
   }
 
   make_packet_header(proto_flags, level, payload_size) {
-      const header = new Uint8Array(8);
-      header[0] = "P".charCodeAt(0);
-      header[1] = proto_flags;
-      header[2] = level;
-      header[3] = 0;
-      //size header:
-      for (let index = 0; index < 4; index++) {
-        header[7 - index] = (payload_size >> (8 * index)) & 0xff;
-      }
-      return header;
+    const header = new Uint8Array(8);
+    header[0] = "P".charCodeAt(0);
+    header[1] = proto_flags;
+    header[2] = level;
+    header[3] = 0;
+    //size header:
+    for (let index = 0; index < 4; index++) {
+      header[7 - index] = (payload_size >> (8 * index)) & 0xff;
+    }
+    return header;
   }
 
   send_packet(bdata, payload_size, encrypted) {
@@ -517,7 +538,10 @@ class XpraProtocol {
       } else if (packet[0] === "sound-data" && Object.hasOwn(packet[2], "buffer")) {
         raw_buffers.push(packet[2].buffer);
       }
-      postMessage({ c: "p", p: packet }, raw_buffers);
+      postMessage({
+        c: "p",
+        p: packet
+      }, raw_buffers);
     }
   }
 
@@ -599,44 +623,45 @@ class XpraProtocol {
     const DEFAULT_KEY_HASH = "SHA-1";
     let key_hash = (caps["key_hash"] || DEFAULT_KEY_HASH).toUpperCase();
     if (key_hash.startsWith("SHA") && !key_hash.startsWith("SHA-")) {
-        key_hash = "SHA-"+key_hash.substring(3);
+      key_hash = "SHA-" + key_hash.substring(3);
     }
 
     const params = {
-      name: "AES-"+mode,   //ie: "AES-CBC"
+      name: "AES-" + mode, //ie: "AES-CBC"
       iv: Utilities.u8(iv),
     }
 
-    console.log("importing", "PBKDF2", "key", "'"+key+"'");
-    crypto.subtle.importKey("raw", Utilities.u8(key), { name: "PBKDF2" }, false, ["deriveKey", "deriveBits"])
-    .then(imported_key => {
+    console.log("importing", "PBKDF2", "key", "'" + key + "'");
+    crypto.subtle.importKey("raw", Utilities.u8(key), {
+        name: "PBKDF2"
+      }, false, ["deriveKey", "deriveBits"])
+      .then(imported_key => {
         console.log("imported key:", imported_key);
-        console.log("deriving", key_size*8, "bits", mode, "key with:", iterations, key_hash);
+        console.log("deriving", key_size * 8, "bits", mode, "key with:", iterations, key_hash);
         console.log("salt=", salt);
         // now stretch it to get the real key:
-        crypto.subtle.deriveKey(
-            {
-                name: "PBKDF2",
-                salt: salt,
-                iterations: iterations,
-                hash: {name: key_hash},
-            }, imported_key,
-            {
-                name: "AES-"+mode,
-                length: key_size * 8,
-            }, false, [usage],
-        )
-        .then(crypto_key => {
-          console.log("derived key for", usage, "usage:", crypto_key);
-          setup_function(block_size, params, crypto_key);
-        })
-        .catch(err => {
-          this.protocol_error("failed to derive AES key: "+err);
-        });
-    })
-    .catch(err => {
-      this.protocol_error("failed to import AES key: "+err);
-    });
+        crypto.subtle.deriveKey({
+            name: "PBKDF2",
+            salt: salt,
+            iterations: iterations,
+            hash: {
+              name: key_hash
+            },
+          }, imported_key, {
+            name: "AES-" + mode,
+            length: key_size * 8,
+          }, false, [usage], )
+          .then(crypto_key => {
+            console.log("derived key for", usage, "usage:", crypto_key);
+            setup_function(block_size, params, crypto_key);
+          })
+          .catch(err => {
+            this.protocol_error("failed to derive AES key: " + err);
+          });
+      })
+      .catch(err => {
+        this.protocol_error("failed to import AES key: " + err);
+      });
   }
 }
 
@@ -676,7 +701,10 @@ if (
       raw_buffer = packet[3].buffer;
       packet[3] = null;
     }
-    postMessage({ c: "p", p: packet }, raw_buffer);
+    postMessage({
+      c: "p",
+      p: packet
+    }, raw_buffer);
   }, null);
   // attach listeners from main thread
   self.addEventListener(
@@ -705,11 +733,16 @@ if (
           self.close();
           break;
         default:
-          postMessage({ c: "l", t: "got unknown command from host" });
+          postMessage({
+            c: "l",
+            t: "got unknown command from host"
+          });
       }
     },
     false
   );
   // tell host we are ready
-  postMessage({ c: "r" });
+  postMessage({
+    c: "r"
+  });
 }
