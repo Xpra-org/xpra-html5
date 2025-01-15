@@ -1653,6 +1653,7 @@ class XpraClient {
     const buttons = [];
     const coords = [x, y];
     let wid = 0;
+    if (this.server_is_desktop) wid = 1;
     if (win) {
       wid = win.wid;
       // add relative coordinates:
