@@ -518,7 +518,7 @@ table#sessiondata td {
 }
 
 #login-box {
-  height: 320px;
+  height: fit-content;
   width: 480px;
   margin: auto;
   margin-top: 20px;
@@ -563,6 +563,7 @@ table#sessiondata td {
 
 #login-buttons {
   margin: 2em;
+  margin-bottom: 0px;
 }
 
 .login-button {
