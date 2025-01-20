@@ -499,9 +499,13 @@ class XpraWindow {
       jQuery(this.div).addClass("windowinfocus");
 
       // Update window title
-      jQuery("title").text(
-        `${location.pathname.replaceAll("/", "")}: ${this.title}`
-      );
+      if (this.client.session_name === undefined) {
+        jQuery("title").text(
+          `${location.pathname.replaceAll("/", "")}: ${this.title}`
+        );
+      } else {
+        jQuery("title").text(client.session_name);
+      }
 
       // Update the icon
       if (this.icon !== null) {
