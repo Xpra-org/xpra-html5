@@ -222,6 +222,7 @@ class XpraClient {
   init_state() {
     // state
     this.connected = false;
+    this.session_name = undefined;
     this.desktop_width = 0;
     this.desktop_height = 0;
     this.server_remote_logging = false;
@@ -2497,6 +2498,9 @@ class XpraClient {
     if (!hello["rencodeplus"]) {
       throw "no common packet encoders, 'rencodeplus' is required by this client";
     }
+
+    this.session_name = hello["session_name"];
+    $("title").text(this.session_name);
 
     this.server_display = hello["display"] || "";
     this.server_platform = hello["platform"] || "";
