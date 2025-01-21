@@ -2087,8 +2087,7 @@ class XpraClient {
     let modal = false;
     if (MODAL_FOCUS) {
       for (const index in this.id_to_window) {
-        const win = this.id_to_window[index];
-        modal = modal || win.metadata.modal;
+        modal = modal || this.id_to_window[index].metadata.modal;
       }
     }
     if (modal && !win.metadata.modal) {
