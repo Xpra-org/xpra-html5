@@ -2770,6 +2770,10 @@ class XpraClient {
         $("#startmenuentry").show();
       }
     }
+    else if (setting == "session_name") {
+        this.session_name = value;
+        jQuery("title").text(value);
+    }
   }
 
   xdg_image(icon_data, icon_type) {
