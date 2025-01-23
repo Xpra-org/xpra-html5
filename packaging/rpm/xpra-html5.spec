@@ -78,7 +78,7 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
-* Tue Jan 14 2024 Antoine Martin <antoine@xpra.org> 17-0-1
+* Tue Jan 14 2025 Antoine Martin <antoine@xpra.org> 17-0-1
 - Build and packaging:
    nodejs-less formatting script
    remove unused modules
