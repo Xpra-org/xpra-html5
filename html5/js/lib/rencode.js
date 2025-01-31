@@ -46,23 +46,23 @@ Number.isSafeInteger = Number.isSafeInteger || function (value) {
 function utf8ByteArrayToString(bytes) {
 	var out = [], pos = 0, c = 0;
 	while (pos < bytes.length) {
-		var c1 = bytes[pos++];
+		const c1 = bytes[pos++];
 		if (c1 < 128) {
 			out[c++] = String.fromCharCode(c1);
 		} else if (c1 > 191 && c1 < 224) {
-			var c2 = bytes[pos++];
+			const c2 = bytes[pos++];
 			out[c++] = String.fromCharCode((c1 & 31) << 6 | c2 & 63);
 		} else if (c1 > 239 && c1 < 365) {
 			// Surrogate Pair
-			var c2 = bytes[pos++];
-			var c3 = bytes[pos++];
-			var c4 = bytes[pos++];
-			var u = ((c1 & 7) << 18 | (c2 & 63) << 12 | (c3 & 63) << 6 | c4 & 63) - 0x10000;
+			const c2 = bytes[pos++];
+			const c3 = bytes[pos++];
+			const c4 = bytes[pos++];
+			const u = ((c1 & 7) << 18 | (c2 & 63) << 12 | (c3 & 63) << 6 | c4 & 63) - 0x10000;
 			out[c++] = String.fromCharCode(0xD800 + (u >> 10));
 			out[c++] = String.fromCharCode(0xDC00 + (u & 1023));
 		} else {
-			var c2 = bytes[pos++];
-			var c3 = bytes[pos++];
+			const c2 = bytes[pos++];
+			const c3 = bytes[pos++];
 			out[c++] = String.fromCharCode((c1 & 15) << 12 | (c2 & 63) << 6 | c3 & 63);
 		}
 	}
@@ -222,16 +222,16 @@ function rencode_dict(dict) {
 	const rlist = [];
 	if (dict_len < RENCODE.DICT_FIXED_COUNT) {
 		rlist.push(new Uint8Array([RENCODE.DICT_FIXED_START + dict_len]));
-		for(key in dict) {
-			value = dict[key];
+		for(const key in dict) {
+			const value = dict[key];
 			rlist.push(rencode(key));
 			rlist.push(rencode(value));
 		}
 	}
 	else {
 		rlist.push(new Uint8Array([RENCODE.CHR_DICT]));
-		for(key in dict) {
-			value = dict[key];
+		for(const key in dict) {
+			const value = dict[key];
 			rlist.push(rencode(key));
 			rlist.push(rencode(value));
 		}
