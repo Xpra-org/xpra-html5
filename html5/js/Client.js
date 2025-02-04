@@ -2882,7 +2882,8 @@ class XpraClient {
         const hex_salt = Utilities.convertToHex(salt);
         Utilities.gendigest(challenge_digest, password, hex_salt)
           .then(challenge_response => {
-            this.do_send_hello(challenge_response, client_salt)
+            const hex_challenge = Utilities.convertToHex(challenge_response);
+            this.do_send_hello(hex_challenge, client_salt)
           })
           .catch(err => this.disconnect("failed to generate challenge response: " + err));
       })
