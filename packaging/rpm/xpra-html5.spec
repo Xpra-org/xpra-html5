@@ -78,7 +78,7 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
-* Tue Jan 14 2025 Antoine Martin <antoine@xpra.org> 17-0-1
+* Tue Feb 04 2025 Antoine Martin <antoine@xpra.org> 17-0-1
 - Build and packaging:
    nodejs-less formatting script
    remove unused modules
@@ -87,20 +87,24 @@ rm -rf $RPM_BUILD_ROOT
    gaming cursor mode
    use builtin browser crypto functions
    noVNC-style vertical retractable floating menu
+   set page title to session-name, honour setting changes
 - Fixes:
    missing start menu with some servers
    horizontal scrolling was inverted
    keep modal windows on top
    offset in desktop mode
+   modal focus failure with minified windows
 - Network:
    WebSocket connections linger and cause re-connect
    longer WebSocket connection timeout
+   rencodeplus breaks in strict mode
 - Decoding:
    bump max video size when offscreen is actually used
    honour offscreen toggle, override detection
    try to fallback to client decoding when worker fails
    disable decode worker zero-copy on errors
    errors when debug logging is enabled
+   enable video decoding on all platforms
 - Connect dialog:
    update 'offscreen' availability when `ssl` is toggled
    consistent and less ugly font
@@ -109,7 +113,9 @@ rm -rf $RPM_BUILD_ROOT
    don't send clipboard packets to servers that don't want them
    restrict allowed characters
    prevent the float menu from overflowing
+   cursors not set for desktop sessions
 - Cosmetic:
+   login box overflowing
    float menu keyboard icon not changing colours
    hide start menu when there are no entries
    undo formatting mess
@@ -120,6 +126,7 @@ rm -rf $RPM_BUILD_ROOT
    workaround ugly Chrome obfuscation
    remove legacy bootstrap
    session info box not big enough
+   source formatting
 
 * Mon Sep 09 2024 Antoine Martin <antoine@xpra.org> 16-0-1
 - re-connection fixes:

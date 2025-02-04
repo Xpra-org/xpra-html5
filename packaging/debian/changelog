@@ -12,15 +12,19 @@ xpra-html5 (17-r0-1) UNRELEASED; urgency=low
    - horizontal scrolling was inverted
    - keep modal windows on top
    - offset in desktop mode
+   - modal focus failure with minified windows
+   - set page title to session-name, honour setting changes
   * Network:
    - WebSocket connections linger and cause re-connect
    - longer WebSocket connection timeout
+   - rencodeplus breaks in strict mode
   * Decoding:
    - bump max video size when offscreen is actually used
    - honour offscreen toggle, override detection
    - try to fallback to client decoding when worker fails
    - disable decode worker zero-copy on errors
    - errors when debug logging is enabled
+   - enable video decoding on all platforms
   * Connect dialog:
    - update 'offscreen' availability when `ssl` is toggled
    - consistent and less ugly font
@@ -29,7 +33,9 @@ xpra-html5 (17-r0-1) UNRELEASED; urgency=low
    - don't send clipboard packets to servers that don't want them
    - restrict allowed characters
    - prevent the float menu from overflowing
+   - cursors not set for desktop sessions
   * Cosmetic:
+   - login box overflowing
    - float menu keyboard icon not changing colours
    - hide start menu when there are no entries
    - undo formatting mess
@@ -40,8 +46,9 @@ xpra-html5 (17-r0-1) UNRELEASED; urgency=low
    - workaround ugly Chrome obfuscation
    - remove legacy bootstrap
    - session info box not big enough
+   - source formatting
 
- -- Antoine Martin antoine@xpra.org  Tue, 14 Jan 2025 20:49:14 +0700 +700
+ -- Antoine Martin antoine@xpra.org  Tue, 04 Feb 2025 12:37:48 +0700 +700
 
 xpra-html5 (16-r0-1) UNRELEASED; urgency=low
   * re-connection fixes:
