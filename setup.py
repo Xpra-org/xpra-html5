@@ -13,7 +13,7 @@ import os.path
 from typing import AnyStr
 from subprocess import Popen, PIPE
 
-VERSION = "17"
+VERSION = "18"
 AUTHOR = "Antoine Martin"
 AUTHOR_EMAIL = "antoine@xpra.org"
 
