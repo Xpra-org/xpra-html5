@@ -4382,12 +4382,12 @@ class XpraClient {
     }
     // removed hash checks because crypto.subtle is asynchronous, which is a pain
     if (data.length == filesize) {
-      //got the whole file
-      if (digest) {
-        digest.update(Utilities.ArrayBufferToString(data));
-        this.log("digest.update(", data, ")");
-        if (!this.verify_digest(digest, options[digest.algorithm])) {
-          return;
+      // got the whole file
+      for (const digest of ["sha512", "sha384", "sha256", "sha224", "sha1"]) {
+        const digest_value = options[digest];
+        if (digest_value) {
+          // not implemented!
+          this.log("digest check not implemented for", digest);
         }
       }
       this._got_file(basefilename, data, printit, mimetype, options);
