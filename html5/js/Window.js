@@ -1365,8 +1365,11 @@ class XpraWindow {
         paint_error("h264 decoding is only supported via the decode workers");
         this.may_paint_now();
       } else if (coding == "scroll") {
-        for (let index = 0, stop = img_data.length; index < stop; ++index) {
-          const scroll_data = img_data[index];
+        // newer servers use options,
+        // older ones overload the image data:
+        const scrolls = options["scroll"] || img_data;
+        for (let index = 0, stop = scrolls.length; index < stop; ++index) {
+          const scroll_data = scrolls[index];
           this.debug("draw", "scroll", index, ":", scroll_data);
           const sx = scroll_data[0];
           const sy = scroll_data[1];
