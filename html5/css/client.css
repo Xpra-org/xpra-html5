@@ -449,6 +449,7 @@ div.windowinfocus div.windowhead {
   border: 1px;
   z-index: 100000;
   display: none;
+  pointer-events: none;
 }
 
 table#sessiondata {

@@ -1651,8 +1651,9 @@ class XpraClient {
       return true;
     }
 
-    if (this.server_readonly || !this.connected) {
-      return window == undefined;
+    // Ignore events when server is readonly, disconnected or if the event is not over the screen while in shadow mode
+    if (this.server_readonly || !this.connected || (!win && this.server_is_shadow)) {
+      return win == undefined;
     }
     const mouse = this.getMouse(e);
     const x = Math.round(mouse.x);
@@ -1665,8 +1666,9 @@ class XpraClient {
     if (win) {
       wid = win.wid;
       // add relative coordinates:
-      coords.push(Math.round(mouse.x - win.x));
-      coords.push(Math.round(mouse.y - win.y));
+      const pos = jQuery(win.div).position()
+      coords.push(Math.round(mouse.x - pos.left));
+      coords.push(Math.round(mouse.y - pos.top));
       e.preventDefault();
     }
     this.send([PACKET_TYPES.pointer_position, wid, coords, modifiers, buttons]);
@@ -1684,8 +1686,9 @@ class XpraClient {
     if (win) {
       wid = win.wid;
       // add relative coordinates:
-      coords.push(Math.round(mouse.x - win.x));
-      coords.push(Math.round(mouse.y - win.y));
+      const pos = jQuery(win.div).position()
+      coords.push(Math.round(mouse.x - pos.left));
+      coords.push(Math.round(mouse.y - pos.right));
     }
     for (const button of this.buttons_pressed) {
       this.send_button_action(wid, button, pressed, coords, modifiers);
@@ -1696,7 +1699,9 @@ class XpraClient {
     if (win) {
       e.preventDefault();
     }
-    if (this.server_readonly || this.mouse_grabbed || !this.connected) {
+
+    // Ignore events when server is readonly, disconnected or if the event is not over the screen while in shadow mode
+    if (this.server_readonly || this.mouse_grabbed || !this.connected || (!win && this.server_is_shadow)) {
       return;
     }
     // Skip processing if clicked on float menu
@@ -1720,8 +1725,9 @@ class XpraClient {
     if (win) {
       wid = win.wid;
       // add relative coordinates:
-      coords.push(Math.round(mouse.x - win.x));
-      coords.push(Math.round(mouse.y - win.y));
+      const pos = jQuery(win.div).position()
+      coords.push(Math.round(mouse.x - pos.left));
+      coords.push(Math.round(mouse.y - pos.top));
       e.preventDefault();
     }
     // dont call set focus unless the focus has actually changed
@@ -1791,7 +1797,8 @@ class XpraClient {
   }
 
   on_mousescroll(e, win) {
-    if (this.server_readonly || this.mouse_grabbed || !this.connected) {
+    // Ignore events when server is readonly, disconnected or if the event is not over the screen while in shadow mode
+    if (this.server_readonly || this.mouse_grabbed || !this.connected || (!win && this.server_is_shadow)) {
       return false;
     }
     const mouse = this.getMouse(e);
@@ -3223,8 +3230,9 @@ class XpraClient {
     const win = this.id_to_window[wid];
     //we can use window relative coordinates:
     if (packet.length >= 6 && win) {
-      x = win.x + packet[4];
-      y = win.y + packet[5];
+      const pos = jQuery(win.div).position()
+      x = pos.left + packet[4];
+      y = pos.top + packet[5];
     }
     const shadow_pointer = document.querySelector("#shadow_pointer");
     const style = shadow_pointer.style;
