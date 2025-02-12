@@ -1653,7 +1653,7 @@ class XpraClient {
 
     // Ignore events when server is readonly, disconnected or if the event is not over the screen while in shadow mode
     if (this.server_readonly || !this.connected || (!win && this.server_is_shadow)) {
-      return window == undefined;
+      return win == undefined;
     }
     const mouse = this.getMouse(e);
     const x = Math.round(mouse.x);
