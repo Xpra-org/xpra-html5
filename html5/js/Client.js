@@ -1652,7 +1652,7 @@ class XpraClient {
     }
 
     if (this.server_readonly || !this.connected) {
-      return window == undefined;
+      return win == undefined;
     }
     const mouse = this.getMouse(e);
     const x = Math.round(mouse.x);
