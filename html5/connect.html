@@ -429,6 +429,7 @@
       const FILE_PROPERTIES = [
         "server",
         "port",
+        "path",
         "username",
         "password",
         "exit_with_children",
@@ -492,12 +493,12 @@
       }
 
       function doConnectURI() {
-        let url = "xpraws://";
+        let url = "xpra+ws://";
         const ssl = document.getElementById("ssl").checked;
         // the python client does not support webtransport yet:
         // const webtransport = document.getElementById("webtransport").checked;
         if (ssl) {
-          url = "xprawss://";
+          url = "xpra+wss://";
         }
         const username = document.getElementById("username").value;
         const password = document.getElementById("password").value;
@@ -515,7 +516,12 @@
         if (port) {
           url += ":" + port;
         }
-        url += "/";
+        const path = document.getElementById("path").value;
+        if (path) {
+          url += path;
+        } else {
+          url += "/";
+        }
         const url_action = get_URL_action();
         console.log("url_action=", url_action);
         let display = url_action.get("display");
@@ -537,6 +543,7 @@
         props.delete("port");
         props.delete("username");
         props.delete("password");
+        props.delete("path");
         for (const [prop, value] of props) {
           if (!prop.startsWith("debug_")) {
             url += do_add_prop(prop.replaceAll("_", "-"), value, i == 0);
