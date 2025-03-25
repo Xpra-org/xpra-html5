@@ -101,7 +101,8 @@ const Utilities = {
   },
 
   gendigest(digest, password, salt) {
-    Utilities.clog("gendigest(", digest, ", ", password, ", ", salt, ")");
+    // Utilities.clog("gendigest(", digest, ", ", password, ", ", salt, ")");
+    // Utilities.clog("gendigest(", digest, ", ", Utilities.convertToHex(password), ", ", Utilities.convertToHex(salt), ")");
     if (digest == "xor") {
       const trimmed_salt = salt.slice(0, password.length);
       // Utilities.debug("xoring with trimmed salt:", Utilities.convertToHex(trimmed_salt));
@@ -124,6 +125,19 @@ const Utilities = {
     hash = hash.toUpperCase();
     if (hash.startsWith("SHA") && !hash.startsWith("SHA-")) {
       hash = "SHA-" + hash.substring(3);
+    }
+
+    if (typeof crypto.subtle === "undefined") {
+      // use hmac.js
+      return new Promise(function(resolve, reject) {
+        if (hash != "SHA-256") {
+          reject(new Error("crypto.subtle API is not available in this context"));
+        }
+        else {
+          value = hmac(Utilities.u8(password), Utilities.u8(salt));
+          resolve(value);
+        }
+      });
     }
 
     const promise = new Promise(function(resolve, reject) {
@@ -167,10 +181,13 @@ const Utilities = {
       string_;
   },
 
-  convertToHex(string_) {
+  convertToHex(value) {
+    if (value instanceof Uint8Array) {
+      return Utilities.arrayhex(value);
+    }
     let hex = "";
-    for (let index = 0; index < string_.length; index++) {
-      hex += `${string_.charCodeAt(index).toString(16).padStart(2, "0")}`;
+    for (let index = 0; index < value.length; index++) {
+      hex += `${value.charCodeAt(index).toString(16).padStart(2, "0")}`;
     }
     return hex;
   },
