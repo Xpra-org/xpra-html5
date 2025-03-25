@@ -95,7 +95,13 @@ const Utilities = {
     return new Uint8Array(value);
   },
 
+  xor(str1, str2) {
+    const trimmed_str2 = str2.slice(0, str1.length);
+    return Utilities.xorString(str1, trimmed_str2);
+  },
+
   gendigest(digest, password, salt) {
+    Utilities.clog("gendigest(", digest, ", ", password, ", ", salt, ")");
     if (digest == "xor") {
       const trimmed_salt = salt.slice(0, password.length);
       // Utilities.debug("xoring with trimmed salt:", Utilities.convertToHex(trimmed_salt));
@@ -121,6 +127,8 @@ const Utilities = {
     }
 
     const promise = new Promise(function(resolve, reject) {
+      Utilities.clog("crypto.subtle=", crypto.subtle);
+      Utilities.clog("crypto.subtle.importKey=", crypto.subtle.importKey);
       crypto.subtle.importKey("raw", Utilities.u8(password), {
           name: "HMAC",
           hash: hash

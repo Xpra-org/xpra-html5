@@ -2815,6 +2815,7 @@ class XpraClient {
     const client = this;
 
     function call_do_process_challenge(password) {
+      Utilities.clog("call_do_process_challenge(", password, ")");
       if (!client || !client.protocol) {
         return;
       }
@@ -2878,16 +2879,29 @@ class XpraClient {
     this.clog("using", salt_digest);
     Utilities.gendigest(salt_digest, client_salt, server_salt)
       .then(salt => {
-        this.clog(salt_digest, ":", Utilities.convertToHex(salt));
         const hex_salt = Utilities.convertToHex(salt);
+        this.clog(salt_digest, ":", hex_salt);
+        if (challenge_digest == "xor") {
+          // shortcut: no need for async API, do not convert the result to hex
+          const xored = Utilities.xor(password, hex_salt);
+          this.do_send_hello(xored, client_salt);
+          return;
+        }
+
         Utilities.gendigest(challenge_digest, password, hex_salt)
           .then(challenge_response => {
             const hex_challenge = Utilities.convertToHex(challenge_response);
             this.do_send_hello(hex_challenge, client_salt)
           })
-          .catch(err => this.disconnect("failed to generate challenge response: " + err));
+          .catch(err => {
+            this.cerror("challenge digest error", err);
+            this.disconnect("failed to generate challenge response " + err);
+          });
       })
-      .catch(err => this.disconnect("failed to generate salt: " + err));
+      .catch(err => {
+        this.cerror("salt digest error", err);
+        this.disconnect("failed to generate challenge response " + err);
+      });
   }
 
   _send_ping() {
