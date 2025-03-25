@@ -126,6 +126,12 @@ const Utilities = {
       hash = "SHA-" + hash.substring(3);
     }
 
+    if (typeof crypto.subtle === "undefined") {
+      return new Promise(function(resolve, reject) {
+        reject(new Error("crypto.subtle API is not available in this context"));
+      });
+    }
+
     const promise = new Promise(function(resolve, reject) {
       Utilities.clog("crypto.subtle=", crypto.subtle);
       Utilities.clog("crypto.subtle.importKey=", crypto.subtle.importKey);
