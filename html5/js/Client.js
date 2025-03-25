@@ -1454,7 +1454,7 @@ class XpraClient {
   }
 
   _get_digests() {
-    const digests = ["xor", "keycloak"];
+    const digests = ["xor", "keycloak", "hmac+sha256"];
 
     if (typeof crypto.subtle !== "undefined") {
       try {
