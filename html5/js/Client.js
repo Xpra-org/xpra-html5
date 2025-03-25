@@ -1456,7 +1456,7 @@ class XpraClient {
   _get_digests() {
     const digests = ["xor", "keycloak"];
 
-    if (typeof crypto.subtle !== undefined) {
+    if (typeof crypto.subtle !== "undefined") {
       try {
         this.debug("network", "crypto.subtle=", crypto.subtle);
         for (const hash of ["sha1", "sha256", "sha384", "sha512"]) {
