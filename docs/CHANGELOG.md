@@ -1,6 +1,12 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+## [17.1] 2025-03-26
+- [keycloak authentication fails](https://github.com/Xpra-org/xpra-html5/commit/de64e1ec5d380c5d2c81d0c2478ad01589eab06b)
+- [`xor` authentication errors over non-secure connections](https://github.com/Xpra-org/xpra-html5/commit/3aba44cff7bdf82412b700896e9dc3a62169d1fb)
+- [file downloads fail](https://github.com/Xpra-org/xpra-html5/commit/c006a23b4e76420c9e9d92f36aba28cea68c6454)
+- [pointer event handler error](https://github.com/Xpra-org/xpra-html5/commit/4af417c67823b2f1215522af4e16c94d79bc4933)
+
 ## [17.0] 2025-02-04
 - Build and packaging:
   - [nodejs-less formatting script](https://github.com/Xpra-org/xpra-html5/pull/332)

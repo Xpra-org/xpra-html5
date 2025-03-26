@@ -1,3 +1,11 @@
+xpra-html5 (17.1-r0-1) UNRELEASED; urgency=low
+  * keycloak authentication fails
+  * `xor` authentication errors over non-secure connections
+  * file downloads fail
+  * pointer event handler error
+
+ -- Antoine Martin antoine@xpra.org  Wed, 26 Mar 2025 21:58:20 +0700 +700
+
 xpra-html5 (17-r0-1) UNRELEASED; urgency=low
   * Build and packaging:
    - nodejs-less formatting script
