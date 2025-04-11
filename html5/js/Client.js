@@ -1735,7 +1735,7 @@ class XpraClient {
       this.set_focus(win);
     }
 
-    if (window.cursor_lock) {
+    if (window.cursor_lock && win.canvas) {
       $("#cursor-lock-button").removeClass("icon-paused");
       win.canvas.requestPointerLock();
     }
