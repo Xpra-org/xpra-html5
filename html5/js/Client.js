@@ -1401,6 +1401,7 @@ class XpraClient {
       "encoding": this._get_encoding_caps(),
       "audio": this._get_audio_caps(),
       "clipboard": this._get_clipboard_caps(),
+      "pointer": this._get_pointer_caps(),
       "keymap": this._get_keymap_caps(),
       "file": this._get_file_caps(),
       "wants": ["audio", ],
@@ -1522,6 +1523,12 @@ class XpraClient {
     return {
       "layout": this.key_layout,
       "keycodes": this._get_keycodes(),
+    }
+  }
+
+  _get_pointer_caps() {
+    return {
+      "double_click": {},
     }
   }
 
