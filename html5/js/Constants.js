@@ -1,6 +1,6 @@
 /*
  * This file is part of Xpra.
- * Copyright (C) 2016-2022 Antoine Martin <antoine@xpra.org>
+ * Copyright (C) 2016 Antoine Martin <antoine@xpra.org>
  * Licensed under MPL 2.0, see:
  * http://www.mozilla.org/MPL/2.0/
  *

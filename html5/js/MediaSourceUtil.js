@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2024 Antoine Martin <antoine@xpra.org>
+ * Copyright (c) 2016 Antoine Martin <antoine@xpra.org>
  * Licensed under MPL 2.0
  *
  */

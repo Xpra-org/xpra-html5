@@ -4,8 +4,8 @@ Upstream-Contact: Antoine Martin <antoine@xpra.org>
 Source: https://xpra.org/
 
 Files: html5/js/*
-Copyright: 2009-2021 Antoine Martin <antoine@xpra.org>
-           2015-2016 Spikes, Inc.
+Copyright: 2009 Antoine Martin <antoine@xpra.org>
+           2015 Spikes, Inc.
            2016 David Brushinski <dbrushinski@spikes.com>
            2014 Joshua Higgins <josh@kxes.net>
            2012 Joel Martin
