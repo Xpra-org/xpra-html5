@@ -3,7 +3,7 @@
 # Xpra is released under the terms of the GNU GPL v2, or, at your option, any
 # later version. See the file COPYING for details.
 
-%define version 17.1
+%define version 17.2
 %define release 1.r0%{?dist}
 %define minifier uglifyjs
 %define python python3
@@ -78,6 +78,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Wed May 21 2025 Antoine Martin <antoine@xpra.org> 17.2-0-1
+- TODO
+
 * Wed Mar 26 2025 Antoine Martin <antoine@xpra.org> 17.1-0-1
 - keycloak authentication fails
 - `xor` authentication errors over non-secure connections
