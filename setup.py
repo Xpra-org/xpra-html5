@@ -399,6 +399,9 @@ def set_version(new_version: str) -> None:
         "./packaging/debian/control": {
             fr"Version:\s*{VERSION}.*": f"Version: {new_version}-r{revision}-1",
         },
+        "./packaging/debian/build.sh": {
+            fr"pkgs/xpra-html5-{VERSION}\.\*": f"pkgs/xpra-html5-{new_version}.*",
+        },
         "./packaging/rpm/xpra-html5.spec": {
             f"%define version {VERSION}": f"%define version {new_version}",
             "%define release .*": f"%define release 1.r{revision}%{{?dist}}",
