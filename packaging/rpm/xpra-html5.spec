@@ -32,9 +32,9 @@ BuildRequires:		python3
 %endif
 #don't depend on this package,
 #so we can also install on a pure RHEL distro:
-%if 0%{?el9}%{?el8}%{?el7}
+%if 0%{?el10}%{?el9}%{?el8}%{?el7}
 BuildRequires:		system-logos
-%if 0%{?el9}%{?el8}
+%if 0%{?el10}%{?el9}%{?el8}
 BuildRequires:		system-backgrounds
 Recommends:			system-logos
 Recommends:			system-backgrounds
