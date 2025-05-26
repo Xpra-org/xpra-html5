@@ -62,6 +62,7 @@ const MOVERESIZE_DIRECTION_JS_NAME = {
 };
 
 const PACKET_TYPES = {
+  control: "control",
   ack_file_chunk: "ack-file-chunk",
   bell: "bell",
   buffer_refresh: "buffer-refresh",

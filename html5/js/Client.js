@@ -441,6 +441,7 @@ class XpraClient {
   init_packet_handlers() {
     // the client holds a list of packet handlers
     this.packet_handlers = {
+      [PACKET_TYPES.control]: this._process_control,
       [PACKET_TYPES.ack_file_chunk]: this._process_ack_file_chunk,
       [PACKET_TYPES.bell]: this._process_bell,
       [PACKET_TYPES.challenge]: this._process_challenge,
@@ -1365,6 +1366,10 @@ class XpraClient {
       "setting-change": true, // Required by v5 servers
       "xdg-menu-update": true,
       "xdg-menu": true,
+      "control_commands": [
+        "log", "redraw", "stop-audio", "toggle-keyboard",
+        "toggle-float-menu", "toggle-window-preview",
+      ],
     });
     this._update_capabilities(this._get_network_caps());
     if (this.encryption) {
@@ -1732,7 +1737,7 @@ class XpraClient {
     if (win) {
       wid = win.wid;
       // add relative coordinates:
-      const pos = jQuery(win.div).position()
+      const pos = jQuery(win.div).position();
       coords.push(Math.round(mouse.x - pos.left));
       coords.push(Math.round(mouse.y - pos.top));
       e.preventDefault();
@@ -2617,6 +2622,32 @@ class XpraClient {
     this.on_connection_progress("Session started", "", 100);
     this.on_connect();
     this.connected = true;
+  }
+
+  _process_control(packet) {
+    const action = packet[1];
+    console.info("control: ", action, packet);
+    if (action == "log") {
+        this.clog("log action:", packet);
+    }
+    else if (action == "redraw") {
+        this.redraw_windows()
+    }
+    else if (action == "stop-audio") {
+        this.close_audio();
+    }
+    else if (action == "toggle-keyboard") {
+        toggle_keyboard();
+    }
+    else if (action == "toggle-float-menu") {
+        toggle_float_menu();
+    }
+    else if (action == "toggle-window-preview") {
+        toggle_window_preview();
+    }
+    else {
+        this.cerror("unhandled control action:", action);
+    }
   }
 
   _process_modifier_keycodes(modifier_keycodes) {
