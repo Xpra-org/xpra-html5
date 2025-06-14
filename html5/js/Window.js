@@ -415,19 +415,21 @@ class XpraWindow {
     const oldy = this.y;
     // for now make sure we don't out of top left
     // this will be much smarter!
-    const min_visible = 80;
+    const min_w_visible = Math.min(80, this.w);
+    const min_h_visible = Math.min(80, this.h);
     const desktop_size = this.client._get_desktop_size();
     const ww = desktop_size[0];
     const wh = desktop_size[1];
-    if (oldx < this.leftoffset && oldx + this.w <= min_visible) {
-      this.x = min_visible - this.w + this.leftoffset;
-    } else if (oldx >= ww - min_visible) {
-      this.x = Math.min(oldx, ww - min_visible);
+    this.debug("geometry", "ensure_visible() min_w_visible=", min_w_visible, "min_h_visible=", min_h_visible, "desktop_size=", desktop_size);
+    if (oldx < this.leftoffset && oldx + this.w <= min_w_visible) {
+      this.x = min_w_visible - this.w + this.leftoffset;
+    } else if (oldx >= ww - min_w_visible) {
+      this.x = Math.min(oldx, ww - min_w_visible);
     }
-    if (oldy <= this.topoffset && oldy <= min_visible) {
+    if (oldy <= this.topoffset && oldy <= min_h_visible) {
       this.y = Number.parseInt(this.topoffset);
-    } else if (oldy >= wh - min_visible) {
-      this.y = Math.min(oldy, wh - min_visible);
+    } else if (oldy >= wh - min_h_visible) {
+      this.y = Math.min(oldy, wh - min_h_visible);
     }
     this.debug("geometry", "ensure_visible() oldx=", oldx, "oldy=", oldy, "x=", this.x, "y=", this.y);
     if (oldx != this.x || oldy != this.y) {
