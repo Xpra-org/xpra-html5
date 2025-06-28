@@ -45,6 +45,7 @@ SOFTWARE.
 
 #float_menu {
   display: none;
+  position: fixed;
   height: 30px;
   padding: 0px 0px 0px 20px;
   z-index: 100000;
