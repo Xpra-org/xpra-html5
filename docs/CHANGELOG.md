@@ -1,6 +1,10 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+## [17.2] 2025-06-28
+- [narrow or short windows can be misplaced](https://github.com/Xpra-org/xpra-html5/commit/4c90c0ca1d771106e4d28594dcef84cb2309a2b9)
+- [float menu causing desktop mode offset](https://github.com/Xpra-org/xpra-html5/commit/a5ed3ed06a0b9fdd4fb8f61053715cd2743b8547)
+
 ## [17.1] 2025-03-26
 - [keycloak authentication fails](https://github.com/Xpra-org/xpra-html5/commit/de64e1ec5d380c5d2c81d0c2478ad01589eab06b)
 - [`xor` authentication errors over non-secure connections](https://github.com/Xpra-org/xpra-html5/commit/3aba44cff7bdf82412b700896e9dc3a62169d1fb)

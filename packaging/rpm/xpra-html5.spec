@@ -78,8 +78,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
-* Wed May 21 2025 Antoine Martin <antoine@xpra.org> 17.2-0-1
-- TODO
+* Sat Jun 28 2025 Antoine Martin <antoine@xpra.org> 17.2-0-1
+- narrow or short windows can be misplaced
+- float menu causing desktop mode offset
 
 * Wed Mar 26 2025 Antoine Martin <antoine@xpra.org> 17.1-0-1
 - keycloak authentication fails
