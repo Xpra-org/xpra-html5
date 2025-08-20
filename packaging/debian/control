@@ -12,7 +12,7 @@ Build-Depends: python3
               ,gnome-backgrounds
 Vcs-Git: https://github.com/Xpra-org/xpra-html5
 Vcs-Browser: https://github.com/Xpra-org/xpra-html5
-Section: network
+Section: net
 Priority: optional
 Architecture: all
 Multi-Arch: foreign
