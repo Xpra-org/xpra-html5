@@ -54,11 +54,11 @@ class XpraProtocolWorkerHost {
             }
             break;
           case "l":
-            this.log(data.t);
+            console.log(data.t);
             break;
           default:
-            this.error("got unknown command from worker");
-            this.error(e.data);
+            console.error("got unknown command from worker");
+            console.error(e.data);
         }
       },
       false
