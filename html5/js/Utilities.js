@@ -373,7 +373,7 @@ const Utilities = {
 
   is_64bit() {
     const _to_check = [];
-    if (Object.hasOwn((window.navigator, "cpuClass")))
+    if (Object.hasOwn(window.navigator, "cpuClass"))
       _to_check.push(`${window.navigator.cpuClass}`.toLowerCase());
     if (window.navigator.platform)
       _to_check.push(`${window.navigator.platform}`.toLowerCase());
@@ -777,7 +777,7 @@ const Utilities = {
     if (c.type) {
       index["type"] = c.type;
     }
-    if (Object.hasOwn((c, "effectiveType"))) {
+    if (Object.hasOwn(c, "effectiveType")) {
       index["effective-type"] = c.effectiveType;
     }
     if (!isNaN(c.downlink) && c.downlink > 0 && isFinite(c.downlink)) {

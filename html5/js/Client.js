@@ -2581,7 +2581,7 @@ class XpraClient {
       this.send([PACKET_TYPES.printers, printers]);
     }
     this.server_connection_data = hello["connection-data"];
-    if (Object.hasOwn((navigator, "connection"))) {
+    if (Object.hasOwn(navigator, "connection")) {
       navigator.connection.addEventListener("change", this._connection_change);
       this._connection_change();
     }
@@ -4251,7 +4251,7 @@ class XpraClient {
     }
 
     if (navigator.clipboard) {
-      if (Object.hasOwn((navigator.clipboard, "read"))) {
+      if (Object.hasOwn(navigator.clipboard, "read")) {
         this.debug("clipboard", "request using read()");
         navigator.clipboard.read().then(
           (data) => {
@@ -4303,7 +4303,7 @@ class XpraClient {
           }
         );
         return;
-      } else if (Object.hasOwn((navigator.clipboard, "readText"))) {
+      } else if (Object.hasOwn(navigator.clipboard, "readText")) {
         this.debug("clipboard", "clipboard request using readText()");
         navigator.clipboard.readText().then(
           (text) => {
