@@ -20,7 +20,6 @@ class XpraWebTransportProtocol {
     this.raw_packets = [];
     this.rQ = []; // Receive queue
     this.sQ = []; // Send queue
-    this.mQ = []; // Worker message queue
     this.header = [];
 
     //Queue processing via intervals
@@ -40,7 +39,6 @@ class XpraWebTransportProtocol {
     this.raw_packets = [];
     this.rQ = [];
     this.sQ = [];
-    this.mQ = [];
     this.header = [];
     this.webtransport = null;
     this.stream = null;

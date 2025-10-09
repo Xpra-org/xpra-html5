@@ -2,7 +2,7 @@
  * Copyright (c) 2021 Antoine Martin <antoine@xpra.org>
  */
 
-var RENCODE = {
+const RENCODE = {
 	DEFAULT_FLOAT_BITS : 32,
 	MAX_INT_LENGTH : 64,
 
@@ -44,7 +44,7 @@ Number.isSafeInteger = Number.isSafeInteger || function (value) {
 };
 
 function utf8ByteArrayToString(bytes) {
-	var out = [], pos = 0, c = 0;
+	let out = [], pos = 0, c = 0;
 	while (pos < bytes.length) {
 		const c1 = bytes[pos++];
 		if (c1 < 128) {
@@ -70,9 +70,9 @@ function utf8ByteArrayToString(bytes) {
 }
 
 function stringToUtf8ByteArray(str) {
-	var out = [], p = 0;
-	for (var i = 0; i < str.length; i++) {
-		var c = str.charCodeAt(i);
+	let out = [], p = 0;
+	for (let i = 0; i < str.length; i++) {
+		let c = str.charCodeAt(i);
 		if (c < 128) {
 			out[p++] = c;
 		} else if (c < 2048) {
@@ -507,19 +507,19 @@ function rdecode(buf) {
 
 function rencode_selftest() {
 	function test_value(input, output) {
-		var u8a_output = new Uint8Array(output);
-		var enc = rencode(input);
+		const u8a_output = new Uint8Array(output);
+		const enc = rencode(input);
 		//console.log("test_value(", input, ", ", output, ") rencode("+input+")="+enc);
-		if (enc.length!=u8a_output.length) {
+		if (enc.length != u8a_output.length) {
 			throw "failed to encode '"+input+"', expected length "+u8a_output.length+" bytes but got "+enc.length;
 		}
 		for(let i=0,j=enc.length;i<j;++i){
-			if (enc[i]!=u8a_output[i]) {
+			if (enc[i] != u8a_output[i]) {
 				throw "failed to encode '"+input+"', expected '"+u8a_output+"' but got '"+enc+"', error at position "+i+": "+enc[i]+" vs "+u8a_output[i];
 			}
 		}
-		var dec = rdecode(enc);
-		if (dec!=input) {
+		const dec = rdecode(enc);
+		if (dec != input) {
 			throw "failed to decode '"+enc+"', expected '"+input+"' but got '"+dec+"'";
 		}
 	}

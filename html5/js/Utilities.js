@@ -36,7 +36,7 @@ const Utilities = {
   },
 
   removeChars(validChars, inputString) {
-    var regex = new RegExp('[^' + validChars + ']', 'g');
+    const regex = new RegExp('[^' + validChars + ']', 'g');
     return inputString.replace(regex, '');
   },
 
@@ -54,10 +54,6 @@ const Utilities = {
       }
     }
     return s.join("");
-  },
-
-  ord(c) {
-    return c.charCodeAt(0);
   },
 
   getSecureRandomBytes(len) {
@@ -193,9 +189,9 @@ const Utilities = {
   },
 
   hexToString(hexval) {
-    var hex = hexval.toString();
-    var str = '';
-    for (var i = 0; i < hex.length; i += 2) {
+    const hex = hexval.toString();
+    let str = '';
+    for (let i = 0; i < hex.length; i += 2) {
       str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
     }
     return str;
@@ -205,13 +201,9 @@ const Utilities = {
     return Array.from(arr).map((b) => b.toString(16).padStart(2, "0")).join("");
   },
 
-  arrayToHex(buffer) {
-    return Array.prototype.map.call(buffer, x => ('00' + x.toString(16)).slice(-2)).join('');
-  },
-
   hexarray(hex) {
-    var bytes = new Uint8Array(Math.ceil(hex.length / 2));
-    for (var i = 0; i < bytes.length; i++) {
+    const bytes = new Uint8Array(Math.ceil(hex.length / 2));
+    for (let i = 0; i < bytes.length; i++) {
       bytes[i] = parseInt(hex.substr(i * 2, 2), 16);
     }
     return bytes;
@@ -241,23 +233,6 @@ const Utilities = {
     }
     if (navigator.appVersion.includes("X11")) {
       return "Posix";
-    }
-    return "unknown";
-  },
-
-  getPlatform() {
-    //use python style strings for platforms:
-    if (navigator.appVersion.includes("Win")) {
-      return "win32";
-    }
-    if (navigator.appVersion.includes("Mac")) {
-      return "darwin";
-    }
-    if (navigator.appVersion.includes("Linux")) {
-      return "linux";
-    }
-    if (navigator.appVersion.includes("X11")) {
-      return "posix";
     }
     return "unknown";
   },
@@ -318,10 +293,6 @@ const Utilities = {
 
   isWindows() {
     return navigator.platform.includes("Win");
-  },
-
-  isLinux() {
-    return navigator.platform.includes("Linux");
   },
 
   isFirefox() {
@@ -674,8 +645,7 @@ const Utilities = {
       const index = headerPair.indexOf("\u003A\u0020");
       if (index > 0) {
         const key = headerPair.slice(0, Math.max(0, index));
-        const value = headerPair.slice(Math.max(0, index + 2));
-        headers[key] = value;
+        headers[key] = headerPair.slice(Math.max(0, index + 2));
       }
     }
     return headers;
@@ -714,16 +684,6 @@ const Utilities = {
     }
 
     return value;
-  },
-
-  getboolparam(property, default_value) {
-    const v = Utilities.getparam(property);
-    if (v === undefined) {
-      return default_value;
-    }
-    return ["true", "on", "1", "yes", "enabled"].includes(
-      String(v).toLowerCase()
-    );
   },
 
   hasSessionStorage() {

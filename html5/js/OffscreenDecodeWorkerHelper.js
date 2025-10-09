@@ -14,9 +14,9 @@
 const XpraOffscreenWorker = {
   // OffscreenCanvas supported since v.16.4
   isSafariVersionSupported() {
-    var match = navigator.userAgent.match(/version\/(\d+\.\d+)/i);
+    const match = navigator.userAgent.match(/version\/(\d+\.\d+)/i);
     if (match && match[1]) {
-      var version = parseFloat(match[1]);
+      const version = parseFloat(match[1]);
       // Safari is buggy, see #227
       return version >= 999.9;
     }
@@ -25,9 +25,9 @@ const XpraOffscreenWorker = {
 
   // OffscreenCanvas supported since v.105 (with fixed added for 107/108)
   isFirefoxVersionSupported() {
-    var match = navigator.userAgent.match(/firefox\/(\d+)/i);
+    const match = navigator.userAgent.match(/firefox\/(\d+)/i);
     if (match && match[1]) {
-      var version = parseInt(match[1], 10);
+      const version = parseInt(match[1], 10);
       return version >= 108;
     }
     return false;
