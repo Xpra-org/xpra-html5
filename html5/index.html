@@ -1276,20 +1276,12 @@
       }
 
       function toggle_fullscreen() {
-        const f_el =
-          Object.hasOwn(document, "requestFullScreen") ||
-          Object.hasOwn(document, "webkitRequestFullScreen") ||
-          Object.hasOwn(document, "mozRequestFullScreen") ||
-          Object.hasOwn(document, "msRequestFullscreen");
+        const f_el = Object.hasOwn(document, "requestFullScreen");
         if (!f_el) {
           const elem = document.getElementById("fullscreen_button");
-          var is_fullscreen = document.fullScreen || document.mozFullScreen || document.webkitIsFullScreen;
+          var is_fullscreen = document.fullScreen;
           if (!is_fullscreen) {
-            const req =
-              elem.requestFullScreen ||
-              elem.webkitRequestFullScreen ||
-              elem.mozRequestFullScreen ||
-              elem.msRequestFullscreen;
+            const req = elem.requestFullScreen;
             if (req) {
               req.call(document.body);
 
@@ -1328,16 +1320,7 @@
               $("#fullscreen_button").attr("data-icon", "fullscreen_exit");
             }
           } else {
-            if (document.exitFullscreen) {
-              document.exitFullscreen();
-            } else if (document.webkitExitFullscreen) {
-              document.webkitExitFullscreen();
-            } else if (Object.hasOwn((document, "mozCancelFullScreen"))) {
-              document.mozCancelFullScreen();
-            } else if (Object.hasOwn((document, "msExitFullscreen"))) {
-              document.msExitFullscreen();
-            }
-
+            document.exitFullscreen();
             $("#fullscreen").attr("src", "./icons/fullscreen.png");
             elem.title = "Fullscreen";
             $("#fullscreen_button").attr("data-icon", "fullscreen");
@@ -1600,13 +1583,8 @@
             }
           });
 
-        const screen_change_events = "webkitfullscreenchange mozfullscreenchange fullscreenchange MSFullscreenChange";
-        $(document).on(screen_change_events, function() {
-          const f_el =
-            document.fullscreenElement ||
-            document.mozFullScreen ||
-            document.webkitIsFullScreen ||
-            document.msFullscreenElement;
+        $(document).on("fullscreenchange", function() {
+          const f_el = document.fullscreenElement;
           clog("fullscreenchange:", f_el);
           if (f_el == null) {
             //we're not in fullscreen mode now, so show fullscreen icon again:
