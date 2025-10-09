@@ -3692,7 +3692,7 @@ class XpraClient {
         client.request_redraw(win);
       }
       if (error || start == 0) {
-        this.request_redraw(win);
+        client.request_redraw(win);
         decode_time = -1;
       }
       client.debug("draw", "decode time for ", coding, " sequence ", packet_sequence, ": ", decode_time, ", flush=", flush);
