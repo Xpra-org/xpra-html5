@@ -122,7 +122,7 @@ canvas {
   border-color: grey;
   border-width: 1px;
   border-style: solid;
-  box-shadow: 0px 10px 25px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
   border-radius: 6px 6px 3px 3px;
 }
 
@@ -131,8 +131,8 @@ canvas {
   position: absolute;
   width: 30px;
   height: 30px;
-  left: 0px;
-  top: 0px;
+  left: 0;
+  top: 0;
   overflow: hidden;
   cursor: default;
   background-color: transparent;
@@ -143,12 +143,12 @@ canvas {
   display: inline-block;
   float: left;
   position: absolute;
-  top: 0px;
-  left: 0px;
+  top: 0;
+  left: 0;
   overflow: hidden;
   text-overflow: ellipsis;
-  padding: 5px;
-  padding-right: 48px;
+  padding: 5;
+  padding-right: 48;
   white-space: nowrap;
   cursor: default;
 }
@@ -157,8 +157,8 @@ canvas {
   display: inline-block;
   position: absolute;
   z-index: 1;
-  top: 0px;
-  right: 0px;
+  top: 0;
+  right: 0;
   padding-right: 5px;
   cursor: pointer;
   padding-top: 7px;
@@ -315,7 +315,7 @@ div.windowinfocus div.windowhead {
 
 .notification_buttons {
   clear: both;
-  margin: 10px 0px 0px auto;
+  margin: 10px 0 0 auto;
   font-weight: 500;
   font-size: 1.2rem;
   height: 2em;
@@ -564,7 +564,7 @@ table#sessiondata td {
 
 #login-buttons {
   margin: 2em;
-  margin-bottom: 0px;
+  margin-bottom: 0;
 }
 
 .login-button {
@@ -572,10 +572,8 @@ table#sessiondata td {
   padding: 10px 32px;
   font-size: 18px;
   line-height: 1.3333333;
-  border-radius: 6px;
   color: #fff;
   background-color: #5cb85c;
-  border-color: #4cae4c;
   display: inline-block;
   text-align: center;
   white-space: nowrap;

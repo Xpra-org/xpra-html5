@@ -80,11 +80,11 @@ label {
 #action_start_desktop_group>.form-control,
 #action_shadow_group>.form-control {
   position: relative;
-  top: 0px;
+  top: 0;
 }
 
 .list-style-none.action {
-  margin: 0px;
+  margin: 0;
 }
 
 .panel-group .list-style-none.action {
@@ -157,16 +157,15 @@ label {
 .list-group {
   position: relative;
   top: -16px;
-  padding: 0px;
+  padding: 0;
 }
 
 .list-group-item {
   display: block;
   list-style-type: none;
 
-  padding: 6px 10px;
   line-height: 1.4;
-  padding: 0px;
+  padding: 0;
   margin-bottom: -1px;
 
   background-color: white;
@@ -234,8 +233,6 @@ div.container {
 
 .form-signin .form-control {
   position: relative;
-  -webkit-box-sizing: border-box;
-  -moz-box-sizing: border-box;
   box-sizing: border-box;
   font-size: 16px;
   max-width: 16em;
@@ -259,7 +256,7 @@ div.container {
 
 .form-signin .security-box #key {
   font-size: 12px;
-  padding: 0px 10px;
+  padding: 0 10px;
   height: 20px;
 }
 
@@ -297,7 +294,7 @@ div.container {
   margin-left: -32px;
   position: relative;
   z-index: 2;
-  font-family: bootstrap-icons;
+  font-family: "bootstrap-icons";
   width: 1.2em;
   height: 1.2em;
 }

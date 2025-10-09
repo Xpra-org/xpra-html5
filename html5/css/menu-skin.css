@@ -27,7 +27,7 @@ SOFTWARE.
   background: white;
   height: 50px;
   width: 12px;
-  border-radius: 0px 10px 10px 0px;
+  border-radius: 0 10px 10px 0;
 
   position: relative;
   left: 30px;
@@ -47,7 +47,7 @@ SOFTWARE.
   display: none;
   position: fixed;
   height: 30px;
-  padding: 0px 0px 0px 20px;
+  padding: 0 0 0 20px;
   z-index: 100000;
   background: repeating-linear-gradient(90deg,
       white,
@@ -58,7 +58,7 @@ SOFTWARE.
   border-color: grey;
   border-width: 1px;
   border-style: solid;
-  box-shadow: 0px 10px 25px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
 }
 
 .menu-divleft {
@@ -74,7 +74,7 @@ SOFTWARE.
 .menu-content-left {
   white-space: nowrap;
   float: left;
-  width: 0px;
+  width: 0;
   height: 24px;
   padding: 3px 2px;
   vertical-align: middle;
@@ -85,7 +85,7 @@ SOFTWARE.
 .menu-content-right {
   white-space: nowrap;
   float: right;
-  width: 0px;
+  width: 0;
   height: 16px;
   padding: 7px 2px;
   vertical-align: middle;
@@ -102,7 +102,7 @@ SOFTWARE.
 }
 
 .Menu.-vertical {
-  border-radius: 0px 3px 3px 0px;
+  border-radius: 0 3px 3px 0;
 }
 
 /* Foreground */
@@ -131,25 +131,25 @@ SOFTWARE.
 }
 
 .Menu.-horizontal>li>ul {
-  border-top-left-radius: 0px;
-  border-top-right-radius: 0px;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
 }
 
 .Menu:not(.-alignRight) li>ul,
 .Menu.-floating:not(.-alignRight) {
-  border-top-left-radius: 0px;
+  border-top-left-radius: 0;
 }
 
 .Menu.-alignRight li>ul,
 .Menu.-floating.-alignRight {
-  border-top-right-radius: 0px;
+  border-top-right-radius: 0;
 }
 
 /* Drop shadow on Menus and header */
 .Menu li ul,
 .Menu.-floating {
-  box-shadow: 0px 0px 0px 1px rgba(0, 0, 0, 0.2),
-    0px 3px 1px 0px rgba(0, 0, 0, 0.2), 0px 6px 12px 0px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2),
+    0 3px 1px 0 rgba(0, 0, 0, 0.2), 0 6px 12px 0 rgba(0, 0, 0, 0.15);
 }
 
 #window_preview {
@@ -161,7 +161,7 @@ SOFTWARE.
   transform: translate(-50%, -50%);
   z-index: 80000;
   background-color: rgba(0, 0, 0, 0.7);
-  box-shadow: 0px 0px 25px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 0 25px rgba(0, 0, 0, 0.5);
   border-radius: 2px;
   padding: 20px;
 }
@@ -176,7 +176,7 @@ SOFTWARE.
 
 .slick-current {
   border-width: 3px;
-  box-shadow: 0px 0px 20px rgba(255, 255, 255, 65%);
+  box-shadow: 0 0 20px rgba(255, 255, 255, 65%);
   border-radius: 2px;
   border: rgba(255, 255, 255, 50%);
   border-style: solid;
@@ -198,6 +198,6 @@ SOFTWARE.
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  font-family: auto;
+  font-family: "auto";
   padding: 4px;
 }

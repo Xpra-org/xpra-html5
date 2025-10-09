@@ -48,8 +48,8 @@ ul.Menu.-floating {
 .Menu li,
 .Menu li>ul {
   list-style: none;
-  padding: 0px;
-  margin: 0px;
+  padding: 0;
+  margin: 0;
 }
 
 .Menu li {
@@ -72,7 +72,7 @@ ul.Menu.-floating {
 .Menu li>ul {
   position: absolute;
   min-width: 100%;
-  top: 0px;
+  top: 0;
   left: 100%;
 }
 
@@ -82,7 +82,7 @@ ul.Menu.-floating {
 }
 
 .Menu.-horizontal.-alignRight>li>ul {
-  right: 0px;
+  right: 0;
 }
 
 .Menu.-horizontal>li>ul {
@@ -106,7 +106,7 @@ ul.Menu.-floating.-visible {
 .Menu.-horizontal.-alignRight li>ul,
 .Menu.-floating {
   opacity: 1;
-  transform: scale(1) translateY(0px);
+  transform: scale(1) translateY(0);
   transform-origin: left top;
 }
 
@@ -141,10 +141,10 @@ ul.Menu.-floating.-visible {
 /* Menu item icons */
 .Menu *[data-icon]:before {
   position: absolute;
-  left: 0px;
-  top: 0px;
-  bottom: 0px;
-  margin: auto 0px;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  margin: auto 0;
 }
 
 .Menu .Icon,
@@ -153,12 +153,12 @@ ul.Menu.-floating.-visible {
 }
 
 .Menu .Icon {
-  padding: 0px;
+  padding: 0;
 }
 
 .Menu *:empty[data-icon] {
-  padding-left: 0px !important;
-  padding-right: 0px !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
 }
 
 /* Submenu chevrons */
@@ -169,9 +169,9 @@ ul.Menu.-floating.-visible {
   width: 8px;
   height: 8px;
   right: 8px;
-  bottom: 0px;
-  top: 0px;
-  margin: auto 0px;
+  bottom: 0;
+  top: 0;
+  margin: auto 0;
 
   transform: rotate(45deg);
   border-width: 1px;
@@ -186,9 +186,9 @@ ul.Menu.-floating.-visible {
   height: 4px;
   bottom: 4px;
   top: auto;
-  left: 0px;
-  right: 0px;
-  margin: 0px auto;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
 
   border-style: none solid solid none;
 }
@@ -226,7 +226,7 @@ ul.Menu.-floating.-visible {
 
 /* Default font settings for menu */
 .Menu {
-  font-family: Arial, Helvetica, Sans;
+  font-family: "Arial, Helvetica, Sans";
   font-size: 16px;
 }
 
@@ -261,7 +261,7 @@ ul.Menu.-floating.-visible {
 
 /* Padding for each menu item */
 .Menu li>* {
-  padding: 0px 12px;
+  padding: 0 12px;
 }
 
 /* Indent of chevron */
