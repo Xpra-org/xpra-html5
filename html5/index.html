@@ -679,7 +679,7 @@
         // Safari: https://github.com/Xpra-org/xpra-html5/issues/226
         // Firefox: https://github.com/Xpra-org/xpra-html5/issues/301
         const clipboard = getboolparam("clipboard", true);
-        const cpoll = !Utilities.isFirefox();
+        let cpoll = !Utilities.isFirefox();
         if (Utilities.isSafari()) {
           cpoll = !ssl;
         }
