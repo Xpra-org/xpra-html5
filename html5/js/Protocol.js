@@ -463,7 +463,6 @@ class XpraProtocol {
       if (!packet) {
         return;
       }
-      let proto_flags = 0x10;
       let bdata = null;
       try {
         bdata = rencode(packet);
