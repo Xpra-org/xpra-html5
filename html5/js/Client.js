@@ -1918,7 +1918,6 @@ class XpraClient {
         this.clipboard_buffer = clipboard_buffer;
         const data = Utilities.StringToUint8(clipboard_buffer);
         this.send_clipboard_token(data, [fmt]);
-        return;
       }
     });
     window.addEventListener("copy", (e) => {
@@ -1937,8 +1936,9 @@ class XpraClient {
       this.cdebug("clipboard", "cut event, clipboard buffer=", clipboard_buffer);
       this.clipboard_pending = false;
     });
-    $("#screen").on("click", (e) => this.may_set_clipboard());
-    $("#screen").keypress(() => this.may_set_clipboard());
+    const screen = $("#screen");
+    screen.on("click", (e) => this.may_set_clipboard());
+    screen.keypress(() => this.may_set_clipboard());
   }
 
   may_set_clipboard(e) {
@@ -3046,8 +3046,9 @@ class XpraClient {
     const toolbar_width = float_menu_element.width();
     let left = float_menu_element.offset().left || 0;
     let top = float_menu_element.offset().top || 0;
-    const screen_width = $("#screen").width();
-    const screen_height = $("#screen").height();
+    const screen = $("#screen");
+    const screen_width = screen.width();
+    const screen_height = screen.height();
 
     if (this.toolbar_position == "custom") {
       //no calculations needed

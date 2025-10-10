@@ -102,11 +102,10 @@ const Utilities = {
     if (digest == "xor") {
       const trimmed_salt = salt.slice(0, password.length);
       // Utilities.debug("xoring with trimmed salt:", Utilities.convertToHex(trimmed_salt));
-      const promise = new Promise(function(resolve, reject) {
+      return new Promise(function(resolve, reject) {
         const xored = Utilities.xorString(trimmed_salt, password);
         resolve(xored);
       });
-      return promise;
     }
     if (!digest.startsWith("hmac")) {
       return new Promise(function(resolve, reject) {
@@ -136,7 +135,7 @@ const Utilities = {
       });
     }
 
-    const promise = new Promise(function(resolve, reject) {
+    return new Promise(function(resolve, reject) {
       Utilities.clog("crypto.subtle=", crypto.subtle);
       Utilities.clog("crypto.subtle.importKey=", crypto.subtle.importKey);
       crypto.subtle.importKey("raw", Utilities.u8(password), {
@@ -165,7 +164,6 @@ const Utilities = {
           }
         );
     });
-    return promise;
   },
 
   trimString(string_, trimLength) {
@@ -323,17 +321,11 @@ const Utilities = {
     const isIOSChrome = winNav.userAgent.match("CriOS");
     if (isIOSChrome) {
       return true;
-    } else if (
-      isChromium !== null &&
-      isChromium !== undefined &&
-      vendorName === "Google Inc." &&
-      isOpera === false &&
-      isIEedge === false
-    ) {
-      return true;
-    } else {
-      return false;
-    }
+    } else return isChromium !== null &&
+        isChromium !== undefined &&
+        vendorName === "Google Inc." &&
+        isOpera === false &&
+        isIEedge === false;
   },
   isIE() {
     return (
@@ -604,7 +596,7 @@ const Utilities = {
     let section = null;
     for (const line of lines) {
       if (regex.comment.test(line)) {
-        continue;
+        // just continue
       } else if (regex.param.test(line)) {
         const match = line.match(regex.param);
         if (section) {
