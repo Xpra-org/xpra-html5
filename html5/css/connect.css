@@ -124,7 +124,7 @@ label {
 
 /* Advanced options */
 .panel.panel-default {
-  font: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: Helvetica Neue, Helvetica, Arial, sans-serif;
 }
 
 .panel-group .panel {

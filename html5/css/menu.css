@@ -226,7 +226,7 @@ ul.Menu.-floating.-visible {
 
 /* Default font settings for menu */
 .Menu {
-  font-family: "Arial, Helvetica, Sans";
+  font-family: Arial, Helvetica, sans-serif;
   font-size: 16px;
 }
 
