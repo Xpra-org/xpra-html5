@@ -90,7 +90,7 @@ const Utilities = {
       return value;
     }
     if (type == "string") {
-      return Uint8Array.from(value.split("").map(x => x.charCodeAt()));
+      return Uint8Array.from(value.split("").map(x => x.charCodeAt));
     }
     return new Uint8Array(value);
   },
