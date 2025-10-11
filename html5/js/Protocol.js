@@ -119,7 +119,6 @@ class XpraProtocol {
     this.cipher_in_block_size = null;
     this.cipher_in_params = null;
     this.cipher_in_key = null;
-    this.cipher_out_block_size = null;
     this.cipher_out_params = null;
     this.cipher_out_key = null;
     this.rQ = []; // Receive queue
@@ -299,7 +298,7 @@ class XpraProtocol {
     if (encrypted) {
       proto_flags = proto_flags & ~0x2;
     }
-    if (proto_flags > 1 && proto_flags != 0x10) {
+    if (proto_flags > 1 && proto_flags !== 0x10) {
       this.protocol_error(`we can't handle this protocol flag yet: ${proto_flags}`);
       return false;
     }
@@ -326,7 +325,7 @@ class XpraProtocol {
     this.header = [];
 
     let packet_data;
-    if (this.rQ[0].length == packet_size) {
+    if (this.rQ[0].length === packet_size) {
       //exact match: the payload is in a buffer already:
       packet_data = this.rQ.shift();
     } else {
@@ -369,7 +368,7 @@ class XpraProtocol {
             this.protocol_error(` expected ${expected_length} bytes, but got ${decrypted.byteLength}`);
             return false;
           }
-          if (decrypted.byteLength == packet_size - padding) {
+          if (decrypted.byteLength === packet_size - padding) {
             packet_data = new Uint8Array(decrypted);
           } else {
             packet_data = new Uint8Array(decrypted.slice(0, packet_size - padding));
@@ -397,7 +396,7 @@ class XpraProtocol {
     // console.log("process packet data, header=", header, packet_data.byteLength, "bytes, index=", index, "level=", level);
 
     //decompress it if needed:
-    if (level != 0) {
+    if (level !== 0) {
       let inflated;
       if (level & 0x10) {
         inflated = lz4.decode(packet_data);
@@ -567,7 +566,6 @@ class XpraProtocol {
     // console.log("configuring cipher out:", caps);
     this.setup_cipher(caps, key, "encrypt", (block_size, params, crypto_key) => {
       // console.log("cipher out configured, params=", JSON.stringify(params));
-      this.cipher_out_block_size = block_size;
       this.cipher_out_params = params;
       this.cipher_out_key = crypto_key;
     });
@@ -579,14 +577,14 @@ class XpraProtocol {
     }
 
     const cipher = caps["cipher"] || "AES";
-    if (cipher != "AES") {
+    if (cipher !== "AES") {
       throw `unsupported encryption specified: '${cipher}'`;
     }
 
     const DEFAULT_MODE = "CBC";
     const mode = caps["mode"] || DEFAULT_MODE;
     let block_size = 0;
-    if (mode == "CBC") {
+    if (mode === "CBC") {
       block_size = 16;
     } else if (!["GCM", "CTR"].includes(mode)) {
       throw `unsupported AES mode '${mode}'`;
@@ -615,7 +613,7 @@ class XpraProtocol {
 
     const DEFAULT_KEYSTRETCH = "PBKDF2";
     const key_stretch = caps["key_stretch"] || DEFAULT_KEYSTRETCH;
-    if (key_stretch.toUpperCase() != "PBKDF2") {
+    if (key_stretch.toUpperCase() !== "PBKDF2") {
       throw `invalid key stretching function ${key_stretch}`;
     }
 

@@ -44,7 +44,7 @@ const Utilities = {
     const s = [];
     const hexDigits = "0123456789abcdef";
     for (let index = 0; index < 36; index++) {
-      if (index == 8 || index == 13 || index == 18 || index == 23) {
+      if (index === 8 || index === 13 || index === 18 || index === 23) {
         s[index] = "-";
       } else {
         s[index] = hexDigits.slice(
@@ -85,7 +85,7 @@ const Utilities = {
     if (type === 'object' && value.constructor === Uint8Array) {
       return value;
     }
-    if (type == "string") {
+    if (type === "string") {
       return Uint8Array.from(value.split("").map(x => x.charCodeAt));
     }
     return new Uint8Array(value);
@@ -99,7 +99,7 @@ const Utilities = {
   gendigest(digest, password, salt) {
     // Utilities.clog("gendigest(", digest, ", ", password, ", ", salt, ")");
     // Utilities.clog("gendigest(", digest, ", ", Utilities.convertToHex(password), ", ", Utilities.convertToHex(salt), ")");
-    if (digest == "xor") {
+    if (digest === "xor") {
       const trimmed_salt = salt.slice(0, password.length);
       // Utilities.debug("xoring with trimmed salt:", Utilities.convertToHex(trimmed_salt));
       return new Promise(function(resolve, reject) {
@@ -125,7 +125,7 @@ const Utilities = {
     if (typeof crypto.subtle === "undefined") {
       // use hmac.js
       return new Promise(function(resolve, reject) {
-        if (hash != "SHA-256") {
+        if (hash !== "SHA-256") {
           reject(new Error("crypto.subtle API is not available in this context"));
         }
         else {
@@ -264,7 +264,7 @@ const Utilities = {
 
   getKeyboardLayout() {
     let v = Utilities.getFirstBrowserLanguage();
-    if (v == undefined) {
+    if (v === null) {
       return "us";
     }
     let layout = LANGUAGE_TO_LAYOUT[v];
@@ -458,7 +458,7 @@ const Utilities = {
     }
 
     if ((pX || pY) && event.deltaMode) {
-      if (event.deltaMode == 1) {
+      if (event.deltaMode === 1) {
         // delta in LINE units
         pX *= LINE_HEIGHT;
         pY *= LINE_HEIGHT;
