@@ -11,3 +11,7 @@ blocked-hosts = xpra.org,www.xpra.org
 
 min-quality = 10
 min-speed = 50
+
+# hide some menus:
+# xpramenu=false
+# cursor_lock_button=false

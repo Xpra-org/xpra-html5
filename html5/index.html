@@ -103,7 +103,7 @@
     <div id="float_menu">
       <ul class="Menu -horizontal">
         <li class="-hasSubmenu -noChevron">
-          <a href="#" title="Xpra" class="noDrag" data-icon="menu"></a>
+          <a href="#" title="Xpra" class="noDrag" data-icon="menu" id="xpramenu"></a>
           <ul id="menu_list">
             <li class="-hasSubmenu" id="startmenuentry" style="display: none">
               <a data-icon="apps" href="#">Start</a>
@@ -328,7 +328,7 @@
         return v;
       };
 
-      const float_menu_item_count = 7;
+      let float_menu_item_count = 7;
       const float_menu_item_size = 30;
       const float_menu_padding = 20;
       let float_menu_width = float_menu_item_size * float_menu_item_count + float_menu_padding;
@@ -1398,6 +1398,25 @@
             "max-width": "232px"
           });
         }
+        // choose which top level widgets / menus are shown:
+        const widget_ids = [
+          "xpramenu", "open_windows", "fullscreen_button",
+          "keyboard_button", "clipboard_button", "sound_button",
+          "cursor_lock_button",
+        ];
+        let widget_count = 0;
+        for (const widget_id of widget_ids) {
+            const enabled = getboolparam(widget_id, true);
+            console.log(widget_id, "=", enabled);
+            if (!enabled) {
+                document.querySelector("#"+widget_id).parentElement.style.display = 'none';
+            }
+            else {
+                widget_count++;
+            }
+        }
+        float_menu_item_count = widget_count;
+        float_menu_width = float_menu_item_size * float_menu_item_count + float_menu_padding;
         if (!floating_menu) {
           //nothing to do, it starts hidden
           return;
@@ -1629,9 +1648,7 @@
         const xhr = new XMLHttpRequest();
         xhr.open("GET", "./default-settings.txt");
         xhr.onload = function() {
-          const tmp_default_settings = Utilities.parseINIString(
-            xhr.responseText
-          );
+          const tmp_default_settings = Utilities.parseINIString(xhr.responseText);
           clog("network", "got default settings:", tmp_default_settings);
           //update the default settings object
           //so getparam will look there
