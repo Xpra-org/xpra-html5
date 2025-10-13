@@ -322,7 +322,6 @@ class XpraClient {
     this.pending_redraw = [];
     this.draw_pending = 0;
     // basic window management
-    this.topwindow = 0;
     this.topindex = 0;
     this.focus = 0;
 
@@ -1123,8 +1122,8 @@ class XpraClient {
       }
     }
 
-    if (this.topwindow) {
-      const wid = this.topwindow;
+    if (this.focus) {
+      const wid = this.focus;
       let packet = [PACKET_TYPES.key_action, wid, keyname, pressed, modifiers, keyval, keystring, keycode, group];
       this.key_packets.push(packet);
       if (unpress_now) {
@@ -2145,7 +2144,6 @@ class XpraClient {
     const old_stacking_layer = win.stacking_layer;
     const had_focus = this.focus;
     this.focus = wid;
-    this.topwindow = 0;
     this.send([PACKET_TYPES.focus, wid, []]);
     //set the focused flag on the window specified,
     //adjust stacking order:
