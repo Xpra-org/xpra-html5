@@ -1122,32 +1122,31 @@ class XpraClient {
       }
     }
 
-    if (this.focus) {
-      const wid = this.focus;
-      let packet = [PACKET_TYPES.key_action, wid, keyname, pressed, modifiers, keyval, keystring, keycode, group];
+    const wid = this.focus;
+    this.debug("keyboard", "focused=", this.focus, "keyname=", keyname);
+    let packet = [PACKET_TYPES.key_action, wid, keyname, pressed, modifiers, keyval, keystring, keycode, group];
+    this.key_packets.push(packet);
+    if (unpress_now) {
+      packet = [PACKET_TYPES.key_action, wid, keyname, false, modifiers, keyval, keystring, keycode, group];
       this.key_packets.push(packet);
-      if (unpress_now) {
-        packet = [PACKET_TYPES.key_action, wid, keyname, false, modifiers, keyval, keystring, keycode, group];
-        this.key_packets.push(packet);
-      }
-
-      //if there is a chance that we're in the process of handling
-      //a clipboard event (a click or control-v)
-      //then we send with a slight delay:
-      let delay = 0;
-      const now = performance.now();
-      if (this.clipboard_delayed_event_time > now) {
-        delay = this.clipboard_delayed_event_time - now;
-      }
-      const me = this;
-      setTimeout(() => {
-        while (this.key_packets.length > 0) {
-          const key_packet = me.key_packets.shift();
-          this.last_key_packet = key_packet;
-          this.send(key_packet);
-        }
-      }, delay);
     }
+
+    //if there is a chance that we're in the process of handling
+    //a clipboard event (a click or control-v)
+    //then we send with a slight delay:
+    let delay = 0;
+    const now = performance.now();
+    if (this.clipboard_delayed_event_time > now) {
+      delay = this.clipboard_delayed_event_time - now;
+    }
+    const me = this;
+    setTimeout(() => {
+      while (this.key_packets.length > 0) {
+        const key_packet = me.key_packets.shift();
+        this.last_key_packet = key_packet;
+        this.send(key_packet);
+      }
+    }, delay);
     if (keyname === "F11") {
       this.debug("keyboard", "allowing default handler for", keyname);
       allow_default = true;
