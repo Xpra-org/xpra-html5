@@ -1232,21 +1232,21 @@
 
       function init_audio(client) {
         client.on_audio_state_change = function(newstate, details) {
-          if (client.audio_state == newstate) {
+          if (client.audio_state === newstate) {
             return;
           }
           client.audio_state = newstate;
           let tooltip;
           let data_icon;
           const sound_button_element = $("#sound_button");
-          if (newstate == "disabled") {
+          if (newstate === "disabled") {
             data_icon = "volume_up";
             tooltip = "audio is not available";
             sound_button_element.css("color", "#777");
-          } else if (newstate == "playing") {
+          } else if (newstate === "playing") {
             data_icon = "volume_up";
             tooltip = "audio playing,\nclick to stop";
-          } else if (newstate == "waiting") {
+          } else if (newstate === "waiting") {
             data_icon = "volume_up";
             tooltip = "audio buffering";
           } else {
@@ -1262,8 +1262,8 @@
           if (!client.audio_enabled) {
             client.audio_state = "disabled";
           } else if (
-            client.audio_state == "playing" ||
-            client.audio_state == "waiting"
+            client.audio_state === "playing" ||
+            client.audio_state === "waiting"
           ) {
             client.on_audio_state_change("stopped", "user action");
             client.close_audio();

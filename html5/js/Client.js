@@ -247,7 +247,7 @@ class XpraClient {
     this.audio_aurora_ctx = null;
     this.audio_codec = null;
     this.audio_context = new AudioContext();
-    this.audio_state = null;
+    this.audio_state = "";
     this.aurora_codecs = {};
     this.mediasource_codecs = {};
     // encryption
