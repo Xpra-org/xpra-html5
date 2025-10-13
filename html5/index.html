@@ -1457,7 +1457,7 @@
 
         addEventListener(
           "beforeunload",
-          () => {
+          (event) => {
             const aft = client.active_file_transfers();
             clog("beforeunload(", event, ") active_file_transfers()=", aft);
             if (aft > 0) {
