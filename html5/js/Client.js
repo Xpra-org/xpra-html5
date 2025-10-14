@@ -545,7 +545,7 @@ class XpraClient {
     let decode_worker;
     if (this.offscreen_api) {
       // check that it is actually available:
-      this.offscreen_api = DECODE_WORKER && XpraOffscreenWorker.isAvailable(this.ssl);
+      this.offscreen_api = False;   // DECODE_WORKER && XpraOffscreenWorker.isAvailable(this.ssl);
     }
     if (this.offscreen_api) {
       this.set_encoding_option('video_max_size', [4096, 4096]);
