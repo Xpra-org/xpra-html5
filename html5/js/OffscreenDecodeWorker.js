@@ -113,6 +113,7 @@ class WindowDecoder {
       },
       (error) => {
         send_decode_error(packet, error);
+        this.decode_queue_draining = false;
       }
     );
   }
