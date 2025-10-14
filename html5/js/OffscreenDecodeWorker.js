@@ -190,6 +190,9 @@ class WindowDecoder {
 
   do_paint_packet(wid, coding, image, x, y, width, height) {
     // Update the coding propery
+    if (!this.canvas) {
+      return;
+    }
     let context = this.canvas.getContext("2d");
     if (coding.startsWith("bitmap")) {
       // Bitmap paint
@@ -318,6 +321,12 @@ onmessage = function(e) {
       if (wd) {
         wd.update_geometry(data.w, data.h);
       }
+      break;
+    case "close":
+      for (const decoder of window_decoders.values()) {
+        decoder.close();
+      }
+      window_decoders.clear();
       break;
     default:
       console.error(`Offscreen decode worker got unknown message: ${data.cmd}`);

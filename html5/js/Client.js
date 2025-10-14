@@ -666,6 +666,12 @@ class XpraClient {
       window.removeWindowListItem(win.wid);
       win.destroy();
     }
+    if (this.decode_worker) {
+      this.decode_worker.postMessage({
+        cmd: "close",
+      });
+      this.decode_worker = null;
+    }
   }
 
   send_close_window(win) {

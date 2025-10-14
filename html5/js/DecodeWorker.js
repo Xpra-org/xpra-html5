@@ -338,6 +338,9 @@ onmessage = function(e) {
     case "decode":
       decode_draw_packet(data.packet, data.start);
       break;
+    case "close":
+      on_hold.clear();
+      break;
     default:
       console.error(`decode worker got unknown message: ${data.cmd}`);
   }
