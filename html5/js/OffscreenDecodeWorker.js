@@ -120,10 +120,10 @@ class WindowDecoder {
   async process_packet(packet) {
     let coding = packet[6];
     const start = performance.now();
-    if (coding == "eos" && this.video_decoder) {
+    if (coding === "eos" && this.video_decoder) {
       this.video_decoder._close();
       return;
-    } else if (coding == "scroll" || coding == "void") {
+    } else if (coding === "scroll" || coding === "void") {
       // Nothing to do
     } else if (image_coding.includes(coding)) {
       await this.image_decoder.convertToBitmap(packet);
@@ -139,7 +139,7 @@ class WindowDecoder {
     }
 
     // Hold throttle packages for 500 ms to prevent flooding of the VideoDecoder
-    if (packet[6] == "throttle") {
+    if (packet[6] === "throttle") {
       await new Promise((r) => setTimeout(r, 500));
     }
 
@@ -163,7 +163,7 @@ class WindowDecoder {
     });
 
     // Paint the packet on screen refresh (if we can use requestAnimationFrame in the worker)
-    if (packet[6] != "throttle") {
+    if (packet[6] !== "throttle") {
       paint_worker.postMessage({
           cmd: "paint",
           image: packet[7],
@@ -175,7 +175,7 @@ class WindowDecoder {
           h: packet[5],
         },
         // Scroll does not hold a transferable type
-        coding == "scroll" ? [] : [packet[7]]
+        coding === "scroll" ? [] : [packet[7]]
       );
     }
   }
