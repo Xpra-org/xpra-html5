@@ -44,7 +44,7 @@ const XpraOffscreenWorker = {
       return false;
     }
 
-    if (Utilities.isFirefox() && this.isFirefoxVersionSupported()) {
+    if (Utilities.isFirefox() && !this.isFirefoxVersionSupported()) {
       console.log("offscreen canvas is not supported with this version of Firefox");
       return false;
     }
