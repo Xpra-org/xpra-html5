@@ -1348,7 +1348,7 @@ class XpraClient {
     this._update_capabilities({
       "version": Utilities.VERSION,
       "client_type": "HTML5",
-      "display": this.server_display || "",
+      "display": this._get_display_caps(),
       "build": this._get_build_caps(),
       "platform": this._get_platform_caps(),
       "session-type": Utilities.getSimpleUserAgentString(),
@@ -1413,8 +1413,6 @@ class XpraClient {
       "window.pre-map": true,
       //partial support:
       keyboard: true,
-      desktop_size: [this.desktop_width, this.desktop_height],
-      desktop_mode_size: [this.desktop_width, this.desktop_height],
       screen_sizes: this._get_screen_sizes(),
       dpi: {
         "x": this._get_DPI(),
@@ -1429,6 +1427,14 @@ class XpraClient {
       //we cannot handle this (GTK only):
       named_cursors: false,
     });
+  }
+
+  _get_display_caps() {
+    return {
+      "refresh-rate": this.vrefresh,
+      "desktop_size": [this.desktop_width, this.desktop_height],
+      "desktop_mode_size": [this.desktop_width, this.desktop_height],
+    }
   }
 
   _get_file_caps() {
