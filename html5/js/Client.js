@@ -527,7 +527,7 @@ class XpraClient {
       // no webworker support
       this.supported_encodings = safe_encodings;
       this.offscreen_api = false;
-      this.decode_worker = false;
+      this.decode_worker = null;
       this.clog("no webworker support at all.");
       this._do_connect(false);
       return;
@@ -537,7 +537,7 @@ class XpraClient {
 
     if (!DECODE_WORKER) {
       this.supported_encodings = safe_encodings;
-      this.decode_worker = false;
+      this.decode_worker = null;
       this.offscreen_api = false;
       return;
     }
@@ -588,11 +588,11 @@ class XpraClient {
           }
           case false:
             this.clog(`we can't decode using a worker: ${data["errors"]}`);
-            this.decode_worker = false;
+            this.decode_worker = null;
             break;
           default:
             this.clog("client got unknown message from the decode worker");
-            this.decode_worker = false;
+            this.decode_worker = null;
         }
       },
       false
