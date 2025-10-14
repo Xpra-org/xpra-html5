@@ -3138,8 +3138,19 @@ class XpraClient {
   }
 
   suspend() {
-    const window_ids = Object.keys(client.id_to_window).map(Number);
-    this.send([PACKET_TYPES.suspend, true, window_ids]);
+    // this is not a power event,
+    // usually just triggered by the `visibilitychange` listener,
+    // we only want to tell the server to slow down the refresh rate,
+    const options = {
+      "batch": {
+        "reset": true,
+        "delay": 1000,
+        "locked": true,
+        "always": true,
+      },
+    }
+    this.clog("suspend event, sending control refresh with options=", options);
+    this.send_control_refresh(1, options);
     for (const index in this.id_to_window) {
       const win = this.id_to_window[index];
       win.suspend();
@@ -3147,17 +3158,31 @@ class XpraClient {
   }
 
   resume() {
-    const window_ids = Object.keys(client.id_to_window).map(Number);
     for (const index in this.id_to_window) {
       const win = this.id_to_window[index];
       win.resume();
     }
-    this.send([PACKET_TYPES.resume, true, window_ids]);
+    const options = {
+      "batch": {
+        "reset": true,
+      },
+      "refresh-now": true,
+    }
+    this.clog("resume event, sending control refresh with options=", options);
+    this.send_control_refresh(100, options);
     this.redraw_windows();
-    this.request_refresh(-1);
   }
 
-  /**
+  send_control_refresh(quality, options) {
+    // wid=0 means all windows
+    const wid = 0;
+    const client_options = {};
+    const packet = [PACKET_TYPES.buffer_refresh, wid, 0, quality, options, client_options];
+    this.send(packet);
+  }
+
+
+/**
    * Windows
    */
   _new_window(wid, x, y, w, h, metadata, override_redirect, client_properties) {
