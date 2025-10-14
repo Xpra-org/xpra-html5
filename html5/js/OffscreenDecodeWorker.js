@@ -54,25 +54,13 @@ function send_decode_error(packet, error) {
   });
 }
 
-const paint_worker = new Worker("PaintWorker.js");
 
 class WindowDecoder {
   constructor(wid, canvas, debug) {
     this.wid = wid;
-
-    paint_worker.postMessage({
-        cmd: "canvas",
-        wid,
-        canvas,
-        debug,
-      },
-      [canvas]
-    );
-
+    this.canvas = canvas;
     this.debug = debug;
-    this.init();
-  }
-  init() {
+
     this.image_decoder = new XpraImageDecoder();
     this.video_decoder = new XpraVideoDecoder();
 
@@ -164,21 +152,95 @@ class WindowDecoder {
     });
 
     // Paint the packet on screen refresh (if we can use requestAnimationFrame in the worker)
-    if (packet[6] !== "throttle") {
-      paint_worker.postMessage({
-          cmd: "paint",
-          image: packet[7],
-          wid: packet[1],
-          coding: packet[6],
-          x: packet[2],
-          y: packet[3],
-          w: packet[4],
-          h: packet[5],
-        },
-        // Scroll does not hold a transferable type
-        coding === "scroll" ? [] : [packet[7]]
-      );
+    if (packet[6] === "throttle") {
+      return;
     }
+
+    const wid = packet[1];
+    const x = packet[2];
+    const y = packet[3];
+    const w = packet[4];
+    const h = packet[5];
+    coding = packet[6];
+    const image = packet[7];
+    this.paint_packet(wid, coding, image, x, y, w, h);
+  }
+
+  paint_packet(wid, coding, image, x, y, width, height) {
+    let painted = false;
+    try {
+      // Paint the packet on screen refresh (if we can use requestAnimationFrame in the worker)
+      if (typeof requestAnimationFrame == "function") {
+        requestAnimationFrame(() => {
+          this.do_paint_packet(wid, coding, image, x, y, width, height);
+        });
+        painted = true;
+      }
+    } catch {
+      // If requestAnimationFrame is a function but it failed somehow (ie forbidden in worker in the current browser) we fall back
+      console.error("requestAnimationFrame error for paint packet");
+      painted = false;
+    } finally {
+      if (!painted) {
+        // Paint right away
+        this.do_paint_packet(wid, coding, image, x, y, width, height);
+      }
+    }
+  }
+
+  do_paint_packet(wid, coding, image, x, y, width, height) {
+    // Update the coding propery
+    let context = this.canvas.getContext("2d");
+    if (coding.startsWith("bitmap")) {
+      // Bitmap paint
+      context.imageSmoothingEnabled = false;
+      context.clearRect(x, y, width, height);
+      context.drawImage(image, x, y, width, height);
+      this.paint_box(coding, context, x, y, width, height);
+    } else if (coding === "scroll") {
+      let canvas = this.canvas;
+      context.imageSmoothingEnabled = false;
+      for (let index = 0, stop = image.length; index < stop; ++index) {
+        const scroll_data = image[index];
+        const sx = scroll_data[0];
+        const sy = scroll_data[1];
+        const sw = scroll_data[2];
+        const sh = scroll_data[3];
+        const xdelta = scroll_data[4];
+        const ydelta = scroll_data[5];
+        context.drawImage(canvas,
+            sx, sy, sw, sh,
+            sx + xdelta, sy + ydelta, sw, sh,
+        );
+        this.paint_box(coding, context, sx, sy, sw, sh);
+      }
+    } else if (coding.startsWith("frame")) {
+      context.drawImage(image, x, y, width, height);
+      image.close();
+      this.paint_box(coding, context, x, y, width, height);
+    }
+  }
+
+  paint_box(coding, context, px, py, pw, ph) {
+    if (!this.debug) {
+      return;
+    }
+    const source_encoding = coding.split(":")[1] || ""; //ie: "rgb24"
+    const box_color = DEFAULT_BOX_COLORS[source_encoding];
+    if (box_color) {
+      context.strokeStyle = box_color;
+      context.lineWidth = 2;
+      context.strokeRect(px, py, pw, ph);
+    }
+  }
+
+  update_geometry(w, h) {
+    this.canvas.width = w;
+    this.canvas.height = h;
+  }
+
+  redraw() {
+    console.info("REDRAW requested");
   }
 
   eos() {
@@ -189,14 +251,10 @@ class WindowDecoder {
   }
 
   close() {
-    paint_worker.postMessage({
-      cmd: "remove",
-      wid: this.wid,
-    });
-    if (!this.closed) {
-      this.closed = true;
-      this.eos();
-    }
+    this.eos();
+    this.canvas = null;
+    this.decode_queue = [];
+    this.decode_queue_draining = true;
   }
 }
 
@@ -241,10 +299,10 @@ onmessage = function(e) {
       break;
     }
     case "redraw":
-      paint_worker.postMessage({
-        cmd: data.cmd,
-        wid: data.wid,
-      });
+      wd = window_decoders.get(data.wid);
+      if (wd) {
+        wd.redraw();
+      }
       break;
     case "canvas":
       console.log("canvas transfer for window", data.wid, ":", data.canvas, data.debug);
@@ -256,12 +314,10 @@ onmessage = function(e) {
       }
       break;
     case "canvas-geo":
-      paint_worker.postMessage({
-        cmd: data.cmd,
-        w: data.w,
-        h: data.h,
-        wid: data.wid,
-      });
+      wd = window_decoders.get(data.wid);
+      if (wd) {
+        wd.update_geometry(data.w, data.h);
+      }
       break;
     default:
       console.error(`Offscreen decode worker got unknown message: ${data.cmd}`);
