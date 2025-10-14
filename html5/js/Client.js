@@ -3293,6 +3293,7 @@ class XpraClient {
     }
     this.clog("lost window", wid, ", remaining: ", Object.keys(this.id_to_window));
     if (Object.keys(this.id_to_window).length === 0) {
+      this.auto_focus();
       this.on_last_window();
     } else if (win && win.focused) {
       //it had focus, find the next highest:
