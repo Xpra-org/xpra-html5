@@ -232,8 +232,8 @@ class XpraWindow {
       this.client.do_window_mouse_click(evt, this, false);
       this.client.mouse_grabbed = true;
     });
-    jQuery(this.div).on("resizestop", (evt) => {
-      this.handle_resized(evt);
+    jQuery(this.div).on("resizestop", (evt, ui) => {
+      this.handle_resized(ui);
       this.focus();
       this.client.mouse_grabbed = false;
       //workaround for the window going blank,
