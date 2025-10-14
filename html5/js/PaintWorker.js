@@ -32,7 +32,7 @@ class XpraPaintWorker {
   update_canvas(wid, w, h) {
     let canvas = this.offscreen_canvas.get(wid);
     let still = this.offscreen_canvas_still.get(wid);
-    if (canvas != null && (canvas.width != w || canvas.height != h)) {
+    if (canvas != null && (canvas.width !== w || canvas.height !== h)) {
       canvas.width = w;
       canvas.height = h;
       still.width = w;
@@ -70,7 +70,7 @@ class XpraPaintWorker {
       context.clearRect(x, y, width, height);
       context.drawImage(image, x, y, width, height);
       this.paint_box(coding, context, x, y, width, height);
-    } else if (coding == "scroll") {
+    } else if (coding === "scroll") {
       let canvas = this.offscreen_canvas.get(wid);
       context.imageSmoothingEnabled = false;
       for (let index = 0, stop = image.length; index < stop; ++index) {

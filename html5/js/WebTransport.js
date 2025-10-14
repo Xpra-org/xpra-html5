@@ -187,7 +187,7 @@ class XpraWebTransportProtocol {
       proto_flags = proto_flags & ~0x8;
     }
 
-    if (proto_flags > 1 && proto_flags != 0x10) {
+    if (proto_flags > 1 && proto_flags !== 0x10) {
       this.protocol_error(`we can't handle this protocol flag yet: ${proto_flags}`);
       return;
     }
@@ -220,7 +220,7 @@ class XpraWebTransportProtocol {
     this.header = [];
 
     let packet_data;
-    if (this.rQ[0].length == packet_size) {
+    if (this.rQ[0].length === packet_size) {
       //exact match: the payload is in a buffer already:
       packet_data = this.rQ.shift();
     } else {
@@ -245,7 +245,7 @@ class XpraWebTransportProtocol {
     }
 
     //decompress it if needed:
-    if (level != 0) {
+    if (level !== 0) {
       let inflated;
       if (level & 0x10) {
         inflated = lz4.decode(packet_data);
@@ -268,9 +268,9 @@ class XpraWebTransportProtocol {
       //decode raw packet string into objects:
       let packet = null;
       try {
-        if (proto_flags == 0x10) {
+        if (proto_flags === 0x10) {
           packet = rdecode(packet_data);
-        } else if (proto_flags == 0x1) {
+        } else if (proto_flags === 0x1) {
           throw `rencode legacy mode is not supported, protocol flag: ${proto_flags}`;
         } else {
           throw `invalid packet encoder flags ${proto_flags}`;

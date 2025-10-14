@@ -21,13 +21,13 @@ function decode_rgb(packet) {
     data = lz4.decode(data);
     delete options["lz4"];
   }
-  if (coding == "rgb24") {
+  if (coding === "rgb24") {
     packet[9] = width * 4;
     packet[6] = "rgb32";
     return rgb24_to_rgb32(data, width, height, rowstride);
   }
   //coding=rgb32
-  if (rowstride == width * 4) {
+  if (rowstride === width * 4) {
     return new Uint8Array(data);
   }
   //re-striding
@@ -50,7 +50,7 @@ function rgb24_to_rgb32(data, width, height, rowstride) {
   const uint = new Uint8Array(width * height * 4);
   let source_index = 0;
   let target_index = 0;
-  if (rowstride == width * 3) {
+  if (rowstride === width * 3) {
     //faster path, single loop:
     const source_length = data.length;
     while (source_index < source_length) {

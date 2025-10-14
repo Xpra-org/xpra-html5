@@ -108,7 +108,7 @@ function decode_draw_packet(packet, start) {
       },
       function(error) {
         decode_error(
-          `failed to create ${actual_width}x${actual_height} rgb32 bitmap from buffer ${data}`
+          `failed to create ${actual_width}x${actual_height} rgb32 bitmap from buffer ${data}: ${error}`
         );
         release();
       }
@@ -128,14 +128,14 @@ function decode_draw_packet(packet, start) {
     bitmap_options["resizeQuality"] = "medium";
   }
   try {
-    if (coding == "rgb24" || coding == "rgb32") {
+    if (coding === "rgb24" || coding === "rgb32") {
       const data = decode_rgb(packet);
       send_rgb32_back(data, width, height, bitmap_options);
     } else if (
       coding.startsWith("png") ||
-      coding == "jpeg" ||
-      coding == "webp" ||
-      coding == "avif"
+      coding === "jpeg" ||
+      coding === "webp" ||
+      coding === "avif"
     ) {
       const data = packet[7];
       if (!data.buffer) {

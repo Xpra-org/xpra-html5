@@ -122,10 +122,10 @@ class XpraWindow {
     } else if (this.override_redirect) {
       jQuery(this.div).addClass("override-redirect");
     } else if (!fullscreen && (
-        this.windowtype == "" ||
-        this.windowtype == "NORMAL" ||
-        this.windowtype == "DIALOG" ||
-        this.windowtype == "UTILITY"
+        this.windowtype === "" ||
+        this.windowtype === "NORMAL" ||
+        this.windowtype === "DIALOG" ||
+        this.windowtype === "UTILITY"
       )) {
       this.resizable = true;
     }
@@ -177,18 +177,18 @@ class XpraWindow {
     // create header
     let head =
       `<div id="head${wid}" class="windowhead"> ` +
-      `<span class="windowicon"><img class="windowicon" id="windowicon${wid}" /></span> ` +
+      `<span class="windowicon"><img alt="window icon" class="windowicon" id="windowicon${wid}" /></span> ` +
       `<span class="windowtitle" id="title${wid}">${
         this.title
       }</span> ` +
       `<span class="windowbuttons"> `;
     if (!jQuery(this.div).hasClass("modal")) {
       //modal windows cannot be minimized (see #204)
-      head += `<span id="minimize${wid}"><img src="icons/minimize.png" /></span>`;
+      head += `<span id="minimize${wid}"><img alt="minimize" src="icons/minimize.png" /></span>`;
     }
     head +=
-      `<span id="maximize${wid}"><img src="icons/maximize.png" /></span> ` +
-      `<span id="close${wid}"><img src="icons/close.png" /></span> ` +
+      `<span id="maximize${wid}"><img alt="maximize" src="icons/maximize.png" /></span> ` +
+      `<span id="close${wid}"><img alt="close" src="icons/close.png" /></span> ` +
       `</span></div>`;
     jQuery(this.div).prepend(head);
     // make draggable
@@ -200,7 +200,7 @@ class XpraWindow {
     jQuery(this.div).draggable({
       cancel: "canvas"
     });
-    jQuery(`#head${wid}`).click((event_) => {
+    jQuery(`#head${wid}`).click(() => {
       if (!this.minimized) {
         this.focus();
       }
@@ -228,12 +228,12 @@ class XpraWindow {
       helper: "ui-resizable-helper",
       handles: "n, e, s, w, ne, se, sw, nw",
     });
-    jQuery(this.div).on("resizestart", (event_, ui) => {
-      this.client.do_window_mouse_click(event_, this, false);
+    jQuery(this.div).on("resizestart", (evt) => {
+      this.client.do_window_mouse_click(evt, this, false);
       this.client.mouse_grabbed = true;
     });
-    jQuery(this.div).on("resizestop", (event_, ui) => {
-      this.handle_resized(ui);
+    jQuery(this.div).on("resizestop", (evt) => {
+      this.handle_resized(evt);
       this.focus();
       this.client.mouse_grabbed = false;
       //workaround for the window going blank,
@@ -350,7 +350,7 @@ class XpraWindow {
     }
     canvas.addEventListener("pointerdown", (event_) => {
       this.debug("mouse", "pointerdown:", event_);
-      if (event_.pointerType == "touch") {
+      if (event_.pointerType === "touch") {
         this.pointer_down = event_.pointerId;
         this.pointer_last_x = event_.offsetX;
         this.pointer_last_y = event_.offsetY;
@@ -358,7 +358,7 @@ class XpraWindow {
     });
     canvas.addEventListener("mousemove", (event_) => {
       this.debug("mouse", "mousemove:", event_);
-      if (this.pointer_down == event_.pointerId) {
+      if (this.pointer_down === event_.pointerId) {
         const dx = event_.offsetX - this.pointer_last_x;
         const dy = event_.offsetY - this.pointer_last_y;
         this.pointer_last_x = event_.offsetX;
@@ -432,7 +432,7 @@ class XpraWindow {
       this.y = Math.min(oldy, wh - min_h_visible);
     }
     this.debug("geometry", "ensure_visible() oldx=", oldx, "oldy=", oldy, "x=", this.x, "y=", this.y);
-    if (oldx != this.x || oldy != this.y) {
+    if (oldx !== this.x || oldy !== this.y) {
       this.updateCSSGeometry();
       return false;
     }
@@ -450,16 +450,16 @@ class XpraWindow {
       return;
     }
     // set size of both canvas if needed
-    if (this.canvas.width != this.w) {
+    if (this.canvas.width !== this.w) {
       this.canvas.width = this.w;
     }
-    if (this.canvas.height != this.h) {
+    if (this.canvas.height !== this.h) {
       this.canvas.height = this.h;
     }
-    if (this.offscreen_canvas.width != this.w) {
+    if (this.offscreen_canvas.width !== this.w) {
       this.offscreen_canvas.width = this.w;
     }
-    if (this.offscreen_canvas.height != this.h) {
+    if (this.offscreen_canvas.height !== this.h) {
       this.offscreen_canvas.height = this.h;
     }
   }
@@ -564,14 +564,14 @@ class XpraWindow {
     } else if (this.override_redirect || this.client.server_is_desktop || this.client.server_is_shadow) {
       z = 30_000;
     } else if (
-      this.windowtype == "DROPDOWN" ||
-      this.windowtype == "TOOLTIP" ||
-      this.windowtype == "POPUP_MENU" ||
-      this.windowtype == "MENU" ||
-      this.windowtype == "COMBO"
+      this.windowtype === "DROPDOWN" ||
+      this.windowtype === "TOOLTIP" ||
+      this.windowtype === "POPUP_MENU" ||
+      this.windowtype === "MENU" ||
+      this.windowtype === "COMBO"
     ) {
       z = 20_000;
-    } else if (this.windowtype == "UTILITY" || this.windowtype == "DIALOG") {
+    } else if (this.windowtype === "UTILITY" || this.windowtype === "DIALOG") {
       z = 15_000;
     }
     const above = this.metadata["above"];
@@ -613,7 +613,7 @@ class XpraWindow {
   set_metadata_safe(metadata) {
     if ("title" in metadata) {
       let title = Utilities.s(metadata["title"]);
-      if (this.title != title) {
+      if (this.title !== title) {
         this.title = title;
         this.log("title=", this.title);
         jQuery(`#title${this.wid}`).html(this.title);
@@ -622,7 +622,7 @@ class XpraWindow {
       }
     }
     if ("has-alpha" in metadata) {
-      this.has_alpha = metadata["has-alpha"];
+      this.has_alpha = Boolean(metadata["has-alpha"]);
     }
     if ("window-type" in metadata) {
       this.windowtype = Utilities.s(metadata["window-type"][0]);
@@ -640,7 +640,7 @@ class XpraWindow {
       jQuery(this.div).css("opacity", `${opacity}`);
     }
     if ("iconic" in metadata) {
-      this.set_minimized(metadata["iconic"] == 1);
+      this.set_minimized(Boolean(metadata["iconic"]));
     }
 
     //if the attribute is set, add the corresponding css class:
@@ -704,8 +704,8 @@ class XpraWindow {
       min_size = size_constraints["minimum-size"];
       max_size = size_constraints["maximum-size"];
     }
-    let minw = null;
-    let minh = null;
+    let minw = 0;
+    let minh = 0;
     if (min_size) {
       minw = min_size[0] + wdec;
       minh = min_size[1] + hdec;
@@ -716,7 +716,7 @@ class XpraWindow {
       maxw = max_size[0] + wdec;
       maxh = max_size[1] + hdec;
     }
-    if (minw > 0 && minw == maxw && minh > 0 && minh == maxh) {
+    if (minw > 0 && minw === maxw && minh > 0 && minh === maxh) {
       jQuery(this.d_maximizebtn).hide();
       jQuery(`#windowlistitemmax${this.wid}`).hide();
       jQuery(this.div).resizable("disable");
@@ -729,10 +729,18 @@ class XpraWindow {
       }
     }
     if (!this.maximized) {
-      jQuery(this.div).resizable("option", "minWidth", minw);
-      jQuery(this.div).resizable("option", "minHeight", minh);
-      jQuery(this.div).resizable("option", "maxWidth", maxw);
-      jQuery(this.div).resizable("option", "maxHeight", maxh);
+      if (minw) {
+        jQuery(this.div).resizable("option", "minWidth", minw);
+      }
+      if (minh) {
+        jQuery(this.div).resizable("option", "minHeight", minh);
+      }
+      if (maxw) {
+        jQuery(this.div).resizable("option", "maxWidth", maxw);
+      }
+      if (maxh) {
+        jQuery(this.div).resizable("option", "maxHeight", maxh);
+      }
     }
     //TODO: aspectRatio, grid
   }
@@ -743,10 +751,10 @@ class XpraWindow {
   set_metadata(metadata) {
     this.set_metadata_safe(metadata);
     if ("fullscreen" in metadata) {
-      this.set_fullscreen(metadata["fullscreen"] == 1);
+      this.set_fullscreen(Boolean(metadata["fullscreen"]));
     }
     if ("maximized" in metadata) {
-      this.set_maximized(metadata["maximized"] == 1);
+      this.set_maximized(Boolean(metadata["maximized"]));
     }
   }
 
@@ -767,7 +775,7 @@ class XpraWindow {
    * Restores the saved geometry (if it exists).
    */
   restore_geometry() {
-    if (this.saved_geometry == undefined) {
+    if (!this.saved_geometry) {
       return;
     }
     this.x = this.saved_geometry["x"];
@@ -790,7 +798,7 @@ class XpraWindow {
       jQuery(this.div).show();
     }
 
-    if (this.maximized == maximized) {
+    if (this.maximized === maximized) {
       return;
     }
     this.max_save_restore(maximized);
@@ -812,7 +820,7 @@ class XpraWindow {
    * Minimizes / unminimizes the window.
    */
   set_minimized(minimized) {
-    if (this.minimized == minimized) {
+    if (this.minimized === minimized) {
       return;
     }
     this.minimized = minimized;
@@ -853,7 +861,7 @@ class XpraWindow {
     //ie: $("#fullscreen").fadeIn(100).fadeOut(100).fadeIn(100).fadeOut(100).fadeIn(100);
     //because the window is about to cover the top bar...
     //so just fullscreen the window:
-    if (this.fullscreen == fullscreen) {
+    if (this.fullscreen === fullscreen) {
       return;
     }
     if (this.resizable) {
@@ -972,7 +980,7 @@ class XpraWindow {
       //note: when this window is created,
       // it may not have been added to the client's list yet
       const ids = Object.keys(this.client.id_to_window);
-      if (ids.length === 0 || ids[0] == this.wid) {
+      if (ids.length === 0 || ids[0] === this.wid) {
         //single window, recenter it:
         this.recenter();
       }
@@ -992,7 +1000,7 @@ class XpraWindow {
     this.debug("geometry", "recenter() x=", x, ", y=", y, ", desktop size: ", this.client.desktop_width, this.client.desktop_height);
     x = Math.round((this.client.desktop_width - this.w) / 2);
     y = Math.round((this.client.desktop_height - this.h) / 2);
-    if (this.x != x || this.y != y || force_update_geometry) {
+    if (this.x !== x || this.y !== y || force_update_geometry) {
       this.debug("geometry", "window re-centered to:", x, y);
       this.x = x;
       this.y = y;
@@ -1035,13 +1043,13 @@ class XpraWindow {
           newh = h;
         }
       }
-      if (neww == 0 && newh == 0) {
+      if (neww === 0 && newh === 0) {
         //not found, try to find the smallest one:
         best = 0;
         for (const screen_size of screen_sizes) {
           w = screen_size[0];
           h = screen_size[1];
-          if (best == 0 || w * h < best) {
+          if (best === 0 || w * h < best) {
             best = w * h;
             neww = w;
             newh = h;
@@ -1062,7 +1070,7 @@ class XpraWindow {
   move_resize(x, y, w, h) {
     this.debug("geometry", "move_resize(", x, y, w, h, ")");
     // only do it if actually changed!
-    if (this.w != w || this.h != h || this.x != x || this.y != y) {
+    if (this.w !== w || this.h !== h || this.x !== x || this.y !== y) {
       this.w = w;
       this.h = h;
       this.x = x;
@@ -1090,12 +1098,12 @@ class XpraWindow {
   initiate_moveresize(mousedown_event, x_root, y_root, direction, button, source_indication) {
     const dir_str = MOVERESIZE_DIRECTION_STRING[direction];
     this.log("initiate_moveresize", dir_str, [x_root, y_root, direction, button, source_indication]);
-    if (direction == MOVERESIZE_MOVE && mousedown_event) {
+    if (direction === MOVERESIZE_MOVE && mousedown_event) {
       const e = mousedown_event;
       e.type = "mousedown.draggable";
       e.target = this.div[0];
       jQuery(this.div).trigger(e);
-    } else if (direction == MOVERESIZE_CANCEL) {
+    } else if (direction === MOVERESIZE_CANCEL) {
       jQuery(this.div).draggable("disable");
       jQuery(this.div).draggable("enable");
     } else if (direction in MOVERESIZE_DIRECTION_JS_NAME) {
@@ -1144,7 +1152,7 @@ class XpraWindow {
     };
 
     let source = "favicon.png";
-    if (encoding == "png") {
+    if (encoding === "png") {
       //move title to the right:
       $(`#title${this.wid}`).css("left", 32);
       if (typeof img_data === "string") {
@@ -1167,7 +1175,7 @@ class XpraWindow {
   }
 
   set_cursor(encoding, w, h, xhot, yhot, img_data) {
-    if (encoding != "png") {
+    if (encoding !== "png") {
       this.warn("received an invalid cursor encoding:", encoding);
       return;
     }
@@ -1184,10 +1192,10 @@ class XpraWindow {
     }
     let zoom = detectZoom.zoom();
     //prefer fractional zoom values if possible:
-    if (Math.round(zoom * 4) == 2 * Math.round(zoom * 2)) {
+    if (Math.round(zoom * 4) === 2 * Math.round(zoom * 2)) {
       zoom = Math.round(zoom * 2) / 2;
     }
-    if (zoom != 1 && !Utilities.isMacOS()) {
+    if (zoom !== 1 && !Utilities.isMacOS()) {
       //scale it:
       const temporary_img = new Image();
       temporary_img.addEventListener("load", () => {
@@ -1259,7 +1267,7 @@ class XpraWindow {
       ", paint queue length=", this.paint_queue.length);
     let now = performance.now();
     while (
-      (this.paint_pending == 0 || now - this.paint_pending >= 2000) &&
+      (this.paint_pending === 0 || now - this.paint_pending >= 2000) &&
       this.paint_queue.length > 0
     ) {
       this.paint_pending = now;
@@ -1327,10 +1335,10 @@ class XpraWindow {
     }
 
     try {
-      if (coding == "void") {
+      if (coding === "void") {
         painted(true);
         this.may_paint_now();
-      } else if (coding == "rgb32" || coding == "rgb24") {
+      } else if (coding === "rgb32" || coding === "rgb24") {
         if (bitmap) {
           paint_bitmap();
           return;
@@ -1341,14 +1349,14 @@ class XpraWindow {
         this.offscreen_canvas_ctx.putImageData(img, x, y, 0, 0, width, height);
         painted();
         this.may_paint_now();
-      } else if (coding == "jpeg" || coding.startsWith("png") || coding == "webp") {
+      } else if (coding === "jpeg" || coding.startsWith("png") || coding === "webp") {
         if (bitmap) {
           paint_bitmap();
           return;
         }
         const image = new Image();
         image.addEventListener("load", () => {
-          if (image.width == 0 || image.height == 0) {
+          if (image.width === 0 || image.height === 0) {
             paint_error(`invalid image size: ${image.width}x${image.height}`);
           } else {
             this.offscreen_canvas_ctx.clearRect(x, y, width, height);
@@ -1363,10 +1371,10 @@ class XpraWindow {
         };
         const paint_coding = coding.split("/")[0]; //ie: "png/P" -> "png"
         image.src = this.construct_base64_image_url(paint_coding, img_data);
-      } else if (coding == "h264") {
+      } else if (coding === "h264") {
         paint_error("h264 decoding is only supported via the decode workers");
         this.may_paint_now();
-      } else if (coding == "scroll") {
+      } else if (coding === "scroll") {
         // newer servers use options,
         // older ones overload the image data:
         const scrolls = options["scroll"] || img_data;

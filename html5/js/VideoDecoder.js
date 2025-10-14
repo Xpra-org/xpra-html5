@@ -42,13 +42,13 @@ class XpraVideoDecoder {
     // Check if we have the right VP9 params before init.
     // This is needed because we can only set the params when the video decoder is created.
     // We close the decoder when the coding changes.
-    if (csc == "YUV444P" && this.vp9_params != ".01.10.08") {
+    if (csc === "YUV444P" && this.vp9_params !== ".01.10.08") {
       this.vp9_params = ".01.10.08";
       this._close();
-    } else if (csc == "YUV444P10" && this.vp9_params != ".03.10.10") {
+    } else if (csc === "YUV444P10" && this.vp9_params !== ".03.10.10") {
       this.vp9_params = ".03.10.10";
       this._close();
-    } else if (this.vp9_params != ".00.20.08.01.02.02") {
+    } else if (this.vp9_params !== ".00.20.08.01.02.02") {
       // chroma shift for YUV420P, both X and Y are downscaled by 2^1
       this.vp9_params = ".00.20.08.01.02.02";
       this._close();
@@ -79,9 +79,9 @@ class XpraVideoDecoder {
   }
 
   resolveCodec(coding) {
-    if (coding == "h264") return "avc1.42C01E";
-    if (coding == "vp8") return "vp8";
-    if (coding == "vp9") return `vp09${this.vp9_params}`;
+    if (coding === "h264") return "avc1.42C01E";
+    if (coding === "vp8") return "vp8";
+    if (coding === "vp9") return `vp09${this.vp9_params}`;
     throw `No codec defined for coding ${coding}`;
   }
 
@@ -94,12 +94,12 @@ class XpraVideoDecoder {
     // Find the frame
     const frame_timestamp = videoFrame.timestamp;
     let current_frame = this.decoder_queue.filter(
-      (q) => q.p[10]["frame"] == frame_timestamp
+      (q) => q.p[10]["frame"] === frame_timestamp
     );
-    if (current_frame.length == 1) {
+    if (current_frame.length === 1) {
       // We found our frame!
       this.decoder_queue = this.decoder_queue.filter(
-        (q) => q.p[10]["frame"] != frame_timestamp
+        (q) => q.p[10]["frame"] !== frame_timestamp
       );
       current_frame = current_frame[0];
     } else {
@@ -109,7 +109,7 @@ class XpraVideoDecoder {
       return;
     }
 
-    if (frame_timestamp == 0) {
+    if (frame_timestamp === 0) {
       this.last_timestamp = 0;
     }
 
@@ -159,7 +159,7 @@ class XpraVideoDecoder {
         this.codec.startsWith("avc1") &&
         !this.had_first_key &&
         options["type"] &&
-        options["type"] != "IDR"
+        options["type"] !== "IDR"
       ) {
         reject(
           new Error(
@@ -169,7 +169,7 @@ class XpraVideoDecoder {
         return;
       }
 
-      if (this.videoDecoder.state == "closed") {
+      if (this.videoDecoder.state === "closed") {
         reject(new Error("video decoder is closed"));
         return;
       }
@@ -183,7 +183,7 @@ class XpraVideoDecoder {
         p: packet
       });
       const init = {
-        type: options["type"] == "IDR" ? "key" : "delta",
+        type: options["type"] === "IDR" ? "key" : "delta",
         data,
         timestamp: options["frame"],
       };
@@ -191,7 +191,7 @@ class XpraVideoDecoder {
       this.videoDecoder.decode(chunk);
 
       let frame_out = this.decoded_frames.filter(
-        (p) => p[8] == packet_sequence
+        (p) => p[8] === packet_sequence
       );
       while (frame_out.length === 0) {
         // Await our frame
@@ -200,7 +200,7 @@ class XpraVideoDecoder {
           // The last frame was erroneous, break the wait loop
           break;
         }
-        frame_out = this.decoded_frames.filter((p) => p[8] == packet_sequence);
+        frame_out = this.decoded_frames.filter((p) => p[8] === packet_sequence);
       }
 
       if (this.erroneous_frame != null) {
@@ -211,7 +211,7 @@ class XpraVideoDecoder {
       }
       // Remove the frame from decoded frames list
       this.decoded_frames = this.decoded_frames.filter(
-        (p) => p[8] != packet_sequence
+        (p) => p[8] !== packet_sequence
       );
       resolve(frame_out[0]);
     });
@@ -219,7 +219,7 @@ class XpraVideoDecoder {
 
   _close() {
     if (this.initialized) {
-      if (this.videoDecoder.state != "closed") {
+      if (this.videoDecoder.state !== "closed") {
         this.videoDecoder.close();
       }
       this.had_first_key = false;
