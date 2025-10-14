@@ -833,13 +833,13 @@ class XpraWindow {
     if (this.minimized) {
       this.client.send([PACKET_TYPES.unmap_window, this.wid, true]);
       this.stacking_layer = 0;
-      if (this.client.focus == this.wid) {
+      if (this.client.focused_wid === this.wid) {
         this.client.auto_focus();
       }
     } else {
       this.client.send([PACKET_TYPES.map_window, this.wid, geom.x, geom.y, geom.w, geom.h, this.client_properties]);
-      //force focus switch:
-      this.client.focus = -1;
+      //ugly force focus switch:
+      this.client.focused_wid = 0;
       this.client.set_focus(this);
     }
   }

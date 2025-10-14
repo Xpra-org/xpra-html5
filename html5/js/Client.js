@@ -322,8 +322,7 @@ class XpraClient {
     this.pending_redraw = [];
     this.draw_pending = 0;
     // basic window management
-    this.topindex = 0;
-    this.focus = 0;
+    this.focused_wid = 0;
 
     const me = this;
     const screen_element = jQuery("#screen");
@@ -1122,8 +1121,8 @@ class XpraClient {
       }
     }
 
-    const wid = this.focus;
-    this.debug("keyboard", "focused=", this.focus, "keyname=", keyname);
+    const wid = this.focused_wid;
+    this.debug("keyboard", "focused=", this.focused, "keyname=", keyname);
     let packet = [PACKET_TYPES.key_action, wid, keyname, pressed, modifiers, keyval, keystring, keycode, group];
     this.key_packets.push(packet);
     if (unpress_now) {
@@ -1747,7 +1746,7 @@ class XpraClient {
       e.preventDefault();
     }
     // dont call set focus unless the focus has actually changed
-    if (wid > 0 && this.focus !== wid) {
+    if (wid > 0 && this.focused_wid !== wid) {
       this.set_focus(win);
     }
 
@@ -2120,7 +2119,7 @@ class XpraClient {
     }
 
     const wid = win.wid;
-    if (this.focus == wid) {
+    if (this.focused_wid === wid) {
       return;
     }
 
@@ -2147,8 +2146,8 @@ class XpraClient {
 
     const top_stacking_layer = Object.keys(this.id_to_window).length;
     const old_stacking_layer = win.stacking_layer;
-    const had_focus = this.focus;
-    this.focus = wid;
+    const had_focus = this.focused_wid;
+    this.focused_wid = wid;
     this.send([PACKET_TYPES.focus, wid, []]);
     //set the focused flag on the window specified,
     //adjust stacking order:
@@ -3370,6 +3369,7 @@ class XpraClient {
     this.clog("lost window", wid, ", remaining: ", Object.keys(this.id_to_window));
     if (Object.keys(this.id_to_window).length === 0) {
       this.on_last_window();
+      this.auto_focus();
     } else if (win && win.focused) {
       //it had focus, find the next highest:
       this.auto_focus();
@@ -3408,7 +3408,7 @@ class XpraClient {
     if (highest_window) {
       this.set_focus(highest_window);
     } else {
-      this.focus = 0;
+      this.focused_wid = 0;
       this.send([PACKET_TYPES.focus, 0, []]);
     }
   }
@@ -3582,7 +3582,7 @@ class XpraClient {
     if (win) {
       const source = win.update_icon(w, h, encoding, img_data);
       //update favicon too:
-      if (wid === this.focus || this.server_is_desktop || this.server_is_shadow) {
+      if (wid === this.focused_wid || this.server_is_desktop || this.server_is_shadow) {
         jQuery("#favicon").attr("href", source);
       }
     }
