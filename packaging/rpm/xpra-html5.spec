@@ -78,8 +78,33 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
-* Wed Feb 05 2025 Antoine Martin <antoine@xpra.org> 18-0-1
-- TODO
+* Wed Oct 15 2025 Antoine Martin <antoine@xpra.org> 18-0-1
+- Build and packaging:
+  RHEL 10 builds
+  DEB `Section` value
+- New Features:
+  better compatibility with newer xpra versions, newer packet formats
+  add path to xpra URLs and connection files
+  improve crypto API handling and detection, support software fallback
+  control channel handlers
+  toggle for top level widgets in floating menu
+  cleanup resources on disconnect
+  use jpeg for desktop background
+- Fixes:
+  pointer offset
+  window clipping calculations
+  decoding error handler fails to request a redraw
+  offscreen decode error stalled the decode queue
+  remove the paint worker
+  fixup invalid refactoring
+  worker logging going nowhere
+  send keyboard events to the root window if that's all we have
+  `visibilitychange` must change the refresh-rate, not send power events
+  focus confusion
+- Cosmetic:
+   cleanups and linter warnings
+   stricter comparison operators
+   drop legacy fullscreen handlers
 
 * Tue Jan 14 2025 Antoine Martin <antoine@xpra.org> 17-0-1
 - Build and packaging:

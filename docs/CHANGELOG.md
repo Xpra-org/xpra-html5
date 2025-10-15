@@ -1,6 +1,34 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+## [18.0] 2025-10-15
+- Build and packaging:
+  - RHEL 10 builds
+  - DEB `Section` value
+- New Features:
+  - better compatibility with newer xpra versions, newer packet formats
+  - add path to xpra URLs and connection files
+  - improve crypto API handling and detection, support software fallback
+  - control channel handlers
+  - [toggle for top level widgets in floating menu](https://github.com/Xpra-org/xpra-html5/issues/389)
+  - [cleanup resources on disconnect](https://github.com/Xpra-org/xpra-html5/issues/350)
+  - use jpeg for desktop background
+- Fixes:
+  - pointer offset
+  - window clipping calculations
+  - decoding error handler fails to request a redraw
+  - offscreen decode error stalled the decode queue
+  - [remove the paint worker](https://github.com/Xpra-org/xpra-html5/issues/329)
+  - fixup invalid refactoring
+  - worker logging going nowhere
+  - send keyboard events to the root window if that's all we have
+  - `visibilitychange` must change the refresh-rate, not send power events
+  - focus confusion
+- Cosmetic:
+  - cleanups and linter warnings
+  - stricter comparison operators
+  - drop legacy fullscreen handlers
+
 ## [17.0] 2025-01-14
 - Build and packaging:
   - [nodejs-less formatting script](https://github.com/Xpra-org/xpra-html5/pull/332)

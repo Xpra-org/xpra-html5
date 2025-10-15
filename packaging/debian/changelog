@@ -1,7 +1,32 @@
 xpra-html5 (18-r0-1) UNRELEASED; urgency=low
-  * TODO
+  * Build and packaging:
+   - RHEL 10 builds
+   - DEB `Section` value
+  * New Features:
+   - better compatibility with newer xpra versions, newer packet formats
+   - add path to xpra URLs and connection files
+   - improve crypto API handling and detection, support software fallback
+   - control channel handlers
+   - toggle for top level widgets in floating menu
+   - cleanup resources on disconnect
+   - use jpeg for desktop background
+  * Fixes:
+   - pointer offset
+   - window clipping calculations
+   - decoding error handler fails to request a redraw
+   - offscreen decode error stalled the decode queue
+   - remove the paint worker
+   - fixup invalid refactoring
+   - worker logging going nowhere
+   - send keyboard events to the root window if that's all we have
+   - `visibilitychange` must change the refresh-rate, not send power events
+   - focus confusion
+  * Cosmetic:
+   - cleanups and linter warnings
+   - stricter comparison operators
+   - drop legacy fullscreen handlers
 
- -- Antoine Martin antoine@xpra.org  Wed, 05 Feb 2025 13:11:57 +0700 +700
+ -- Antoine Martin antoine@xpra.org  Wed, 15 Oct 2025 21:24:04 +0700
 
 xpra-html5 (17-r0-1) UNRELEASED; urgency=low
   * Build and packaging:
@@ -46,7 +71,7 @@ xpra-html5 (17-r0-1) UNRELEASED; urgency=low
    - remove legacy bootstrap
    - session info box not big enough
 
- -- Antoine Martin antoine@xpra.org  Tue, 14 Jan 2025 20:49:14 +0700 +700
+ -- Antoine Martin antoine@xpra.org  Tue, 14 Jan 2025 20:49:14 +0700
 
 xpra-html5 (16-r0-1) UNRELEASED; urgency=low
   * re-connection fixes:
@@ -58,18 +83,18 @@ xpra-html5 (16-r0-1) UNRELEASED; urgency=low
   * more readable session description
   * regular expression parsing error
 
- -- Antoine Martin antoine@xpra.org  Mon, 09 Sep 2024 21:10:44 +0700 +700
+ -- Antoine Martin antoine@xpra.org  Mon, 09 Sep 2024 21:10:44 +0700
 
 xpra-html5 (15.1-r0-1) UNRELEASED; urgency=low
   * syntax error
 
- -- Antoine Martin antoine@xpra.org  Wed, 21 Aug 2024 16:15:39 +0700 +700
+ -- Antoine Martin antoine@xpra.org  Wed, 21 Aug 2024 16:15:39 +0700
 
 xpra-html5 (15-r0-1) UNRELEASED; urgency=low
   * try harder to prevent password input with insecure settings, but also allow password input with 'insecure' option
   * honour preferred clipboard format
 
- -- Antoine Martin antoine@xpra.org  Wed, 31 Jul 2024 20:16:19 +0700 +700
+ -- Antoine Martin antoine@xpra.org  Wed, 31 Jul 2024 20:16:19 +0700
 
 xpra-html5 (14-r1569-1) UNRELEASED; urgency=low
   * security fixes:
@@ -92,7 +117,7 @@ xpra-html5 (14-r1569-1) UNRELEASED; urgency=low
     - highlight invalid endpoint
     - constify
 
- -- Antoine Martin antoine@xpra.org  Tue, 02 Jul 2024 21:49:37 +0700 +700
+ -- Antoine Martin antoine@xpra.org  Tue, 02 Jul 2024 21:49:37 +0700
 
 xpra-html5 (13-r1569-1) UNRELEASED; urgency=low
   * bug fixes:
@@ -119,7 +144,7 @@ xpra-html5 (13-r1569-1) UNRELEASED; urgency=low
     - ignore whitespace when updating vcs info
     - remove pointless line wrapping, bad automated formatting, improve readability
 
- -- Antoine Martin antoine@xpra.org  Thu, 23 May 2024 00:14:28 +0700 +700
+ -- Antoine Martin antoine@xpra.org  Thu, 23 May 2024 00:14:28 +0700
 
 xpra-html5 (12.0-r6-1) UNRELEASED; urgency=low
   * keycloak authentication fails
@@ -131,7 +156,7 @@ xpra-html5 (12.0-r6-1) UNRELEASED; urgency=low
   * remove legacy 'wheel' workarounds
   * remove unused function
 
- -- Antoine Martin antoine@xpra.org  Fri, 29 Mar 2024 18:14:48 +0700 +700
+ -- Antoine Martin antoine@xpra.org  Fri, 29 Mar 2024 18:14:48 +0700
 
 xpra-html5 (11-r1520-1) UNRELEASED; urgency=low
   * more consistent positioning of fullscreen windows
@@ -149,7 +174,7 @@ xpra-html5 (11-r1520-1) UNRELEASED; urgency=low
   * detect minifier, default to 'copy' if not found
   * automatic release number generation string format
 
- -- Antoine Martin antoine@xpra.org  Wed, 31 Jan 2024 19:07:06 +0700 +700
+ -- Antoine Martin antoine@xpra.org  Wed, 31 Jan 2024 19:07:06 +0700
 
 xpra-html5 (10-r1482-1) UNRELEASED; urgency=low
   * update libraries: jquery v3.7.1, jquery ui v1.13.2
@@ -158,7 +183,7 @@ xpra-html5 (10-r1482-1) UNRELEASED; urgency=low
   * structured capabilities and more readable
   * cosmetic: debug logging, whitespace
 
- -- Antoine Martin antoine@xpra.org  Mon, 16 Oct 2023 20:44:45 +0700 +700
+ -- Antoine Martin antoine@xpra.org  Mon, 16 Oct 2023 20:44:45 +0700
 
 xpra-html5 (9.0-r1479-1) UNRELEASED; urgency=low
   * support only xpra v5
@@ -173,7 +198,7 @@ xpra-html5 (9.0-r1479-1) UNRELEASED; urgency=low
   * more robust value parsing
   * dependencies cleanup
 
- -- Antoine Martin antoine@xpra.org  Sun, 27 Aug 2023 21:59:32 +0700 +700
+ -- Antoine Martin antoine@xpra.org  Sun, 27 Aug 2023 21:59:32 +0700
 
 xpra-html5 (8.0-r1425-1) UNRELEASED; urgency=low
   * disable scroll encoding with offscreen decode worker
@@ -195,7 +220,7 @@ xpra-html5 (8.0-r1425-1) UNRELEASED; urgency=low
     - improved syntax
     - use the preferred keywords for variable declaration
 
- -- Antoine Martin antoine@xpra.org  Sat, 06 May 2023 19:19:03 +0700 +700
+ -- Antoine Martin antoine@xpra.org  Sat, 06 May 2023 19:19:03 +0700
 
 xpra-html5 (7.0-r1424-1) UNRELEASED; urgency=low
   * unable to move undecorated / CSD windows
@@ -217,7 +242,7 @@ xpra-html5 (7.0-r1424-1) UNRELEASED; urgency=low
   * cursor display and scaling issues
   * workaround for older versions of Safari
 
- -- Antoine Martin antoine@xpra.org  Sun, 12 Mar 2023 22:22:28 +0700 +700
+ -- Antoine Martin antoine@xpra.org  Sun, 12 Mar 2023 22:22:28 +0700
 
 xpra-html5 (6.0-r1378-1) UNRELEASED; urgency=low
   * refactorings, cleanups, github CI, etc - JanCVanB
@@ -230,7 +255,7 @@ xpra-html5 (6.0-r1378-1) UNRELEASED; urgency=low
   * support for chunked file transfers (large files): #120
   * modal windows should not be minimized
 
- -- Antoine Martin antoine@xpra.org  Mon, 17 Oct 2022 15:44:18 +0700 +700
+ -- Antoine Martin antoine@xpra.org  Mon, 17 Oct 2022 15:44:18 +0700
 
 xpra-html5 (5.0-r1275-1) UNRELEASED; urgency=low
   * auto-fullscreen, alt-tabbing with window previews
@@ -255,7 +280,7 @@ xpra-html5 (5.0-r1275-1) UNRELEASED; urgency=low
   * fix AES encryption when used with authentication and rencodeplus
   * build script refactoring
 
- -- Antoine Martin antoine@xpra.org  Wed, 11 May 2022 16:55:59 +0700 +700
+ -- Antoine Martin antoine@xpra.org  Wed, 11 May 2022 16:55:59 +0700
 
 xpra-html5 (4.5.2-r1106-1) UNRELEASED; urgency=low
   * fix toolbar position
@@ -279,20 +304,20 @@ xpra-html5 (4.5.2-r1106-1) UNRELEASED; urgency=low
   * remove unnecessary time wrapper
   * try harder to detect the correct screen refresh rate
 
- -- Antoine Martin antoine@xpra.org  Fri, 17 Dec 2021 19:50:00 +0700 +700
+ -- Antoine Martin antoine@xpra.org  Fri, 17 Dec 2021 19:50:00 +0700
 
 xpra-html5 (4.5.1-r1045-1) UNRELEASED; urgency=low
   * workaround Firefox bug in image decoder
   * allow AES and SSL to be combined
   * support multiple authentication challenges
 
- -- Antoine Martin antoine@xpra.org  Thu, 23 Sep 2021 19:20:49 +0700 +700
+ -- Antoine Martin antoine@xpra.org  Thu, 23 Sep 2021 19:20:49 +0700
 
 xpra-html5 (4.5-r1031-1) UNRELEASED; urgency=low
   * prompt for passwords
   * fix AES errors when connecting via the dialog
 
- -- Antoine Martin antoine@xpra.org  Wed, 15 Sep 2021 23:09:23 +0700 +700
+ -- Antoine Martin antoine@xpra.org  Wed, 15 Sep 2021 23:09:23 +0700
 
 xpra-html5 (4.4-r1017-1) UNRELEASED; urgency=low
   * encryption:
@@ -308,7 +333,7 @@ xpra-html5 (4.4-r1017-1) UNRELEASED; urgency=low
     - fix zero-copy web worker regression from 4.3
     - use zero-copy for transferring audio buffers from the worker
 
- -- Antoine Martin antoine@xpra.org  Fri, 03 Sep 2021 20:56:45 +0700 +700
+ -- Antoine Martin antoine@xpra.org  Fri, 03 Sep 2021 20:56:45 +0700
 
 xpra-html5 (4.3-r962-1) UNRELEASED; urgency=low
   * build and packaging:
@@ -348,7 +373,7 @@ xpra-html5 (4.3-r962-1) UNRELEASED; urgency=low
     - log disconnection messages
     - prevent console errors with Internet Explorer
 
- -- Antoine Martin antoine@xpra.org  Mon, 09 Aug 2021 23:41:28 +0700 +700
+ -- Antoine Martin antoine@xpra.org  Mon, 09 Aug 2021 23:41:28 +0700
 
 xpra-html5 (4.2-r889-1) UNRELEASED; urgency=low
   * select session attributes from list of options exposed by the server
