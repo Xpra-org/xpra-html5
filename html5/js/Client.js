@@ -170,6 +170,7 @@ class XpraClient {
       "": this.encoding,
       "icons": {
         "max_size": [30, 30],
+        "greedy": true,
       },
       "transparency": true,
       "rgb_lz4": (lz4 && lz4.decode != "undefined"),
