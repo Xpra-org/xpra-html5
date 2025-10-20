@@ -266,6 +266,7 @@ class XpraClient {
     this.buttons_pressed = new Set();
     this.last_button_event = [-1, false, -1, -1];
     this.mousedown_event = null;
+    this.mouseup_event = null;
     this.last_mouse_x = null;
     this.last_mouse_y = null;
     this.wheel_delta_x = 0;
@@ -1664,6 +1665,7 @@ class XpraClient {
   }
 
   on_mouseup(e, win) {
+    this.mouseup_event = e;
     this.do_window_mouse_click(e, win, false);
     return Boolean(win);
   }
@@ -3307,8 +3309,12 @@ class XpraClient {
     const direction = packet[4];
     const button = packet[5];
     const source_indication = packet[6];
-    this.log("initiate moveresize on", win, "mousedown_event=", this.mousedown_event);
-    win.initiate_moveresize(this.mousedown_event, x_root, y_root, direction, button, source_indication);
+    let event = this.mousedown_event;
+    if (this.mouseup_event && direction === MOVERESIZE_CANCEL) {
+      event = this.mouseup_event;
+    }
+    this.log("initiate moveresize on", win, "mouse event=", event);
+    win.initiate_moveresize(event, x_root, y_root, direction, button, source_indication);
   }
 
   _process_pointer_position(packet) {
