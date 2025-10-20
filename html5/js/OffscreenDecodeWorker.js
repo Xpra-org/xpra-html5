@@ -218,7 +218,7 @@ class WindowDecoder {
         this.paint_box(coding, context, sx, sy, sw, sh);
       }
     } else if (coding.startsWith("frame")) {
-      context.drawImage(image, x, y, width, height);
+      context.drawImage(image, 0, 0, width, height, x, y, width, height);
       image.close();
       this.paint_box(coding, context, x, y, width, height);
     }
