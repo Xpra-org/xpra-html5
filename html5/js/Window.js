@@ -271,10 +271,8 @@ class XpraWindow {
       jQuery(this.d_maximizebtn).click(() => this.toggle_maximized());
       jQuery(this.d_minimizebtn).click(() => this.toggle_minimized());
     } else {
-      jQuery(this.d_closebtn).hide();
       jQuery(this.d_maximizebtn).hide();
       jQuery(`#windowlistitemmax${wid}`).hide();
-      jQuery(this.d_minimizebtn).hide();
     }
     // adjust top offset
     this.topoffset = this.topoffset + Number.parseInt(jQuery(this.d_header).css("height"), 10);
