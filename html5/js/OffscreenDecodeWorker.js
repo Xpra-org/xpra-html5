@@ -198,7 +198,7 @@ class WindowDecoder {
       // Bitmap paint
       context.imageSmoothingEnabled = false;
       context.clearRect(x, y, width, height);
-      context.drawImage(image, x, y, width, height);
+      context.drawImage(image, 0, 0, width, height, x, y, width, height);
       this.paint_box(coding, context, x, y, width, height);
     } else if (coding === "scroll") {
       let canvas = this.canvas;
