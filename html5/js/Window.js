@@ -90,7 +90,6 @@ class XpraWindow {
     this.maximized = false;
     this.focused = false;
     this.decorations = true;
-    this.has_decorations = false;
     this.resizable = false;
     this.stacking_layer = 0;
 
@@ -130,9 +129,7 @@ class XpraWindow {
       this.resizable = true;
     }
 
-    if (this.resizable || metadata["decorations"]) {
-      this.add_window_decorations();
-    }
+    this.add_window_decorations();
 
     // create the spinner overlay div
     jQuery(this.div).prepend(
@@ -169,29 +166,44 @@ class XpraWindow {
     if (this.client) this.client.debug.apply(this.client, arguments);
   }
 
-  add_window_decorations() {
-    this.has_decorations = true;
+  configure_border_class() {
+    if (this.resizable || this.decorations) {
+      jQuery(this.div).addClass("border");
+    }
+    else {
+      jQuery(this.div).removeClass("border");
+    }
+  }
+
+  add_headerbar() {
     const wid = this.wid;
-    jQuery(this.div).addClass("border");
     // add a title bar to this window if we need to
     // create header
     let head =
-      `<div id="head${wid}" class="windowhead"> ` +
-      `<span class="windowicon"><img class="windowicon" id="windowicon${wid}" /></span> ` +
-      `<span class="windowtitle" id="title${wid}">${
-        this.title
-      }</span> ` +
-      `<span class="windowbuttons"> `;
+        `<div id="head${wid}" class="windowhead"> ` +
+        `<span class="windowicon"><img alt="window icon" class="windowicon" id="windowicon${wid}" /></span> ` +
+        `<span class="windowtitle" id="title${wid}">${
+            this.title
+        }</span> ` +
+        `<span class="windowbuttons"> `;
     if (!jQuery(this.div).hasClass("modal")) {
       //modal windows cannot be minimized (see #204)
-      head += `<span id="minimize${wid}"><img src="icons/minimize.png" /></span>`;
+      head += `<span id="minimize${wid}"><img alt="minimize" src="icons/minimize.png" /></span>`;
     }
     head +=
-      `<span id="maximize${wid}"><img src="icons/maximize.png" /></span> ` +
-      `<span id="close${wid}"><img src="icons/close.png" /></span> ` +
-      `</span></div>`;
+        `<span id="maximize${wid}"><img alt="maximize" src="icons/maximize.png" /></span> ` +
+        `<span id="close${wid}"><img alt="close" src="icons/close.png" /></span> ` +
+        `</span></div>`;
     jQuery(this.div).prepend(head);
-    // make draggable
+
+    jQuery(`#head${wid}`).click(() => {
+      if (!this.minimized) {
+        this.focus();
+      }
+    });
+  }
+
+  make_draggable() {
     if (this.scale !== 1) {
       jQuery(this.div).draggable({
         transform: true
@@ -199,11 +211,6 @@ class XpraWindow {
     }
     jQuery(this.div).draggable({
       cancel: "canvas"
-    });
-    jQuery(`#head${wid}`).click((event_) => {
-      if (!this.minimized) {
-        this.focus();
-      }
     });
     jQuery(this.div).on("dragstart", (event_) => {
       this.client.release_buttons(event_, this);
@@ -214,6 +221,9 @@ class XpraWindow {
       this.client.mouse_grabbed = false;
       this.handle_moved(ui);
     });
+  }
+
+  make_resizable() {
     // Use transform if scaled
     // This disables helper highlight, so we
     // move the resizable borders in transform plugin
@@ -228,11 +238,11 @@ class XpraWindow {
       helper: "ui-resizable-helper",
       handles: "n, e, s, w, ne, se, sw, nw",
     });
-    jQuery(this.div).on("resizestart", (event_, ui) => {
-      this.client.do_window_mouse_click(event_, this, false);
+    jQuery(this.div).on("resizestart", (evt) => {
+      this.client.do_window_mouse_click(evt, this, false);
       this.client.mouse_grabbed = true;
     });
-    jQuery(this.div).on("resizestop", (event_, ui) => {
+    jQuery(this.div).on("resizestop", (evt, ui) => {
       this.handle_resized(ui);
       this.focus();
       this.client.mouse_grabbed = false;
@@ -241,6 +251,16 @@ class XpraWindow {
       setTimeout(() => this.client.request_refresh(wid), 200);
       setTimeout(() => this.client.request_refresh(wid), 500);
     });
+  }
+
+  add_window_decorations() {
+    const wid = this.wid;
+    this.configure_border_class();
+    this.add_headerbar();
+    this.make_draggable()
+    if (this.resizable) {
+      this.make_resizable();
+    }
     this.d_header = `#head${wid}`;
     this.d_closebtn = `#close${wid}`;
     this.d_maximizebtn = `#maximize${wid}`;
