@@ -11,6 +11,8 @@ xpra-html5 (18-r0-1) UNRELEASED; urgency=low
    - cleanup resources on disconnect
    - use jpeg for desktop background
   * Fixes:
+   - undecorated windows cannot be moved
+   - video frames have padding, prevent padding with images too
    - pointer offset
    - window clipping calculations
    - decoding error handler fails to request a redraw
@@ -21,6 +23,7 @@ xpra-html5 (18-r0-1) UNRELEASED; urgency=low
    - send keyboard events to the root window if that's all we have
    - `visibilitychange` must change the refresh-rate, not send power events
    - focus confusion
+   - missing window icons
   * Cosmetic:
    - cleanups and linter warnings
    - stricter comparison operators

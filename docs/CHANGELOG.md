@@ -1,7 +1,7 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
-## [18.0] 2025-10-15
+## [18.0] 2025-10-20
 - Build and packaging:
   - RHEL 10 builds
   - DEB `Section` value
@@ -14,6 +14,8 @@ All notable changes to this project will be documented in this file.
   - [cleanup resources on disconnect](https://github.com/Xpra-org/xpra-html5/issues/350)
   - use jpeg for desktop background
 - Fixes:
+  - [undecorated windows cannot be moved](https://github.com/Xpra-org/xpra-html5/commit/229ae72211bd714e64500aff68fb7967bfe607d8)
+  - [video frames have padding](https://github.com/Xpra-org/xpra-html5/commit/ce3e0c5ca7c74f19748ad85b896e44337c542283), [prevent padding with images too](https://github.com/Xpra-org/xpra-html5/commit/2e93ae295167e887b86615db4709c1c288b1bc83)
   - pointer offset
   - window clipping calculations
   - decoding error handler fails to request a redraw
@@ -24,6 +26,7 @@ All notable changes to this project will be documented in this file.
   - send keyboard events to the root window if that's all we have
   - `visibilitychange` must change the refresh-rate, not send power events
   - focus confusion
+  - [missing window icons](https://github.com/Xpra-org/xpra-html5/commit/8f9a14cd13208e70d3292a77847a87d55fb1a9a9)
 - Cosmetic:
   - cleanups and linter warnings
   - stricter comparison operators
