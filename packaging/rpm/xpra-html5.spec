@@ -78,7 +78,7 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
-* Mon Oct 20 2025 Antoine Martin <antoine@xpra.org> 18-0-1
+* Tue Oct 21 2025 Antoine Martin <antoine@xpra.org> 18-0-1
 - Build and packaging:
    RHEL 10 builds
    DEB `Section` value
@@ -94,8 +94,12 @@ rm -rf $RPM_BUILD_ROOT
    undecorated windows cannot be moved
    video frames have padding, prevent padding with images too
    pointer offset
+   pointer relative coordinates
+   clipboard-direction ignored
+   window title not trimmed
    window clipping calculations
    decoding error handler fails to request a redraw
+   Firefox offscreen decoding flickers
    offscreen decode error stalled the decode queue
    remove the paint worker
    fixup invalid refactoring
@@ -104,6 +108,8 @@ rm -rf $RPM_BUILD_ROOT
    `visibilitychange` must change the refresh-rate, not send power events
    focus confusion
    missing window icons
+   windows can have multiple types
+   DPI warning with newer servers
 - Cosmetic:
    cleanups and linter warnings
    stricter comparison operators

@@ -1,7 +1,7 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
-## [18.0] 2025-10-20
+## [18.0] 2025-10-21
 - Build and packaging:
   - RHEL 10 builds
   - DEB `Section` value
@@ -17,8 +17,12 @@ All notable changes to this project will be documented in this file.
   - [undecorated windows cannot be moved](https://github.com/Xpra-org/xpra-html5/commit/229ae72211bd714e64500aff68fb7967bfe607d8)
   - [video frames have padding](https://github.com/Xpra-org/xpra-html5/commit/ce3e0c5ca7c74f19748ad85b896e44337c542283), [prevent padding with images too](https://github.com/Xpra-org/xpra-html5/commit/2e93ae295167e887b86615db4709c1c288b1bc83)
   - pointer offset
+  - [pointer relative coordinates](https://github.com/Xpra-org/xpra-html5/commit/63f7b9a02e3a11b107e29c5937cbc0aae8df1d2e)
+  - [clipboard-direction ignored](https://github.com/Xpra-org/xpra-html5/commit/271326b70373182a5292abd0823adfd548ae0ed2)
+  - [window title not trimmed](https://github.com/Xpra-org/xpra-html5/commit/0e50602f40e954061cd39acf69fd96094f7eb075)
   - window clipping calculations
   - decoding error handler fails to request a redraw
+  - [Firefox offscreen decoding flickers](https://github.com/Xpra-org/xpra-html5/issues/393)
   - offscreen decode error stalled the decode queue
   - [remove the paint worker](https://github.com/Xpra-org/xpra-html5/issues/329)
   - fixup invalid refactoring
@@ -27,6 +31,8 @@ All notable changes to this project will be documented in this file.
   - `visibilitychange` must change the refresh-rate, not send power events
   - focus confusion
   - [missing window icons](https://github.com/Xpra-org/xpra-html5/commit/8f9a14cd13208e70d3292a77847a87d55fb1a9a9)
+  - [windows can have multiple types](https://github.com/Xpra-org/xpra-html5/commit/aadf9b05dbc8a5e87a709c78d36449089de79968)
+  - [DPI warning with newer servers](https://github.com/Xpra-org/xpra-html5/commit/19e35170e29bb13307b6c1bd56119b2fb56f9163)
 - Cosmetic:
   - cleanups and linter warnings
   - stricter comparison operators
