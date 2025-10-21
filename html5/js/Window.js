@@ -83,7 +83,7 @@ class XpraWindow {
 
     //window attributes:
     this.title = "";
-    this.windowtype = null;
+    this.windowtype = [];
     this.fullscreen = false;
     this.saved_geometry = null;
     this.minimized = false;
@@ -108,8 +108,8 @@ class XpraWindow {
 
     // create the decoration as part of the window, style is in CSS
     jQuery(this.div).addClass("window");
-    if (this.windowtype) {
-      jQuery(this.div).addClass(`window-${this.windowtype}`);
+    for (const windowtype in this.windowtype) {
+      jQuery(this.div).addClass(`window-${windowtype}`);
     }
 
     const fullscreen = (metadata["fullscreen"]) ?? false;
@@ -119,14 +119,11 @@ class XpraWindow {
       this.resizable = false;
     } else if (this.tray) {
       jQuery(this.div).addClass("tray");
+      this.resizable = false;
     } else if (this.override_redirect) {
       jQuery(this.div).addClass("override-redirect");
-    } else if (!fullscreen && (
-        this.windowtype === "" ||
-        this.windowtype === "NORMAL" ||
-        this.windowtype === "DIALOG" ||
-        this.windowtype === "UTILITY"
-      )) {
+      this.resizable = false;
+    } else if (!fullscreen && ((this.windowtype.length === 0) || this.has_windowtype(["NORMAL", "DIALOG", "UTILITY"]))) {
       this.resizable = true;
     }
 
@@ -248,11 +245,23 @@ class XpraWindow {
     // we must set a sensible default early
     // so geometry calculations have the correct offset:
     if (!("decorations" in this.metadata)) {
-      const decorated = !this.override_redirect && this.windowtype !== "DROPDOWN" && this.windowtype !== "TOOLTIP" && this.windowtype !== "POPUP_MENU" && this.windowtype !== "MENU" && this.windowtype !== "COMBO";
+      let decorated = true;
+      if (this.override_redirect) {
+        decorated = false;
+      }
+      else {
+        decorated = !this.has_windowtype(["DROPDOWN", "TOOLTIP", "POPUP_MENU", "MENU", "COMBO"]);
+      }
       this._set_decorated(decorated);
-      console.log("decorated=", decorated, "windowtype=", this.windowtype);
+      console.log("decorated=", decorated, "for windowtype=", this.windowtype);
     }
   }
+
+  has_windowtype(windowtypes) {
+    const windowtypes_set = new Set(windowtypes);
+    return this.windowtype.some(element => windowtypes_set.has(element));
+  }
+
 
   make_draggable() {
     if (this.scale !== 1) {
@@ -576,15 +585,10 @@ class XpraWindow {
       z = 0;
     } else if (this.override_redirect || this.client.server_is_desktop || this.client.server_is_shadow) {
       z = 30_000;
-    } else if (
-      this.windowtype === "DROPDOWN" ||
-      this.windowtype === "TOOLTIP" ||
-      this.windowtype === "POPUP_MENU" ||
-      this.windowtype === "MENU" ||
-      this.windowtype === "COMBO"
-    ) {
+    } else if (this.has_windowtype(["DROPDOWN", "TOOLTIP", "POPUP_MENU", "MENU", "COMBO"]))
+    {
       z = 20_000;
-    } else if (this.windowtype === "UTILITY" || this.windowtype === "DIALOG") {
+    } else if (this.has_windowtype(["UTILITY", "DIALOG"])) {
       z = 15_000;
     }
     const above = this.metadata["above"];
@@ -638,7 +642,7 @@ class XpraWindow {
       this.has_alpha = Boolean(metadata["has-alpha"]);
     }
     if ("window-type" in metadata) {
-      this.windowtype = Utilities.s(metadata["window-type"][0]);
+      this.windowtype = metadata["window-type"];
     }
     if ("decorations" in metadata) {
       this.decorations = Boolean(metadata["decorations"]);
