@@ -89,7 +89,8 @@ class XpraWindow {
     this.minimized = false;
     this.maximized = false;
     this.focused = false;
-    this.decorations = true;
+    this.decorations = true;    // whether the window should be decorated or not
+    this.decorated = true;      // whether it actually is (fullscreen windows are not)
     this.resizable = false;
     this.stacking_layer = 0;
 
@@ -97,10 +98,10 @@ class XpraWindow {
     this.icon = null;
 
     // get offsets
-    this.leftoffset = Number.parseInt(jQuery(this.div).css("border-left-width"), 10);
-    this.rightoffset = Number.parseInt(jQuery(this.div).css("border-right-width"), 10);
-    this.topoffset = Number.parseInt(jQuery(this.div).css("border-top-width"), 10);
-    this.bottomoffset = Number.parseInt(jQuery(this.div).css("border-bottom-width"), 10);
+    this.leftoffset = 0;
+    this.rightoffset = 0;
+    this.topoffset = 0;
+    this.bottomoffset = 0;
 
     // update metadata that is safe before window is drawn
     this.update_metadata(metadata, true);
@@ -129,7 +130,24 @@ class XpraWindow {
       this.resizable = true;
     }
 
-    this.add_window_decorations();
+    this.configure_border_class();
+    this.add_headerbar();
+    this.make_draggable()
+    this.update_offsets()
+
+    // stop propagation if we're over the window:
+    jQuery(this.div).mousedown((e) => e.stopPropagation());
+    //bug 2418: if we stop 'mouseup' propagation,
+    //jQuery can't ungrab the window with Firefox
+    // assign callback to focus window if header is clicked.
+    jQuery(this.d_header).click((e) => {
+      if (
+          !this.minimized &&
+          $(e.target).parents(".windowbuttons").length === 0
+      ) {
+        this.focus();
+      }
+    });
 
     // create the spinner overlay div
     jQuery(this.div).prepend(
@@ -167,13 +185,25 @@ class XpraWindow {
   }
 
   configure_border_class() {
-    if (this.resizable || this.decorations) {
+    if (this.resizable || this.decorated) {
       jQuery(this.div).addClass("border");
     }
     else {
       jQuery(this.div).removeClass("border");
     }
   }
+
+  update_offsets() {
+    this.leftoffset = Number.parseInt(jQuery(this.div).css("border-left-width"), 10);
+    this.rightoffset = Number.parseInt(jQuery(this.div).css("border-right-width"), 10);
+    this.topoffset = Number.parseInt(jQuery(this.div).css("border-top-width"), 10)
+    this.bottomoffset = Number.parseInt(jQuery(this.div).css("border-bottom-width"), 10);
+    if (this.decorated) {
+      this.topoffset = this.topoffset + Number.parseInt(jQuery(this.d_header).css("height"), 10);
+    }
+    console.log("decorated=", this.decorated, "offsets=", [this.leftoffset, this.topoffset, this.rightoffset, this.bottomoffset]);
+  }
+
 
   add_headerbar() {
     const wid = this.wid;
@@ -182,9 +212,7 @@ class XpraWindow {
     let head =
         `<div id="head${wid}" class="windowhead"> ` +
         `<span class="windowicon"><img alt="window icon" class="windowicon" id="windowicon${wid}" /></span> ` +
-        `<span class="windowtitle" id="title${wid}">${
-            this.title
-        }</span> ` +
+        `<span class="windowtitle" id="title${wid}">${this.title}</span> ` +
         `<span class="windowbuttons"> `;
     if (!jQuery(this.div).hasClass("modal")) {
       //modal windows cannot be minimized (see #204)
@@ -201,6 +229,29 @@ class XpraWindow {
         this.focus();
       }
     });
+    this.d_header = `#head${wid}`;
+    this.d_closebtn = `#close${wid}`;
+    this.d_maximizebtn = `#maximize${wid}`;
+    this.d_minimizebtn = `#minimize${wid}`;
+
+    if (this.resizable) {
+      this.make_resizable();
+      jQuery(this.d_header).dblclick(() => this.toggle_maximized());
+      jQuery(this.d_closebtn).click(() => this.window_closed_cb(this));
+      jQuery(this.d_maximizebtn).click(() => this.toggle_maximized());
+      jQuery(this.d_minimizebtn).click(() => this.toggle_minimized());
+    } else {
+      jQuery(this.d_maximizebtn).hide();
+      jQuery(`#windowlistitemmax${wid}`).hide();
+    }
+
+    // we must set a sensible default early
+    // so geometry calculations have the correct offset:
+    if (!("decorations" in this.metadata)) {
+      const decorated = !this.override_redirect && this.windowtype !== "DROPDOWN" && this.windowtype !== "TOOLTIP" && this.windowtype !== "POPUP_MENU" && this.windowtype !== "MENU" && this.windowtype !== "COMBO";
+      this._set_decorated(decorated);
+      console.log("decorated=", decorated, "windowtype=", this.windowtype);
+    }
   }
 
   make_draggable() {
@@ -250,44 +301,6 @@ class XpraWindow {
       //just force a refresh:
       setTimeout(() => this.client.request_refresh(this.wid), 200);
       setTimeout(() => this.client.request_refresh(this.wid), 500);
-    });
-  }
-
-  add_window_decorations() {
-    const wid = this.wid;
-    this.configure_border_class();
-    this.add_headerbar();
-    this.make_draggable()
-    if (this.resizable) {
-      this.make_resizable();
-    }
-    this.d_header = `#head${wid}`;
-    this.d_closebtn = `#close${wid}`;
-    this.d_maximizebtn = `#maximize${wid}`;
-    this.d_minimizebtn = `#minimize${wid}`;
-    if (this.resizable) {
-      jQuery(this.d_header).dblclick(() => this.toggle_maximized());
-      jQuery(this.d_closebtn).click(() => this.window_closed_cb(this));
-      jQuery(this.d_maximizebtn).click(() => this.toggle_maximized());
-      jQuery(this.d_minimizebtn).click(() => this.toggle_minimized());
-    } else {
-      jQuery(this.d_maximizebtn).hide();
-      jQuery(`#windowlistitemmax${wid}`).hide();
-    }
-    // adjust top offset
-    this.topoffset = this.topoffset + Number.parseInt(jQuery(this.d_header).css("height"), 10);
-    // stop propagation if we're over the window:
-    jQuery(this.div).mousedown((e) => e.stopPropagation());
-    //bug 2418: if we stop 'mouseup' propagation,
-    //jQuery can't ungrab the window with Firefox
-    // assign callback to focus window if header is clicked.
-    jQuery(this.d_header).click((e) => {
-      if (
-        !this.minimized &&
-        $(e.target).parents(".windowbuttons").length === 0
-      ) {
-        this.focus();
-      }
     });
   }
 
@@ -446,7 +459,7 @@ class XpraWindow {
       this.x = Math.min(oldx, ww - min_w_visible);
     }
     if (oldy <= this.topoffset && oldy <= min_h_visible) {
-      this.y = Number.parseInt(this.topoffset);
+      this.y = this.topoffset;
     } else if (oldy >= wh - min_h_visible) {
       this.y = Math.min(oldy, wh - min_h_visible);
     }
@@ -628,7 +641,7 @@ class XpraWindow {
       this.windowtype = Utilities.s(metadata["window-type"][0]);
     }
     if ("decorations" in metadata) {
-      this.decorations = metadata["decorations"];
+      this.decorations = Boolean(metadata["decorations"]);
       this._set_decorated(this.decorations);
       this.updateCSSGeometry();
       this.handle_resized();
@@ -693,7 +706,7 @@ class XpraWindow {
     }
     let hdec = 0;
     const wdec = 0;
-    if (this.decorations) {
+    if (this.decorated) {
       //adjust for header
       hdec = jQuery(`#head${this.wid}`).outerHeight(true);
     }
@@ -879,20 +892,18 @@ class XpraWindow {
   }
 
   _set_decorated(decorated) {
-    this.topoffset = Number.parseInt(jQuery(this.div).css("border-top-width"), 10);
+    this.decorated = decorated;
+    const head = document.getElementById("head"+this.wid);
     if (decorated) {
-      jQuery(`#head${this.wid}`).show();
+      head.style.display = 'block';
       jQuery(this.div).removeClass("undecorated");
       jQuery(this.div).addClass("window");
-      if (this.d_header) {
-        this.topoffset = this.topoffset + Number.parseInt(jQuery(this.d_header).css("height"), 10);
-        this.debug("geometry", "_set_decorated(", decorated, ") new topoffset=", self.topoffset);
-      }
     } else {
-      jQuery(`#head${this.wid}`).hide();
+      head.style.display = 'none';
       jQuery(this.div).removeClass("window");
       jQuery(this.div).addClass("undecorated");
     }
+    this.update_offsets();
   }
 
   /**
