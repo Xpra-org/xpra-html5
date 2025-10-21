@@ -352,13 +352,13 @@ class XpraWindow {
   register_canvas_mouse_events(canvas) {
     // Hook up the events we want to receive:
     jQuery(canvas).mousedown((e) => {
-      this.on_mousedown(e);
+      return this.mouse_down_cb(e, this);
     });
     jQuery(canvas).mouseup((e) => {
-      this.on_mouseup(e);
+      return this.mouse_up_cb(e, this);
     });
     jQuery(canvas).mousemove((e) => {
-      this.on_mousemove(e);
+      return this.mouse_move_cb(e, this);
     });
   }
 
@@ -374,6 +374,7 @@ class XpraWindow {
         this.pointer_last_y = event_.offsetY;
       }
     });
+
     canvas.addEventListener("mousemove", (event_) => {
       this.debug("mouse", "mousemove:", event_);
       if (this.pointer_down === event_.pointerId) {
@@ -384,7 +385,7 @@ class XpraWindow {
         const mult = 20 * (window.devicePixelRatio || 1);
         event_.wheelDeltaX = Math.round(dx * mult);
         event_.wheelDeltaY = Math.round(dy * mult);
-        this.on_mousescroll(event_);
+        return this.mouse_scroll_cb(event_, this);
       }
     });
     canvas.addEventListener("pointerup", (event_) => {
@@ -402,7 +403,7 @@ class XpraWindow {
     const me = this;
 
     function on_mousescroll(e) {
-      me.on_mousescroll(e);
+      this.mouse_scroll_cb(e, this);
       e.stopPropagation();
       return e.preventDefault();
     }
@@ -547,25 +548,6 @@ class XpraWindow {
 
   resume() {
     this.init_canvas();
-  }
-
-  /**
-   * Mouse: delegate to client, telling it which window triggered the event.
-   */
-  on_mousemove(e) {
-    return this.mouse_move_cb(e, this);
-  }
-
-  on_mousedown(e) {
-    return this.mouse_down_cb(e, this);
-  }
-
-  on_mouseup(e) {
-    return this.mouse_up_cb(e, this);
-  }
-
-  on_mousescroll(e) {
-    return this.mouse_scroll_cb(e, this);
   }
 
   /**
