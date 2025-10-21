@@ -1644,6 +1644,7 @@ class XpraClient {
 
   on_mousedown(e, win) {
     this.mousedown_event = e;
+    this.mouseup_event = null;
     this.do_window_mouse_click(e, win, true);
     return win == undefined;
   }
