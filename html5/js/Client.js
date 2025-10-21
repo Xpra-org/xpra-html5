@@ -1782,10 +1782,16 @@ class XpraClient {
     } else if (button === 5) {
       button = 9;
     }
-    setTimeout(() => {
-      this.clipboard_delayed_event_time = performance.now() + CLIPBOARD_EVENT_DELAY;
-      this.send_button_action(wid, button, pressed, coords, modifiers);
-    }, send_delay);
+    function send_button_action() {
+      client.clipboard_delayed_event_time = performance.now() + CLIPBOARD_EVENT_DELAY;
+      client.send_button_action(wid, button, pressed, coords, modifiers);
+    }
+    if (send_delay) {
+      setTimeout(send_button_action, send_delay)
+    }
+    else {
+      send_button_action();
+    }
   }
 
   send_button_action(wid, button, pressed, coords, modifiers) {
