@@ -201,7 +201,7 @@ class XpraWindow {
     if (this.decorated) {
       this.topoffset = this.topoffset + Number.parseInt(jQuery(this.d_header).css("height"), 10);
     }
-    console.log("decorated=", this.decorated, "offsets=", [this.leftoffset, this.topoffset, this.rightoffset, this.bottomoffset]);
+    this.debug("geometry", "decorated=", this.decorated, "offsets=", [this.leftoffset, this.topoffset, this.rightoffset, this.bottomoffset]);
   }
 
 
