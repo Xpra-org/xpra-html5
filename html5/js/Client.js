@@ -1687,13 +1687,15 @@ class XpraClient {
     const buttons = [];
     const coords = [x, y];
     let wid = 0;
-    if (this.server_is_desktop) wid = 1;
+    if (this.server_is_desktop) {
+      wid = 1;
+    }
     if (win) {
       wid = win.wid;
       // add relative coordinates:
       const pos = jQuery(win.div).position()
-      coords.push(Math.round(mouse.x - pos.left));
-      coords.push(Math.round(mouse.y - pos.top));
+      coords.push(Math.round(mouse.x - pos.left - win.leftoffset));
+      coords.push(Math.round(mouse.y - pos.top - win.topoffset));
       e.preventDefault();
     }
     this.send([PACKET_TYPES.pointer_position, wid, coords, modifiers, buttons]);
