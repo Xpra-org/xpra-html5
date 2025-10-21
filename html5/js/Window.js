@@ -644,13 +644,6 @@ class XpraWindow {
     if ("window-type" in metadata) {
       this.windowtype = metadata["window-type"];
     }
-    if ("decorations" in metadata) {
-      this.decorations = Boolean(metadata["decorations"]);
-      this._set_decorated(this.decorations);
-      this.updateCSSGeometry();
-      this.handle_resized();
-      this.apply_size_constraints();
-    }
     if ("opacity" in metadata) {
       let opacity = metadata["opacity"];
       opacity = opacity < 0 ? 1 : opacity / 0x1_00_00_00_00;
@@ -772,6 +765,13 @@ class XpraWindow {
     }
     if ("maximized" in metadata) {
       this.set_maximized(Boolean(metadata["maximized"]));
+    }
+    if ("decorations" in metadata) {
+      this.decorations = Boolean(metadata["decorations"]);
+      this._set_decorated(this.decorations);
+      this.updateCSSGeometry();
+      this.handle_resized();
+      this.apply_size_constraints();
     }
   }
 
