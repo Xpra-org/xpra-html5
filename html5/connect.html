@@ -803,7 +803,7 @@
 
         function update_offscreen() {
           const ssl_enabled = document.getElementById("ssl").checked;
-          const offscreen = getboolparam("offscreen", XpraOffscreenWorker.isAvailable(ssl_enabled));
+          const offscreen = getboolparam("offscreen", XpraOffscreenWorker.isAvailable(ssl_enabled) && !Utilities.isFirefox());
           document.getElementById("offscreen").checked = offscreen;
           const offscreen_available = XpraOffscreenWorker.isAvailable(ssl_enabled);
           const offscreen_input = document.getElementById("offscreen");
