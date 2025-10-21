@@ -248,8 +248,8 @@ class XpraWindow {
       this.client.mouse_grabbed = false;
       //workaround for the window going blank,
       //just force a refresh:
-      setTimeout(() => this.client.request_refresh(wid), 200);
-      setTimeout(() => this.client.request_refresh(wid), 500);
+      setTimeout(() => this.client.request_refresh(this.wid), 200);
+      setTimeout(() => this.client.request_refresh(this.wid), 500);
     });
   }
 
