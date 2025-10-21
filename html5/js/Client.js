@@ -1753,8 +1753,8 @@ class XpraClient {
       wid = win.wid;
       // add relative coordinates:
       const pos = jQuery(win.div).position();
-      coords.push(Math.round(mouse.x - pos.left));
-      coords.push(Math.round(mouse.y - pos.top));
+      coords.push(Math.round(mouse.x - pos.left - win.leftoffset));
+      coords.push(Math.round(mouse.y - pos.top - win.topoffset));
       e.preventDefault();
     }
     // dont call set focus unless the focus has actually changed
@@ -1834,8 +1834,13 @@ class XpraClient {
     const modifiers = this._keyb_get_modifiers(e);
     const buttons = [];
     let wid = 0;
+    const coords = [x, y];
     if (win) {
       wid = win.wid;
+      // add relative coordinates:
+      const pos = jQuery(win.div).position();
+      coords.push(Math.round(mouse.x - pos.left - win.leftoffset));
+      coords.push(Math.round(mouse.y - pos.top - win.topoffset));
     }
     const wheel = Utilities.normalizeWheel(e);
     this.debug("mouse", "normalized wheel event:", wheel);
@@ -1854,12 +1859,12 @@ class XpraClient {
       if (apx > 0) {
         const button_x = px >= 0 ? 7 : 6;
         const xdist = Math.round((px * 1000) / 120);
-        this.send([PACKET_TYPES.wheel_motion, wid, button_x, -xdist, [x, y], modifiers, buttons]);
+        this.send([PACKET_TYPES.wheel_motion, wid, button_x, -xdist, coords, modifiers, buttons]);
       }
       if (apy > 0) {
         const button_y = py >= 0 ? 5 : 4;
         const ydist = Math.round((py * 1000) / 120);
-        this.send([PACKET_TYPES.wheel_motion, wid, button_y, -ydist, [x, y], modifiers, buttons]);
+        this.send([PACKET_TYPES.wheel_motion, wid, button_y, -ydist, coords, modifiers, buttons]);
       }
       return;
     }
@@ -1881,13 +1886,13 @@ class XpraClient {
     const button_y = this.wheel_delta_y >= 0 ? 5 : 4;
     while (wx >= 120) {
       wx -= 120;
-      this.send([PACKET_TYPES.button_action, wid, button_x, true, [x, y], modifiers, buttons]);
-      this.send([PACKET_TYPES.button_action, wid, button_x, false, [x, y], modifiers, buttons]);
+      this.send([PACKET_TYPES.button_action, wid, button_x, true, coords, modifiers, buttons]);
+      this.send([PACKET_TYPES.button_action, wid, button_x, false, coords, modifiers, buttons]);
     }
     while (wy >= 120) {
       wy -= 120;
-      this.send([PACKET_TYPES.button_action, wid, button_y, true, [x, y], modifiers, buttons]);
-      this.send([PACKET_TYPES.button_action, wid, button_y, false, [x, y], modifiers, buttons]);
+      this.send([PACKET_TYPES.button_action, wid, button_y, true, coords, modifiers, buttons]);
+      this.send([PACKET_TYPES.button_action, wid, button_y, false, coords, modifiers, buttons]);
     }
     //store left overs:
     this.wheel_delta_x = this.wheel_delta_x >= 0 ? wx : -wx;
