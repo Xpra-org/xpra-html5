@@ -1431,6 +1431,7 @@ class XpraClient {
       "refresh-rate": this.vrefresh,
       "desktop_size": [this.desktop_width, this.desktop_height],
       "desktop_mode_size": [this.desktop_width, this.desktop_height],
+      "screen_sizes": this._get_screen_sizes(),
     }
   }
 
