@@ -1756,7 +1756,6 @@ class XpraClient {
       const pos = jQuery(win.div).position();
       coords.push(Math.round(mouse.x - pos.left - win.leftoffset));
       coords.push(Math.round(mouse.y - pos.top - win.topoffset));
-      e.preventDefault();
     }
     // dont call set focus unless the focus has actually changed
     if (wid > 0 && this.focused_wid !== wid) {
