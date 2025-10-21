@@ -1407,7 +1407,7 @@
         let widget_count = 0;
         for (const widget_id of widget_ids) {
             const enabled = getboolparam(widget_id, true);
-            console.log(widget_id, "=", enabled);
+            /* console.log(widget_id, "=", enabled); */
             if (!enabled) {
                 document.querySelector("#"+widget_id).parentElement.style.display = 'none';
             }
