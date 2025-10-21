@@ -1716,6 +1716,7 @@ class XpraClient {
       return;
     }
     let send_delay = 0;
+    const client = this;
     if (client.clipboard_direction !== "to-server" && this._poll_clipboard(e)) {
       send_delay = CLIPBOARD_EVENT_DELAY;
     }
