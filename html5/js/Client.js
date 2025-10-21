@@ -1667,7 +1667,7 @@ class XpraClient {
   on_mouseup(e, win) {
     this.mouseup_event = e;
     this.do_window_mouse_click(e, win, false);
-    return Boolean(win);
+    return win == undefined;
   }
 
   on_mousemove(e, win) {
@@ -1677,7 +1677,7 @@ class XpraClient {
 
     // Ignore events when server is readonly, disconnected or if the event is not over the screen while in shadow mode
     if (this.server_readonly || !this.connected || (!win && this.server_is_shadow)) {
-      return Boolean(win);
+      return win == undefined;
     }
     const mouse = this.getMouse(e);
     const x = Math.round(mouse.x);
@@ -1696,7 +1696,7 @@ class XpraClient {
       e.preventDefault();
     }
     this.send([PACKET_TYPES.pointer_position, wid, coords, modifiers, buttons]);
-    return Boolean(win);
+    return win == undefined;
   }
 
   release_buttons(e, win) {
