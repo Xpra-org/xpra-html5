@@ -1295,7 +1295,7 @@ class XpraClient {
    */
   _send_hello(counter) {
     counter = counter || 0;
-    if (!this.offscreen_api || this.decode_worker || counter >= 100) {
+    if (!DECODE_WORKER || this.decode_worker || counter >= 100) {
       // we don't need to wait for the decode worker (ie: disabled),
       // or we have successfully initialized it,
       // or we have already waited too long...
