@@ -1294,21 +1294,18 @@ class XpraClient {
    * Hello
    */
   _send_hello(counter) {
-    if (!this.decode_worker) {
-      counter = counter || 0;
-      if (counter === 0) {
-        this.on_connection_progress("Waiting for decode worker", "", 70);
-        this.clog("waiting for decode worker to finish initializing");
-      } else if (counter > 100) {
-        //we have waited 10 seconds or more...
-        //continue without:
-        this.do_send_hello(null, null);
-      }
-      //try again later:
-      setTimeout(() => this._send_hello(counter + 1), 100);
-    } else {
+    counter = counter || 0;
+    if (!this.offscreen_api || this.decode_worker || counter >= 100) {
+      // we don't need to wait for the decode worker (ie: disabled),
+      // or we have successfully initialized it,
+      // or we have already waited too long...
       this.do_send_hello(null, null);
+      return;
     }
+    if (counter === 0) {
+      this.on_connection_progress("Waiting for decode worker", "", 70);
+    }
+    setTimeout(() => this._send_hello(counter + 1), 100);
   }
 
   do_send_hello(challenge_response, client_salt) {
@@ -3660,7 +3657,7 @@ class XpraClient {
       return;
     }
 
-    if (this.offscreen_api) {
+    if (this.decode_worker) {
       this.decode_worker.postMessage({
         cmd: "redraw",
         wid: win.wid
