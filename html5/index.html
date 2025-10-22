@@ -746,6 +746,7 @@
           if (progress_timer) {
             window.clearTimeout(progress_timer);
             progress_timer = null;
+            progress_offset = 0;
           }
           if (progress < 100) {
             progress_move_offset();
@@ -762,6 +763,9 @@
               progress_move_offset,
               (5 + progress_offset) * progress_offset
             );
+          }
+          else {
+            progress_offset = 0;
           }
         }
 
