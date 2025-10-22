@@ -1208,6 +1208,7 @@ class XpraWindow {
     }
     if (zoom !== 1 && !Utilities.isMacOS()) {
       //scale it:
+      this.debug("geometry", "scaling cursor by zoom factor:", zoom);
       const temporary_img = new Image();
       temporary_img.addEventListener("load", () => {
         const canvas = document.createElement("canvas");
