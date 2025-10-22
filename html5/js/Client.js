@@ -316,6 +316,7 @@ class XpraClient {
     this.server_ok = false;
     //packet handling
     this.decode_worker = null;
+    this.decode_worker_timeout = 0;
     // floating menu
     this.toolbar_position = "top";
 
@@ -542,6 +543,7 @@ class XpraClient {
     }
     this.open_protocol();
 
+    this.decode_worker_timeout = false;
     if (!DECODE_WORKER) {
       this.supported_encodings = SAFE_ENCODINGS;
       this.offscreen_api = false;
@@ -589,12 +591,21 @@ class XpraClient {
           case true: {
             const formats = [...data["formats"]];
             this.clog("we can decode using a worker:", decode_worker);
-            this.supported_encodings = formats;
-            this.clog("full list of supported encodings:", this.supported_encodings);
-            if (this.offscreen_api) {
-              this.set_encoding_option('video_max_size', [4096, 4096]);
+            if (this.decode_worker_timeout) {
+              this.clog("but worker initialization took too long!");
+              decode_worker.postMessage({
+                cmd: "close",
+              });
+              this.decode_worker = null;
             }
-            this.decode_worker = decode_worker;
+            else {
+              if (this.offscreen_api) {
+                this.set_encoding_option('video_max_size', [4096, 4096]);
+              }
+              this.supported_encodings = formats;
+              this.clog("full list of supported encodings:", this.supported_encodings);
+              this.decode_worker = decode_worker;
+            }
             break;
           }
           case false:
@@ -1294,7 +1305,8 @@ class XpraClient {
    */
   _send_hello(counter) {
     counter = counter || 0;
-    if (!DECODE_WORKER || this.decode_worker || counter >= 100) {
+    this.decode_worker_timeout = counter >= 100;
+    if (!DECODE_WORKER || this.decode_worker || this.decode_worker_timeout) {
       // we don't need to wait for the decode worker (ie: disabled),
       // or we have successfully initialized it,
       // or we have already waited too long...
