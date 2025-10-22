@@ -502,7 +502,7 @@ class XpraClient {
       details += " with ssl";
     }
     this.schedule_open_timer();
-    this.on_connection_progress("Connecting to server", details, 40);
+    this.on_connection_progress("Connecting to server", details, 30);
     // open the web socket, started it in a worker if available
     // check we have enough information for encryption
     if (this.encryption && !this.encryption_key) {
@@ -1297,7 +1297,7 @@ class XpraClient {
     if (!this.decode_worker) {
       counter = counter || 0;
       if (counter === 0) {
-        this.on_connection_progress("Waiting for decode worker", "", 90);
+        this.on_connection_progress("Waiting for decode worker", "", 70);
         this.clog("waiting for decode worker to finish initializing");
       } else if (counter > 100) {
         //we have waited 10 seconds or more...
@@ -1312,6 +1312,7 @@ class XpraClient {
   }
 
   do_send_hello(challenge_response, client_salt) {
+    this.on_connection_progress("Sending handshake", "", 90);
     // make the base hello
     this._make_hello_base();
     // handle a challenge if we need to
@@ -2371,7 +2372,7 @@ class XpraClient {
   _process_open() {
     this.cancel_open_timer();
     // call the send_hello function
-    this.on_connection_progress("WebSocket connection established", "", 80);
+    this.on_connection_progress("WebSocket connection established", "", 60);
     // wait timeout seconds for a hello, then bomb
     this._send_hello();
     this.on_open();
