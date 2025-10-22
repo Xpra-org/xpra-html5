@@ -721,7 +721,7 @@
         }
 
         let progress_timer;
-        const progress_value = 0;
+        let progress_value = 0;
         let progress_offset = 0;
         // show connection progress:
         function connection_progress(state, details, progress) {
@@ -739,10 +739,10 @@
           } else {
             $("#progress").show();
           }
+          progress_value = progress;
           $("#progress-label").text(state || " ");
           $("#progress-details").text(details || " ");
           $("#progress-bar").val(progress);
-          const progress_value = progress;
           if (progress_timer) {
             window.clearTimeout(progress_timer);
             progress_timer = null;
