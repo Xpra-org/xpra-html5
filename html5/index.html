@@ -725,15 +725,7 @@
         let progress_offset = 0;
         // show connection progress:
         function connection_progress(state, details, progress) {
-          clog(
-            "connection_progress(",
-            state,
-            ", ",
-            details,
-            ", ",
-            progress,
-            ")"
-          );
+          clog("connection_progress(", state, ", ", details, ", ", progress, ")");
           if (progress >= 100) {
             $("#progress").hide();
           } else {
@@ -756,13 +748,10 @@
         // nothing changes, but we just show a slow progress
         function progress_move_offset() {
           progress_timer = null;
-          progress_offset++;
           $("#progress-bar").val(progress_value + progress_offset);
-          if (progress_offset < 9) {
-            progress_timer = window.setTimeout(
-              progress_move_offset,
-              (5 + progress_offset) * progress_offset
-            );
+          if (progress_offset < 10) {
+            progress_offset++;
+            progress_timer = window.setTimeout(progress_move_offset, (10 + 5 * progress_offset) ** 2);
           }
           else {
             progress_offset = 0;
