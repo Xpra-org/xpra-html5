@@ -593,9 +593,7 @@ class XpraClient {
             this.clog("we can decode using a worker:", decode_worker);
             if (this.decode_worker_timeout) {
               this.clog("but worker initialization took too long!");
-              decode_worker.postMessage({
-                cmd: "close",
-              });
+              decode_worker.postMessage({cmd: "close"});
               this.decode_worker = null;
             }
             else {
@@ -620,10 +618,7 @@ class XpraClient {
       false
     );
     this.clog("decode worker will check:", this.check_encodings);
-    decode_worker.postMessage({
-      cmd: "check",
-      encodings: this.check_encodings,
-    });
+    decode_worker.postMessage({cmd: "check", encodings: this.check_encodings});
   }
 
   open_protocol() {
@@ -679,9 +674,7 @@ class XpraClient {
       win.destroy();
     }
     if (this.decode_worker) {
-      this.decode_worker.postMessage({
-        cmd: "close",
-      });
+      this.decode_worker.postMessage({cmd: "close"});
       this.decode_worker = null;
     }
   }
@@ -3412,10 +3405,7 @@ class XpraClient {
       this.auto_focus();
     }
     if (this.decode_worker) {
-      this.decode_worker.postMessage({
-        cmd: "remove",
-        wid
-      });
+      this.decode_worker.postMessage({cmd: "remove", wid});
     }
   }
 
@@ -3638,13 +3628,7 @@ class XpraClient {
       raw_buffers.push(img_data.buffer);
     }
     if (this.decode_worker) {
-      this.decode_worker.postMessage({
-          cmd: "decode",
-          packet,
-          start: now
-        },
-        raw_buffers
-      );
+      this.decode_worker.postMessage({cmd: "decode", packet, start: now}, raw_buffers);
       //the worker draw event will call do_process_draw
     } else {
       this.do_process_draw(packet, now);
@@ -3655,10 +3639,7 @@ class XpraClient {
     this.do_process_draw(packet, 0);
     const wid = packet[1];
     if (this.decode_worker) {
-      this.decode_worker.postMessage({
-        cmd: "eos",
-        wid
-      });
+      this.decode_worker.postMessage({cmd: "eos", wid});
     }
   }
 
@@ -3669,10 +3650,7 @@ class XpraClient {
     }
 
     if (this.offscreen_api && this.decode_worker) {
-      this.decode_worker.postMessage({
-        cmd: "redraw",
-        wid: win.wid
-      });
+      this.decode_worker.postMessage({cmd: "redraw", wid: win.wid});
       return;
     }
     // request that drawing to screen takes place at next available opportunity if possible
