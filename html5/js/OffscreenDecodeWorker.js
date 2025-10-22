@@ -20,6 +20,9 @@ importScripts("./Constants.js");
 // WindowDecoder for each window we have control over:
 const window_decoders = new Map();
 
+// You can change this delay to test decode worker initialization timeouts:
+const ACK_DELAY = 0;
+
 const image_coding = [
   "rgb",
   "rgb32",
@@ -269,10 +272,13 @@ onmessage = function(e) {
       // Check if we support the given encodings.
       const encodings = [...data.encodings];
       const common = encodings.filter((value) => all_encodings.has(value));
-      self.postMessage({
-        result: true,
-        formats: common
-      });
+      function ack() {
+        self.postMessage({
+          result: true,
+          formats: common
+        });
+      }
+      setTimeout(ack, ACK_DELAY);
       break;
     }
     case "eos":
