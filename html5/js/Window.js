@@ -325,7 +325,7 @@ class XpraWindow {
     canvas.height = this.h;
     this.canvas = canvas;
     this.div.append(canvas);
-    if (this.client.decode_worker) {
+    if (this.client.offscreen_api && this.client.decode_worker) {
       // Transfer canvas control.
       this.transfer_canvas(canvas);
     } else {
@@ -481,7 +481,7 @@ class XpraWindow {
   }
 
   updateCanvasGeometry() {
-    if (this.client.decode_worker) {
+    if (this.client.offscreen_api && this.client.decode_worker) {
       this.client.decode_worker.postMessage({
         cmd: "canvas-geo",
         wid: this.wid,
