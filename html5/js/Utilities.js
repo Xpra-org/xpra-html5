@@ -334,6 +334,42 @@ const Utilities = {
     );
   },
 
+  getBrowserName() {
+    if (this.isFirefox()) {
+      return "Firefox";
+    }
+    if (this.isOpera()) {
+      return "Opera";
+    }
+    if (this.isChrome()) {
+      return "Chrome";
+    }
+    if (this.isEdge()) {
+      return "Edge";
+    }
+    if (this.isSafari()) {
+      return "Safari";
+    }
+    return "Unknown";
+  },
+
+  getOS() {
+    const userAgent = navigator.userAgent;
+    let os = "Unknown";
+    if (userAgent.includes("Windows NT")) {
+      os = "MS Windows";
+    } else if (userAgent.includes("Macintosh") || userAgent.includes("Mac OS X")) {
+      os = "macOS";
+    } else if (userAgent.includes("Android")) {
+      os = "Android";
+    } else if (userAgent.includes("iPhone") || userAgent.includes("iPad")) {
+      os = "iOS/iPadOS";
+    } else if (userAgent.includes("Linux")) {
+      os = "Linux";
+    }
+    return os;
+  },
+
   is_64bit() {
     const _to_check = [];
     if (Object.hasOwn(window.navigator, "cpuClass"))
