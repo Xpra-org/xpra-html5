@@ -744,8 +744,14 @@ class XpraClient {
     }
     this.desktop_width = this.container.clientWidth;
     this.desktop_height = this.container.clientHeight;
-    const newsize = [this.desktop_width, this.desktop_height];
-    const packet = [PACKET_TYPES.desktop_size, newsize[0], newsize[1], this._get_screen_sizes()];
+    const dpi = this._get_DPI();
+    const packet = [PACKET_TYPES.configure_display, {
+      "desktop-size": [this.desktop_width, this.desktop_height],
+      // "desktop-size-unscaled": [this.desktop_width, this.desktop_height],  - we don't do desktop scaling
+      "monitors": this._get_monitors(),
+      "dpi": {"x": dpi, "y": dpi},
+      "vrefresh": this.vrefresh,
+    }];
     this.send(packet);
     // call the screen_resized function on all open windows
     for (const index in this.id_to_window) {
@@ -1444,7 +1450,33 @@ class XpraClient {
       "desktop_size": [this.desktop_width, this.desktop_height],
       "desktop_mode_size": [this.desktop_width, this.desktop_height],
       "screen_sizes": this._get_screen_sizes(),
+      "monitors": this._get_monitors(),
     }
+  }
+
+  _get_monitors() {
+    const monitors = new Map();
+    monitors.set(0, this._get_monitor());
+    return monitors;
+  }
+
+  _get_monitor() {
+      const dpi = this._get_DPI();
+      const wmm = Math.round((this.desktop_width * 25.4) / dpi);
+      const hmm = Math.round((this.desktop_height * 25.4) / dpi);
+      return {
+        "geometry": [0, 0, this.desktop_width, this.desktop_height],
+        "primary": true,
+        "refresh-rate": this.vrefresh,
+        // "scale-factor": 1,
+        "width-mm": wmm,
+        "height-mm": hmm,
+        "manufacturer": Utilities.getOS(),
+        "model": Utilities.getBrowserName(),
+        // "subpixel-layout": "BGR", - not available in browsers
+        "workarea": [0, 0, this.desktop_width, this.desktop_height],
+        "name": "Canvas",
+      }
   }
 
   _get_file_caps() {

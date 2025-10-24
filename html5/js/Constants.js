@@ -80,6 +80,7 @@ const PACKET_TYPES = {
   cursor: "cursor",
   damage_sequence: "damage-sequence",
   desktop_size: "desktop_size",
+  configure_display: "configure-display",
   disconnect: "disconnect",
   draw: "draw",
   encodings: "encodings",
