@@ -78,6 +78,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Fri Oct 24 2025 Antoine Martin <antoine@xpra.org> 19-0-1
+- TODO
+
 * Tue Oct 21 2025 Antoine Martin <antoine@xpra.org> 19-0-1
 - TODO
 

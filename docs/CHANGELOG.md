@@ -1,6 +1,14 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+## [19.0] 2025-10-24
+- Build and packaging:
+- New Features:
+  - [better virtual monitor compatibility with newer servers](https://github.com/Xpra-org/xpra-html5/issues/267)
+- Fixes:
+  - handle decode worker initialization timeouts
+- Cosmetic:
+
 ## [18.0] 2025-10-21
 - Build and packaging:
   - RHEL 10 builds
