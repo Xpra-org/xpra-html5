@@ -3236,7 +3236,7 @@ class XpraClient {
 
   send_control_refresh(quality, options) {
     // wid=0 means all windows
-    const wid = 0;
+    const wid = -1;
     const client_options = {};
     const packet = [PACKET_TYPES.buffer_refresh, wid, 0, quality, options, client_options];
     this.send(packet);
