@@ -3,7 +3,7 @@
 # Xpra is released under the terms of the GNU GPL v2, or, at your option, any
 # later version. See the file COPYING for details.
 
-%define version 18
+%define version 18.1
 %define release 1.r0%{?dist}
 %define minifier uglifyjs
 %define python python3
@@ -78,6 +78,14 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Wed Oct 29 2025 Antoine Martin <antoine@xpra.org> 18.1-0-1
+- Major:
+   authentication failures
+   windows don't refresh when switching tabs
+- Cosmetic:
+   progress bar not moving
+   better compatibility with newer xpra servers
+
 * Tue Oct 21 2025 Antoine Martin <antoine@xpra.org> 18-0-1
 - Build and packaging:
    RHEL 10 builds

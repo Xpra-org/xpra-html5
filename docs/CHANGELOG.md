@@ -1,6 +1,14 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+## [18.1] 2025-10-29
+- Major:
+  - [authentication failures](https://github.com/Xpra-org/xpra-html5/commit/bf2854f237a419a648102bb1b2ffce136b94f511)
+  - [windows don't refresh when switching tabs](https://github.com/Xpra-org/xpra-html5/commit/91fdaf40fee73601f484c20e4961a7ee32d0ba1c)
+- Cosmetic:
+  - [progress bar not moving](https://github.com/Xpra-org/xpra-html5/commit/2f253229fd8e62615e41f675dcb19c96602806b2)
+  - [better compatibility with newer xpra servers](https://github.com/Xpra-org/xpra-html5/commit/da93a821eca0758df47982fab66b1d550ab260ac)
+
 ## [18.0] 2025-10-21
 - Build and packaging:
   - RHEL 10 builds
