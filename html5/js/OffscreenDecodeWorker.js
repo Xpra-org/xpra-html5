@@ -62,6 +62,7 @@ class WindowDecoder {
   constructor(wid, canvas, debug) {
     this.wid = wid;
     this.canvas = canvas;
+    this.context = this.canvas.getContext("2d");
     this.debug = debug;
 
     this.image_decoder = new XpraImageDecoder();
@@ -196,7 +197,7 @@ class WindowDecoder {
     if (!this.canvas) {
       return;
     }
-    let context = this.canvas.getContext("2d");
+    let context = this.context;
     if (coding.startsWith("bitmap")) {
       // Bitmap paint
       context.imageSmoothingEnabled = false;
