@@ -158,8 +158,8 @@ class XpraVideoDecoder {
       if (
         this.codec.startsWith("avc1") &&
         !this.had_first_key &&
-        options["type"] &&
-        options["type"] !== "IDR"
+        !(options["type"] &&
+        options["type"] == "IDR")
       ) {
         reject(
           new Error(
