@@ -238,6 +238,8 @@ class XpraClient {
     this.session_name = undefined;
     this.desktop_width = 0;
     this.desktop_height = 0;
+    this.desktop_width = this.container.clientWidth;
+    this.desktop_height = this.container.clientHeight;
     this.server_remote_logging = false;
     this.server_start_time = -1;
     this.client_start_time = new Date();
