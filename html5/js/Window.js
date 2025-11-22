@@ -425,7 +425,7 @@ class XpraWindow {
     const me = this;
 
     function on_mousescroll(e) {
-      this.mouse_scroll_cb(e, this);
+      me.mouse_scroll_cb(e, me);
       e.stopPropagation();
       return e.preventDefault();
     }
