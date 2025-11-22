@@ -2826,7 +2826,10 @@ class XpraClient {
 
         let name = entry.Name;
         name = Utilities.trimString(name, 15);
-        const command = entry.Exec.replace(/%[FUfu]/g, "");
+        let command = "";
+        if (entry.Exec) {
+          command = entry.Exec.replace(/%[FUfu]/g, "");
+        }
 
         const divLeft = document.createElement("div");
         divLeft.className = "menu-divleft";
