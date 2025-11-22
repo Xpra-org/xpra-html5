@@ -2868,7 +2868,7 @@ class XpraClient {
   _process_setting_change(packet) {
     const setting = packet[1];
     const value = packet[2];
-    if (setting === "xdg-menu" && SHOW_START_MENU) {
+    if ((setting === "xdg-menu" || setting === "menu") && SHOW_START_MENU) {
       this.xdg_menu = value;
       if (this.xdg_menu) {
         this.process_xdg_menu();
