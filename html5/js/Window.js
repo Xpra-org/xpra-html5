@@ -511,12 +511,8 @@ class XpraWindow {
     if (this.client.server_is_desktop || this.client.server_is_shadow) {
       if (this.client.server_resize_exact) {
         jQuery(this.div).css("top", 0);
+        return;
       }
-
-      jQuery(this.div).position({
-        of: jQuery("#screen")
-      });
-      return;
     }
     // work out outer size
     this.outerH = this.h + this.topoffset + this.bottomoffset;
