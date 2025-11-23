@@ -1730,9 +1730,9 @@ class XpraClient {
     if (win) {
       wid = win.wid;
       // add relative coordinates:
-      const pos = jQuery(win.div).position()
-      coords.push(Math.round(mouse.x - pos.left - win.leftoffset));
-      coords.push(Math.round(mouse.y - pos.top - win.topoffset));
+      const pos = win.get_internal_geometry();
+      coords.push(Math.round(mouse.x - pos.x));
+      coords.push(Math.round(mouse.y - pos.y));
       e.preventDefault();
     }
     this.send([PACKET_TYPES.pointer_position, wid, coords, modifiers, buttons]);
@@ -1750,9 +1750,9 @@ class XpraClient {
     if (win) {
       wid = win.wid;
       // add relative coordinates:
-      const pos = jQuery(win.div).position()
-      coords.push(Math.round(mouse.x - pos.left));
-      coords.push(Math.round(mouse.y - pos.right));
+      const pos = win.get_internal_geometry();
+      coords.push(Math.round(mouse.x - pos.x));
+      coords.push(Math.round(mouse.y - pos.y));
     }
     for (const button of this.buttons_pressed) {
       this.send_button_action(wid, button, pressed, coords, modifiers);
@@ -1790,9 +1790,9 @@ class XpraClient {
     if (win) {
       wid = win.wid;
       // add relative coordinates:
-      const pos = jQuery(win.div).position();
-      coords.push(Math.round(mouse.x - pos.left - win.leftoffset));
-      coords.push(Math.round(mouse.y - pos.top - win.topoffset));
+      const pos = win.get_internal_geometry();
+      coords.push(Math.round(mouse.x - pos.x));
+      coords.push(Math.round(mouse.y - pos.y));
     }
     // dont call set focus unless the focus has actually changed
     if (wid > 0 && this.focused_wid !== wid) {
@@ -1881,9 +1881,9 @@ class XpraClient {
     if (win) {
       wid = win.wid;
       // add relative coordinates:
-      const pos = jQuery(win.div).position();
-      coords.push(Math.round(mouse.x - pos.left - win.leftoffset));
-      coords.push(Math.round(mouse.y - pos.top - win.topoffset));
+      const pos = win.get_internal_geometry();
+      coords.push(Math.round(mouse.x - pos.x));
+      coords.push(Math.round(mouse.y - pos.y));
     }
     const wheel = Utilities.normalizeWheel(e);
     this.debug("mouse", "normalized wheel event:", wheel);
@@ -3377,7 +3377,7 @@ class XpraClient {
     const win = this.id_to_window[wid];
     //we can use window relative coordinates:
     if (packet.length >= 6 && win) {
-      const pos = jQuery(win.div).position()
+      const pos = jQuery(win.div).position();
       x = pos.left + packet[4];
       y = pos.top + packet[5];
     }
