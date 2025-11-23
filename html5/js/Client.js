@@ -3377,9 +3377,9 @@ class XpraClient {
     const win = this.id_to_window[wid];
     //we can use window relative coordinates:
     if (packet.length >= 6 && win) {
-      const pos = jQuery(win.div).position();
-      x = pos.left + packet[4];
-      y = pos.top + packet[5];
+      const pos = win.get_internal_geometry();
+      x = pos.x + packet[4];
+      y = pos.y + packet[5];
     }
     const shadow_pointer = document.querySelector("#shadow_pointer");
     const style = shadow_pointer.style;
