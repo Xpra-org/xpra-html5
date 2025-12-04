@@ -1307,14 +1307,17 @@
             "F10",
             "F11",
           ];
-          navigator.keyboard
-            .lock(keys)
-            .then(() => {
-              console.log("keyboard lock success");
-            })
-            .catch((e) => {
-              console.log("keyboard lock failed: ", e);
-            });
+          // Keyboard Lock API not supported in all browsers/contexts
+          if (navigator.keyboard && navigator.keyboard.lock) {
+            navigator.keyboard
+              .lock(keys)
+              .then(() => {
+                console.log("keyboard lock success");
+              })
+              .catch((e) => {
+                console.log("keyboard lock failed: ", e);
+              });
+          }
 
           $("#fullscreen").attr("src", "./icons/unfullscreen.png");
           elem.title = "Exit Fullscreen";
