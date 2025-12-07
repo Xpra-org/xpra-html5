@@ -692,6 +692,7 @@
         const swap_keys = getboolparam("swap_keys", Utilities.isMacOS());
         const scroll_reverse_x = getboolparam("scroll_reverse_x", false);
         const scroll_reverse_y = getboolautoparam("scroll_reverse_y", null);
+        const middle_emulation_modifier = getstrparam("middle_emulation_modifier") || "";
         const floating_menu = getboolparam("floating_menu", true);
         const toolbar_position = getstrparam("toolbar_position");
         const autohide = getboolparam("autohide", false);
@@ -796,6 +797,7 @@
         client.steal = steal;
         client.reconnect = reconnect;
         client.swap_keys = swap_keys;
+        client.middle_emulation_modifier = middle_emulation_modifier;
         client.on_connection_progress = connection_progress;
         client.scroll_reverse_x = scroll_reverse_x;
         client.scroll_reverse_y = scroll_reverse_y;
@@ -966,6 +968,7 @@
               swap_keys: swap_keys,
               scroll_reverse_x: scroll_reverse_x,
               scroll_reverse_y: scroll_reverse_y,
+              middle_emulation_modifier: middle_emulation_modifier,
               reconnect: reconnect,
               action: action,
               display: display,
