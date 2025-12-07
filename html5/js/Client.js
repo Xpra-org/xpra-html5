@@ -791,6 +791,8 @@ class XpraClient {
    */
   init_keyboard() {
     this.query_keyboard_map();
+  }
+  do_init_keyboard() {
     // modifier keys:
     this.num_lock_modifier = null;
     this.alt_modifier = null;
@@ -857,6 +859,7 @@ class XpraClient {
     const keyboard = navigator.keyboard;
     this.keyboard_map = {};
     if (!navigator.keyboard) {
+      this.do_init_keyboard();
       return;
     }
     keyboard.getLayoutMap().then((keyboardLayoutMap) => {
@@ -867,12 +870,24 @@ class XpraClient {
         cdebug("keyboard", key, "=", value);
         this.keyboard_map[key] = value;
       }
-    });
+      this.do_init_keyboard();
+    },
+        (error) => {
+          this.cwarn("failed to get keyboard layout:", error);
+          this.do_init_keyboard();
+        }
+    );
     if (keyboard.addEventListener) {
       keyboard.addEventListener("layoutchange", () =>
         this.clog("keyboard layout has changed!")
       );
     }
+  }
+
+  send_keymap() {
+    const keymap = this._get_keymap_caps();
+    const props = {"keymap": keymap};
+    this.send([PACKET_TYPES.keymap_changed, props, false]);
   }
 
   _keyb_get_modifiers(event) {
@@ -966,7 +981,7 @@ class XpraClient {
     if (new_layout && this.key_layout !== new_layout) {
       this.key_layout = new_layout;
       this.clog("keyboard layout changed from", this.key_layout, "to", key_layout);
-      this.send([PACKET_TYPES.layout_changed, new_layout, ""]);
+      this.send_keymap();
       //changing the language too quickly can cause problems server side,
       //wait a bit before checking again:
       this.browser_language_change_embargo_time = now + 1000;
@@ -2684,6 +2699,8 @@ class XpraClient {
     this.on_connection_progress("Session started", "", 100);
     this.on_connect();
     this.connected = true;
+
+    this.send_keymap();
   }
 
   _process_control(packet) {
