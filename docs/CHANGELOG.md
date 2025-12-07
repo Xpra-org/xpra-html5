@@ -1,13 +1,19 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
-## [19.0] 2025-10-24
-- Build and packaging:
+## [19.0] 2025-12-07
 - New Features:
   - [better virtual monitor compatibility with newer servers](https://github.com/Xpra-org/xpra-html5/issues/267)
 - Fixes:
   - handle decode worker initialization timeouts
-- Cosmetic:
+  - [h264 decoding issues / offscreen flicker with Firefox](https://github.com/Xpra-org/xpra-html5/pull/400)
+  - [fullscreen button not functional with MS Edge](https://github.com/Xpra-org/xpra-html5/commit/8d13d09a30da147b216d1666d68dffedd72b3840)
+  - [mouse wheel issues](https://github.com/Xpra-org/xpra-html5/issues/401)
+  - [cursor position misaligned](https://github.com/Xpra-org/xpra-html5/commit/9baf2e151921ae0728a654d9ee84e38cafaebf1e)
+  - [avoid errors on menu entries without exec attributes](https://github.com/Xpra-org/xpra-html5/commit/456947a7d48c597fa7840e6ee73743b3eb6cbe79)
+- Compatibility fixes:
+  - [xpra 6.4 keyboard](https://github.com/Xpra-org/xpra-html5/commit/95884ce4bdac68af82f67de6402f5d8dd89c644e)
+  - [unprefixed menus](https://github.com/Xpra-org/xpra-html5/commit/bc8e158c94c366ee6b6fb696295dc5639b1cd4e5)
 
 ## [18.0] 2025-10-21
 - Build and packaging:

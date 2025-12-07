@@ -78,11 +78,19 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
-* Fri Oct 24 2025 Antoine Martin <antoine@xpra.org> 19-0-1
-- TODO
-
-* Tue Oct 21 2025 Antoine Martin <antoine@xpra.org> 19-0-1
-- TODO
+* Sun Dec 07 2025 Antoine Martin <antoine@xpra.org> 19-0-1
+- New Features:
+   better virtual monitor compatibility with newer servers
+- Fixes:
+   handle decode worker initialization timeouts
+   h264 decoding issues / offscreen flicker with Firefox
+   fullscreen button not functional with MS Edge
+   mouse wheel issues
+   cursor position misaligned
+   avoid errors on menu entries without exec attributes
+- Compatibility fixes:
+   xpra 6.4 keyboard
+   unprefixed menus
 
 * Tue Oct 21 2025 Antoine Martin <antoine@xpra.org> 18-0-1
 - Build and packaging:
