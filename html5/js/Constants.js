@@ -93,6 +93,7 @@ const PACKET_TYPES = {
   initiate_moveresize: "initiate-moveresize",
   key_action: "key-action",
   layout_changed: "layout-changed",
+  keymap_changed: "keymap-changed",
   logging: "logging",
   lost_window: "lost-window",
   map_window: "map-window",
