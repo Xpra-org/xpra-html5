@@ -319,6 +319,16 @@
                   <span>Reverse horizontal scrolling</span>
                 </li>
                 <li class="list-group-item">
+                  <span>Emulate middle click using modifier + left click</span>
+                  <select id="middle_emulation_modifier">
+                    <option value="">None</option>
+                    <option value="control">Control</option>
+                    <option value="meta">Meta / Command</option>
+                    <option value="alt">Alt / Option</option>
+                    <option value="shift">Shift</option>
+                  </select>
+                </li>
+                <li class="list-group-item">
                   <input type="checkbox" id="floating_menu" />
                   <span>Floating Menu</span>,
                   <input type="checkbox" id="autohide" />
@@ -390,6 +400,7 @@
         "override_width",
         "encryption",
         "scroll_reverse_y",
+        "middle_emulation_modifier",
         "vrefresh",
         "clipboard_preferred_format",
       ];
@@ -1530,6 +1541,8 @@
         //scroll_reverse_y has 3 options: Yes, No, Auto
         const scroll_reverse_y = getboolparam("scroll_reverse_y", "auto");
         document.getElementById("scroll_reverse_y").value = scroll_reverse_y;
+        const middle_emulation_modifier = getstrparam("middle_emulation_modifier") || "";
+        document.getElementById("middle_emulation_modifier").value = middle_emulation_modifier;
 
         function toggle_mediasource_video() {
           $("#mediasource_video").prop("disabled", !video.checked);

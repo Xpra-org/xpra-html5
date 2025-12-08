@@ -288,6 +288,8 @@ class XpraClient {
     this.mouse_grabbed = false;
     this.scroll_reverse_x = false;
     this.scroll_reverse_y = "auto";
+    this.middle_emulation_modifier = default_settings["middle_emulation_modifier"] || "";
+    this.middle_emulation_button = 2;
     // clipboard
     this.clipboard_direction = default_settings["clipboard_direction"] || "both";
     this.clipboard_datatype = null;
@@ -1820,6 +1822,22 @@ class XpraClient {
     }
 
     let button = mouse.button;
+    const emulate_mod = (this.middle_emulation_modifier || "").toLowerCase();
+    const emulate_with = {
+      "control": e.ctrlKey,
+      "meta": e.metaKey,
+      "alt": e.altKey,
+      "shift": e.shiftKey,
+    };
+    const modifier_active = emulate_mod && emulate_with[emulate_mod];
+    if (modifier_active && button === 1) {
+      button = this.middle_emulation_button || 2;
+      const translated_mod = this.translate_modifiers([emulate_mod])[0];
+      const mod_index = modifiers.indexOf(translated_mod);
+      if (mod_index >= 0) {
+        modifiers.splice(mod_index, 1);
+      }
+    }
     const lbe = this.last_button_event;
     if (lbe[0] === button && lbe[1] === pressed && lbe[2] === x && lbe[3] === y) {
       //duplicate!
