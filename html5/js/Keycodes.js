@@ -1753,7 +1753,7 @@ function get_event_modifiers(event) {
   const modifiers = [];
   if (event.getModifierState) {
     if (event.getModifierState("Control")) modifiers.push("control");
-    if (event.getModifierState("Alt")) modifiers.push("alt");
+    if (event.getModifierState("Alt")) modifiers.push("mod1");
     if (event.getModifierState("Meta")) modifiers.push("meta");
     if (event.getModifierState("Shift")) modifiers.push("shift");
     if (event.getModifierState("CapsLock")) modifiers.push("capslock");
@@ -1762,12 +1762,12 @@ function get_event_modifiers(event) {
     //Fn
     //AltGraph
   } else if (event.modifiers) {
-    if (event.modifiers & Event.ALT_MASK) modifiers.push("alt");
+    if (event.modifiers & Event.ALT_MASK) modifiers.push("mod1");
     if (event.modifiers & Event.CONTROL_MASK) modifiers.push("control");
     if (event.modifiers & Event.SHIFT_MASK) modifiers.push("shift");
     if (event.modifiers & Event.META_MASK) modifiers.push("meta");
   } else {
-    if (event.altKey) modifiers.push("alt");
+    if (event.altKey) modifiers.push("mod1");
     if (event.ctrlKey) modifiers.push("control");
     if (event.metaKey) modifiers.push("meta");
     if (event.shiftKey) modifiers.push("shift");
