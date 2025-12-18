@@ -2226,6 +2226,7 @@ class XpraClient {
       const auto_fullscreen_desktop_class = default_settings.auto_fullscreen_desktop_class;
       if (
         win.windowtype === "DESKTOP" &&
+        win.metadata["class-instance"] &&
         win.metadata["class-instance"].includes(auto_fullscreen_desktop_class)
       ) {
         for (const index in this.id_to_window) {
