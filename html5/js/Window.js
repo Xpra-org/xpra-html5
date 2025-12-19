@@ -271,7 +271,7 @@ class XpraWindow {
     }
     // backwards compatibility for xpra server <= v6.4 :
     // the 'desktop' attribute may not be set
-    const wm_class = metadata["class-instance"] || [];
+    const wm_class = this.metadata["class-instance"] || [];
     for (const element of wm_class) {
       if (element === "xpra-desktop" || element === "Xpra-Desktop") {
         return true;
