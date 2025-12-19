@@ -250,7 +250,7 @@ class XpraWindow {
         decorated = false;
       }
       else {
-        decorated = !this.has_windowtype(["DROPDOWN", "TOOLTIP", "POPUP_MENU", "MENU", "COMBO"]);
+        decorated = !this.is_desktop() && !this.has_windowtype(["DROPDOWN", "TOOLTIP", "POPUP_MENU", "MENU", "COMBO"]);
       }
       this._set_decorated(decorated);
       console.log("decorated=", decorated, "for windowtype=", this.windowtype);
