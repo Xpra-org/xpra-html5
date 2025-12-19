@@ -2223,28 +2223,6 @@ class XpraClient {
       return;
     }
 
-    // Keep DESKTOP-type windows per default settings lower than all other windows.
-    // Only allow focus if all other windows are minimized.
-    if (
-      default_settings !== undefined &&
-      default_settings.auto_fullscreen_desktop_class !== undefined &&
-      default_settings.auto_fullscreen_desktop_class.length > 0
-    ) {
-      const auto_fullscreen_desktop_class = default_settings.auto_fullscreen_desktop_class;
-      if (
-        win.windowtype.includes("DESKTOP") &&
-        win.metadata["class-instance"] &&
-        win.metadata["class-instance"].includes(auto_fullscreen_desktop_class)
-      ) {
-        for (const index in this.id_to_window) {
-          const otherwin = this.id_to_window[index];
-          if (otherwin.wid !== win.wid && !otherwin.minimized) {
-            return;
-          }
-        }
-      }
-    }
-
     const top_stacking_layer = Object.keys(this.id_to_window).length;
     const old_stacking_layer = win.stacking_layer;
     const had_focus = this.focused_wid;
@@ -2275,26 +2253,6 @@ class XpraClient {
       iwin.updateFocus();
       iwin.update_zindex();
     }
-  }
-
-  /*
-   * detect DESKTOP-type window from settings
-   */
-  is_window_desktop(win) {
-    if (
-      default_settings !== undefined &&
-      default_settings.auto_fullscreen_desktop_class !== undefined &&
-      default_settings.auto_fullscreen_desktop_class.length > 0
-    ) {
-      const auto_fullscreen_desktop_class = default_settings.auto_fullscreen_desktop_class;
-      if (
-        win.has_windowtype(["DESKTOP"]) &&
-        win.metadata["class-instance"].includes(auto_fullscreen_desktop_class)
-      ) {
-        return true;
-      }
-    }
-    return false;
   }
 
   /*
@@ -2348,7 +2306,7 @@ class XpraClient {
     // Sort windows by stacking order.;
     const windows_sorted = Object.values(client.id_to_window).filter((win) => {
       // skip DESKTOP type windows.
-      return !client.is_window_desktop(win);
+      return !win.is_desktop();
     });
 
     if (windows_sorted.length === 0) {
