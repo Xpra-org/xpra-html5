@@ -262,6 +262,23 @@ class XpraWindow {
     return this.windowtype.some(element => windowtypes_set.has(element));
   }
 
+  is_desktop() {
+    if (this.metadata["shadow"]) {
+      return true;
+    }
+    if (this.metadata["desktop"]) {
+      return true;
+    }
+    // backwards compatibility for xpra server <= v6.4 :
+    // the 'desktop' attribute may not be set
+    const wm_class = metadata["class-instance"] || [];
+    for (const element of wm_class) {
+      if (element === "xpra-desktop" || element === "Xpra-Desktop") {
+        return true;
+      }
+    }
+    return this.has_windowtype(["DESKTOP"]);
+  }
 
   make_draggable() {
     if (this.scale !== 1) {

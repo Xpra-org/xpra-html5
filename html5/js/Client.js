@@ -53,6 +53,7 @@ const METADATA_SUPPORTED = [
   "class-instance", "transient-for", "window-type",
   "has-alpha", "decorations", "override-redirect",
   "tray", "modal", "opacity",
+  "desktop", "shadow",
 ]
 
 // This option adds the CSS class .gpu-trigger to the windows.
@@ -757,35 +758,43 @@ class XpraClient {
       "vrefresh": this.vrefresh,
     }];
     this.send(packet);
+
+    this.auto_fullscreen_desktop_window();
     // call the screen_resized function on all open windows
     for (const index in this.id_to_window) {
       const win = this.id_to_window[index];
       win.screen_resized();
-
-      // Force fullscreen on a a given window name from the provided settings
-      if (
-        default_settings !== undefined &&
-        default_settings.auto_fullscreen !== undefined &&
-        default_settings.auto_fullscreen.length > 0
-      ) {
-        const pattern = new RegExp(`.*${default_settings.auto_fullscreen}.*`);
-        if (win.fullscreen === false && pattern.test(win.metadata.title)) {
-          clog(`auto fullscreen window: ${win.metadata.title}`);
-          win.set_fullscreen(true);
-          win.screen_resized();
-        }
-      }
-
-      // Make a DESKTOP-type window fullscreen automatically.
-      // This resizes things like xfdesktop according to the window size.
-      if (this.fullscreen === false && this.client.is_window_desktop(win)) {
-        clog(`auto fullscreen desktop window: ${this.metadata.title}`);
-        this.set_fullscreen(true);
-        this.screen_resized();
-      }
     }
     // Re-position floating toolbar menu
     this.position_float_menu();
+  }
+
+  auto_fullscreen_desktop_window()  {
+    // count the number of desktop windows:
+    let desktop_windows = 0;
+    for (const index in this.id_to_window) {
+      const win = this.id_to_window[index];
+      if (win.is_desktop()) {
+        desktop_windows++;
+      }
+    }
+    for (const index in this.id_to_window) {
+      const win = this.id_to_window[index];
+
+      if (win.is_desktop()) {
+        if (desktop_windows === 1) {
+          // If we have only one DESKTOP-type window, then make it fullscreen automatically.
+          clog(`auto fullscreen desktop window: ${win.metadata.title}`);
+          win.set_fullscreen(true);
+          win.screen_resized();
+        }
+        else {
+          // if we have more than one desktop window: none of them should be fullscreen
+          // so we can access all of them individually
+          win.set_fullscreen(false);
+        }
+      }
+    }
   }
 
   /**
@@ -3317,6 +3326,7 @@ class XpraClient {
       window.addWindowListItem(win, wid, trimmedTitle);
     }
     this.id_to_window[wid] = win;
+    this.auto_fullscreen_desktop_window();
     if (!override_redirect) {
       const geom = win.get_internal_geometry();
       this.send([PACKET_TYPES.map_window, wid, geom.x, geom.y, geom.w, geom.h, win.client_properties]);
