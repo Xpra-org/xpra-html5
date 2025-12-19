@@ -1748,11 +1748,16 @@ MODIFIERS_NAMES  = {
   "Alt": "mod1",
   "Meta": "mod4",
   "Shift": "shift",
+  "AltGraph": "mod5",
   "CapsLock": "lock",
   "NumLock": "mod2",
   "ScrollLock": "",
   "Fn": "",
-  "AltGraph": "mod5",
+  "Hyper": "",
+  "OS": "",
+  "Super": "",
+  "Symbol": "",
+  "SymbolLock": "",
 }
 
 /**
@@ -1779,4 +1784,64 @@ function get_event_modifiers(event) {
     if (event.metaKey) modifiers.push(MODIFIERS_NAMES["Meta"]);
   }
   return modifiers;
+}
+
+function translate_modifiers(modifiers, altgr_state, swap_keys) {
+  /**
+   * We translate "alt" and "meta" into their keymap name.
+   * (usually "mod1")
+   * And also swap keys for macos clients.
+   */
+  //convert generic modifiers "meta" and "alt" into their x11 name:
+  const alt = MODIFIERS_NAMES["Alt"];
+  let control = MODIFIERS_NAMES["Control"];
+  let meta = MODIFIERS_NAMES["Meta"];
+  const altgr = MODIFIERS_NAMES["AltGraph"];
+  const num_lock = MODIFIERS_NAMES["NumLock"];
+  const caps_lock = MODIFIERS_NAMES["CapsLock"];
+  if (swap_keys) {
+    meta = MODIFIERS_NAMES["Control"];
+    control = MODIFIERS_NAMES["Meta"];
+  }
+
+  const new_modifiers = [...modifiers];
+  let index = modifiers.indexOf("meta");
+  if (index >= 0 && meta) {
+    new_modifiers[index] = meta;
+  }
+  index = modifiers.indexOf("control");
+  if (index >= 0 && control) {
+    new_modifiers[index] = control;
+  }
+  index = modifiers.indexOf("alt");
+  if (index >= 0 && alt) {
+    new_modifiers[index] = alt;
+  }
+  index = modifiers.indexOf("numlock");
+  if (index >= 0) {
+    if (num_lock) {
+      new_modifiers[index] = num_lock;
+    } else {
+      new_modifiers.splice(index, 1);
+    }
+  }
+  index = modifiers.indexOf("capslock");
+  if (index >= 0) {
+    new_modifiers[index] = caps_lock;
+  }
+
+  //add altgr?
+  if (altgr_state && altgr && !new_modifiers.includes(altgr)) {
+    new_modifiers.push(altgr);
+    //remove spurious modifiers:
+    index = new_modifiers.indexOf(alt);
+    if (index >= 0) {
+      new_modifiers.splice(index, 1);
+    }
+    index = new_modifiers.indexOf(control);
+    if (index >= 0) {
+      new_modifiers.splice(index, 1);
+    }
+  }
+  return new_modifiers;
 }

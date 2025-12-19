@@ -802,14 +802,7 @@ class XpraClient {
     this.query_keyboard_map();
   }
   do_init_keyboard() {
-    // modifier keys:
-    this.num_lock_modifier = null;
-    this.alt_modifier = null;
-    this.control_modifier = "control";
-    this.meta_modifier = null;
-    this.altgr_modifier = null;
     this.altgr_state = false;
-
     this.capture_keyboard = false;
     // assign the key callbacks
     document.addEventListener("keydown", (e) => {
@@ -907,55 +900,11 @@ class XpraClient {
      */
     //convert generic modifiers "meta" and "alt" into their x11 name:
     const modifiers = get_event_modifiers(event);
-    return this.translate_modifiers(modifiers);
+    return this.translate_modifiers(modifiers, this.altgr_state, this.swap_keys);
   }
 
   translate_modifiers(modifiers) {
-    /**
-     * We translate "alt" and "meta" into their keymap name.
-     * (usually "mod1")
-     * And also swap keys for macos clients.
-     */
-    //convert generic modifiers "meta" and "alt" into their x11 name:
-    const alt = this.alt_modifier;
-    let control = this.control_modifier;
-    let meta = this.meta_modifier;
-    const altgr = this.altgr_modifier;
-    if (this.swap_keys) {
-      meta = this.control_modifier;
-      control = this.meta_modifier;
-    }
-
-    const new_modifiers = [...modifiers];
-    let index = modifiers.indexOf("meta");
-    if (index >= 0 && meta) new_modifiers[index] = meta;
-    index = modifiers.indexOf("control");
-    if (index >= 0 && control) new_modifiers[index] = control;
-    index = modifiers.indexOf("alt");
-    if (index >= 0 && alt) new_modifiers[index] = alt;
-    index = modifiers.indexOf("numlock");
-    if (index >= 0) {
-      if (this.num_lock_modifier) {
-        new_modifiers[index] = this.num_lock_modifier;
-      } else {
-        new_modifiers.splice(index, 1);
-      }
-    }
-    index = modifiers.indexOf("capslock");
-    if (index >= 0) {
-      new_modifiers[index] = "lock";
-    }
-
-    //add altgr?
-    if (this.altgr_state && altgr && !new_modifiers.includes(altgr)) {
-      new_modifiers.push(altgr);
-      //remove spurious modifiers:
-      index = new_modifiers.indexOf(alt);
-      if (index >= 0) new_modifiers.splice(index, 1);
-      index = new_modifiers.indexOf(control);
-      if (index >= 0) new_modifiers.splice(index, 1);
-    }
-    return new_modifiers;
+    return translate_modifiers(modifiers, this.altgr_state, this.swap_keys);
   }
 
   _check_browser_language(key_layout) {
@@ -1097,7 +1046,7 @@ class XpraClient {
     }
 
     const raw_modifiers = get_event_modifiers(event);
-    const modifiers = this._keyb_get_modifiers(event);
+    const modifiers = this.translate_modifiers(raw_modifiers);
     const keyval = keycode;
     const group = 0;
 
@@ -2719,27 +2668,26 @@ class XpraClient {
       return;
     }
     for (const modifier in modifier_keycodes) {
-      if (Object.hasOwn(modifier_keycodes, modifier)) {
-        const mappings = modifier_keycodes[modifier];
-        for (const keycode in mappings) {
-          const keys = mappings[keycode];
-          for (const index in keys) {
-            const key = keys[index];
-            if (key === "Num_Lock") {
-              this.num_lock_modifier = modifier;
-            } else if (key === "Alt_L") {
-              this.alt_modifier = modifier;
-            } else if (key === "Meta_L") {
-              this.meta_modifier = modifier;
-            } else if (key === "ISO_Level3_Shift" || key === "Mode_switch") {
-              this.altgr_modifier = modifier;
-            } else if (key === "Control_L") {
-              this.control_modifier = modifier;
-            }
+      const mappings = modifier_keycodes[modifier];
+      for (const keycode in mappings) {
+        const keys = mappings[keycode];
+        for (const index in keys) {
+          const key = keys[index];
+          if (key === "Num_Lock") {
+            MODIFIERS_NAMES["NumLock"] = modifier;
+          } else if (key === "Alt_L") {
+            MODIFIERS_NAMES["Alt"] = modifier;
+          } else if (key === "Meta_L") {
+            MODIFIERS_NAMES["Meta"] = modifier;
+          } else if (key === "ISO_Level3_Shift" || key === "Mode_switch") {
+            MODIFIERS_NAMES["AltGraph"] = modifier;
+          } else if (key === "Control_L") {
+            MODIFIERS_NAMES["Control"] = modifier;
           }
         }
       }
     }
+    clog("modifier mappings from", modifier_keycodes, ": ", MODIFIERS_NAMES);
   }
 
   _process_audio_caps(audio_caps) {
