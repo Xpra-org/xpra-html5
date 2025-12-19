@@ -1760,6 +1760,29 @@ MODIFIERS_NAMES  = {
   "SymbolLock": "",
 }
 
+// This map is used by the client for updating the MODIFIERS_NAMES table at runtime.
+// we prefer looking up just the left ("_L") variants for simplicity,
+// and also because the ones on the right ("_R") are more often re-purposed
+X11_TO_MODIFIER = {
+  "Num_Lock": "NumLock",
+  "Alt_L": "Alt",
+  "Meta_L": "Meta",
+  "ISO_Level3_Shift": "AltGraph",
+  "Mode_switch": "AltGraph",
+  "Control_L": "Control",
+  "Shift_L": "Shift",
+  "Caps_Lock": "CapsLock",
+  "Super_L": "Super",
+}
+
+function parse_modifier_key(modifier, key) {
+  const client_modifier = X11_TO_MODIFIER[key];
+  if (client_modifier) {
+    MODIFIERS_NAMES[client_modifier] = modifier;
+  }
+}
+
+
 /**
  * Converts an event into a list of modifiers.
  *
@@ -1844,4 +1867,39 @@ function translate_modifiers(modifiers, altgr_state, swap_keys) {
     }
   }
   return new_modifiers;
+}
+
+
+function parse_modifiers(modifier_keycodes) {
+  if (!modifier_keycodes) {
+    return;
+  }
+  for (const modifier in modifier_keycodes) {
+    const client_keydefs = modifier_keycodes[modifier];
+    // [(99, Super_L), (Super_L, 1), ...]
+    for (const client_keydef of client_keydefs) {
+      // ie: (99, Super_L)
+      try {
+        for (const value of client_keydef) {
+          parse_modifier_key(modifier, value);
+        }
+      }
+      catch {}
+    }
+  }
+}
+
+function parse_server_modifiers(modifiers) {
+  if (!modifiers) {
+    return;
+  }
+  // ie: {"control": ["Control_L", "Control_R"], "shift": ...}
+  for (const modifier in modifiers) {
+    const mappings = modifiers[modifier];
+    // ie: ["Control_L", "Control_R"]
+    console.log(modifier, ":", mappings);
+    for (const key of mappings) {
+      parse_modifier_key(modifier, key);
+    }
+  }
 }

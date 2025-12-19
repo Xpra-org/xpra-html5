@@ -2565,6 +2565,8 @@ class XpraClient {
     this.log("got hello: server version", version, "accepted our connection");
     // stuff that must be done after hello
     this._process_modifier_keycodes(hello["modifier_keycodes"] || {});
+    this._process_modifier_keynames(hello["modifiers-keynames"] || {});
+    clog("modifier mappings:", MODIFIERS_NAMES);
     this._process_audio_caps(hello["audio"] || {});
     if (SHOW_START_MENU) {
       this.xdg_menu = hello["xdg-menu"];
@@ -2663,31 +2665,13 @@ class XpraClient {
   }
 
   _process_modifier_keycodes(modifier_keycodes) {
-    // find the modifier to use for Num_Lock
-    if (!modifier_keycodes) {
-      return;
-    }
-    for (const modifier in modifier_keycodes) {
-      const mappings = modifier_keycodes[modifier];
-      for (const keycode in mappings) {
-        const keys = mappings[keycode];
-        for (const index in keys) {
-          const key = keys[index];
-          if (key === "Num_Lock") {
-            MODIFIERS_NAMES["NumLock"] = modifier;
-          } else if (key === "Alt_L") {
-            MODIFIERS_NAMES["Alt"] = modifier;
-          } else if (key === "Meta_L") {
-            MODIFIERS_NAMES["Meta"] = modifier;
-          } else if (key === "ISO_Level3_Shift" || key === "Mode_switch") {
-            MODIFIERS_NAMES["AltGraph"] = modifier;
-          } else if (key === "Control_L") {
-            MODIFIERS_NAMES["Control"] = modifier;
-          }
-        }
-      }
-    }
-    clog("modifier mappings from", modifier_keycodes, ": ", MODIFIERS_NAMES);
+    // derive the mapping from the client keycodes:
+    parse_modifiers(modifier_keycodes);
+  }
+
+  _process_modifier_keynames(modifier_keycodes) {
+    // derive from the server modifier map:
+    parse_server_modifiers(modifier_keycodes);
   }
 
   _process_audio_caps(audio_caps) {
