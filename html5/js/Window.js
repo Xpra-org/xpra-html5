@@ -90,7 +90,7 @@ class XpraWindow {
     this.maximized = false;
     this.focused = false;
     this.decorations = true;    // whether the window should be decorated or not
-    this.decorated = true;      // whether it actually is (fullscreen windows are not)
+    this.decorated = false;      // whether it actually is (fullscreen windows are not)
     this.resizable = false;
     this.stacking_layer = 0;
 
@@ -892,6 +892,7 @@ class XpraWindow {
   }
 
   _set_decorated(decorated) {
+    const was_decorated = this.decorated;
     this.decorated = decorated;
     const head = document.getElementById("head"+this.wid);
     if (decorated) {
@@ -904,6 +905,15 @@ class XpraWindow {
       jQuery(this.div).addClass("undecorated");
     }
     this.update_offsets();
+    if (was_decorated !== this.decorated) {
+      if (this.decorated) {
+        this.y += this.topoffset;
+      } else {
+        this.y -= this.topoffset;
+      }
+      this.ensure_visible();
+      this.geometry_cb(this);
+    }
   }
 
   /**
