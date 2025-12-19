@@ -759,7 +759,6 @@ class XpraClient {
     }];
     this.send(packet);
 
-    this.auto_fullscreen_desktop_window();
     // call the screen_resized function on all open windows
     for (const index in this.id_to_window) {
       const win = this.id_to_window[index];
@@ -786,7 +785,6 @@ class XpraClient {
           // If we have only one DESKTOP-type window, then make it fullscreen automatically.
           clog(`auto fullscreen desktop window: ${win.metadata.title}`);
           win.set_fullscreen(true);
-          win.screen_resized();
         }
         else {
           // if we have more than one desktop window: none of them should be fullscreen
