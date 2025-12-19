@@ -3,7 +3,7 @@
 # Xpra is released under the terms of the GNU GPL v2, or, at your option, any
 # later version. See the file COPYING for details.
 
-%define version 19
+%define version 20
 %define release 1.r0%{?dist}
 %define minifier uglifyjs
 %define python python3
@@ -78,13 +78,25 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
-* Fri Dec 19 2025 Antoine Martin <antoine@xpra.org> 19-0-1
-- New Features:
-  - better virtual monitor compatibility with newer servers
+* Fri Dec 19 2025 Antoine Martin <antoine@xpra.org> 20-0-1
 - Fixes:
   - keyboard mapping
   - desktop windows should be shown fullscreen
   - handle decode worker initialization timeouts
+
+* Sun Dec 07 2025 Antoine Martin <antoine@xpra.org> 19-0-1
+- New Features:
+   better virtual monitor compatibility with newer servers
+- Fixes:
+   handle decode worker initialization timeouts
+   h264 decoding issues / offscreen flicker with Firefox
+   fullscreen button not functional with MS Edge
+   mouse wheel issues
+   cursor position misaligned
+   avoid errors on menu entries without exec attributes
+- Compatibility fixes:
+   xpra 6.4 keyboard
+   unprefixed menus
 
 * Tue Oct 21 2025 Antoine Martin <antoine@xpra.org> 18-0-1
 - Build and packaging:
