@@ -900,11 +900,15 @@ class XpraClient {
      */
     //convert generic modifiers "meta" and "alt" into their x11 name:
     const modifiers = get_event_modifiers(event);
-    return this.translate_modifiers(modifiers, this.altgr_state, this.swap_keys);
+    return this.translate_modifiers(modifiers);
   }
 
   translate_modifiers(modifiers) {
-    return translate_modifiers(modifiers, this.altgr_state, this.swap_keys);
+    let new_modifiers = modifiers;
+    if (this.altgr_state) {
+      new_modifiers = patch_altgr(modifiers);
+    }
+    return translate_modifiers(new_modifiers, this.swap_keys);
   }
 
   _check_browser_language(key_layout) {
@@ -1075,7 +1079,7 @@ class XpraClient {
 
     //macos will swallow the key release event if the meta modifier is pressed,
     //so simulate one immediately:
-    if (pressed && Utilities.isMacOS() && raw_modifiers.includes("meta") && ostr !== "meta") {
+    if (pressed && Utilities.isMacOS() && raw_modifiers.includes("Meta") && ostr !== "meta") {
       unpress_now = true;
     }
 
@@ -1084,11 +1088,11 @@ class XpraClient {
       //allow some key events that need to be seen by the browser
       //for handling the clipboard:
       let clipboard_modifier_keys = ["Control_L", "Control_R", "Shift_L", "Shift_R"];
-      let clipboard_modifier = "control";
+      let clipboard_modifier = "Control";
       if (Utilities.isMacOS()) {
         //Apple does things differently, as usual:
         clipboard_modifier_keys = ["Meta_L", "Meta_R", "Shift_L", "Shift_R"];
-        clipboard_modifier = "meta";
+        clipboard_modifier = "Meta";
       }
       //let the OS see Control (or Meta on macos) and Shift:
       if (clipboard_modifier_keys.includes(keyname)) {

@@ -1760,9 +1760,13 @@ MODIFIERS_NAMES  = {
   "SymbolLock": "",
 }
 
-// This map is used by the client for updating the MODIFIERS_NAMES table at runtime.
-// we prefer looking up just the left ("_L") variants for simplicity,
-// and also because the ones on the right ("_R") are more often re-purposed
+/**
+ * Maps X11 modifier names to their Javascript equivalent.
+ *
+ * This map is used by the client for updating the MODIFIERS_NAMES table at runtime.
+ * we prefer looking up just the left ("_L") variants for simplicity,
+ * and also because the ones on the right ("_R") are more often re-purposed.
+ */
 X11_TO_MODIFIER = {
   "Num_Lock": "NumLock",
   "Alt_L": "Alt",
@@ -1775,6 +1779,11 @@ X11_TO_MODIFIER = {
   "Super_L": "Super",
 }
 
+/**
+ * Records a modifier mapping in `MODIFIER_NAMES` for x11 keysyms in `X11_TO_MODIFIER`.
+ * @param modifier a modifier
+ * @param key an x11 keysym, ie: `Control_L`
+ */
 function parse_modifier_key(modifier, key) {
   const client_modifier = X11_TO_MODIFIER[key];
   if (client_modifier) {
@@ -1784,7 +1793,10 @@ function parse_modifier_key(modifier, key) {
 
 
 /**
- * Converts an event into a list of modifiers.
+ * Retrieves a list of modifiers names from an event.
+ * The list uses the Javascript event names.
+ * (ie: `Alt`, `Shift`, `Meta`, etc)
+ * To get the X11 modifier names, use `translate_modifiers()`.
  *
  * @param event
  * @returns {Array} of strings
@@ -1793,80 +1805,67 @@ function get_event_modifiers(event) {
   const modifiers = [];
   if (event.getModifierState) {
     for (const jsmod in MODIFIERS_NAMES) {
-      if (event.getModifierState(jsmod)) modifiers.push(MODIFIERS_NAMES[jsmod]);
+      if (event.getModifierState(jsmod)) {
+        modifiers.push(jsmod);
+      }
     }
   } else if (event.modifiers) {
-    if (event.modifiers & Event.ALT_MASK) modifiers.push(MODIFIERS_NAMES["Alt"]);
-    if (event.modifiers & Event.CONTROL_MASK) modifiers.push(MODIFIERS_NAMES["Control"]);
-    if (event.modifiers & Event.SHIFT_MASK) modifiers.push(MODIFIERS_NAMES["Shift"]);
-    if (event.modifiers & Event.META_MASK) modifiers.push(MODIFIERS_NAMES["Meta"]);
+    if (event.modifiers & Event.ALT_MASK) modifiers.push("Alt");
+    if (event.modifiers & Event.CONTROL_MASK) modifiers.push("Control");
+    if (event.modifiers & Event.SHIFT_MASK) modifiers.push("Shift");
+    if (event.modifiers & Event.META_MASK) modifiers.push("Meta");
   } else {
-    if (event.altKey) modifiers.push(MODIFIERS_NAMES["Alt"]);
-    if (event.ctrlKey) modifiers.push(MODIFIERS_NAMES["Control"]);
-    if (event.shiftKey) modifiers.push(MODIFIERS_NAMES["Shift"]);
-    if (event.metaKey) modifiers.push(MODIFIERS_NAMES["Meta"]);
+    if (event.altKey) modifiers.push("Alt");
+    if (event.ctrlKey) modifiers.push("Control");
+    if (event.shiftKey) modifiers.push("Shift");
+    if (event.metaKey) modifiers.push("Meta");
   }
   return modifiers;
 }
 
-function translate_modifiers(modifiers, altgr_state, swap_keys) {
+function translate_modifiers(modifiers, swap_keys) {
   /**
-   * We translate "alt" and "meta" into their keymap name.
-   * (usually "mod1")
-   * And also swap keys for macos clients.
+   * Translates Javascript modifier names to X11 names.
+   * (ie: usually `mod1` for `Alt`)
+   * Also add `AltGr` if the flag is specified, and swaps `Meta` and `Control` keys for macos clients.
    */
-  //convert generic modifiers "meta" and "alt" into their x11 name:
-  const alt = MODIFIERS_NAMES["Alt"];
-  let control = MODIFIERS_NAMES["Control"];
-  let meta = MODIFIERS_NAMES["Meta"];
-  const altgr = MODIFIERS_NAMES["AltGraph"];
-  const num_lock = MODIFIERS_NAMES["NumLock"];
-  const caps_lock = MODIFIERS_NAMES["CapsLock"];
+  const new_modifiers = [];
+  // copy the dictionary:
+  const names = { ...MODIFIERS_NAMES};
   if (swap_keys) {
-    meta = MODIFIERS_NAMES["Control"];
-    control = MODIFIERS_NAMES["Meta"];
+    const meta = names["Meta"];
+    const control = names["Control"];
+    names["Control"] = meta;
+    names["Meta"] = control;
   }
 
-  const new_modifiers = [...modifiers];
-  let index = modifiers.indexOf("meta");
-  if (index >= 0 && meta) {
-    new_modifiers[index] = meta;
-  }
-  index = modifiers.indexOf("control");
-  if (index >= 0 && control) {
-    new_modifiers[index] = control;
-  }
-  index = modifiers.indexOf("alt");
-  if (index >= 0 && alt) {
-    new_modifiers[index] = alt;
-  }
-  index = modifiers.indexOf("numlock");
-  if (index >= 0) {
-    if (num_lock) {
-      new_modifiers[index] = num_lock;
-    } else {
-      new_modifiers.splice(index, 1);
-    }
-  }
-  index = modifiers.indexOf("capslock");
-  if (index >= 0) {
-    new_modifiers[index] = caps_lock;
-  }
-
-  //add altgr?
-  if (altgr_state && altgr && !new_modifiers.includes(altgr)) {
-    new_modifiers.push(altgr);
-    //remove spurious modifiers:
-    index = new_modifiers.indexOf(alt);
-    if (index >= 0) {
-      new_modifiers.splice(index, 1);
-    }
-    index = new_modifiers.indexOf(control);
-    if (index >= 0) {
-      new_modifiers.splice(index, 1);
+  // translate each Javascript modifier:
+  for (const js_modifier of modifiers) {
+    const modifier = names[js_modifier] || "";
+    if (modifier) {
+      new_modifiers.push(modifier);
     }
   }
   return new_modifiers;
+}
+
+function patch_altgr(modifiers) {
+  const alt = MODIFIERS_NAMES["Alt"];
+  const control = MODIFIERS_NAMES["Control"];
+  const altgr = MODIFIERS_NAMES["AltGraph"];
+
+  // add AltGr?
+  if (altgr && !modifiers.includes(altgr)) {
+    modifiers.push(altgr);
+    // remove spurious modifiers 'Alt' and 'Control':
+    for (const remove of [alt, control]) {
+      let index = modifiers.indexOf(alt);
+      if (index >= 0) {
+        modifiers.splice(index, 1);
+      }
+    }
+  }
+  return modifiers;
 }
 
 
