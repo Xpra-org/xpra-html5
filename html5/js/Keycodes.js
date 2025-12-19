@@ -1743,6 +1743,18 @@ CHARCODE_TO_NAME_SHIFTED = {};
 CHARCODE_TO_NAME_SHIFTED[187] = "dead_grave";
 CHARCODE_TO_NAME_SHIFTED[221] = "dead_grave";
 
+MODIFIERS_NAMES  = {
+  "Control": "control",
+  "Alt": "mod1",
+  "Meta": "mod4",
+  "Shift": "shift",
+  "CapsLock": "lock",
+  "NumLock": "mod2",
+  "ScrollLock": "",
+  "Fn": "",
+  "AltGraph": "mod5",
+}
+
 /**
  * Converts an event into a list of modifiers.
  *
@@ -1752,25 +1764,19 @@ CHARCODE_TO_NAME_SHIFTED[221] = "dead_grave";
 function get_event_modifiers(event) {
   const modifiers = [];
   if (event.getModifierState) {
-    if (event.getModifierState("Control")) modifiers.push("control");
-    if (event.getModifierState("Alt")) modifiers.push("alt");
-    if (event.getModifierState("Meta")) modifiers.push("meta");
-    if (event.getModifierState("Shift")) modifiers.push("shift");
-    if (event.getModifierState("CapsLock")) modifiers.push("capslock");
-    if (event.getModifierState("NumLock")) modifiers.push("numlock");
-    //ScrollLock
-    //Fn
-    //AltGraph
+    for (const jsmod in MODIFIERS_NAMES) {
+      if (event.getModifierState(jsmod)) modifiers.push(MODIFIERS_NAMES[jsmod]);
+    }
   } else if (event.modifiers) {
-    if (event.modifiers & Event.ALT_MASK) modifiers.push("alt");
-    if (event.modifiers & Event.CONTROL_MASK) modifiers.push("control");
-    if (event.modifiers & Event.SHIFT_MASK) modifiers.push("shift");
-    if (event.modifiers & Event.META_MASK) modifiers.push("meta");
+    if (event.modifiers & Event.ALT_MASK) modifiers.push(MODIFIERS_NAMES["Alt"]);
+    if (event.modifiers & Event.CONTROL_MASK) modifiers.push(MODIFIERS_NAMES["Control"]);
+    if (event.modifiers & Event.SHIFT_MASK) modifiers.push(MODIFIERS_NAMES["Shift"]);
+    if (event.modifiers & Event.META_MASK) modifiers.push(MODIFIERS_NAMES["Meta"]);
   } else {
-    if (event.altKey) modifiers.push("alt");
-    if (event.ctrlKey) modifiers.push("control");
-    if (event.metaKey) modifiers.push("meta");
-    if (event.shiftKey) modifiers.push("shift");
+    if (event.altKey) modifiers.push(MODIFIERS_NAMES["Alt"]);
+    if (event.ctrlKey) modifiers.push(MODIFIERS_NAMES["Control"]);
+    if (event.shiftKey) modifiers.push(MODIFIERS_NAMES["Shift"]);
+    if (event.metaKey) modifiers.push(MODIFIERS_NAMES["Meta"]);
   }
   return modifiers;
 }
