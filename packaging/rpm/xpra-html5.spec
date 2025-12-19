@@ -78,11 +78,13 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
-* Fri Oct 24 2025 Antoine Martin <antoine@xpra.org> 19-0-1
-- TODO
-
-* Tue Oct 21 2025 Antoine Martin <antoine@xpra.org> 19-0-1
-- TODO
+* Fri Dec 19 2025 Antoine Martin <antoine@xpra.org> 19-0-1
+- New Features:
+  - better virtual monitor compatibility with newer servers
+- Fixes:
+  - keyboard mapping
+  - desktop windows should be shown fullscreen
+  - handle decode worker initialization timeouts
 
 * Tue Oct 21 2025 Antoine Martin <antoine@xpra.org> 18-0-1
 - Build and packaging:

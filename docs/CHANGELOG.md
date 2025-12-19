@@ -1,13 +1,13 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
-## [19.0] 2025-10-24
-- Build and packaging:
+## [19.0] 2025-12-19
 - New Features:
   - [better virtual monitor compatibility with newer servers](https://github.com/Xpra-org/xpra-html5/issues/267)
 - Fixes:
+  - [keyboard mapping](https://github.com/Xpra-org/xpra-html5/issues/406)
+  - [desktop windows should be shown fullscreen](https://github.com/Xpra-org/xpra-html5/issues/407)
   - handle decode worker initialization timeouts
-- Cosmetic:
 
 ## [18.0] 2025-10-21
 - Build and packaging:

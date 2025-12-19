@@ -1,12 +1,12 @@
 xpra-html5 (19-r0-1) UNRELEASED; urgency=low
-  * TODO
+  * New Features:
+   - better virtual monitor compatibility with newer servers
+  * Fixes:
+   - keyboard mapping
+   - desktop windows should be shown fullscreen
+   - handle decode worker initialization timeouts
 
- -- Antoine Martin antoine@xpra.org  Fri, 24 Oct 2025 21:09:05 +0700 +700
-
-xpra-html5 (19-r0-1) UNRELEASED; urgency=low
-  * TODO
-
- -- Antoine Martin antoine@xpra.org  Tue, 21 Oct 2025 22:57:43 +0700 +700
+ -- Antoine Martin antoine@xpra.org  Fri, 19 Dec 2025 22:38:57 +0700 +700
 
 xpra-html5 (18-r0-1) UNRELEASED; urgency=low
   * Build and packaging:
