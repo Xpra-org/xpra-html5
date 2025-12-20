@@ -1896,7 +1896,6 @@ function parse_server_modifiers(modifiers) {
   for (const modifier in modifiers) {
     const mappings = modifiers[modifier];
     // ie: ["Control_L", "Control_R"]
-    console.log(modifier, ":", mappings);
     for (const key of mappings) {
       parse_modifier_key(modifier, key);
     }
