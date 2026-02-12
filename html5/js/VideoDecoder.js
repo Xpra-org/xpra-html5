@@ -188,7 +188,13 @@ class XpraVideoDecoder {
         timestamp: options["frame"],
       };
       const chunk = new EncodedVideoChunk(init);
-      this.videoDecoder.decode(chunk);
+      try {
+        this.videoDecoder.decode(chunk);
+      } catch (error) {
+        reject(
+            new Error("failed to decode chunk: " + error)
+        );
+      }
 
       let frame_out = this.decoded_frames.filter(
         (p) => p[8] === packet_sequence
