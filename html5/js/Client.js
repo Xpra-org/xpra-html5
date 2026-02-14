@@ -2077,7 +2077,7 @@ class XpraClient {
     if (raw_clipboard_buffer === null) {
       return false;
     }
-    const clipboard_buffer = unescape(encodeURIComponent(raw_clipboard_buffer));
+    const clipboard_buffer = raw_clipboard_buffer;
     this.debug("clipboard", "paste event, data=", clipboard_buffer);
     if (clipboard_buffer === this.clipboard_buffer) {
       return false;
@@ -2127,7 +2127,7 @@ class XpraClient {
     navigator.clipboard.readText().then(
       (text) => {
         this.debug("clipboard", "paste event, text=", text);
-        const clipboard_buffer = unescape(encodeURIComponent(text));
+        const clipboard_buffer = text;
         if (clipboard_buffer !== this.clipboard_buffer) {
           this.debug("clipboard", "clipboard contents have changed");
           this.clipboard_buffer = clipboard_buffer;
