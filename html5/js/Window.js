@@ -391,13 +391,13 @@ class XpraWindow {
   register_canvas_mouse_events(canvas) {
     // Hook up the events we want to receive:
     jQuery(canvas).mousedown((e) => {
-      return this.mouse_down_cb(e, this);
+      this.mouse_down_cb(e, this);
     });
     jQuery(canvas).mouseup((e) => {
-      return this.mouse_up_cb(e, this);
+      this.mouse_up_cb(e, this);
     });
     jQuery(canvas).mousemove((e) => {
-      return this.mouse_move_cb(e, this);
+      this.mouse_move_cb(e, this);
     });
   }
 
