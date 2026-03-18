@@ -2602,7 +2602,7 @@ class XpraClient {
     this.server_precise_wheel = hello["wheel.precise"] || false;
 
     this.remote_open_files = Boolean(hello["open-files"]);
-    this.remote_file_transfer = Boolean(hello["file-transfer"]);
+    this.remote_file_transfer = Boolean(hello["file-transfer"]) || Boolean(hello["file"]);
     this.remote_printing = Boolean(hello["printing"]);
     if (this.remote_printing && this.printing) {
       // send our printer definition
