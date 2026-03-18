@@ -886,10 +886,12 @@ class XpraClient {
     }
   }
 
-  send_keymap() {
-    const keymap = this._get_keymap_caps();
-    const props = {"keymap": keymap};
-    this.send([PACKET_TYPES.keymap_changed, props, false]);
+  send_keymap(force) {
+    const caps = this._get_keyboard_caps();
+    if (force) {
+      caps["force"] = true;
+    }
+    this.send([PACKET_TYPES.keyboard_config, caps]);
   }
 
   _keyb_get_modifiers(event) {
@@ -1399,7 +1401,6 @@ class XpraClient {
       "audio": this._get_audio_caps(),
       "clipboard": this._get_clipboard_caps(),
       "pointer": this._get_pointer_caps(),
-      "keymap": this._get_keymap_caps(),
       "file": this._get_file_caps(),
       "wants": ["audio", ],
       // encoding stuff
@@ -1549,7 +1550,7 @@ class XpraClient {
     }
   }
 
-  _get_keymap_caps() {
+  _get_keyboard_caps() {
     return {
       "layout": this.key_layout,
       "keycodes": this._get_keycodes(),
@@ -2639,7 +2640,8 @@ class XpraClient {
     this.on_connect();
     this.connected = true;
 
-    this.send_keymap();
+    // safer to set the "force" flag for older servers:
+    this.send_keymap(true);
   }
 
   _process_control(packet) {

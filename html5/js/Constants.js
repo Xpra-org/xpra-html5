@@ -94,6 +94,7 @@ const PACKET_TYPES = {
   key_action: "key-action",
   layout_changed: "layout-changed",
   keymap_changed: "keymap-changed",
+  keyboard_config: "keyboard-config",
   logging: "logging",
   lost_window: "lost-window",
   map_window: "map-window",
