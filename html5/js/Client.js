@@ -2604,7 +2604,7 @@ class XpraClient {
 
     this.remote_open_files = Boolean(hello["open-files"]);
     this.remote_file_transfer = Boolean(hello["file-transfer"]) || Boolean(hello["file"]);
-    this.remote_printing = Boolean(hello["printing"]);
+    this.remote_printing = Boolean(hello["printing"]) || Boolean(hello["printer"]);
     if (this.remote_printing && this.printing) {
       // send our printer definition
       const printers = {
