@@ -78,7 +78,7 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
-* Wed Mar 18 2026 Antoine Martin <antoine@xpra.org> 20-0-1
+* Mon May 11 2026 Antoine Martin <antoine@xpra.org> 20-0-1
 - keyboard mapping
 - desktop windows should be shown fullscreen
 - handle decode worker initialization timeouts
@@ -86,6 +86,7 @@ rm -rf $RPM_BUILD_ROOT
 - unicode clipboard copy
 - window dragging
 - broken file upload with newer servers
+- rencode support for Map objects
 
 * Sun Dec 07 2025 Antoine Martin <antoine@xpra.org> 19-0-1
 - New Features:

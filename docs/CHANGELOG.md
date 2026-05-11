@@ -1,7 +1,7 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
-## [20.0] 2025-12-19
+## [20.0] 2026-05-11
 - [keyboard mapping](https://github.com/Xpra-org/xpra-html5/issues/406)
 - [desktop windows should be shown fullscreen](https://github.com/Xpra-org/xpra-html5/issues/407)
 - handle decode worker initialization timeouts
@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 - [unicode clipboard copy](https://github.com/Xpra-org/xpra-html5/commit/e99ae9323eb07d897a9d0884cde2a925c4894e98)
 - [window dragging](https://github.com/Xpra-org/xpra-html5/commit/bb88bd77541301f9584235c2666a1ed135627b28)
 - [broken file upload with newer servers](https://github.com/Xpra-org/xpra-html5/commit/53d531c6b0003097cfe8f7b899d91deef5d760a8)
+- [rencode support for Map objects](https://github.com/Xpra-org/xpra-html5/commit/34b58a815359feba66cea47dfdce086fcb2e7bcc)
 
 ## [19.0] 2025-12-07
 - New Features:
