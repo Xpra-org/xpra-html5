@@ -275,19 +275,19 @@ function rencode_none() {
 }
 
 function rencode(obj) {
-	if (obj === null || obj === undefined) {
-		return rencode_none();
-	}
-	if (obj instanceof Map) {
-		return rencode_map(obj);
-	}
 	const type = typeof obj;
-	if(type === 'object') {
-		if(typeof obj.length === 'undefined') {
-			return rencode_dict(obj);
+	if (type === 'object') {
+		if (obj === null) {
+			return rencode_none();
 		}
-		if(obj.constructor===Uint8Array) {
+		if (obj instanceof Map) {
+			return rencode_map(obj);
+		}
+		if (obj.constructor === Uint8Array) {
 			return rencode_uint8(obj);
+		}
+		if (typeof obj.length === 'undefined') {
+			return rencode_dict(obj);
 		}
 		return rencode_list(obj);
 	}
