@@ -329,6 +329,7 @@ class XpraClient {
     this.server_platform = "";
     this.server_resize_exact = false;
     this.server_screen_sizes = [];
+    this.server_packet_types = [];
     this.server_is_desktop = false;
     this.server_is_shadow = false;
     this.server_readonly = false;
@@ -891,7 +892,14 @@ class XpraClient {
     if (force) {
       caps["force"] = true;
     }
-    this.send([PACKET_TYPES.keyboard_config, caps]);
+
+    if (this.server_packet_types && this.server_packet_types.includes(PACKET_TYPES.keyboard_config)) {
+      this.send([PACKET_TYPES.keyboard_config, caps]);
+      return;
+    }
+    // legacy packet:
+    console.log("legacy keymap-changed packet");
+    this.send(["keymap-changed", caps, force || false]);
   }
 
   _keyb_get_modifiers(event) {
@@ -1402,7 +1410,7 @@ class XpraClient {
       "clipboard": this._get_clipboard_caps(),
       "pointer": this._get_pointer_caps(),
       "file": this._get_file_caps(),
-      "wants": ["audio", ],
+      "wants": ["audio", "packet-types"],
       // encoding stuff
       windows: true,
       "window.pre-map": true,
@@ -2590,6 +2598,7 @@ class XpraClient {
       $("#download_menu_entry").hide();
     }
 
+    this.server_packet_types = hello["packet-types"];
     this.server_is_desktop = Boolean(hello["desktop"]);
     this.server_is_shadow = Boolean(hello["shadow"]);
     this.server_readonly = Boolean(hello["readonly"]);
