@@ -8,7 +8,7 @@
  */
 
 const Utilities = {
-  VERSION : "20",
+  VERSION : "21",
   REVISION : 0,
   LOCAL_MODIFICATIONS: 0,
   BRANCH: "v16.x",

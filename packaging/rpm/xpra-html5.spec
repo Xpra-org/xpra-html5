@@ -3,7 +3,7 @@
 # Xpra is released under the terms of the GNU GPL v2, or, at your option, any
 # later version. See the file COPYING for details.
 
-%define version 20
+%define version 21
 %define release 1.r0%{?dist}
 %define minifier uglifyjs
 %define python python3
@@ -79,6 +79,11 @@ rm -rf $RPM_BUILD_ROOT
 
 %changelog
 * Mon May 11 2026 Antoine Martin <antoine@xpra.org> 20-0-1
+- new printer subsystem prefix
+- support new keyboard mapping packet with newer servers
+- rencode support for Map objects
+
+* Wed Mar 18 2026 Antoine Martin <antoine@xpra.org> 20-0-1
 - keyboard mapping
 - desktop windows should be shown fullscreen
 - handle decode worker initialization timeouts
@@ -86,7 +91,6 @@ rm -rf $RPM_BUILD_ROOT
 - unicode clipboard copy
 - window dragging
 - broken file upload with newer servers
-- rencode support for Map objects
 
 * Sun Dec 07 2025 Antoine Martin <antoine@xpra.org> 19-0-1
 - New Features:
