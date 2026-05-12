@@ -650,7 +650,7 @@
         }
         const sound = getboolparam("sound", true) || null;
         const audio_codec = getstrparam("audio_codec") || null;
-        const offscreen = getboolparam("offscreen", true);
+        const offscreen = getboolparam("offscreen", XpraOffscreenWorker.isAvailable(https));
         const encoding = getstrparam("encoding") || null;
         const bandwidth_limit = getintparam("bandwidth_limit", 0) || 0;
         const action = getstrparam("action") || "connect";
