@@ -1,3 +1,8 @@
+xpra-html5 (22-r0-1) UNRELEASED; urgency=low
+  * TODO
+
+ -- Antoine Martin antoine@xpra.org  Tue, 12 May 2026 21:32:20 +0700 +700
+
 xpra-html5 (21-r0-1) UNRELEASED; urgency=low
   * new printer subsystem prefix
   * support new keyboard mapping packet with newer servers

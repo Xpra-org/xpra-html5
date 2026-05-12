@@ -3,7 +3,7 @@
 # Xpra is released under the terms of the GNU GPL v2, or, at your option, any
 # later version. See the file COPYING for details.
 
-%define version 21
+%define version 22
 %define release 1.r0%{?dist}
 %define minifier uglifyjs
 %define python python3
@@ -78,6 +78,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Tue May 12 2026 Antoine Martin <antoine@xpra.org> 22-0-1
+- TODO
+
 * Mon May 11 2026 Antoine Martin <antoine@xpra.org> 20-0-1
 - new printer subsystem prefix
 - support new keyboard mapping packet with newer servers
