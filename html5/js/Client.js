@@ -3596,7 +3596,7 @@ class XpraClient {
       return;
     }
 
-    if (this.offscreen_api) {
+    if (this.offscreen_api && this.decode_worker) {
       this.decode_worker.postMessage({
         cmd: "redraw",
         wid: win.wid
