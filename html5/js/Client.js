@@ -1742,7 +1742,7 @@ class XpraClient {
     }
 
     if (window.cursor_lock) {
-      $("#cursor-lock-button").removeClass("icon-paused");
+      $("#cursor_lock_button").removeClass("icon-paused");
       win.canvas.requestPointerLock();
     }
 
