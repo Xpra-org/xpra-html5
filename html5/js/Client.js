@@ -1531,6 +1531,8 @@ class XpraClient {
   _get_keymap_caps() {
     return {
       "layout": this.key_layout,
+      // MODIFIERS_NAMES["Num_Lock"] = "mod2"
+      "mod_pointermissing": ["mod2", "Caps_Lock", "Scroll_Lock"],
       "keycodes": this._get_keycodes(),
     }
   }
