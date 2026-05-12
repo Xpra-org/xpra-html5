@@ -1,8 +1,37 @@
 xpra-html5 (17.2-r0-1) UNRELEASED; urgency=low
+  * unicode characters mangled by clipboard
+  * progress bar not moving
+  * avoid DPI warning
+  * window list not updated
+  * avoid `TypeError` handling window list
+  * errors when `class-instance` is not defined
+  * more sensible keyboard defaults
+  * some browsers do not support the keyboard lock API
+  * catch decode errors and report the failure
+  * missing refresh
+  * clipboard direction was ignored
+  * don't use a mouseup event older than the mousedown
+  * undecorated windows can be moved
+  * missing window icons
+  * errors must not stall the decode queue
+  * disable offscreen decode worker
+  * reject typeless frames until first keyframe
+  * beforeunload event attribute had got lost
+  * visibilitychange events must change refresh rate, not send power events
+  * also `auto_focus` when the last window disappears
+  * modern display capabilities
+  * modern fullscreen support check
+  * compatibility with newer `file` capabilities
+  * support new menu prefix
+  * avoid errors on menu entries without exec attributes
+  * ensure the desktop size is always valid
+  * protocol worker fails to log messages
+  * decoding errors do not fix with a refresh
+  * clipboard polling not enabled on Safari
   * narrow or short windows can be misplaced
   * float menu causing desktop mode offset
 
- -- Antoine Martin antoine@xpra.org  Sat, 28 Jun 2025 21:58:53 +0700 +700
+ -- Antoine Martin <antoine@xpra.org>  Tue, 12 May 2026 17:46:52 +0700
 
 xpra-html5 (17.1-r0-1) UNRELEASED; urgency=low
   * keycloak authentication fails

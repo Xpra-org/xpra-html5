@@ -1,7 +1,36 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
-## [17.2] 2025-06-28
+## [17.2] 2026-05-12
+- [unicode characters mangled by clipboard](https://github.com/Xpra-org/xpra-html5/commit/b0b902a9aec8a413db4be6affc54bbf0c6ba6768)
+- [progress bar not moving](https://github.com/Xpra-org/xpra-html5/commit/1655a23b1c3ad55c76756e3378233e656a7c0e9b)
+- [avoid DPI warning](https://github.com/Xpra-org/xpra-html5/commit/bae8b341cc9da73ea4c99b883f2eee85a2260db8)
+- [window list not updated](https://github.com/Xpra-org/xpra-html5/commit/3a39304d8a70213da9eef9f7f7cc3f5de1aeee82)
+- [avoid `TypeError` handling window list](https://github.com/Xpra-org/xpra-html5/commit/7ad37f69d4b65e5d51399cd40c9c4b388a02cf3b)
+- [errors when `class-instance` is not defined](https://github.com/Xpra-org/xpra-html5/commit/e96fa0f9f29549e13e4557d32b256bd86bab1e7a)
+- [more sensible keyboard defaults](https://github.com/Xpra-org/xpra-html5/commit/a7452afe074d7f48b53d1fb2ea0aa1cd9717997a)
+- [some browsers do not support the keyboard lock API](https://github.com/Xpra-org/xpra-html5/commit/42d0771c2e8120b740cecbff8e31918dd7b39d12)
+- [catch decode errors and report the failure](https://github.com/Xpra-org/xpra-html5/commit/9726183b10bf12391094a249ad42d5af487c958c)
+- [missing refresh](https://github.com/Xpra-org/xpra-html5/commit/01af3694f91084970776f099b93763ced5910a74)
+- [clipboard direction was ignored](https://github.com/Xpra-org/xpra-html5/commit/b11a8649af66a3e6e36268eb56ed61efa4aaf0a5)
+- [don't use a mouseup event older than the mousedown](https://github.com/Xpra-org/xpra-html5/commit/5db37ef77c64cf22d18b6421fa18e493e5bb9976)
+- [undecorated windows can be moved](https://github.com/Xpra-org/xpra-html5/commit/cec73a25d4b8f95eba1fe6c55570ab9094773842)
+- [missing window icons](https://github.com/Xpra-org/xpra-html5/commit/6a6a91328642455015f9bdffe3d6b2a5c8e3dfe4)
+- [errors must not stall the decode queue](https://github.com/Xpra-org/xpra-html5/commit/72a44027c18d033677584d6c8cebbdd068ab0853)
+- [disable offscreen decode worker](https://github.com/Xpra-org/xpra-html5/commit/36fa36bac10c8783a610735b0c33891e33e528bd)
+- [reject typeless frames until first keyframe](https://github.com/Xpra-org/xpra-html5/commit/f93d90915c21753a8355230b0ab3bbaf3351d324)
+- [beforeunload event attribute had got lost](https://github.com/Xpra-org/xpra-html5/commit/2a8c73cea7522aa0399053bcef6080f267f6aa68)
+- [visibilitychange events must change refresh rate, not send power events](https://github.com/Xpra-org/xpra-html5/commit/469a16f09824b849ea15e8a46e0509d861d6e205)
+- [also `auto_focus` when the last window disappears](https://github.com/Xpra-org/xpra-html5/commit/ac5545289249513036ebe42254d9df6be44078a8)
+- [modern display capabilities](https://github.com/Xpra-org/xpra-html5/commit/55ab1159e1c06af8c102a5d79bde1ed63954e7f8)
+- [modern fullscreen support check](https://github.com/Xpra-org/xpra-html5/commit/3e3f9a10150f4f826049f8a7a54753281b7116d7)
+- [compatibility with newer `file` capabilities](https://github.com/Xpra-org/xpra-html5/commit/ff074541ceb032f16d9318d537dcbbaa87186ba8)
+- [support new menu prefix](https://github.com/Xpra-org/xpra-html5/commit/4b4e1ccce1b71e5d79d379525a82e8b610725151)
+- [avoid errors on menu entries without exec attributes](https://github.com/Xpra-org/xpra-html5/commit/977e8c36e80c53e2fc394002af01423ce6d5f41c)
+- [ensure the desktop size is always valid](https://github.com/Xpra-org/xpra-html5/commit/87c71e23c9146ffa060d1cea93e58fbbdd6f8c93)
+- [protocol worker fails to log messages](https://github.com/Xpra-org/xpra-html5/commit/345b6b3322d8284cb51a595add166e922a9242b0)
+- [decoding errors do not fix with a refresh](https://github.com/Xpra-org/xpra-html5/commit/a6f33be9a57a943088f9171851884d47467b1db9)
+- [clipboard polling not enabled on Safari](https://github.com/Xpra-org/xpra-html5/commit/6231274c63ab9f3869fa49d0d497163ec6866c80)
 - [narrow or short windows can be misplaced](https://github.com/Xpra-org/xpra-html5/commit/4c90c0ca1d771106e4d28594dcef84cb2309a2b9)
 - [float menu causing desktop mode offset](https://github.com/Xpra-org/xpra-html5/commit/a5ed3ed06a0b9fdd4fb8f61053715cd2743b8547)
 

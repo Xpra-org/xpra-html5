@@ -78,7 +78,36 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
-* Sat Jun 28 2025 Antoine Martin <antoine@xpra.org> 17.2-0-1
+* Tue May 12 2026 Antoine Martin <antoine@xpra.org> 17.2-0-1
+- unicode characters mangled by clipboard
+- progress bar not moving
+- avoid DPI warning
+- window list not updated
+- avoid `TypeError` handling window list
+- errors when `class-instance` is not defined
+- more sensible keyboard defaults
+- some browsers do not support the keyboard lock API
+- catch decode errors and report the failure
+- missing refresh
+- clipboard direction was ignored
+- don't use a mouseup event older than the mousedown
+- undecorated windows can be moved
+- missing window icons
+- errors must not stall the decode queue
+- disable offscreen decode worker
+- reject typeless frames until first keyframe
+- beforeunload event attribute had got lost
+- visibilitychange events must change refresh rate, not send power events
+- also `auto_focus` when the last window disappears
+- modern display capabilities
+- modern fullscreen support check
+- compatibility with newer `file` capabilities
+- support new menu prefix
+- avoid errors on menu entries without exec attributes
+- ensure the desktop size is always valid
+- protocol worker fails to log messages
+- decoding errors do not fix with a refresh
+- clipboard polling not enabled on Safari
 - narrow or short windows can be misplaced
 - float menu causing desktop mode offset
 
