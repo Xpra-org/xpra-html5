@@ -31,7 +31,11 @@ class XpraVideoDecoder {
     this.decoded_frames = [];
     this.erroneous_frame = null;
 
+    this.coding = null;
     this.codec = null;
+    // the YUV colour range the decoder is currently configured for;
+    // the server signals it per frame and it defaults to full-range:
+    this.full_range = true;
     this.vp9_params = null;
     this.frameWaitTimeout = 1; // Interval for wait loop while frame is being decoded
 
@@ -55,9 +59,17 @@ class XpraVideoDecoder {
     }
   }
 
-  init(coding) {
+  // the server omits the "full-range" option for full-range frames (the default)
+  // and only sends it as false for studio-range, so anything but an explicit false is full:
+  static full_range_from_options(options) {
+    return !(options && options["full-range"] === false);
+  }
+
+  init(coding, options) {
     this.draining = false;
 
+    this.coding = coding;
+    this.full_range = XpraVideoDecoder.full_range_from_options(options);
     this.codec = this.resolveCodec(coding);
     this.videoDecoder = new VideoDecoder({
       output: this._on_decoded_frame.bind(this),
@@ -70,8 +82,10 @@ class XpraVideoDecoder {
       codec: this.codec,
       hardwareAcceleration: "no-preference",
       optimizeForLatency: true,
+      // match the colour range the server encoded with, so the browser maps YUV to RGB correctly
+      // (most important for vp8, which has no colour range in its bitstream):
       colorSpace: new VideoColorSpace({
-        fullRange: true
+        fullRange: this.full_range
       })
     });
     this.last_timestamp = 0;
@@ -153,6 +167,14 @@ class XpraVideoDecoder {
       const options = packet[10] || {};
       const data = packet[7];
       const packet_sequence = packet[8];
+
+      // the colour range can change mid-stream; the server emits a keyframe carrying the new
+      // range, so re-create the decoder with the matching colour space before decoding it:
+      const full_range = XpraVideoDecoder.full_range_from_options(options);
+      if (this.initialized && full_range !== this.full_range && this.coding) {
+        this._close();
+        this.init(this.coding, options);
+      }
 
       // H264 (avc1.42C01E) needs key frames
       if (

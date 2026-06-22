@@ -122,7 +122,7 @@ class WindowDecoder {
       await this.image_decoder.convertToBitmap(packet);
     } else if (video_coding.includes(coding)) {
       if (!this.video_decoder.initialized) {
-        this.video_decoder.init(coding);
+        this.video_decoder.init(coding, packet[10]);
       }
       packet = await this.video_decoder.queue_frame(packet).catch((error) => {
         this.decode_error(packet, error);
