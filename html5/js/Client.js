@@ -3277,7 +3277,7 @@ class XpraClient {
     const geom = win.get_internal_geometry();
     const wid = win.wid;
     const packet = [PACKET_TYPES.configure_window, wid, geom.x, geom.y, geom.w, geom.h,
-      win.client_properties, 0, state, skip_geometry,
+      win.client_properties, win.resize_counter, state, skip_geometry,
     ];
     this.send(packet);
   }
@@ -3435,15 +3435,17 @@ class XpraClient {
     const wid = packet[1];
     const width = packet[2];
     const height = packet[3];
+    const resize_counter = packet.length > 4 ? packet[4] : -1;
     const win = this.id_to_window[wid];
     if (win) {
-      win.resize(width, height);
+      win.resize(width, height, resize_counter);
     }
   }
 
   _process_window_move_resize(packet) {
     const [, wid, x, y, width, height] = packet;
-    this.id_to_window[wid]?.move_resize(x, y, width, height);
+    const resize_counter = packet.length > 6 ? packet[6] : -1;
+    this.id_to_window[wid]?.move_resize(x, y, width, height, resize_counter);
   }
 
   _process_configure_override_redirect(packet) {

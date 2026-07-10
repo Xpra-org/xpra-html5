@@ -59,6 +59,10 @@ class XpraWindow {
     this.y = y;
     this.w = w;
     this.h = h;
+    // resize counter: used to prevent resize loops with the server,
+    // it is echoed back unchanged in configure-window packets
+    // and only updated when the server tells us to resize / move-resize
+    this.resize_counter = 0;
     // scaling for client display width override
     this.scale = scale;
 
@@ -1105,8 +1109,9 @@ class XpraWindow {
    * Things ported from original shape
    */
 
-  move_resize(x, y, w, h) {
-    this.debug("geometry", "move_resize(", x, y, w, h, ")");
+  move_resize(x, y, w, h, resize_counter = this.resize_counter) {
+    this.debug("geometry", "move_resize(", x, y, w, h, resize_counter, ")");
+    this.resize_counter = resize_counter;
     // only do it if actually changed!
     if (this.w !== w || this.h !== h || this.x !== x || this.y !== y) {
       this.w = w;
@@ -1128,9 +1133,9 @@ class XpraWindow {
     this.move_resize(x, y, this.w, this.h);
   }
 
-  resize(w, h) {
-    this.debug("geometry", "resize(", w, h, ")");
-    this.move_resize(this.x, this.y, w, h);
+  resize(w, h, resize_counter = this.resize_counter) {
+    this.debug("geometry", "resize(", w, h, resize_counter, ")");
+    this.move_resize(this.x, this.y, w, h, resize_counter);
   }
 
   initiate_moveresize(mousedown_event, x_root, y_root, direction, button, source_indication) {
