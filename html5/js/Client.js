@@ -4182,9 +4182,6 @@ class XpraClient {
     if (!this.clipboard_enabled || !this.connected) {
       return;
     }
-    const claim = true; //Boolean(navigator.clipboard && navigator.clipboard.readText && navigator.clipboard.writeText);
-    const greedy = true;
-    const synchronous = true;
     let actual_data_format = data_format;
     if (!actual_data_format) {
       actual_data_format = [TEXT_PLAIN, UTF8_STRING];
@@ -4193,40 +4190,31 @@ class XpraClient {
       }
     }
 
+    let targets = actual_data_format;
+    let target = UTF8_STRING;
+    let dtype = UTF8_STRING;
+    const dformat = 8;
+    const wire_encoding = "bytes";
+    if (!data) {
+      targets = [];
+      target = "";
+      dtype = "";
+    }
+    const claim = true; //Boolean(navigator.clipboard && navigator.clipboard.readText && navigator.clipboard.writeText);
+    const greedy = true;
+    const synchronous = true;
+
     this.debug("clipboard", "sending clipboard token with data:", data, "as", actual_data_format);
-    let packet;
-    packet = data ?
-      [
-        PACKET_TYPES.clipboard_token,
-        "CLIPBOARD",
-        actual_data_format,
-        UTF8_STRING,
-        UTF8_STRING,
-        8,
-        "bytes",
-        data,
-        claim,
-        greedy,
-        synchronous,
-      ] :
-      [
-        PACKET_TYPES.clipboard_token,
-        "CLIPBOARD",
-        [],
-        "",
-        "",
-        8,
-        "bytes",
-        "",
-        claim,
-        greedy,
-        synchronous,
-      ];
+    let packet = [
+        PACKET_TYPES.clipboard_token, "CLIPBOARD", targets, target, dtype, dformat, wire_encoding, data || "",
+        claim, greedy, synchronous,
+    ];
     this.send(packet);
   }
 
   _process_clipboard_token(packet) {
     if (!this.clipboard_enabled) {
+      this.debug("clipboard", "received token, but clipboard is disabled");
       return;
     }
     const selection = packet[1];
