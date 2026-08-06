@@ -63,6 +63,9 @@ class WindowDecoder {
     this.wid = wid;
     this.canvas = canvas;
     this.context = this.canvas.getContext("2d");
+    // lazily allocated by `get_snapshot`, for painting 'scroll' packets:
+    this.scratch_canvas = null;
+    this.scratch_context = null;
     this.debug = debug;
 
     this.image_decoder = new XpraImageDecoder();
@@ -194,6 +197,25 @@ class WindowDecoder {
     }
   }
 
+  get_snapshot() {
+    // All the rectangles of a 'scroll' packet are relative to the same
+    // reference picture: the window contents as they were before any of them
+    // was applied. The list is not ordered so that it can be applied in place,
+    // so we must blit every rectangle from a copy taken before the first one.
+    const canvas = this.canvas;
+    let scratch = this.scratch_canvas;
+    if (!scratch || scratch.width !== canvas.width || scratch.height !== canvas.height) {
+      scratch = new OffscreenCanvas(canvas.width, canvas.height);
+      this.scratch_canvas = scratch;
+      this.scratch_context = scratch.getContext("2d");
+      this.scratch_context.imageSmoothingEnabled = false;
+    }
+    const scratch_context = this.scratch_context;
+    scratch_context.clearRect(0, 0, scratch.width, scratch.height);
+    scratch_context.drawImage(canvas, 0, 0);
+    return scratch;
+  }
+
   do_paint_packet(wid, coding, image, x, y, width, height) {
     // Update the coding propery
     if (!this.canvas) {
@@ -207,7 +229,7 @@ class WindowDecoder {
       context.drawImage(image, 0, 0, width, height, x, y, width, height);
       this.paint_box(coding, context, x, y, width, height);
     } else if (coding === "scroll") {
-      let canvas = this.canvas;
+      const snapshot = this.get_snapshot();
       context.imageSmoothingEnabled = false;
       for (let index = 0, stop = image.length; index < stop; ++index) {
         const scroll_data = image[index];
@@ -217,7 +239,7 @@ class WindowDecoder {
         const sh = scroll_data[3];
         const xdelta = scroll_data[4];
         const ydelta = scroll_data[5];
-        context.drawImage(canvas,
+        context.drawImage(snapshot,
             sx, sy, sw, sh,
             sx + xdelta, sy + ydelta, sw, sh,
         );
@@ -262,6 +284,8 @@ class WindowDecoder {
   close() {
     this.eos();
     this.canvas = null;
+    this.scratch_canvas = null;
+    this.scratch_context = null;
     this.decode_queue = [];
     this.decode_queue_draining = true;
   }
