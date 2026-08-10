@@ -64,6 +64,7 @@ const MOVERESIZE_DIRECTION_JS_NAME = {
 const PACKET_TYPES = {
   control: "control",
   ack_file_chunk: "ack-file-chunk",
+  audio_signal: "audio-signal",
   bell: "bell",
   buffer_refresh: "buffer-refresh",
   button_action: "button-action",

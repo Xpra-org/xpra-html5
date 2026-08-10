@@ -264,6 +264,8 @@ class XpraClient {
     this.audio_codec = null;
     this.audio_context = new AudioContext();
     this.audio_state = "";
+    //is the server currently playing something we could listen to?
+    this.audio_signal = false;
     this.aurora_codecs = {};
     this.mediasource_codecs = {};
     // encryption
@@ -462,6 +464,7 @@ class XpraClient {
     this.packet_handlers = {
       [PACKET_TYPES.control]: this._process_control,
       [PACKET_TYPES.ack_file_chunk]: this._process_ack_file_chunk,
+      [PACKET_TYPES.audio_signal]: this._process_audio_signal,
       [PACKET_TYPES.bell]: this._process_bell,
       [PACKET_TYPES.challenge]: this._process_challenge,
       [PACKET_TYPES.clipboard_request]: this._process_clipboard_request,
@@ -691,6 +694,10 @@ class XpraClient {
 
   close_protocol() {
     this.connected = false;
+    //without a connection, we no longer know if the server has any audio to play,
+    //(don't use `set_audio_signal` here: `init_state` may have cleared the flag already)
+    this.audio_signal = false;
+    this.on_audio_signal_change(false);
     if (this.protocol) {
       this.protocol.close();
       this.protocol.terminate();
@@ -1555,6 +1562,9 @@ class XpraClient {
       "receive": true,
       "send": true,
       "decoders": Object.keys(this.audio_codecs),
+      //ask the server to tell us when audio becomes available,
+      //so we can draw the user's attention to the speaker button:
+      "signal": this.audio_enabled,
     }
   }
 
@@ -4025,6 +4035,25 @@ class XpraClient {
   on_audio_state_change(newstate, details) {
     this.debug("on_audio_state_change:", newstate, details);
     this.audio_state = newstate;
+    //can be overriden
+  }
+
+  _process_audio_signal(packet) {
+    //the server tells us if there is any audio to be heard,
+    //this allows us to hint that speaker forwarding may be worth turning on:
+    this.set_audio_signal(!!packet[1]);
+  }
+
+  set_audio_signal(signal) {
+    if (this.audio_signal === signal) {
+      return;
+    }
+    this.debug("audio", "audio signal:", signal);
+    this.audio_signal = signal;
+    this.on_audio_signal_change(signal);
+  }
+
+  on_audio_signal_change(signal) {
     //can be overriden
   }
 

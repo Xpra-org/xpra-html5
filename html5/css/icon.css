@@ -34,3 +34,29 @@
 .icon-paused:before {
   color: gold;
 }
+
+/* used to draw the user's attention to an icon,
+   ie: when audio is available but not enabled */
+.icon-attention:before {
+  animation: icon-attention-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes icon-attention-pulse {
+  0%,
+  100% {
+    color: black;
+    transform: scale(1);
+  }
+
+  50% {
+    color: #0288d1;
+    transform: scale(1.25);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .icon-attention:before {
+    animation: none;
+    color: #0288d1;
+  }
+}

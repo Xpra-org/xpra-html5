@@ -1227,31 +1227,49 @@
       }
 
       function init_audio(client) {
+        function update_sound_button() {
+          const state = client.audio_state;
+          let tooltip;
+          let data_icon;
+          const sound_button_element = $("#sound_button");
+          if (state === "disabled") {
+            data_icon = "volume_up";
+            tooltip = "audio is not available";
+            sound_button_element.css("color", "#777");
+          } else if (state === "playing") {
+            data_icon = "volume_up";
+            tooltip = "audio playing,\nclick to stop";
+          } else if (state === "waiting") {
+            data_icon = "volume_up";
+            tooltip = "audio buffering";
+          } else if (client.audio_signal) {
+            //the server has something to play and we are not listening to it:
+            data_icon = "volume_off";
+            tooltip = "audio is available,\nclick to start";
+          } else {
+            data_icon = "volume_off";
+            tooltip = "audio off,\nclick to start";
+          }
+          //only draw attention to the speaker if the user can actually turn audio on:
+          const attention = client.audio_signal &&
+            state !== "disabled" &&
+            state !== "playing" &&
+            state !== "waiting";
+          sound_button_element.attr("data-icon", data_icon);
+          sound_button_element.attr("title", tooltip);
+          sound_button_element.toggleClass("icon-attention", attention);
+        }
         client.on_audio_state_change = function(newstate, details) {
           if (client.audio_state === newstate) {
             return;
           }
           client.audio_state = newstate;
-          let tooltip;
-          let data_icon;
-          const sound_button_element = $("#sound_button");
-          if (newstate === "disabled") {
-            data_icon = "volume_up";
-            tooltip = "audio is not available";
-            sound_button_element.css("color", "#777");
-          } else if (newstate === "playing") {
-            data_icon = "volume_up";
-            tooltip = "audio playing,\nclick to stop";
-          } else if (newstate === "waiting") {
-            data_icon = "volume_up";
-            tooltip = "audio buffering";
-          } else {
-            data_icon = "volume_off";
-            tooltip = "audio off,\nclick to start";
-          }
           clog("audio-state:", newstate);
-          sound_button_element.attr("data-icon", data_icon);
-          sound_button_element.attr("title", tooltip);
+          update_sound_button();
+        };
+        client.on_audio_signal_change = function(signal) {
+          clog("audio-signal:", signal);
+          update_sound_button();
         };
         $("#sound_button").click(function() {
           clog("speaker icon clicked, audio_enabled=", client.audio_enabled);
