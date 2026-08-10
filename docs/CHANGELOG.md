@@ -2,6 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 ## [21.0] 2026-05-11
+- release the mouse buttons released whilst the pointer was outside the page
 - [draw attention to the speaker icon when the server has audio to play](https://github.com/Xpra-org/xpra/issues/2325)
 - [new printer subsystem prefix](https://github.com/Xpra-org/xpra-html5/commit/27b13d60b0655a7cbf4b8205258c79bdfc4b0704)
 - [support new keyboard mapping packet](https://github.com/Xpra-org/xpra-html5/commit/38c1f4892af366774dd733fc706f09bef6e3449d) [with newer servers](https://github.com/Xpra-org/xpra-html5/commit/519496a8bcec8d6197d5fca19f6bf2345318311a)

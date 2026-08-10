@@ -61,6 +61,16 @@ const METADATA_SUPPORTED = [
 // states that adding 'transform: transale3d(0,0,0);' is the strongest CSS indication for the browser to enable hardware acceleration.
 const TRY_GPU_TRIGGER = true;
 
+//maps the button number we get from `which` / `button`
+//to the corresponding bit in the `buttons` mask of mouse events:
+const MOUSE_BUTTON_MASKS = {
+  1: 1, //left
+  2: 4, //middle
+  3: 2, //right
+  4: 8, //back
+  5: 16, //forward
+};
+
 function truncate(input) {
   if (!input) {
     return input;
@@ -281,6 +291,9 @@ class XpraClient {
     this.last_key_packet = [];
     // mouse
     this.buttons_pressed = new Set();
+    //maps the buttons we have sent as pressed to their `buttons` event mask,
+    //so we can detect the ones released whilst the pointer was outside the page:
+    this.button_masks = new Map();
     this.last_button_event = [-1, false, -1, -1];
     this.mousedown_event = null;
     this.mouseup_event = null;
@@ -1713,6 +1726,9 @@ class XpraClient {
     if (this.server_readonly || !this.connected || (!win && this.server_is_shadow)) {
       return !win;
     }
+    //the pointer may be coming back into the page
+    //after a button was released outside of it:
+    this.release_stale_buttons(e, win);
     const mouse = this.getMouse(e);
     const x = Math.round(mouse.x);
     const y = Math.round(mouse.y);
@@ -1735,11 +1751,23 @@ class XpraClient {
     return !win;
   }
 
-  release_buttons(e, win) {
-    const mouse = this.getMouse(e);
+  // release the buttons given, or all the ones we believe are pressed,
+  // `e` is optional: we fall back to the last known pointer position
+  release_buttons(e, win, buttons) {
+    const release = buttons || [...this.buttons_pressed];
+    if (release.length === 0) {
+      return;
+    }
+    if (!this.connected) {
+      this.buttons_pressed.clear();
+      this.button_masks.clear();
+      return;
+    }
+    const event = e || {};
+    const mouse = this.getMouse(event);
     const x = Math.round(mouse.x);
     const y = Math.round(mouse.y);
-    const modifiers = this._keyb_get_modifiers(e);
+    const modifiers = this._keyb_get_modifiers(event);
     const pressed = false;
     const coords = [x, y];
     let wid = 0;
@@ -1750,8 +1778,36 @@ class XpraClient {
       coords.push(Math.round(mouse.x - pos.x));
       coords.push(Math.round(mouse.y - pos.y));
     }
-    for (const button of this.buttons_pressed) {
+    for (const button of release) {
       this.send_button_action(wid, button, pressed, coords, modifiers);
+    }
+    //so the next real button event is not skipped as a duplicate:
+    this.last_button_event = [-1, false, -1, -1];
+  }
+
+  // If the pointer leaves the page whilst a button is pressed,
+  // we never get the button release event and the server
+  // would still believe that the button is pressed.
+  // Compare the buttons we have sent as pressed with the ones
+  // actually pressed in this event, and release the stale ones.
+  release_stale_buttons(e, win) {
+    if (this.buttons_pressed.size === 0 || e === undefined || e.buttons === undefined) {
+      return;
+    }
+    const buttons = e.buttons;
+    const stale = [];
+    for (const button of this.buttons_pressed) {
+      const mask = this.button_masks.get(button) || 0;
+      //if we don't know which mask to check for this button,
+      //only release it if no buttons at all are pressed:
+      const released = mask ? (buttons & mask) === 0 : buttons === 0;
+      if (released) {
+        stale.push(button);
+      }
+    }
+    if (stale.length > 0) {
+      this.debug("mouse", "releasing buttons", stale, "released outside the page");
+      this.release_buttons(e, win, stale);
     }
   }
 
@@ -1830,9 +1886,13 @@ class XpraClient {
     } else if (button === 5) {
       button = 9;
     }
+    //the mask to look for in the `buttons` attribute of mouse events,
+    //this is the physical button, which may differ from the one we send
+    //when middle button emulation is used:
+    const mask = MOUSE_BUTTON_MASKS[mouse.button] || 0;
     function send_button_action() {
       client.clipboard_delayed_event_time = performance.now() + CLIPBOARD_EVENT_DELAY;
-      client.send_button_action(wid, button, pressed, coords, modifiers);
+      client.send_button_action(wid, button, pressed, coords, modifiers, mask);
     }
     if (send_delay) {
       setTimeout(send_button_action, send_delay)
@@ -1842,12 +1902,14 @@ class XpraClient {
     }
   }
 
-  send_button_action(wid, button, pressed, coords, modifiers) {
+  send_button_action(wid, button, pressed, coords, modifiers, mask) {
     const buttons = [];
     if (pressed) {
       this.buttons_pressed.add(button);
+      this.button_masks.set(button, mask || 0);
     } else {
       this.buttons_pressed.delete(button);
+      this.button_masks.delete(button);
     }
     this.send([PACKET_TYPES.button_action, wid, button, pressed, coords, modifiers, buttons]);
   }

@@ -1651,8 +1651,11 @@
           }
         });
 
-        // Prevent stuck keys.
+        // Prevent stuck keys and buttons.
         $(window).on("blur", (e) => {
+          // we won't get the 'mouseup' events
+          // for any buttons released whilst we don't have the focus:
+          client.release_buttons();
           if (
             client.last_key_packet.length > 2 &&
             client.last_keycode_pressed > 0
