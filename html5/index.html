@@ -670,7 +670,6 @@
         const exit_with_client = getboolparam("exit_with_client", false);
         const sharing = getboolparam("sharing", false);
         const video = getboolparam("video", true);
-        const mediasource_video = getboolparam("mediasource_video", false);
         const remote_logging = getboolparam("remote_logging", true);
         const insecure = getboolparam("insecure", false);
         const ignore_audio_blacklist = getboolparam("ignore_audio_blacklist", false);
@@ -836,13 +835,6 @@
             //and added to the decode worker:
             client.supported_encodings.push("mpeg1");
           }
-          if (mediasource_video) {
-            client.supported_encodings.push(
-              "vp8+webm",
-              "h264+mp4",
-              "mpeg4+mp4"
-            );
-          }
         }
         if (encoding) {
           // the primary encoding
@@ -987,7 +979,6 @@
               sharing: sharing,
               steal: steal,
               video: video,
-              mediasource_video: mediasource_video,
               remote_logging: remote_logging,
               ignore_audio_blacklist: ignore_audio_blacklist,
               floating_menu: floating_menu,

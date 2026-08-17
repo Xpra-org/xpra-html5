@@ -347,9 +347,7 @@
                 </li>
                 <li class="list-group-item">
                   <input type="checkbox" id="video" />
-                  <span>Video
-                    <input type="checkbox" id="mediasource_video" /> Native
-                    decoding</span>
+                  <span>Video</span>
                 </li>
                 <li class="list-group-item">
                   <span>Server Path:</span>
@@ -420,7 +418,6 @@
         "swap_keys",
         "scroll_reverse_x",
         "video",
-        "mediasource_video",
         "ssl",
         "insecure",
         "webtransport",
@@ -1519,7 +1516,6 @@
           "reconnect",
           "swap_keys",
           "video",
-          "mediasource_video",
           "floating_menu",
           "autohide",
           "clock",
@@ -1543,13 +1539,6 @@
         document.getElementById("scroll_reverse_y").value = scroll_reverse_y;
         const middle_emulation_modifier = getstrparam("middle_emulation_modifier") || "";
         document.getElementById("middle_emulation_modifier").value = middle_emulation_modifier;
-
-        function toggle_mediasource_video() {
-          $("#mediasource_video").prop("disabled", !video.checked);
-        }
-        const video = document.getElementById("video");
-        video.onchange = toggle_mediasource_video;
-        toggle_mediasource_video();
 
         const floating_menu_checkbox = $("#floating_menu");
 

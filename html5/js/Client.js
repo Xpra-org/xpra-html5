@@ -206,17 +206,13 @@ class XpraClient {
       "full_csc_modes": {
         "mpeg1": ["YUV420P"],
         "h264": ["YUV420P"],
-        "mpeg4+mp4": ["YUV420P"],
-        "h264+mp4": ["YUV420P"],
-        "vp8+webm": ["YUV420P"],
         "webp": ["BGRX", "BGRA"],
         "jpeg": ["BGRX", "BGRA", "BGR", "RGBX", "RGBA", "RGB", "YUV420P", "YUV422P", "YUV444P"],
         "vp8": ["YUV420P"],
       },
       "h264": {
         "score-delta": 80,
-        //h264 is only ever decoded by a native decoder
-        //(`WebCodecs` in the offscreen worker, or `MediaSource` for `h264+mp4`),
+        //h264 is only ever decoded by the native `WebCodecs` decoder in the offscreen worker,
         //so we don't want the `fastdecode` tuning: it turns the deblocking filter off
         //and costs quality and bandwidth to speed up a software decoder we no longer use.
         //(these options are read by the server as `h264.*`, not per colorspace)
@@ -229,22 +225,8 @@ class XpraClient {
           "level": "4.0",
         },
       },
-      "h264+mp4": {
-        "score-delta": 50,
-        "YUV420P": {
-          "profile": "baseline",
-          "level": "3.0",
-        },
-      },
-      //prefer unmuxed VPX
       "vp8": {
         "score-delta": 70,
-      },
-      "mpeg4+mp4": {
-        "score-delta": 40,
-      },
-      "vp8+webm": {
-        "score-delta": 40,
       },
     };
   }
