@@ -222,9 +222,11 @@ class XpraClient {
         //(these options are read by the server as `h264.*`, not per colorspace)
         "fast-decode": false,
         "deblocking-filter": true,
+        "cabac": true,
         "YUV420P": {
-          "profile": "baseline",
-          "level": "2.1",
+          //must match the codec string used by `XpraVideoDecoder.resolveCodec`:
+          "profile": "high",
+          "level": "4.0",
         },
       },
       "h264+mp4": {

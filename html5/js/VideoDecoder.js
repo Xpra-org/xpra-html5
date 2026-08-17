@@ -93,7 +93,9 @@ class XpraVideoDecoder {
   }
 
   resolveCodec(coding) {
-    if (coding === "h264") return "avc1.42C01E";
+    // high profile, level 4.0: matches the `h264` encoding options we send to the server,
+    // and every hardware decoder handles it - a higher level would risk a software fallback
+    if (coding === "h264") return "avc1.640028";
     if (coding === "vp8") return "vp8";
     if (coding === "vp9") return `vp09${this.vp9_params}`;
     throw `No codec defined for coding ${coding}`;
@@ -176,7 +178,7 @@ class XpraVideoDecoder {
         this.init(this.coding, options);
       }
 
-      // H264 (avc1.42C01E) needs key frames
+      // H264 needs key frames
       if (
         this.codec.startsWith("avc1") &&
         !this.had_first_key &&
