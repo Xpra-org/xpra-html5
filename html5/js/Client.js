@@ -215,12 +215,16 @@ class XpraClient {
       },
       "h264": {
         "score-delta": 80,
+        //h264 is only ever decoded by a native decoder
+        //(`WebCodecs` in the offscreen worker, or `MediaSource` for `h264+mp4`),
+        //so we don't want the `fastdecode` tuning: it turns the deblocking filter off
+        //and costs quality and bandwidth to speed up a software decoder we no longer use.
+        //(these options are read by the server as `h264.*`, not per colorspace)
+        "fast-decode": false,
+        "deblocking-filter": true,
         "YUV420P": {
           "profile": "baseline",
           "level": "2.1",
-          "cabac": false,
-          "deblocking-filter": false,
-          "fast-decode": true,
         },
       },
       "h264+mp4": {
