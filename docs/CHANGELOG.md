@@ -3,6 +3,7 @@
 All notable changes to this project will be documented in this file.
 ## [21.0] 2026-05-11
 - remove the `mediasource_video` option and the muxed video encodings it enabled (`h264+mp4`, `vp8+webm`, `mpeg4+mp4`): they have had no decoder since v10
+- remove the `mpeg1` encoding and the bundled `jsmpeg` decoder: also unused since v10
 - use the `h264` high profile and drop the `fast-decode` tuning: we always use a native decoder
 - release the mouse buttons released whilst the pointer was outside the page
 - [draw attention to the speaker icon when the server has audio to play](https://github.com/Xpra-org/xpra/issues/2325)

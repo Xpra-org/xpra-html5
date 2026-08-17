@@ -204,7 +204,6 @@ class XpraClient {
       "video_scaling": true,
       "video_max_size": video_max_size,
       "full_csc_modes": {
-        "mpeg1": ["YUV420P"],
         "h264": ["YUV420P"],
         "webp": ["BGRX", "BGRA"],
         "jpeg": ["BGRX", "BGRA", "BGR", "RGBX", "RGBA", "RGB", "YUV420P", "YUV422P", "YUV444P"],

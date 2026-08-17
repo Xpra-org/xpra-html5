@@ -28,7 +28,6 @@
     <script type="text/javascript" src="js/lib/brotli_decode.js"></script>
     <script type="text/javascript" src="js/lib/hmac.js"></script>
 
-    <script type="text/javascript" src="js/lib/jsmpeg.js"></script>
     <script type="text/javascript" src="js/lib/aurora/aurora.js"></script>
     <script type="text/javascript" src="js/lib/aurora/aurora-xpra.js"></script>
 
@@ -829,12 +828,6 @@
           client.check_encodings.push("h264");
           client.check_encodings.push("vp8");
           client.check_encodings.push("vp9");
-
-          if (JSMpeg && JSMpeg.Renderer && JSMpeg.Decoder) {
-            //TODO: should be moved to 'check_encodings'
-            //and added to the decode worker:
-            client.supported_encodings.push("mpeg1");
-          }
         }
         if (encoding) {
           // the primary encoding

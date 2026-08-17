@@ -69,7 +69,7 @@ By default the HTML5 client will refuse to send passwords over remote unencrypte
 | `toolbar_position` | Default position of the toolbar (ie: `top`, `top-right`)  | `top-left`                                                     |
 | `autohide`         | Hide most of the toolbar until the pointer hovers over it | No                                                             |
 | `sound`            | Forward audio from the server ("speaker output")          | Yes                                                            |
-| `video`            | Allow the use of software video decoding                  | Yes on 64-bit clients                                          |
+| `video`            | Allow the use of video encodings (decoded with WebCodecs) | Yes                                                            |
 
 </details>
 
