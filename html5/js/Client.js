@@ -14,6 +14,7 @@
  */
 
 const WORKER = Boolean(window.Worker);
+const MIN_PROTOCOL_VERSION = [5, 1];
 const CLIPBOARD_IMAGES = true;
 const CLIPBOARD_EVENT_DELAY = 100;
 const DECODE_WORKER = WORKER && !!window.createImageBitmap;
@@ -1358,6 +1359,7 @@ class XpraClient {
     this.capabilities = {};
     this._update_capabilities({
       "version": Utilities.VERSION,
+      "protocol-version": MIN_PROTOCOL_VERSION,
       "client_type": "HTML5",
       "display": this._get_display_caps(),
       "build": this._get_build_caps(),
