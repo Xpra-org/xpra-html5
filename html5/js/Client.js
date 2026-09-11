@@ -859,6 +859,11 @@ class XpraClient {
         if (e.code.startsWith("Alt")) {
           client.toggle_window_preview();
         }
+        //we have sent the key press (ie: Alt), so the server needs the release,
+        //after closing the preview: it may focus another window
+        if (this.keys_pressed.has(e.code)) {
+          this._keyb_onkeyup(e);
+        }
         return e.stopPropagation() || e.preventDefault();
       }
       const r = this._keyb_onkeyup(e);
