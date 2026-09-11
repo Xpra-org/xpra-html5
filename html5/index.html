@@ -1031,7 +1031,8 @@
             }
             try {
               const modifiers = [];
-              const keyval = keycode;
+              //not an X11 keysym, see `XpraClient._keyb_process`
+              const keyval = 0;
               const group = 0;
               const wid = client.topwindow;
               let packet = ["key-action", wid, keyname, true, modifiers, keyval, str, keycode, group];

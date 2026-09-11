@@ -1069,7 +1069,9 @@ class XpraClient {
 
     const raw_modifiers = get_event_modifiers(event);
     const modifiers = this.translate_modifiers(raw_modifiers);
-    const keyval = keycode;
+    //we don't know the X11 keysym, and the DOM `keycode` is not one:
+    //servers would look it up as a keysym, ie: 188 for ',' is 'onequarter'
+    const keyval = 0;
     const group = 0;
 
     const shift = modifiers.includes("shift");
