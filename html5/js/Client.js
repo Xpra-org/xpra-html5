@@ -276,7 +276,9 @@ class XpraClient {
     this.browser_language_change_embargo_time = 0;
     this.key_layout = null;
     this.last_keycode_pressed = 0;
-    this.last_key_packet = [];
+    //maps the `code` of the keys we have sent as pressed to their key packet,
+    //so we can release them when we lose the focus:
+    this.keys_pressed = new Map();
     // mouse
     this.buttons_pressed = new Set();
     //maps the buttons we have sent as pressed to their `buttons` event mask,
@@ -1141,6 +1143,13 @@ class XpraClient {
     this.debug("keyboard", "focused=", this.focused, "keyname=", keyname);
     let packet = [PACKET_TYPES.key_action, wid, keyname, pressed, modifiers, keyval, keystring, keycode, group];
     this.key_packets.push(packet);
+    //`code` is the physical key: the `keycode` is the same for both Shift keys
+    const key_id = event.code || keycode;
+    if (pressed && !unpress_now) {
+      this.keys_pressed.set(key_id, packet);
+    } else {
+      this.keys_pressed.delete(key_id);
+    }
     if (unpress_now) {
       packet = [PACKET_TYPES.key_action, wid, keyname, false, modifiers, keyval, keystring, keycode, group];
       this.key_packets.push(packet);
@@ -1154,13 +1163,8 @@ class XpraClient {
     if (this.clipboard_delayed_event_time > now) {
       delay = this.clipboard_delayed_event_time - now;
     }
-    const me = this;
     setTimeout(() => {
-      while (this.key_packets.length > 0) {
-        const key_packet = me.key_packets.shift();
-        this.last_key_packet = key_packet;
-        this.send(key_packet);
-      }
+      this.send_key_packets();
     }, delay);
     if (keyname === "F11") {
       this.debug("keyboard", "allowing default handler for", keyname);
@@ -1175,6 +1179,33 @@ class XpraClient {
 
   _keyb_onkeyup(event) {
     return this._keyb_process(false, event);
+  }
+
+  send_key_packets() {
+    while (this.key_packets.length > 0) {
+      this.send(this.key_packets.shift());
+    }
+  }
+
+  // release the keys we have sent as pressed:
+  // we won't get the 'keyup' events for the keys released whilst we don't have the focus
+  release_keys() {
+    if (this.keys_pressed.size === 0) {
+      return;
+    }
+    this.debug("keyboard", "releasing keys", [...this.keys_pressed.keys()]);
+    //the server makes its modifier state match the list we send:
+    //keep the locks, or it would toggle them off, but not the other modifiers from the key press
+    const locks = translate_modifiers(["CapsLock", "NumLock", "ScrollLock"], false);
+    for (const packet of this.keys_pressed.values()) {
+      const release = [...packet];
+      release[3] = false;
+      release[4] = packet[4].filter((modifier) => locks.includes(modifier));
+      this.key_packets.push(release);
+    }
+    this.keys_pressed.clear();
+    //send now, after any key packets still waiting for the clipboard delay:
+    this.send_key_packets();
   }
 
   _get_keyboard_layout() {
