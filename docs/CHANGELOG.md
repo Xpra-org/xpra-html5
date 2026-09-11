@@ -3,6 +3,7 @@
 All notable changes to this project will be documented in this file.
 ## [21.0] 2026-05-11
 - don't send browser keycodes as X11 keysyms in key events: servers could press the wrong key, ie: `,` as `onequarter`
+- send the Menu key as `Menu`: `Menu_R` is not an X11 keysym
 - remove the `mediasource_video` option and the muxed video encodings it enabled (`h264+mp4`, `vp8+webm`, `mpeg4+mp4`): they have had no decoder since v10
 - remove the `mpeg1` encoding and the bundled `jsmpeg` decoder: also unused since v10
 - use the `h264` high profile and drop the `fast-decode` tuning: we always use a native decoder

@@ -20,7 +20,7 @@ const KEY_TO_NAME = {
   Space: "space",
   AltRight: "Alt_R",
   MetaRight: "Meta_R",
-  ContextMenu: "Menu_R",
+  ContextMenu: "Menu",
   ControlRight: "Control_L",
   ShiftRight: "Shift_R",
   Enter: "Return",
@@ -45,7 +45,6 @@ const NUMPAD_TO_NAME = {
   //Num pad:
   NumpadDivide: "KP_Divide",
   NumpadMultiply: "KP_Multiply",
-  NumpadSubstract: "KP_Substract",
   NumpadAdd: "KP_Add",
   NumpadEnter: "KP_Enter",
   NumpadDecimal: "KP_Decimal", //TODO: send KP_Delete when Num_Lock is off
@@ -63,7 +62,6 @@ const NUMPAD_TO_NAME = {
 };
 for (let index = 0; index <= 9; index++) {
   KEY_TO_NAME[`Numpad${index}`] = `${index}`;
-  KEY_TO_NAME[`KP${index}`] = `KP${index}`;
 }
 for (let index = 1; index <= 20; index++) {
   KEY_TO_NAME[`F${index}`] = `F${index}`;
