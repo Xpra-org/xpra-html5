@@ -22,23 +22,15 @@ BuildArch:			noarch
 BuildRoot:			%{_tmppath}/%{name}-%{version}-root
 BuildRequires:		python3-setuptools
 Conflicts:			xpra < 2.1
-%if 0%{?el7}
-%define minifier ""
-%define python python2
-BuildRequires:		python2
-%else
 BuildRequires:		uglify-js
 BuildRequires:		python3
-%endif
 #don't depend on this package,
 #so we can also install on a pure RHEL distro:
-%if 0%{?el10}%{?el9}%{?el8}%{?el7}
-BuildRequires:		system-logos
 %if 0%{?el10}%{?el9}%{?el8}
+BuildRequires:		system-logos
 BuildRequires:		system-backgrounds
 Recommends:			system-logos
 Recommends:			system-backgrounds
-%endif
 %else
 BuildRequires:		desktop-backgrounds-compat
 Recommends:		    desktop-backgrounds-compat
@@ -62,9 +54,7 @@ mkdir -p %{buildroot}%{_sysconfdir}/xpra/html5-client
 # Ensure there are no executable files:
 find %{buildroot}%{_datadir}/xpra/www/ -type f -exec chmod 0644 {} \;
 mkdir -p %{buildroot}/usr/share/doc/xpra-html5/
-%if 0%{?el8}%{?fedora}
 cp LICENSE %{buildroot}/usr/share/doc/xpra-html5/
-%endif
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -73,9 +63,7 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-,root,root)
 %{_sysconfdir}/xpra/html5-client
 %{_datadir}/xpra/www
-%if 0%{?el8}%{?fedora}
 %doc LICENSE
-%endif
 
 %changelog
 * Tue May 12 2026 Antoine Martin <antoine@xpra.org> 22-0-1

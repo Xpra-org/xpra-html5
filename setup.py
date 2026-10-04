@@ -377,7 +377,6 @@ def install_html5(root="/", install_dir="/usr/share/xpra/www/", config_dir="/etc
             "/usr/share/backgrounds/images/*default*.png",
             "/usr/share/backgrounds/*default*png",
             "/usr/share/backgrounds/gnome/adwaita*.jpg",  # Debian Stretch
-            "/usr/share/backgrounds/images/*jpg",  # CentOS 7
         ]
         if paths:
             extra_symlinks = {"background.png": paths}

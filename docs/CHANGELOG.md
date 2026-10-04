@@ -2,6 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 ## [21.0] 2026-05-11
+- remove RHEL 7 / CentOS 7 support
 - release the Alt key which closes the window preview: the server kept it pressed
 - release all the keys still pressed when the page loses focus, not just the last one, and without re-asserting the modifiers
 - don't send browser keycodes as X11 keysyms in key events: servers could press the wrong key, ie: `,` as `onequarter`
