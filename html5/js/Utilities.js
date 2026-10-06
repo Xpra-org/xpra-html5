@@ -40,20 +40,13 @@ const Utilities = {
     return inputString.replace(regex, '');
   },
 
-  getHexUUID() {
-    const s = [];
-    const hexDigits = "0123456789abcdef";
-    for (let index = 0; index < 36; index++) {
-      if (index === 8 || index === 13 || index === 18 || index === 23) {
-        s[index] = "-";
-      } else {
-        s[index] = hexDigits.slice(
-          Math.floor(Math.random() * 0x10),
-          Math.floor(Math.random() * 0x10) + 1
-        );
-      }
-    }
-    return s.join("");
+  getHexUUID(length = 32) {
+    // random lowercase hex digits, like the python client:
+    // 32 for `uuid.uuid4().hex`, 64 for the sha256 hexdigest of `get_user_uuid()`
+    const bytes = Utilities.getSecureRandomBytes(Math.ceil(length / 2));
+    return Array.from(bytes, (b) => b.toString(16).padStart(2, "0"))
+      .join("")
+      .slice(0, length);
   },
 
   getSecureRandomBytes(len) {

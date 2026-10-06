@@ -151,7 +151,7 @@ class XpraClient {
     this.PING_GRACE = 2000;
     this.PING_FREQUENCY = 5000;
     this.INFO_FREQUENCY = 1000;
-    this.uuid = Utilities.getHexUUID();
+    this.uuid = Utilities.getHexUUID(64);
     this.offscreen_api = false;
     this.try_gpu = TRY_GPU_TRIGGER;
 
