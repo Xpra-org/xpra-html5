@@ -67,6 +67,7 @@ By default the HTML5 client will refuse to send passwords over remote unencrypte
 | `scroll_reverse_x` | Reverse X axis of the mouse pointer                       | No                                                             |
 | `floating_menu`    | Show a floating menu                                      | Yes                                                            |
 | `toolbar_position` | Default position of the toolbar (ie: `top`, `top-right`)  | `top-left`                                                     |
+| `border`           | Window border: `auto` uses the server's border, `no`, or `color[,size]` (ie: `red,10`) | `auto`                                       |
 | `autohide`         | Hide most of the toolbar until the pointer hovers over it | No                                                             |
 | `sound`            | Forward audio from the server ("speaker output")          | Yes                                                            |
 | `video`            | Allow the use of video encodings (decoded with WebCodecs) | Yes                                                            |

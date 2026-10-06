@@ -346,6 +346,16 @@
                   </select>
                 </li>
                 <li class="list-group-item">
+                  Window border:
+                  <select id="border">
+                    <option value="">Auto (server default)</option>
+                    <option value="no">None</option>
+                    <option value="red">Red</option>
+                    <option value="blue">Blue</option>
+                    <option value="green">Green</option>
+                  </select>
+                </li>
+                <li class="list-group-item">
                   <input type="checkbox" id="video" />
                   <span>Video</span>
                 </li>
@@ -399,6 +409,7 @@
         "encryption",
         "scroll_reverse_y",
         "middle_emulation_modifier",
+        "border",
         "vrefresh",
         "clipboard_preferred_format",
       ];
@@ -1539,6 +1550,12 @@
         document.getElementById("scroll_reverse_y").value = scroll_reverse_y;
         const middle_emulation_modifier = getstrparam("middle_emulation_modifier") || "";
         document.getElementById("middle_emulation_modifier").value = middle_emulation_modifier;
+        const border_select = document.getElementById("border");
+        border_select.value = getstrparam("border") || "";
+        if (border_select.selectedIndex < 0) {
+          // not one of the options, ie: "auto" or "orange,8":
+          border_select.value = "";
+        }
 
         const floating_menu_checkbox = $("#floating_menu");
 

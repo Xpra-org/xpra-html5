@@ -126,6 +126,12 @@ canvas {
   border-radius: 6px 6px 3px 3px;
 }
 
+/* the window border, ie: from the server's `--border=red,10` */
+#screen.xpra-border .window:not(.tray) canvas {
+  outline: var(--xpra-border-size) solid var(--xpra-border-color);
+  outline-offset: calc(-1 * var(--xpra-border-size));
+}
+
 .windowicon {
   display: inline-block;
   position: absolute;

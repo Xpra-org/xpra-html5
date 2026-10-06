@@ -338,6 +338,9 @@ class XpraClient {
     this.server_is_desktop = false;
     this.server_is_shadow = false;
     this.server_readonly = false;
+    // the user's border option: "" or "auto" follows the server's border
+    this.border = default_settings["border"] || "";
+    this.server_border = "";
 
     this.server_connection_data = false;
 
@@ -2701,6 +2704,8 @@ class XpraClient {
     this.server_is_desktop = Boolean(hello["desktop"]);
     this.server_is_shadow = Boolean(hello["shadow"]);
     this.server_readonly = Boolean(hello["readonly"]);
+    this.server_border = Utilities.s(hello["border"] || "");
+    this.apply_border(this.border_from_server() ? this.server_border : this.border);
     if (this.server_is_desktop || this.server_is_shadow) {
       jQuery("body").addClass("desktop");
     }
@@ -2930,6 +2935,77 @@ class XpraClient {
     else if (setting === "session_name") {
         this.session_name = value;
         jQuery("title").text(value);
+    }
+    else if (setting === "border") {
+      this.server_border = Utilities.s(value || "");
+      if (this.border_from_server()) {
+        this.apply_border(this.server_border);
+      }
+    }
+  }
+
+  border_from_server() {
+    return ["", "auto"].includes(String(this.border || "").trim().toLowerCase());
+  }
+
+  parse_border(spec) {
+    // same format as the xpra client: "color[,size][:off]", ie: "red,10" or "auto,5:off"
+    const parts = String(spec || "").replaceAll(",", ":").split(":").slice(0, 3).map((x) => x.trim());
+    let color = parts[0];
+    if (!color || ["none", "no", "off", "0"].includes(color.toLowerCase())) {
+      return null;
+    }
+    if (parts.at(-1) == "off") {
+      return null;
+    }
+    let size = 4;
+    if (parts.length >= 2) {
+      const parsed = Number.parseInt(parts[1], 10);
+      if (!Number.isNaN(parsed)) {
+        size = parsed;
+      }
+    }
+    if (size <= 0) {
+      return null;
+    }
+    size = Math.min(size, 45);
+    if (color.toLowerCase() == "auto") {
+      // derive a stable color from the connection details (FNV-1a hash):
+      let hash = 0x811c9dc5;
+      for (const c of `${this.host}:${this.port}`) {
+        hash = Math.imul(hash ^ c.charCodeAt(0), 0x01000193);
+      }
+      color = "#" + ((hash >>> 0) & 0xffffff).toString(16).padStart(6, "0");
+    }
+    // let the browser parse the color, it normalizes it to "#rrggbb":
+    const ctx = document.createElement("canvas").getContext("2d");
+    ctx.fillStyle = "#ff0000";
+    ctx.fillStyle = color;
+    const rgb = String(ctx.fillStyle);
+    if (!rgb.startsWith("#") || rgb.length != 7) {
+      this.warn("unable to parse border color", color);
+      return {color: "rgba(255, 0, 0, 0.6)", size};
+    }
+    const r = Number.parseInt(rgb.slice(1, 3), 16);
+    const g = Number.parseInt(rgb.slice(3, 5), 16);
+    const b = Number.parseInt(rgb.slice(5, 7), 16);
+    return {color: `rgba(${r}, ${g}, ${b}, 0.6)`, size};
+  }
+
+  apply_border(spec) {
+    const border = this.parse_border(spec);
+    this.debug("main", "apply_border(", spec, ")=", border);
+    const screen = document.querySelector("#screen");
+    if (!screen) {
+      return;
+    }
+    if (border) {
+      screen.style.setProperty("--xpra-border-color", border.color);
+      screen.style.setProperty("--xpra-border-size", `${border.size}px`);
+      screen.classList.add("xpra-border");
+    }
+    else {
+      screen.classList.remove("xpra-border");
     }
   }
 
