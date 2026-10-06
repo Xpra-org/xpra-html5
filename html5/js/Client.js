@@ -1460,7 +1460,9 @@ class XpraClient {
       "clipboard": this._get_clipboard_caps(),
       "pointer": this._get_pointer_caps(),
       "file": this._get_file_caps(),
-      "wants": ["audio", "packet-types"],
+      "wants": ["audio", "packet-types", "features"],
+      // newer servers only send the server features (ie: "border") when asked:
+      "server-features": true,
       // encoding stuff
       windows: true,
       "window.pre-map": true,
