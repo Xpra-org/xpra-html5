@@ -1,6 +1,11 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+## [Unreleased]
+- require Xpra 7.0 or later and use modern packet names, payloads and capability namespaces
+- negotiate audio capabilities asynchronously and keep initial hello packets below 16 KiB
+- fix chunked downloads, floating-point server information, clipboard API detection and connection status updates
+
 ## [21.0] 2026-05-11
 - support the window border provided by the server, which can be overriden from the connect dialog's advanced options
 - remove RHEL 7 / CentOS 7 support

@@ -75,4 +75,5 @@ The _advanced options_ of the connection dialog exposes some of them:
 
 # Compatibility
 
-This client is compatible with any [currently supported version](https://github.com/Xpra-org/xpra/wiki/Versions) of xpra.
+This client requires Xpra 7.0 or later and uses the modern protocol dialect.
+See [protocol compatibility and manual validation](./docs/Protocol-v7.md) for details.

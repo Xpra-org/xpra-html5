@@ -1,0 +1,225 @@
+html5 client: what is needed to work with xpra v7.0 and later
+==============================================================
+
+
+Resolution (2026-10-17)
+-----------------------
+Implemented in incremental commits, starting with negotiation. The client now
+advertises [7, 0] and uses the modern packet names, payloads and capabilities.
+The original findings below describe the pre-migration implementation.
+
+The server's protocol-version is a minimum requirement, not an upper limit;
+the HTML5 release version is not compared with it.
+
+Live WebSocket startup, rendering and chunked uploads passed against 7.0 and
+8.0 with BACKWARDS_COMPATIBLE enabled and disabled. Additional manual checks
+and environmental limitations are recorded in docs/Protocol-v7.md. In
+particular, sustained audio playback, physical printing, live notifications,
+clipboard image round trips and TLS/WebTransport remain to be verified.
+No automated test suite was added.
+
+
+Background
+----------
+Since 7.0, `protocol-version` in the hello is the oldest peer version a peer
+is willing to talk to:
+* 7.x with BACKWARDS_COMPATIBLE=1 (the default) advertises (5, 1)
+* 7.x with BACKWARDS_COMPATIBLE=0 advertises (7, 0)
+* 8.0 with BACKWARDS_COMPATIBLE=1 (the default) advertises (7, 0)
+* 8.0 with BACKWARDS_COMPATIBLE=0 advertises (8, 0)
+* a missing value means (5, 1) to a 7.x peer and (7, 0) to an 8.0 peer
+
+A peer that advertises (7, 0) or later accepts no legacy peers, so it is sent
+the modern packet names, payloads and capabilities - even by a 7.x server
+running in backwards compatible mode.
+8.0 has removed the legacy names and caps entirely: the only remaining
+workaround (with BACKWARDS_COMPATIBLE=1) is for 7.x peers, not for html5.
+
+The html5 client currently sends `"protocol-version": [5, 1]` and speaks only
+the legacy dialect:
+* an 8.0 server accepts the connection (8.0 >= 5.1), then drops or ignores
+  almost every packet - nothing fails cleanly
+* a 7.x server keeps talking the legacy dialect to it, which still works,
+  but only until 7.x is the oldest supported server
+
+Plan: switch html5 to the modern dialect and advertise `protocol-version`
+(7, 0). This drops support for 6.x and older servers.
+
+
+1. Version negotiation
+----------------------
+* send `"protocol-version": [7, 0]` (`MIN_PROTOCOL_VERSION` in Client.js)
+* treat the server's `protocol-version` as its minimum peer requirement;
+  do not compare it with the HTML5 release version or impose an upper limit
+* refuse servers older than 7.0 (their `version`) with a clear message,
+  instead of misbehaving on the legacy packets they send
+* 8.0 servers running with BACKWARDS_COMPATIBLE=0 limit packets received
+  before the hello to 16 KiB on the wire: measure the html5 hello
+  (it carries `encoding`, `audio`, `clipboard` caps, etc) and keep it below that
+
+
+2. Packet renames (same payload)
+--------------------------------
+Client -> server:
+  ack-file-chunk          -> file-ack-chunk
+  buffer-refresh          -> window-refresh
+  close-window            -> window-close
+  configure-display       -> display-configure
+  connection-data         -> bandwidth-status
+  focus                   -> window-focus
+  map-window              -> window-map
+  unmap-window            -> window-unmap
+  ping_echo               -> ping-echo
+  printers                -> printer-devices
+  send-file               -> file-send
+  send-file-chunk         -> file-send-chunk
+  set-clipboard-enabled   -> clipboard-status
+  sound-control           -> audio-control
+  start-command           -> command-start
+  (unchanged: hello, ping, info-request, keyboard-config, setting-change,
+   notification-close, notification-action, clipboard-request,
+   clipboard-contents, clipboard-contents-none)
+
+Server -> client (handler keys in `init_packet_handlers`):
+  ack-file-chunk          -> file-ack-chunk
+  bell                    -> window-bell
+  configure-override-redirect -> window-move-resize (also used for normal windows)
+  desktop_size            -> display-resized
+  disconnect              -> connection-close
+  draw                    -> window-draw
+  eos                     -> window-eos
+  initiate-moveresize     -> window-initiate-moveresize
+  lost-window             -> window-destroy
+  notify_show             -> notification-show
+  notify_close            -> notification-close
+  open-url                -> file-open-url
+  ping_echo               -> ping-echo
+  raise-window            -> window-raise
+  send-file               -> file-send
+  send-file-chunk         -> file-send-chunk
+  set-clipboard-enabled   -> clipboard-status
+  sound-data              -> audio-data
+  (unchanged: hello, challenge, ping, startup-complete, setting-change,
+   window-metadata, window-icon, window-move-resize, window-resized,
+   info-response, audio-signal, clipboard-request)
+* also handle the new names html5 may now receive:
+  window-restack, window-grab, window-ungrab, cursor-default,
+  display-show-desktop, events, audio-keepalive, audio-level
+
+
+3. Packets whose payload changed
+--------------------------------
+Client -> server:
+* key-action -> keyboard-event:
+    ["keyboard-event", wid, keyname, pressed,
+     {"modifiers": [...], "keyval": int, "string": str, "keycode": int, "group": int}]
+  (the "unpress now" release and `keys_pressed` replay must use the same format)
+* pointer-position -> pointer-motion:
+    ["pointer-motion", device_id, seq, wid, [x, y], props]
+  - `device_id` -1 (and `seq` 0) when there is no specific device
+  - the position is unsigned 16-bit: no negative values
+  - `props` is a dict: "modifiers", "buttons", and optionally
+    "window-position" (relative to the window), "raw-position"
+* button-action -> pointer-button:
+    ["pointer-button", device_id, seq, wid, button, pressed, [x, y], props]
+  - `props`: "modifiers", "buttons" (the buttons held down)
+* wheel-motion -> pointer-wheel:
+    ["pointer-wheel", wid, button, distance, [x, y], modifiers, buttons, props]
+  - `distance` is an integer, in 1/1000ths of a wheel click
+  - the server advertises `wheel.precise` / `wheel.emulation`; without
+    emulation, send button 4/5/6/7 clicks as `pointer-button` instead
+* configure-window -> window-configure:
+    ["window-configure", wid, {"geometry": [x, y, w, h], "resize-counter": n,
+     "state": {...}, "properties": {...}, "pointer": {...}, "modifiers": [...]}]
+  (both callers: Client.js around lines 3312 and 3456; "skip geometry"
+   becomes: leave "geometry" out)
+* damage-sequence -> window-ack, the arguments are reordered:
+    ["window-ack", wid, width, height, packet_sequence, decode_time, message]
+* clipboard-token -> clipboard-data:
+    ["clipboard-data", selection, {
+       "targets": [...],
+       "data": {target: [dtype, dformat, wire_encoding, wire_data]},
+       "claim": bool, "greedy": bool,
+       "origin": str (optional, used for clipboard loop detection)}]
+* logging -> logging-event:
+    ["logging-event", level, message, time]
+  the message is a single string / buffer, not a list of arguments
+  (the server reads it with `get_buffer`)
+* layout-changed / keymap-changed: no longer exist, use `keyboard-config`
+  (html5 already does - remove the unused constants)
+
+Server -> client:
+* new-window / new-override-redirect / new-tray -> window-create
+  (same payload as `new-window`); override-redirect windows and trays are
+  identified by the `override-redirect` and `tray` metadata flags
+* cursor -> cursor-data, the position is gone from the payload:
+    ["cursor-data", encoding, w, h, xhot, yhot, serial, pixels, name]
+  (html5 currently reads w/h from packet[4]/[5])
+  and `cursor-default` replaces the empty `cursor` packet
+* encodings -> encoding-set, the payload is a dict:
+    ["encoding-set", {"encodings": {...}, "video": {...}}]
+* clipboard-token -> clipboard-data, see above
+* window-draw: same layout as `draw`, but `img_data` is always a buffer
+* display-resized: [root_w, root_h, max_w, max_h]
+
+
+4. Hello capabilities sent by html5
+-----------------------------------
+8.0 only reads the namespaced capabilities. Without these changes, an 8.0
+server does not even enable window forwarding for html5.
+* `windows: true` -> `"window": {"enabled": true, ...}`
+  (window forwarding is only enabled when the `window` dict is present)
+  - move "window.pre-map" into it
+  - "metadata.supported", "bell", "system_tray" are still read at the top level,
+    check them against the 8.0 `WindowsConnection.parse_client_caps`
+* `cursors: true` -> `"cursor": {"enabled": true, "encodings": ["png"]}`
+  (the cursor encodings currently live in the legacy `encodings` dict)
+* `notifications: {...}` -> `"notification": {"enabled": true}`
+* `encodings: {...}` (legacy dict) -> remove it, `encoding: {...}` is
+  the only one read. Move "rgb_formats", "window-icon", "cursor" there
+  (check `_get_encoding_caps` for what is already present)
+* `screen_sizes`, `dpi` (top level) and `display.screen_sizes`,
+  `display.desktop_mode_size` -> remove them, the `display` dict with
+  `monitors`, `desktop_size` and `dpi` is what 8.0 uses
+* `vrefresh` (top level) -> `display.refresh-rate` (already sent)
+* `bandwidth-limit`, `connection-data` -> also send a `bandwidth` dict:
+  the bandwidth subsystem is only enabled when `bandwidth` is present
+* `xdg-menu`, `xdg-menu-update` -> `menu` (check the 8.0 `MenuConnection`)
+* `file-chunks` -> check against the `file` namespace (`net/file_transfer.py`)
+* `setting-change: true` ("required by v5 servers"), `mouse.show`,
+  `named_cursors` -> remove
+* `audio`: send `"async": true` and handle the `audio-capabilities` exchange
+  if needed (7.x / 8.0 clients send their audio caps after the hello)
+* keep: `protocol-version` (now [7, 0]), `version`, `client_type`, `uuid`,
+  `username`, `session-type`, `share`, `steal`, `wants`, `server-features`,
+  `pointer`, `clipboard`, `file`, `keyboard`, `network`, `encryption`
+
+
+5. Server hello capabilities read by html5
+------------------------------------------
+To verify one by one against the 8.0 server hello (`xpra info`, or
+`-d hello` on a 7.x BC=0 / 8.0 server), html5 currently reads:
+  audio, border, client-shutdown, clipboard, connection-data, desktop,
+  display, encoders, encryption, file, file-chunks, file-transfer, force,
+  encodings, max-file-size, modifier_keycodes, modifiers-keynames,
+  open-files, packet-types, platform, printer, printing, readonly,
+  remote-logging.multi-line, rencodeplus, resize_exact, screen-sizes,
+  send, session_name, shadow, version, wheel.precise, xdg-menu
+Known changes:
+* `notifications` -> `notification`
+* the server desktop size, max size and monitors are in the `display`
+  namespace for modern clients (`display.desktop_size`, `display.max_desktop_size`, ...)
+* file transfer and printing caps are in the `file` and `printer` namespaces
+* `xdg-menu` -> `menu`
+
+
+6. Testing
+----------
+* against an 8.0 server, with BACKWARDS_COMPATIBLE=1 and =0
+* against a 7.x server with BACKWARDS_COMPATIBLE=1 (the default), which must
+  now talk the modern dialect to html5 since it advertises (7, 0)
+* run the server with `-d packet` and check that no legacy packet name
+  is sent or received, and that nothing is logged as "unknown packet type"
+* cover: windows (normal, override-redirect, tray), keyboard, pointer, wheel,
+  clipboard both ways, audio, notifications, cursors, file transfer both ways,
+  printing, display resize, ping / echo, remote logging, start-command
