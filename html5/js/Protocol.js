@@ -531,11 +531,11 @@ class XpraProtocol {
       }
 
       const raw_buffers = [];
-      if (packet[0] === "window-draw" && "buffer" in packet[7]) {
+      if (packet[0] === "window-draw" && ArrayBuffer.isView(packet[7])) {
         raw_buffers.push(packet[7].buffer);
       } else if (packet[0] === "file-send-chunk" && ArrayBuffer.isView(packet[3])) {
         raw_buffers.push(packet[3].buffer);
-      } else if (packet[0] === "audio-data" && Object.hasOwn(packet[2], "buffer")) {
+      } else if (packet[0] === "audio-data" && ArrayBuffer.isView(packet[2])) {
         raw_buffers.push(packet[2].buffer);
       }
       postMessage({
@@ -688,12 +688,12 @@ if (
   // we create a custom packet handler which posts packet as a message
   protocol.set_packet_handler((packet) => {
     const raw_buffers = [];
-    if (packet[0] === "window-draw" && Object.hasOwn(packet[7], "buffer")) {
+    if (packet[0] === "window-draw" && ArrayBuffer.isView(packet[7])) {
       //zero-copy the draw buffer
       raw_buffers.push(packet[7].buffer);
     } else if (
       packet[0] === "file-send-chunk" &&
-      Object.hasOwn(packet[3], "buffer")
+      ArrayBuffer.isView(packet[3])
     ) {
       //zero-copy the file data buffer
       raw_buffers.push(packet[3].buffer);

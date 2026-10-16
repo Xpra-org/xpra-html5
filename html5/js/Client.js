@@ -15,6 +15,7 @@
 
 const WORKER = Boolean(window.Worker);
 const MIN_PROTOCOL_VERSION = [7, 0];
+const MAX_HELLO_SIZE = 16 * 1024;
 const CLIPBOARD_IMAGES = true;
 const CLIPBOARD_EVENT_DELAY = 100;
 const DECODE_WORKER = WORKER && !!window.createImageBitmap;
@@ -1370,8 +1371,15 @@ class XpraClient {
         throw new Error(`invalid null or undefined value for key ${key} in hello packet data`);
       }
     }
-    // send the packet
-    this.send([PACKET_TYPES.hello, this.capabilities]);
+    const packet = [PACKET_TYPES.hello, this.capabilities];
+    // Include the protocol header and reserve an IV and a full block of AES padding.
+    const wire_size = rencode(packet).length + 8 + (this.encryption ? 32 : 0);
+    this.debug("network", "hello wire size (including encryption allowance):", wire_size);
+    if (wire_size >= MAX_HELLO_SIZE) {
+      this.disconnect(`hello packet is too large (${wire_size} bytes): must be below ${MAX_HELLO_SIZE} bytes`);
+      return;
+    }
+    this.send(packet);
     this.schedule_hello_timer();
   }
 
@@ -1490,13 +1498,19 @@ class XpraClient {
 
   _get_network_caps() {
     const digests = this._get_digests();
+    const compressors = [];
+    if (lz4 && lz4.decode) {
+      compressors.push("lz4");
+    }
+    if (typeof BrotliDecode === "function") {
+      compressors.push("brotli");
+    }
     return {
       "digest": digests,
       "salt-digest": digests,
       "compression_level": 1,
-      "rencodeplus": true,
-      "brotli": (typeof BrotliDecode === "function"),
-      "lz4": Boolean(lz4 && lz4.decode),
+      "encoders": ["rencodeplus"],
+      "compressors": compressors,
       "bandwidth": {"enabled": true},
       "bandwidth-limit": this.bandwidth_limit,
       "connection-data": Utilities.getConnectionInfo(),
@@ -2636,7 +2650,7 @@ class XpraClient {
       this.disconnect(`unsupported server version ${version}: Xpra 7.0 or later is required`);
       return;
     }
-    if (!hello["rencodeplus"]) {
+    if (!(hello["encoders"] || []).includes("rencodeplus")) {
       throw "no common packet encoders, 'rencodeplus' is required by this client";
     }
 
