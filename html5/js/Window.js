@@ -273,14 +273,6 @@ class XpraWindow {
     if (this.metadata["desktop"]) {
       return true;
     }
-    // backwards compatibility for xpra server <= v6.4 :
-    // the 'desktop' attribute may not be set
-    const wm_class = this.metadata["class-instance"] || [];
-    for (const element of wm_class) {
-      if (element === "xpra-desktop" || element === "Xpra-Desktop") {
-        return true;
-      }
-    }
     return this.has_windowtype(["DESKTOP"]);
   }
 
@@ -1419,9 +1411,7 @@ class XpraWindow {
         paint_error("h264 decoding is only supported via the decode workers");
         this.may_paint_now();
       } else if (coding === "scroll") {
-        // newer servers use options,
-        // older ones overload the image data:
-        const scrolls = options["scroll"] || img_data;
+        const scrolls = options["scroll"] || [];
         for (let index = 0, stop = scrolls.length; index < stop; ++index) {
           const scroll_data = scrolls[index];
           this.debug("draw", "scroll", index, ":", scroll_data);

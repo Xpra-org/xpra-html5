@@ -170,9 +170,8 @@ class WindowDecoder {
     const w = packet[4];
     const h = packet[5];
     coding = packet[6];
-    // for 'scroll', newer servers send the motion vectors in the options,
-    // older ones overload the image data:
-    const image = coding === "scroll" ? (options["scroll"] || packet[7]) : packet[7];
+    // for 'scroll', the motion vectors are in the options:
+    const image = coding === "scroll" ? (options["scroll"] || []) : packet[7];
     this.paint_packet(wid, coding, image, x, y, w, h);
   }
 

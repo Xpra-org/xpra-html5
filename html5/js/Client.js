@@ -14,7 +14,7 @@
  */
 
 const WORKER = Boolean(window.Worker);
-const MIN_PROTOCOL_VERSION = [5, 1];
+const MIN_PROTOCOL_VERSION = [7, 0];
 const CLIPBOARD_IMAGES = true;
 const CLIPBOARD_EVENT_DELAY = 100;
 const DECODE_WORKER = WORKER && !!window.createImageBitmap;
@@ -2640,6 +2640,16 @@ class XpraClient {
     this.cancel_hello_timer();
     const hello = packet[1];
     this.clog("received hello capabilities", hello);
+    const version = Utilities.s(hello["version"] || "");
+    const version_match = /^(\d+)\.(\d+)(?:\D|$)/.exec(version);
+    if (!version_match) {
+      this.disconnect(`invalid or missing server version '${version}'`);
+      return;
+    }
+    if (Number(version_match[1]) < MIN_PROTOCOL_VERSION[0]) {
+      this.disconnect(`unsupported server version ${version}: Xpra 7.0 or later is required`);
+      return;
+    }
     if (!hello["rencodeplus"]) {
       throw "no common packet encoders, 'rencodeplus' is required by this client";
     }
@@ -2665,20 +2675,6 @@ class XpraClient {
       this.protocol.set_cipher_out(this.cipher_out_caps, this.encryption_key);
     }
 
-    const version = Utilities.s(hello["version"]);
-    try {
-      const vparts = version.split(".");
-      const vno = vparts.map((x) => Number.parseInt(x));
-      if (vno[0] <= 0 && vno[1] < 10) {
-        this.disconnect(`unsupported version: ${version}`);
-        this.close();
-        return;
-      }
-    } catch {
-      this.disconnect(`error parsing version number '${version}'`);
-      this.close();
-      return;
-    }
     this.log("got hello: server version", version, "accepted our connection");
     // stuff that must be done after hello
     this._process_modifier_keycodes(hello["modifier_keycodes"] || {});
