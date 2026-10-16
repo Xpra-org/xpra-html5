@@ -531,7 +531,7 @@ class XpraProtocol {
       }
 
       const raw_buffers = [];
-      if (packet[0] === "draw" && "buffer" in packet[7]) {
+      if (packet[0] === "window-draw" && "buffer" in packet[7]) {
         raw_buffers.push(packet[7].buffer);
       } else if (packet[0] === "sound-data" && Object.hasOwn(packet[2], "buffer")) {
         raw_buffers.push(packet[2].buffer);
@@ -685,23 +685,21 @@ if (
   protocol.is_worker = true;
   // we create a custom packet handler which posts packet as a message
   protocol.set_packet_handler((packet) => {
-    let raw_buffer = [];
-    if (packet[0] === "draw" && Object.hasOwn(packet[7], "buffer")) {
+    const raw_buffers = [];
+    if (packet[0] === "window-draw" && Object.hasOwn(packet[7], "buffer")) {
       //zero-copy the draw buffer
-      raw_buffer = packet[7].buffer;
-      packet[7] = null;
+      raw_buffers.push(packet[7].buffer);
     } else if (
       packet[0] === "send-file-chunk" &&
       Object.hasOwn(packet[3], "buffer")
     ) {
       //zero-copy the file data buffer
-      raw_buffer = packet[3].buffer;
-      packet[3] = null;
+      raw_buffers.push(packet[3].buffer);
     }
     postMessage({
       c: "p",
       p: packet
-    }, raw_buffer);
+    }, raw_buffers);
   }, null);
   // attach listeners from main thread
   self.addEventListener(

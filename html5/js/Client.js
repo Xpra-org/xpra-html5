@@ -331,6 +331,12 @@ class XpraClient {
     this.toolbar_position = "top";
 
     this.server_display = "";
+    this.server_desktop_size = [];
+    this.server_max_desktop_size = [];
+    this.server_monitors = {};
+    this.server_encodings = {};
+    this.server_video = {};
+    this.desktop_hidden_windows = new Set();
     this.server_platform = "";
     this.server_resize_exact = false;
     this.server_screen_sizes = [];
@@ -471,26 +477,26 @@ class XpraClient {
       [PACKET_TYPES.control]: this._process_control,
       [PACKET_TYPES.ack_file_chunk]: this._process_ack_file_chunk,
       [PACKET_TYPES.audio_signal]: this._process_audio_signal,
-      [PACKET_TYPES.bell]: this._process_bell,
+      [PACKET_TYPES.window_bell]: this._process_bell,
       [PACKET_TYPES.challenge]: this._process_challenge,
       [PACKET_TYPES.clipboard_request]: this._process_clipboard_request,
       [PACKET_TYPES.clipboard_token]: this._process_clipboard_token,
       [PACKET_TYPES.close]: this._process_close,
-      [PACKET_TYPES.configure_override_redirect]: this._process_configure_override_redirect,
-      [PACKET_TYPES.cursor]: this._process_cursor,
-      [PACKET_TYPES.desktop_size]: this._process_desktop_size,
+      [PACKET_TYPES.cursor_default]: this.reset_cursor,
+      [PACKET_TYPES.cursor_data]: this._process_cursor,
+      [PACKET_TYPES.display_resized]: this._process_desktop_size,
       [PACKET_TYPES.disconnect]: this._process_disconnect,
-      [PACKET_TYPES.draw]: this._process_draw,
-      [PACKET_TYPES.encodings]: this._process_encodings,
-      [PACKET_TYPES.eos]: this._process_eos,
+      [PACKET_TYPES.window_draw]: this._process_draw,
+      [PACKET_TYPES.encoding_set]: this._process_encodings,
+      [PACKET_TYPES.window_eos]: this._process_eos,
       [PACKET_TYPES.error]: this._process_error,
       [PACKET_TYPES.hello]: this._process_hello,
       [PACKET_TYPES.info_response]: this._process_info_response,
-      [PACKET_TYPES.initiate_moveresize]: this._process_initiate_moveresize,
-      [PACKET_TYPES.lost_window]: this._process_lost_window,
-      [PACKET_TYPES.new_override_redirect]: this._process_new_override_redirect,
-      [PACKET_TYPES.new_tray]: this._process_new_tray,
-      [PACKET_TYPES.new_window]: this._process_new_window,
+      [PACKET_TYPES.window_initiate_moveresize]: this._process_initiate_moveresize,
+      [PACKET_TYPES.window_destroy]: this._process_lost_window,
+      [PACKET_TYPES.window_create]: this._process_new_window,
+      [PACKET_TYPES.window_restack]: this._process_window_restack,
+      [PACKET_TYPES.display_show_desktop]: this._process_show_desktop,
       [PACKET_TYPES.notify_close]: this._process_notify_close,
       [PACKET_TYPES.notify_show]: this._process_notify_show,
       [PACKET_TYPES.open]: this._process_open,
@@ -498,7 +504,7 @@ class XpraClient {
       [PACKET_TYPES.ping]: this._process_ping,
       [PACKET_TYPES.ping_echo]: this._process_ping_echo,
       [PACKET_TYPES.pointer_position]: this._process_pointer_position,
-      [PACKET_TYPES.raise_window]: this._process_raise_window,
+      [PACKET_TYPES.window_raise]: this._process_raise_window,
       [PACKET_TYPES.send_file]: this._process_send_file,
       [PACKET_TYPES.send_file_chunk]: this._process_send_file_chunk,
       [PACKET_TYPES.set_clipboard_enabled]: this._process_set_clipboard_enabled,
@@ -591,8 +597,8 @@ class XpraClient {
           const message = data["error"];
           const packet = data["packet"];
           const wid = packet[1];
-          const width = packet[2];
-          const height = packet[3];
+          const width = packet[4];
+          const height = packet[5];
           const coding = packet[6];
           const packet_sequence = packet[8];
           this.clog("decode error on ", coding, "packet sequence", packet_sequence, ":", message);
@@ -664,7 +670,7 @@ class XpraClient {
   }
 
   request_refresh(wid) {
-    this.send([PACKET_TYPES.buffer_refresh, wid, 0, 100,
+    this.send([PACKET_TYPES.window_refresh, wid, 0, 100,
       {
         "refresh-now": true,
         batch: {
@@ -695,7 +701,7 @@ class XpraClient {
   }
 
   send_close_window(win) {
-    this.send([PACKET_TYPES.close_window, win.wid]);
+    this.send([PACKET_TYPES.window_close, win.wid]);
   }
 
   close_protocol() {
@@ -764,7 +770,7 @@ class XpraClient {
     this.desktop_width = this.container.clientWidth;
     this.desktop_height = this.container.clientHeight;
     const dpi = this._get_DPI();
-    const packet = [PACKET_TYPES.configure_display, {
+    const packet = [PACKET_TYPES.display_configure, {
       "desktop-size": [this.desktop_width, this.desktop_height],
       // "desktop-size-unscaled": [this.desktop_width, this.desktop_height],  - we don't do desktop scaling
       "monitors": this._get_monitors(),
@@ -1250,40 +1256,6 @@ class XpraClient {
     return 96;
   }
 
-  _get_screen_sizes() {
-    const dpi = this._get_DPI();
-    const screen_size = [this.container.clientWidth, this.container.clientHeight];
-    const wmm = Math.round((screen_size[0] * 25.4) / dpi);
-    const hmm = Math.round((screen_size[1] * 25.4) / dpi);
-    const monitor = ["Canvas", 0, 0, screen_size[0], screen_size[1], wmm, hmm];
-    let name = "HTML";
-    if (navigator.userAgentData) {
-      const brands = navigator.userAgentData.brands;
-
-      for (let index = 0; index < brands.length; index++) {
-        const brand_info = brands[index];
-        const brand = brand_info.brand;
-        if (brand && !brand.startsWith("Not") && !brand.endsWith("Brand")) {
-          name = brand + " " + brand_info.version;
-        }
-      }
-    }
-    const screen = [
-      name,
-      screen_size[0],
-      screen_size[1],
-      wmm,
-      hmm,
-      [monitor],
-      0,
-      0,
-      screen_size[0],
-      screen_size[1],
-    ];
-    //just a single screen:
-    return [screen];
-  }
-
   _update_capabilities(appendobj) {
     for (const attribute in appendobj) {
       this.capabilities[attribute] = appendobj[attribute];
@@ -1447,14 +1419,6 @@ class XpraClient {
     this._update_capabilities({
       auto_refresh_delay: 500,
       "metadata.supported": METADATA_SUPPORTED,
-      "encodings": {
-        "": this.supported_encodings,
-        "core": this.supported_encodings,
-        "rgb_formats": this.RGB_FORMATS,
-        "window-icon": ["png"],
-        "cursor": ["png"],
-        "packet": true,
-      },
       "encoding": this._get_encoding_caps(),
       "audio": this._get_audio_caps(),
       "clipboard": this._get_clipboard_caps(),
@@ -1464,23 +1428,19 @@ class XpraClient {
       // newer servers only send the server features (ie: "border") when asked:
       "server-features": true,
       // encoding stuff
-      windows: true,
-      "window.pre-map": true,
+      "window": {
+        "enabled": true,
+        "pre-map": true,
+        "restack": true,
+      },
       //partial support:
       keyboard: true,
-      screen_sizes: this._get_screen_sizes(),
-      dpi: {
-        "x": this._get_DPI(),
-        "y": this._get_DPI(),
-      },
       notifications: {
         "enabled": true,
       },
-      cursors: true,
+      "cursor": {"enabled": true, "encodings": ["png"]},
       bell: true,
       system_tray: true,
-      //we cannot handle this (GTK only):
-      named_cursors: false,
     });
   }
 
@@ -1488,8 +1448,7 @@ class XpraClient {
     return {
       "refresh-rate": this.vrefresh,
       "desktop_size": [this.desktop_width, this.desktop_height],
-      "desktop_mode_size": [this.desktop_width, this.desktop_height],
-      "screen_sizes": this._get_screen_sizes(),
+      "dpi": {"x": this._get_DPI(), "y": this._get_DPI()},
       "monitors": this._get_monitors(),
     }
   }
@@ -1663,7 +1622,12 @@ class XpraClient {
   }
 
   _get_encoding_caps() {
-    return this.encoding_options;
+    return Object.assign({}, this.encoding_options, {
+      "options": this.supported_encodings,
+      "core": this.supported_encodings,
+      "rgb_formats": this.RGB_FORMATS,
+      "window-icon": ["png"],
+    });
   }
 
   on_first_ui_event() {
@@ -2293,7 +2257,7 @@ class XpraClient {
     const old_stacking_layer = win.stacking_layer;
     const had_focus = this.focused_wid;
     this.focused_wid = wid;
-    this.send([PACKET_TYPES.focus, wid, []]);
+    this.send([PACKET_TYPES.window_focus, wid, []]);
     //set the focused flag on the window specified,
     //adjust stacking order:
     let iwin = null;
@@ -2657,7 +2621,11 @@ class XpraClient {
     this.session_name = hello["session_name"];
     $("title").text(this.session_name);
 
-    this.server_display = hello["display"] || "";
+    const display = hello["display"] || {};
+    this.server_display = display["name"] || display["address"] || "";
+    this.server_desktop_size = display["desktop_size"] || [];
+    this.server_max_desktop_size = display["max_desktop_size"] || [];
+    this.server_monitors = display["monitors"] || {};
     this.server_platform = hello["platform"] || "";
     this.server_remote_logging = hello["remote-logging.multi-line"];
     if (this.server_remote_logging && this.remote_logging) {
@@ -2700,7 +2668,7 @@ class XpraClient {
 
     this.server_packet_types = hello["packet-types"];
     this.server_is_desktop = Boolean(hello["desktop"]);
-    this.server_is_shadow = Boolean(hello["shadow"]);
+    this.server_is_shadow = (hello["server.mode"] || "").includes("shadow");
     this.server_readonly = Boolean(hello["readonly"]);
     this.server_border = Utilities.s(hello["border"] || "");
     this.apply_border(this.border_from_server() ? this.server_border : this.border);
@@ -2836,6 +2804,8 @@ class XpraClient {
 
   _process_encodings(packet) {
     const caps = packet[1];
+    this.server_encodings = caps["encodings"] || {};
+    this.server_video = caps["video"] || {};
     this.log("update encodings:", Object.keys(caps));
   }
 
@@ -3258,7 +3228,7 @@ class XpraClient {
 
   _process_new_tray(packet) {
     const wid = packet[1];
-    const metadata = packet[4];
+    const metadata = packet[6];
     const mydiv = document.createElement("div");
     mydiv.id = String(wid);
     const mycanvas = document.createElement("canvas");
@@ -3284,7 +3254,7 @@ class XpraClient {
     mycanvas.height = h;
     this.id_to_window[wid] = new XpraWindow(this, wid,
       x, y, w, h,
-      metadata, false, true, {},
+      metadata, false, true, packet[7] || {},
       //TODO: send new tray geometry to the server using send_tray_configure
       () => this.debug("tray", "tray geometry changed (ignored)"),
       (event, window) => this.on_mousemove(event, window),
@@ -3305,7 +3275,7 @@ class XpraClient {
     const w = float_menu_item_size;
     const h = float_menu_item_size;
     this.clog("tray", wid, "position:", x, y);
-    this.send([PACKET_TYPES.configure_window, Number(wid), x, y, w, h, {}]);
+    this.send([PACKET_TYPES.window_configure, Number(wid), {"geometry": [x, y, w, h]}]);
   }
 
   reconfigure_all_trays() {
@@ -3365,7 +3335,7 @@ class XpraClient {
   send_control_refresh(quality, options) {
     const wid = 0;
     const client_options = {};
-    const packet = [PACKET_TYPES.buffer_refresh, wid, 0, quality, options, client_options];
+    const packet = [PACKET_TYPES.window_refresh, wid, 0, quality, options, client_options];
     this.send(packet);
   }
 
@@ -3405,7 +3375,7 @@ class XpraClient {
     this.auto_fullscreen_desktop_window();
     if (!override_redirect) {
       const geom = win.get_internal_geometry();
-      this.send([PACKET_TYPES.map_window, wid, geom.x, geom.y, geom.w, geom.h, win.client_properties]);
+      this.send([PACKET_TYPES.window_map, wid, geom.x, geom.y, geom.w, geom.h, win.client_properties]);
       this.set_focus(win);
     }
   }
@@ -3449,18 +3419,24 @@ class XpraClient {
   send_configure_window(win, state, skip_geometry) {
     const geom = win.get_internal_geometry();
     const wid = win.wid;
-    const packet = [PACKET_TYPES.configure_window, wid, geom.x, geom.y, geom.w, geom.h,
-      win.client_properties, win.resize_counter, state, skip_geometry,
-    ];
-    this.send(packet);
+    const config = {
+      "properties": win.client_properties,
+      "resize-counter": win.resize_counter,
+      "state": state || {},
+    };
+    if (!skip_geometry) {
+      config["geometry"] = [geom.x, geom.y, geom.w, geom.h];
+    }
+    this.send([PACKET_TYPES.window_configure, wid, config]);
   }
 
   _process_new_window(packet) {
-    this._new_window_common(packet, false);
-  }
-
-  _process_new_override_redirect(packet) {
-    this._new_window_common(packet, true);
+    const metadata = packet[6] || {};
+    if (metadata["tray"]) {
+      this._process_new_tray(packet);
+    } else {
+      this._new_window_common(packet, Boolean(metadata["override-redirect"]));
+    }
   }
 
   _process_window_metadata(packet) {
@@ -3594,7 +3570,7 @@ class XpraClient {
       this.set_focus(highest_window);
     } else {
       this.focused_wid = 0;
-      this.send([PACKET_TYPES.focus, 0, []]);
+      this.send([PACKET_TYPES.window_focus, 0, []]);
     }
   }
 
@@ -3621,14 +3597,49 @@ class XpraClient {
     this.id_to_window[wid]?.move_resize(x, y, width, height, resize_counter);
   }
 
-  _process_configure_override_redirect(packet) {
-    const [, wid, x, y, width, height] = packet;
-    this.id_to_window[wid]?.move_resize(x, y, width, height);
+  _process_desktop_size(packet) {
+    this.server_desktop_size = packet.slice(1, 3);
+    this.server_max_desktop_size = packet.slice(3, 5);
   }
 
-  _process_desktop_size(packet) {
-    //we don't use this yet,
-    //we could use this to clamp the windows to a certain area
+  _process_window_restack(packet) {
+    const [, wid, detail, sibling] = packet;
+    const win = this.id_to_window[wid];
+    if (!win || win.tray) {
+      return;
+    }
+    const windows = Object.values(this.id_to_window).filter((w) => w !== win && !w.tray);
+    windows.sort((a, b) => a.stacking_layer - b.stacking_layer);
+    let index = windows.findIndex((w) => w.wid === sibling);
+    if (index < 0) {
+      index = detail === 0 ? windows.length : 0;
+    } else if (detail === 0) {
+      index++;
+    }
+    windows.splice(index, 0, win);
+    windows.forEach((w, i) => {
+      w.stacking_layer = i;
+      w.update_zindex();
+    });
+  }
+
+  _process_show_desktop(packet) {
+    if (packet[1]) {
+      if (!this.desktop_hidden_windows) {
+        this.desktop_hidden_windows = new Set();
+      }
+      for (const win of Object.values(this.id_to_window)) {
+        if (!win.tray && !win.override_redirect && !win.minimized) {
+          this.desktop_hidden_windows.add(win.wid);
+          win.set_minimized(true);
+        }
+      }
+    } else if (this.desktop_hidden_windows) {
+      for (const wid of this.desktop_hidden_windows) {
+        this.id_to_window[wid]?.set_minimized(false);
+      }
+      this.desktop_hidden_windows.clear();
+    }
   }
 
   _process_bell(packet) {
@@ -3737,21 +3748,17 @@ class XpraClient {
   }
 
   _process_cursor(packet) {
-    if (packet.length < 9) {
-      this.reset_cursor();
-      return;
-    }
     //we require a png encoded cursor packet:
     const encoding = packet[1];
     if (encoding !== "png") {
       this.warn(`invalid cursor encoding: ${encoding}`);
       return;
     }
-    const w = packet[4];
-    const h = packet[5];
-    const xhot = packet[6];
-    const yhot = packet[7];
-    const img_data = packet[9];
+    const w = packet[2];
+    const h = packet[3];
+    const xhot = packet[4];
+    const yhot = packet[5];
+    const img_data = packet[7];
     for (const wid in this.id_to_window) {
       const win = this.id_to_window[wid];
       win.set_cursor(encoding, w, h, xhot, yhot, img_data);
@@ -3851,7 +3858,7 @@ class XpraClient {
     if (!protocol) {
       return;
     }
-    const packet = [PACKET_TYPES.damage_sequence, packet_sequence, wid, width, height, decode_time, message];
+    const packet = [PACKET_TYPES.window_ack, wid, width, height, packet_sequence, decode_time, message];
     if (decode_time < 0) {
       this.cwarn("decode error packet:", packet);
     }
@@ -3866,7 +3873,7 @@ class XpraClient {
     const ptype = packet[0];
     const wid = packet[1];
     const win = this.id_to_window[wid];
-    if (ptype === "eos") {
+    if (ptype === PACKET_TYPES.window_eos) {
       this.debug("draw", "eos for window", wid);
       if (win) {
         win.eos();
