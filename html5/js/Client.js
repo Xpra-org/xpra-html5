@@ -4719,42 +4719,35 @@ class XpraClient {
       this._got_file(basefilename, data, printit, mimetype, options);
       return;
     }
-    if (!send_id) {
-      this.cerror("send-file: partial file is missing send-id");
-      return;
-    }
     const chunk_id = Utilities.s(options["file-chunk-id"] || "");
     if (!chunk_id) {
       this.cerror("send-file: partial file is missing file-chunk-id");
       return;
     }
     const chunk = 0;
-    if (this.receive_chunks_in_progress.size > MAX_CONCURRENT_FILES) {
+    if (this.receive_chunks_in_progress.size >= MAX_CONCURRENT_FILES) {
       this.cancel_file(chunk_id, "too many concurrent files being downloaded", chunk);
       return;
     }
     //start receiving chunks:
-    let writer = null;
-    try {
-      //try to use a stream saver:
-      this.debug("file", "streamSaver=", streamSaver);
-      streamSaver.mitm = "./mitm.html";
-      const fileStream = streamSaver.createWriteStream(basefilename, {
-        size: filesize,
-      });
-      writer = fileStream.getWriter();
-      this.debug("file", "stream writer=", writer);
-    } catch (error) {
-      writer = [];
-      this.error("cannot use streamSaver:", error);
+    let writer = [];
+    if (!printit) {
+      try {
+        // Stream downloads when available; printing needs the complete PDF in memory.
+        streamSaver.mitm = "./mitm.html";
+        const fileStream = streamSaver.createWriteStream(basefilename, {size: filesize});
+        writer = fileStream.getWriter();
+      } catch (error) {
+        this.warn("cannot use streamSaver:", error);
+      }
     }
     const timer = setTimeout(
       () => this._check_chunk_receiving(chunk_id, chunk),
       CHUNK_TIMEOUT
     );
-    const openit = true;
+    const openit = Boolean(packet[4]);
     const chunk_state = [Date.now(), writer, basefilename, mimetype, printit, openit, filesize,
-      options, digest, 0, false, send_id, timer, chunk,
+      options, null, 0, false, send_id, timer, chunk,
     ];
     this.receive_chunks_in_progress.set(chunk_id, chunk_state);
     this.send([PACKET_TYPES.file_ack_chunk, chunk_id, true, "", chunk]);
@@ -4940,7 +4933,7 @@ class XpraClient {
         data.set(chunk_, start);
         start += chunk_.length;
       }
-      this._got_file(filename, data, mimetype, printit, mimetype, options);
+      this._got_file(filename, data, printit, mimetype, options);
     }
   }
 
