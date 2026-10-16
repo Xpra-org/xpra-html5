@@ -535,7 +535,7 @@ class XpraProtocol {
         raw_buffers.push(packet[7].buffer);
       } else if (packet[0] === "file-send-chunk" && ArrayBuffer.isView(packet[3])) {
         raw_buffers.push(packet[3].buffer);
-      } else if (packet[0] === "sound-data" && Object.hasOwn(packet[2], "buffer")) {
+      } else if (packet[0] === "audio-data" && Object.hasOwn(packet[2], "buffer")) {
         raw_buffers.push(packet[2].buffer);
       }
       postMessage({

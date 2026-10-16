@@ -375,7 +375,7 @@
       function download_file(event) {
         $(".menu-content").slideUp();
         const command = ["xpra", "send-file"]
-        client.send(["start-command", "Client-Download-File", command, true, true]);
+        client.send([PACKET_TYPES.command_start, "Client-Download-File", command, true, true]);
       }
 
       function cleanup_dialogs() {

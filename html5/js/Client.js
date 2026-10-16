@@ -264,6 +264,8 @@ class XpraClient {
     this.audio_state = "";
     //is the server currently playing something we could listen to?
     this.audio_signal = false;
+    this.audio_caps_received = false;
+    this.server_audio_codecs = [];
     this.aurora_codecs = {};
     this.mediasource_codecs = {};
     // encryption
@@ -387,11 +389,10 @@ class XpraClient {
   send_log(level, arguments_) {
     if (this.remote_logging && this.server_remote_logging && this.connected) {
       try {
-        const sargs = [];
-        for (const argument of arguments_) {
-          sargs.push(unescape(encodeURIComponent(String(argument))));
-        }
-        this.send([PACKET_TYPES.logging, level, sargs]);
+        const message = Utilities.StringToUint8([...arguments_].map(String).join(" "));
+        // monotonic milliseconds since the page was loaded, like the python client:
+        const time = Math.round(performance.now());
+        this.send([PACKET_TYPES.logging_event, level, message, time]);
       } catch {
         this.cerror("remote logging failed");
         for (const index in arguments_) {
@@ -476,6 +477,10 @@ class XpraClient {
       [PACKET_TYPES.control]: this._process_control,
       [PACKET_TYPES.file_ack_chunk]: this._process_ack_file_chunk,
       [PACKET_TYPES.audio_signal]: this._process_audio_signal,
+      [PACKET_TYPES.audio_capabilities]: this._process_audio_capabilities,
+      [PACKET_TYPES.audio_keepalive]: this._process_audio_keepalive,
+      [PACKET_TYPES.audio_level]: this._process_audio_level,
+      [PACKET_TYPES.events]: this._process_events,
       [PACKET_TYPES.window_bell]: this._process_bell,
       [PACKET_TYPES.challenge]: this._process_challenge,
       [PACKET_TYPES.clipboard_request]: this._process_clipboard_request,
@@ -484,7 +489,7 @@ class XpraClient {
       [PACKET_TYPES.cursor_default]: this.reset_cursor,
       [PACKET_TYPES.cursor_data]: this._process_cursor,
       [PACKET_TYPES.display_resized]: this._process_desktop_size,
-      [PACKET_TYPES.disconnect]: this._process_disconnect,
+      [PACKET_TYPES.connection_close]: this._process_disconnect,
       [PACKET_TYPES.window_draw]: this._process_draw,
       [PACKET_TYPES.encoding_set]: this._process_encodings,
       [PACKET_TYPES.window_eos]: this._process_eos,
@@ -496,8 +501,8 @@ class XpraClient {
       [PACKET_TYPES.window_create]: this._process_new_window,
       [PACKET_TYPES.window_restack]: this._process_window_restack,
       [PACKET_TYPES.display_show_desktop]: this._process_show_desktop,
-      [PACKET_TYPES.notify_close]: this._process_notify_close,
-      [PACKET_TYPES.notify_show]: this._process_notify_show,
+      [PACKET_TYPES.notification_close]: this._process_notify_close,
+      [PACKET_TYPES.notification_show]: this._process_notify_show,
       [PACKET_TYPES.open]: this._process_open,
       [PACKET_TYPES.file_open_url]: this._process_open_url,
       [PACKET_TYPES.ping]: this._process_ping,
@@ -510,7 +515,7 @@ class XpraClient {
       [PACKET_TYPES.file_send_chunk]: this._process_send_file_chunk,
       [PACKET_TYPES.clipboard_status]: this._process_set_clipboard_enabled,
       [PACKET_TYPES.setting_change]: this._process_setting_change,
-      [PACKET_TYPES.sound_data]: this._process_sound_data,
+      [PACKET_TYPES.audio_data]: this._process_sound_data,
       [PACKET_TYPES.startup_complete]: this._process_startup_complete,
       [PACKET_TYPES.window_icon]: this._process_window_icon,
       [PACKET_TYPES.window_metadata]: this._process_window_metadata,
@@ -707,6 +712,10 @@ class XpraClient {
 
   close_protocol() {
     this.connected = false;
+    if (this.connection_change_listener) {
+      navigator.connection.removeEventListener("change", this.connection_change_listener);
+      this.connection_change_listener = null;
+    }
     //without a connection, we no longer know if the server has any audio to play,
     //(don't use `set_audio_signal` here: `init_state` may have cleared the flag already)
     this.audio_signal = false;
@@ -1382,11 +1391,7 @@ class XpraClient {
       "argv": [window.location.href],
       "share": this.sharing,
       "steal": this.steal,
-      "mouse.show": true,
-      "vrefresh": this.vrefresh,
-      "setting-change": true, // Required by v5 servers
-      "xdg-menu-update": true,
-      "xdg-menu": true,
+      "menu": SHOW_START_MENU,
       "control_commands": [
         "log", "redraw", "stop-audio", "toggle-keyboard",
         "toggle-float-menu", "toggle-window-preview",
@@ -1417,7 +1422,7 @@ class XpraClient {
       auto_refresh_delay: 500,
       "metadata.supported": METADATA_SUPPORTED,
       "encoding": this._get_encoding_caps(),
-      "audio": this._get_audio_caps(),
+      "audio": {"async": true, "signal": this.audio_enabled},
       "clipboard": this._get_clipboard_caps(),
       "pointer": this._get_pointer_caps(),
       "file": this._get_file_caps(),
@@ -1433,9 +1438,7 @@ class XpraClient {
       },
       //partial support:
       keyboard: true,
-      notifications: {
-        "enabled": true,
-      },
+      "notification": {"enabled": true},
       "cursor": {"enabled": true, "encodings": ["png"]},
       bell: true,
       system_tray: true,
@@ -1494,6 +1497,7 @@ class XpraClient {
       "rencodeplus": true,
       "brotli": (typeof BrotliDecode === "function"),
       "lz4": Boolean(lz4 && lz4.decode),
+      "bandwidth": {"enabled": true},
       "bandwidth-limit": this.bandwidth_limit,
       "connection-data": Utilities.getConnectionInfo(),
       "network": {
@@ -1561,8 +1565,9 @@ class XpraClient {
 
   _get_audio_caps() {
     return {
+      "async": true,
       "receive": true,
-      "send": true,
+      "send": false,
       "decoders": Object.keys(this.audio_codecs),
       //ask the server to tell us when audio becomes available,
       //so we can draw the user's attention to the speaker button:
@@ -2612,7 +2617,7 @@ class XpraClient {
     const ci = Utilities.getConnectionInfo();
     this.clog("connection status - change event=", e, ", connection info=", ci, "tell server:", this.server_connection_data);
     if (ci && this.server_connection_data) {
-      this.send([PACKET_TYPES.connection_data, ci]);
+      this.send([PACKET_TYPES.bandwidth_status, ci]);
     }
   }
 
@@ -2644,13 +2649,13 @@ class XpraClient {
     this.server_max_desktop_size = display["max_desktop_size"] || [];
     this.server_monitors = display["monitors"] || {};
     this.server_platform = hello["platform"] || "";
-    this.server_remote_logging = hello["remote-logging.multi-line"];
+    this.server_remote_logging = Boolean((hello["remote-logging"] || {})["receive"]);
     if (this.server_remote_logging && this.remote_logging) {
       //hook remote logging:
-      Utilities.log = () => this.log(arguments);
-      Utilities.warn = () => this.warn(arguments);
-      Utilities.error = () => this.error(arguments);
-      Utilities.exc = () => this.exc(arguments);
+      Utilities.log = (...args) => this.log(...args);
+      Utilities.warn = (...args) => this.warn(...args);
+      Utilities.error = (...args) => this.error(...args);
+      Utilities.exc = (...args) => this.exc(...args);
     }
 
     // check for server encryption caps update
@@ -2665,9 +2670,14 @@ class XpraClient {
     this._process_modifier_keycodes(hello["modifier_keycodes"] || {});
     this._process_modifier_keynames(hello["modifiers-keynames"] || {});
     clog("modifier mappings:", MODIFIERS_NAMES);
-    this._process_audio_caps(hello["audio"] || {});
+    const audio = hello["audio"] || {};
+    if (audio["async"]) {
+      this.send([PACKET_TYPES.audio_capabilities, this._get_audio_caps()]);
+    } else {
+      this._process_audio_caps(audio);
+    }
     if (SHOW_START_MENU) {
-      this.xdg_menu = hello["xdg-menu"];
+      this.xdg_menu = hello["menu"];
       if (this.xdg_menu) {
         this.process_xdg_menu();
       }
@@ -2710,9 +2720,12 @@ class XpraClient {
       };
       this.send([PACKET_TYPES.printer_devices, printers]);
     }
-    this.server_connection_data = hello["connection-data"];
+    this.server_connection_data = Boolean(hello["bandwidth"]);
     if (Object.hasOwn(navigator, "connection")) {
-      navigator.connection.addEventListener("change", this._connection_change);
+      if (!this.connection_change_listener) {
+        this.connection_change_listener = () => this._connection_change();
+        navigator.connection.addEventListener("change", this.connection_change_listener);
+      }
       this._connection_change();
     }
 
@@ -2776,6 +2789,8 @@ class XpraClient {
   }
 
   _process_audio_caps(audio_caps) {
+    this.audio_caps_received = true;
+    this.server_audio_codecs = audio_caps["encoders"] || [];
     if (!this.audio_enabled) {
       this.on_audio_state_change("disabled", "");
       return;
@@ -2785,8 +2800,7 @@ class XpraClient {
       this.on_audio_state_change("disabled", "server does not support speaker forwarding");
       return;
     }
-    this.server_audio_codecs = audio_caps["encoders"];
-    if (!this.server_audio_codecs) {
+    if (this.server_audio_codecs.length === 0) {
       this.audio_enabled = false;
       this.on_audio_state_change("disabled", "audio codecs missing on the server");
       return;
@@ -2823,6 +2837,22 @@ class XpraClient {
     this.server_encodings = caps["encodings"] || {};
     this.server_video = caps["video"] || {};
     this.log("update encodings:", Object.keys(caps));
+  }
+
+  _process_audio_capabilities(packet) {
+    this._process_audio_caps(packet[1]);
+  }
+
+  _process_audio_keepalive(packet) {
+    this.debug("audio", "audio keepalive", packet[1]);
+  }
+
+  _process_audio_level(packet) {
+    this.debug("audio", "audio level", packet[1]);
+  }
+
+  _process_events(packet) {
+    this.debug("main", "server event", ...packet.slice(1));
   }
 
   process_xdg_menu() {
@@ -2909,7 +2939,7 @@ class XpraClient {
   _process_setting_change(packet) {
     const setting = packet[1];
     const value = packet[2];
-    if ((setting === "xdg-menu" || setting === "menu") && SHOW_START_MENU) {
+    if (setting === "menu" && SHOW_START_MENU) {
       this.xdg_menu = value;
       if (this.xdg_menu) {
         this.process_xdg_menu();
@@ -4006,6 +4036,9 @@ class XpraClient {
   }
 
   _sound_start_receiving() {
+    if (!this.audio_caps_received || !this.audio_enabled || this.server_audio_codecs.length === 0) {
+      return;
+    }
     if (!this.audio_framework || !this.audio_codec) {
       //choose a codec + framework to use
       const codecs_supported = MediaSourceUtil.get_supported_codecs(this.audio_mediasource_enabled, this.audio_aurora_enabled, false);
@@ -4033,7 +4066,7 @@ class XpraClient {
 
   _send_sound_start() {
     this.log(`audio: requesting ${this.audio_codec} stream from the server`);
-    this.send([PACKET_TYPES.sound_control, "start", this.audio_codec]);
+    this.send([PACKET_TYPES.audio_control, "start", this.audio_codec]);
   }
 
   _sound_start_aurora() {
@@ -4123,7 +4156,7 @@ class XpraClient {
 
   _send_sound_stop() {
     this.log("audio: stopping stream");
-    this.send([PACKET_TYPES.sound_control, "stop"]);
+    this.send([PACKET_TYPES.audio_control, "stop"]);
   }
 
   close_audio() {
@@ -5088,7 +5121,7 @@ class XpraClient {
   }
 
   start_command(name, command, ignore) {
-    const packet = [PACKET_TYPES.start_command, name, command, ignore];
+    const packet = [PACKET_TYPES.command_start, name, command, ignore];
     this.send(packet);
   }
 
