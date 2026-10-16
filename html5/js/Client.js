@@ -474,12 +474,12 @@ class XpraClient {
     // the client holds a list of packet handlers
     this.packet_handlers = {
       [PACKET_TYPES.control]: this._process_control,
-      [PACKET_TYPES.ack_file_chunk]: this._process_ack_file_chunk,
+      [PACKET_TYPES.file_ack_chunk]: this._process_ack_file_chunk,
       [PACKET_TYPES.audio_signal]: this._process_audio_signal,
       [PACKET_TYPES.window_bell]: this._process_bell,
       [PACKET_TYPES.challenge]: this._process_challenge,
       [PACKET_TYPES.clipboard_request]: this._process_clipboard_request,
-      [PACKET_TYPES.clipboard_token]: this._process_clipboard_token,
+      [PACKET_TYPES.clipboard_data]: this._process_clipboard_token,
       [PACKET_TYPES.close]: this._process_close,
       [PACKET_TYPES.cursor_default]: this.reset_cursor,
       [PACKET_TYPES.cursor_data]: this._process_cursor,
@@ -499,16 +499,16 @@ class XpraClient {
       [PACKET_TYPES.notify_close]: this._process_notify_close,
       [PACKET_TYPES.notify_show]: this._process_notify_show,
       [PACKET_TYPES.open]: this._process_open,
-      [PACKET_TYPES.open_url]: this._process_open_url,
+      [PACKET_TYPES.file_open_url]: this._process_open_url,
       [PACKET_TYPES.ping]: this._process_ping,
       [PACKET_TYPES.ping_echo]: this._process_ping_echo,
       [PACKET_TYPES.pointer_position]: this._process_pointer_position,
       [PACKET_TYPES.window_grab]: this._process_window_grab,
       [PACKET_TYPES.window_ungrab]: this._process_window_ungrab,
       [PACKET_TYPES.window_raise]: this._process_raise_window,
-      [PACKET_TYPES.send_file]: this._process_send_file,
-      [PACKET_TYPES.send_file_chunk]: this._process_send_file_chunk,
-      [PACKET_TYPES.set_clipboard_enabled]: this._process_set_clipboard_enabled,
+      [PACKET_TYPES.file_send]: this._process_send_file,
+      [PACKET_TYPES.file_send_chunk]: this._process_send_file_chunk,
+      [PACKET_TYPES.clipboard_status]: this._process_set_clipboard_enabled,
       [PACKET_TYPES.setting_change]: this._process_setting_change,
       [PACKET_TYPES.sound_data]: this._process_sound_data,
       [PACKET_TYPES.startup_complete]: this._process_startup_complete,
@@ -1384,7 +1384,6 @@ class XpraClient {
       "steal": this.steal,
       "mouse.show": true,
       "vrefresh": this.vrefresh,
-      "file-chunks": FILE_CHUNKS_SIZE,
       "setting-change": true, // Required by v5 servers
       "xdg-menu-update": true,
       "xdg-menu": true,
@@ -1422,6 +1421,7 @@ class XpraClient {
       "clipboard": this._get_clipboard_caps(),
       "pointer": this._get_pointer_caps(),
       "file": this._get_file_caps(),
+      "printer": {"printing": this.printing},
       "wants": ["audio", "features"],
       // newer servers only send the server features (ie: "border") when asked:
       "server-features": true,
@@ -1478,8 +1478,8 @@ class XpraClient {
 
   _get_file_caps() {
     return {
-      "enabled": true,
-      "printing": this.printing,
+      "enabled": this.file_transfer,
+      "chunks": FILE_CHUNKS_SIZE,
       "open-url": this.open_url,
       "size-limit": 32 * 1024 * 1024,
     }
@@ -2675,10 +2675,8 @@ class XpraClient {
     if (!hello["client-shutdown"]) {
       $("#shutdown_menu_entry").hide();
     }
-    if (
-      !this.file_transfer ||
-      (!hello["file-transfer"] && (!hello["file"] || !hello["file"]["enabled"]))
-    ) {
+    const file = hello["file"] || {};
+    if (!this.file_transfer || !file["enabled"]) {
       $("#upload_menu_entry").hide();
       $("#download_menu_entry").hide();
     }
@@ -2698,9 +2696,9 @@ class XpraClient {
     this.server_precise_wheel = hello["wheel.precise"] || false;
     this.server_wheel_emulation = hello["wheel.emulation"] || false;
 
-    this.remote_open_files = Boolean(hello["open-files"]);
-    this.remote_file_transfer = Boolean(hello["file-transfer"]) || Boolean(hello["file"]);
-    this.remote_printing = Boolean(hello["printing"]) || Boolean(hello["printer"]);
+    this.remote_open_files = Boolean(file["open"]);
+    this.remote_file_transfer = Boolean(file["enabled"]);
+    this.remote_printing = Boolean((hello["printer"] || {})["printing"]);
     if (this.remote_printing && this.printing) {
       // send our printer definition
       const printers = {
@@ -2710,7 +2708,7 @@ class XpraClient {
           mimetypes: ["application/pdf"],
         },
       };
-      this.send([PACKET_TYPES.printers, printers]);
+      this.send([PACKET_TYPES.printer_devices, printers]);
     }
     this.server_connection_data = hello["connection-data"];
     if (Object.hasOwn(navigator, "connection")) {
@@ -2719,11 +2717,12 @@ class XpraClient {
     }
 
     // don't send clipboard packets to servers that don't want them:
-    this.clipboard_enabled = Boolean(hello["clipboard"] || false);
+    const clipboard = hello["clipboard"];
+    this.clipboard_enabled = this.clipboard_enabled && Boolean(clipboard) && clipboard["enabled"] !== false;
 
     // file transfer attributes:
-    this.remote_file_size_limit = hello["max-file-size"];
-    this.remote_file_chunks = Math.max(0, Math.min(this.remote_file_size_limit, hello["file-chunks"] || 0));
+    this.remote_file_size_limit = Math.max(0, file["size-limit"] || 0);
+    this.remote_file_chunks = Math.max(0, Math.min(this.remote_file_size_limit, file["chunks"] || 0));
 
     // start sending our own pings
     this._send_ping();
@@ -4408,51 +4407,38 @@ class XpraClient {
       }
     }
 
-    let targets = actual_data_format;
-    let target = UTF8_STRING;
-    let dtype = UTF8_STRING;
-    const dformat = 8;
-    const wire_encoding = "bytes";
-    if (!data) {
-      targets = [];
-      target = "";
-      dtype = "";
+    const targets = data && data.length ? actual_data_format : [];
+    const items = {};
+    for (const target of targets) {
+      items[target] = [target, 8, "bytes", data];
     }
-    const claim = true; //Boolean(navigator.clipboard && navigator.clipboard.readText && navigator.clipboard.writeText);
-    const greedy = true;
-    const synchronous = true;
-
-    this.debug("clipboard", "sending clipboard token with data:", data, "as", actual_data_format);
-    let packet = [
-        PACKET_TYPES.clipboard_token, "CLIPBOARD", targets, target, dtype, dformat, wire_encoding, data || "",
-        claim, greedy, synchronous,
-    ];
-    this.send(packet);
+    this.debug("clipboard", "sending clipboard data as", targets);
+    this.send([PACKET_TYPES.clipboard_data, "CLIPBOARD", {
+      "targets": targets,
+      "data": items,
+      "claim": true,
+      "greedy": true,
+      "synchronous": true,
+    }]);
   }
 
   _process_clipboard_token(packet) {
     if (!this.clipboard_enabled) {
-      this.debug("clipboard", "received token, but clipboard is disabled");
       return;
     }
     const selection = packet[1];
-    let targets = [];
-    let target = null;
-    let dtype = null;
-    let dformat = null;
-    let wire_encoding = null;
-    let wire_data = null;
-    if (packet.length >= 3) {
-      targets = packet[2];
+    const options = packet[2];
+    const targets = options["targets"] || [];
+    const items = options["data"] || {};
+    const target = this.clipboard_targets.find((t) => Object.hasOwn(items, t));
+    if (!target) {
+      return;
     }
-    if (packet.length >= 8) {
-      target = packet[3];
-      dtype = packet[4];
-      dformat = packet[5];
-      wire_encoding = packet[6];
-      wire_data = packet[7];
-      //always keep track of the latest server buffer
-      this.clipboard_server_buffers[selection] = [target, dtype, dformat, wire_encoding, wire_data];
+    const [dtype, dformat, wire_encoding, data] = items[target];
+    let wire_data = data;
+    this.clipboard_server_buffers[selection] = [target, dtype, dformat, wire_encoding, wire_data];
+    if (options["claim"] === false) {
+      return;
     }
 
     const is_valid_target = target && this.clipboard_targets.includes(target);
@@ -4510,10 +4496,7 @@ class XpraClient {
   }
 
   _process_set_clipboard_enabled(packet) {
-    if (!this.clipboard_enabled) {
-      return;
-    }
-    this.clipboard_enabled = packet[1];
+    this.clipboard_enabled = packet[1] && this.capabilities["clipboard"]["enabled"];
     this.log(`server set clipboard state to ${packet[1]} reason was: ${packet[2]}`);
   }
 
@@ -4727,7 +4710,7 @@ class XpraClient {
       options, digest, 0, false, send_id, timer, chunk,
     ];
     this.receive_chunks_in_progress.set(chunk_id, chunk_state);
-    this.send([PACKET_TYPES.ack_file_chunk, chunk_id, true, "", chunk]);
+    this.send([PACKET_TYPES.file_ack_chunk, chunk_id, true, "", chunk]);
     this.log("receiving chunks for", basefilename, "with transfer id", chunk_id);
   }
 
@@ -4785,7 +4768,7 @@ class XpraClient {
         20_000
       );
     }
-    this.send([PACKET_TYPES.ack_file_chunk, chunk_id, false, message, chunk]);
+    this.send([PACKET_TYPES.file_ack_chunk, chunk_id, false, message, chunk]);
   }
 
   _process_send_file_chunk(packet) {
@@ -4869,7 +4852,7 @@ class XpraClient {
     if (digest) {
       digest.update(Utilities.Uint8ToString(file_data));
     }
-    this.send([PACKET_TYPES.ack_file_chunk, chunk_id, true, "", chunk]);
+    this.send([PACKET_TYPES.file_ack_chunk, chunk_id, true, "", chunk]);
     if (has_more) {
       const timer = chunk_state[12];
       if (timer) {
@@ -5018,7 +5001,7 @@ class XpraClient {
       //send everything now:
       this.debug("file", "sending full file:", size, "bytes, chunk size", chunk_size);
     }
-    const packet = [PACKET_TYPES.send_file, filename, mimetype, false, this.remote_open_files, size, cdata, options];
+    const packet = [PACKET_TYPES.file_send, filename, mimetype, false, this.remote_open_files, size, cdata, options];
     this.send(packet);
   }
 
@@ -5101,7 +5084,7 @@ class XpraClient {
       CHUNK_TIMEOUT
     );
     this.send_chunks_in_progress.set(chunk_id, [start_time, data, chunk_size, timer, chunk]);
-    this.send([PACKET_TYPES.send_file_chunk, chunk_id, chunk, cdata, data.length > 0]);
+    this.send([PACKET_TYPES.file_send_chunk, chunk_id, chunk, cdata, data.length > 0]);
   }
 
   start_command(name, command, ignore) {

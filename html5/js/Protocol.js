@@ -533,6 +533,8 @@ class XpraProtocol {
       const raw_buffers = [];
       if (packet[0] === "window-draw" && "buffer" in packet[7]) {
         raw_buffers.push(packet[7].buffer);
+      } else if (packet[0] === "file-send-chunk" && ArrayBuffer.isView(packet[3])) {
+        raw_buffers.push(packet[3].buffer);
       } else if (packet[0] === "sound-data" && Object.hasOwn(packet[2], "buffer")) {
         raw_buffers.push(packet[2].buffer);
       }
@@ -690,7 +692,7 @@ if (
       //zero-copy the draw buffer
       raw_buffers.push(packet[7].buffer);
     } else if (
-      packet[0] === "send-file-chunk" &&
+      packet[0] === "file-send-chunk" &&
       Object.hasOwn(packet[3], "buffer")
     ) {
       //zero-copy the file data buffer
