@@ -400,6 +400,16 @@ function rdecode_intq(dec) {
 	}
 	return parseInt(s);
 }
+function rdecode_float32(dec) {
+	const view = new DataView(dec.buf.buffer, dec.buf.byteOffset + dec.pos + 1, 4);
+	dec.pos += 5;
+	return view.getFloat32(0);
+}
+function rdecode_float64(dec) {
+	const view = new DataView(dec.buf.buffer, dec.buf.byteOffset + dec.pos + 1, 8);
+	dec.pos += 9;
+	return view.getFloat64(0);
+}
 function rdecode_true(dec) {
 	dec.pos++;
 	return true;
@@ -426,6 +436,8 @@ decode_func[RENCODE.CHR_INT1] = rdecode_intb
 decode_func[RENCODE.CHR_INT2] = rdecode_inth
 decode_func[RENCODE.CHR_INT4] = rdecode_intl
 decode_func[RENCODE.CHR_INT8] = rdecode_intq
+decode_func[RENCODE.CHR_FLOAT32] = rdecode_float32
+decode_func[RENCODE.CHR_FLOAT64] = rdecode_float64
 decode_func[RENCODE.CHR_TRUE] = rdecode_true
 decode_func[RENCODE.CHR_FALSE] = rdecode_false
 decode_func[RENCODE.CHR_NONE] = rdecode_none
