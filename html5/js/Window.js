@@ -60,7 +60,7 @@ class XpraWindow {
     this.w = w;
     this.h = h;
     // resize counter: used to prevent resize loops with the server,
-    // it is echoed back unchanged in configure-window packets
+    // it is echoed back unchanged in window-configure packets
     // and only updated when the server tells us to resize / move-resize
     this.resize_counter = 0;
     // scaling for client display width override

@@ -1621,7 +1621,7 @@ class XpraClient {
         this.clipboard_targets.push(target);
       }
     }
-    if (CLIPBOARD_IMAGES && navigator.clipboard && Object.hasOwn(navigator.clipboard, "write")) {
+    if (CLIPBOARD_IMAGES && navigator.clipboard && typeof navigator.clipboard.write === "function") {
       this.clipboard_targets.push("image/png");
     } else {
       this.log("no clipboard write support: no images, navigator.clipboard=", navigator.clipboard);
@@ -2735,7 +2735,7 @@ class XpraClient {
       this.send([PACKET_TYPES.printer_devices, printers]);
     }
     this.server_connection_data = Boolean(hello["bandwidth"]);
-    if (Object.hasOwn(navigator, "connection")) {
+    if (navigator.connection && typeof navigator.connection.addEventListener === "function") {
       if (!this.connection_change_listener) {
         this.connection_change_listener = () => this._connection_change();
         navigator.connection.addEventListener("change", this.connection_change_listener);
@@ -4521,7 +4521,7 @@ class XpraClient {
           }
         }
       } else if (CLIPBOARD_IMAGES && dtype === "image/png" && dformat === 8 && wire_encoding === "bytes" &&
-        navigator.clipboard && Object.hasOwn(navigator.clipboard, "write")
+        navigator.clipboard && typeof navigator.clipboard.write === "function"
       ) {
         this.debug("clipboard", "png image received");
         const blob = new Blob([wire_data], {
@@ -4563,7 +4563,7 @@ class XpraClient {
     }
 
     if (navigator.clipboard) {
-      if (Object.hasOwn(navigator.clipboard, "read")) {
+      if (typeof navigator.clipboard.read === "function") {
         this.debug("clipboard", "request using read()");
         navigator.clipboard.read().then(
           (data) => {
@@ -4615,7 +4615,7 @@ class XpraClient {
           }
         );
         return;
-      } else if (Object.hasOwn(navigator.clipboard, "readText")) {
+      } else if (typeof navigator.clipboard.readText === "function") {
         this.debug("clipboard", "clipboard request using readText()");
         navigator.clipboard.readText().then(
           (text) => {
@@ -4685,7 +4685,8 @@ class XpraClient {
       this.send_clipboard_none(request_id, selection);
       return;
     }
-    const packet = [PACKET_TYPES.clipboard_contents, request_id, selection, datatype, dformat || 8, encoding || "bytes", clipboard_buffer];
+    const data = clipboard_buffer instanceof ArrayBuffer ? new Uint8Array(clipboard_buffer) : clipboard_buffer;
+    const packet = [PACKET_TYPES.clipboard_contents, request_id, selection, datatype, dformat || 8, encoding || "bytes", data];
     this.send(packet);
   }
 

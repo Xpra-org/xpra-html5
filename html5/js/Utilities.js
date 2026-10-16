@@ -750,7 +750,7 @@ const Utilities = {
   },
 
   getConnectionInfo() {
-    if (!Object.hasOwn(navigator, "connection")) {
+    if (!navigator.connection) {
       return {};
     }
     const c = navigator.connection;
@@ -758,15 +758,13 @@ const Utilities = {
     if (c.type) {
       index["type"] = c.type;
     }
-    if (Object.hasOwn(c, "effectiveType")) {
+    if (c.effectiveType) {
       index["effective-type"] = c.effectiveType;
     }
     if (!isNaN(c.downlink) && c.downlink > 0 && isFinite(c.downlink)) {
       index["downlink"] = Math.round(c.downlink * 1000 * 1000);
     }
     if (
-      Object.hasOwn(c, "downlinkMax") &&
-      !isNaN(c.downlinkMax) &&
       !isNaN(c.downlinkMax) &&
       c.downlinkMax > 0 &&
       isFinite(c.downlinkMax)
