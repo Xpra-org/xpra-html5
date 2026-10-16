@@ -4584,7 +4584,7 @@ class XpraClient {
                     (error) => {
                       this.debug("clipboard", `getType('${item_type}') failed`, error);
                       //send last server buffer instead:
-                      this.resend_clipboard_server_buffer();
+                      this.resend_clipboard_server_buffer(request_id, selection);
                     }
                   );
                   return;
@@ -4595,7 +4595,7 @@ class XpraClient {
                       fileReader.addEventListener("load", (event) =>
                         this.send_clipboard_contents(request_id, selection, item_type, 8, "bytes", event.target.result)
                       );
-                      fileReader.readAsText(blob);
+                      fileReader.readAsArrayBuffer(blob);
                     },
                     (error) => {
                       this.debug("clipboard", `getType('${item_type}') failed`, error);
