@@ -340,7 +340,6 @@ class XpraClient {
     this.server_platform = "";
     this.server_resize_exact = false;
     this.server_screen_sizes = [];
-    this.server_packet_types = [];
     this.server_is_desktop = false;
     this.server_is_shadow = false;
     this.server_readonly = false;
@@ -504,6 +503,8 @@ class XpraClient {
       [PACKET_TYPES.ping]: this._process_ping,
       [PACKET_TYPES.ping_echo]: this._process_ping_echo,
       [PACKET_TYPES.pointer_position]: this._process_pointer_position,
+      [PACKET_TYPES.window_grab]: this._process_window_grab,
+      [PACKET_TYPES.window_ungrab]: this._process_window_ungrab,
       [PACKET_TYPES.window_raise]: this._process_raise_window,
       [PACKET_TYPES.send_file]: this._process_send_file,
       [PACKET_TYPES.send_file_chunk]: this._process_send_file_chunk,
@@ -917,13 +918,7 @@ class XpraClient {
       caps["force"] = true;
     }
 
-    if (this.server_packet_types && this.server_packet_types.includes(PACKET_TYPES.keyboard_config)) {
-      this.send([PACKET_TYPES.keyboard_config, caps]);
-      return;
-    }
-    // legacy packet:
-    console.log("legacy keymap-changed packet");
-    this.send(["keymap-changed", caps, force || false]);
+    this.send([PACKET_TYPES.keyboard_config, caps]);
   }
 
   _keyb_get_modifiers(event) {
@@ -1155,7 +1150,8 @@ class XpraClient {
 
     const wid = this.focused_wid;
     this.debug("keyboard", "focused=", this.focused, "keyname=", keyname);
-    let packet = [PACKET_TYPES.key_action, wid, keyname, pressed, modifiers, keyval, keystring, keycode, group];
+    const props = {"modifiers": modifiers, "keyval": keyval, "string": keystring, "keycode": keycode, "group": group};
+    let packet = [PACKET_TYPES.keyboard_event, wid, keyname, pressed, props];
     this.key_packets.push(packet);
     //`code` is the physical key: the `keycode` is the same for both Shift keys
     const key_id = event.code || keycode;
@@ -1165,7 +1161,7 @@ class XpraClient {
       this.keys_pressed.delete(key_id);
     }
     if (unpress_now) {
-      packet = [PACKET_TYPES.key_action, wid, keyname, false, modifiers, keyval, keystring, keycode, group];
+      packet = [PACKET_TYPES.keyboard_event, wid, keyname, false, props];
       this.key_packets.push(packet);
     }
 
@@ -1214,7 +1210,9 @@ class XpraClient {
     for (const packet of this.keys_pressed.values()) {
       const release = [...packet];
       release[3] = false;
-      release[4] = packet[4].filter((modifier) => locks.includes(modifier));
+      release[4] = Object.assign({}, packet[4], {
+        "modifiers": packet[4]["modifiers"].filter((modifier) => locks.includes(modifier)),
+      });
       this.key_packets.push(release);
     }
     this.keys_pressed.clear();
@@ -1424,7 +1422,7 @@ class XpraClient {
       "clipboard": this._get_clipboard_caps(),
       "pointer": this._get_pointer_caps(),
       "file": this._get_file_caps(),
-      "wants": ["audio", "packet-types", "features"],
+      "wants": ["audio", "features"],
       // newer servers only send the server features (ie: "border") when asked:
       "server-features": true,
       // encoding stuff
@@ -1674,8 +1672,8 @@ class XpraClient {
       }
     } else {
       if (windowIsLocked) {
-        this.last_mouse_x += mx;
-        this.last_mouse_y += my;
+        mx += this.last_mouse_x || 0;
+        my += this.last_mouse_y || 0;
       }
       this.last_mouse_x = mx;
       this.last_mouse_y = my;
@@ -1688,9 +1686,6 @@ class XpraClient {
     else if ("button" in e)
       // IE, Opera (zero based)
       mbutton = Math.max(0, e.button) + 1;
-
-    mx = this.last_mouse_x;
-    my = this.last_mouse_y;
 
     // We return a simple javascript object (a hash) with x and y defined
     return {
@@ -1729,7 +1724,6 @@ class XpraClient {
     const x = Math.round(mouse.x);
     const y = Math.round(mouse.y);
     const modifiers = this._keyb_get_modifiers(e);
-    const buttons = [];
     const coords = [x, y];
     let wid = 0;
     if (this.server_is_desktop) {
@@ -1743,7 +1737,8 @@ class XpraClient {
       coords.push(Math.round(mouse.y - pos.y));
       e.preventDefault();
     }
-    this.send([PACKET_TYPES.pointer_position, wid, coords, modifiers, buttons]);
+    const props = this._get_pointer_props(coords, modifiers);
+    this.send([PACKET_TYPES.pointer_motion, -1, 0, wid, this._get_pointer_position(coords), props]);
     return !win;
   }
 
@@ -1899,7 +1894,6 @@ class XpraClient {
   }
 
   send_button_action(wid, button, pressed, coords, modifiers, mask) {
-    const buttons = [];
     if (pressed) {
       this.buttons_pressed.add(button);
       this.button_masks.set(button, mask || 0);
@@ -1907,7 +1901,28 @@ class XpraClient {
       this.buttons_pressed.delete(button);
       this.button_masks.delete(button);
     }
-    this.send([PACKET_TYPES.button_action, wid, button, pressed, coords, modifiers, buttons]);
+    this.send([PACKET_TYPES.pointer_button, -1, 0, wid, button, pressed,
+      this._get_pointer_position(coords), this._get_pointer_props(coords, modifiers)]);
+  }
+
+  _get_pointer_position(coords) {
+    return coords.slice(0, 2).map((v) => Math.max(0, Math.min(65535, Math.round(v) || 0)));
+  }
+
+  _get_pointer_props(coords, modifiers) {
+    const props = {"modifiers": modifiers, "buttons": [...this.buttons_pressed]};
+    if (coords.length >= 4) {
+      props["window-position"] = coords.slice(2, 4);
+    }
+    return props;
+  }
+
+  _process_window_grab(packet) {
+    this.debug("mouse", "server requested window grab", packet[1], "(native grabs are unavailable in browsers)");
+  }
+
+  _process_window_ungrab(packet) {
+    this.debug("mouse", "server released window grab", packet[1]);
   }
 
   // Source: https://deepmikoto.com/coding/1--javascript-detect-mouse-wheel-direction
@@ -1945,7 +1960,7 @@ class XpraClient {
     const x = Math.round(mouse.x);
     const y = Math.round(mouse.y);
     const modifiers = this._keyb_get_modifiers(e);
-    const buttons = [];
+    const buttons = [...this.buttons_pressed];
     let wid = 0;
     const coords = [x, y];
     if (win) {
@@ -1958,8 +1973,8 @@ class XpraClient {
     const wheel = Utilities.normalizeWheel(e);
     this.debug("mouse", "normalized wheel event:", wheel);
     //clamp to prevent event floods:
-    let px = Math.min(1200, wheel.pixelX);
-    let py = Math.min(1200, wheel.pixelY);
+    let px = Math.max(-1200, Math.min(1200, wheel.pixelX));
+    let py = Math.max(-1200, Math.min(1200, wheel.pixelY));
     if (this.scroll_reverse_x) {
       px = -px;
     }
@@ -1968,16 +1983,18 @@ class XpraClient {
     }
     const apx = Math.abs(px);
     const apy = Math.abs(py);
-    if (this.server_precise_wheel) {
+    if (this.server_precise_wheel || this.server_wheel_emulation) {
+      const position = this._get_pointer_position(coords);
+      const props = this._get_pointer_props(coords, modifiers);
       if (apx > 0) {
         const button_x = px >= 0 ? 7 : 6;
         const xdist = Math.round((px * 1000) / 120);
-        this.send([PACKET_TYPES.wheel_motion, wid, button_x, -xdist, coords, modifiers, buttons]);
+        this.send([PACKET_TYPES.pointer_wheel, wid, button_x, -xdist, position, modifiers, buttons, props]);
       }
       if (apy > 0) {
         const button_y = py >= 0 ? 5 : 4;
         const ydist = Math.round((py * 1000) / 120);
-        this.send([PACKET_TYPES.wheel_motion, wid, button_y, -ydist, coords, modifiers, buttons]);
+        this.send([PACKET_TYPES.pointer_wheel, wid, button_y, -ydist, position, modifiers, buttons, props]);
       }
       return;
     }
@@ -1999,13 +2016,13 @@ class XpraClient {
     const button_y = this.wheel_delta_y >= 0 ? 5 : 4;
     while (wx >= 120) {
       wx -= 120;
-      this.send([PACKET_TYPES.button_action, wid, button_x, true, coords, modifiers, buttons]);
-      this.send([PACKET_TYPES.button_action, wid, button_x, false, coords, modifiers, buttons]);
+      this.send_button_action(wid, button_x, true, coords, modifiers);
+      this.send_button_action(wid, button_x, false, coords, modifiers);
     }
     while (wy >= 120) {
       wy -= 120;
-      this.send([PACKET_TYPES.button_action, wid, button_y, true, coords, modifiers, buttons]);
-      this.send([PACKET_TYPES.button_action, wid, button_y, false, coords, modifiers, buttons]);
+      this.send_button_action(wid, button_y, true, coords, modifiers);
+      this.send_button_action(wid, button_y, false, coords, modifiers);
     }
     //store left overs:
     this.wheel_delta_x = this.wheel_delta_x >= 0 ? wx : -wx;
@@ -2666,7 +2683,6 @@ class XpraClient {
       $("#download_menu_entry").hide();
     }
 
-    this.server_packet_types = hello["packet-types"];
     this.server_is_desktop = Boolean(hello["desktop"]);
     this.server_is_shadow = (hello["server.mode"] || "").includes("shadow");
     this.server_readonly = Boolean(hello["readonly"]);
@@ -2680,6 +2696,7 @@ class XpraClient {
     this.clog("server screen sizes:", this.server_screen_sizes);
 
     this.server_precise_wheel = hello["wheel.precise"] || false;
+    this.server_wheel_emulation = hello["wheel.emulation"] || false;
 
     this.remote_open_files = Boolean(hello["open-files"]);
     this.remote_file_transfer = Boolean(hello["file-transfer"]) || Boolean(hello["file"]);

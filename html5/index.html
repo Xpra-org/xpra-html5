@@ -1038,10 +1038,11 @@
               const keyval = 0;
               const group = 0;
               const wid = client.topwindow;
-              let packet = ["key-action", wid, keyname, true, modifiers, keyval, str, keycode, group];
+              const props = {"modifiers": modifiers, "keyval": keyval, "string": str, "keycode": keycode, "group": group};
+              let packet = [PACKET_TYPES.keyboard_event, wid, keyname, true, props];
               cdebug("keyboard", packet);
               client.send(packet);
-              packet = ["key-action", wid, keyname, false, modifiers, keyval, str, keycode, group];
+              packet = [PACKET_TYPES.keyboard_event, wid, keyname, false, props];
               cdebug("keyboard", packet);
               client.send(packet);
             } catch (e) {
