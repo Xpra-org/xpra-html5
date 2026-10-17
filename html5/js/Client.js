@@ -2662,7 +2662,9 @@ class XpraClient {
     this.server_desktop_size = display["desktop_size"] || [];
     this.server_max_desktop_size = display["max_desktop_size"] || [];
     this.server_monitors = display["monitors"] || {};
-    this.server_platform = hello["platform"] || "";
+    // only xpra 8.0 servers expose their platform info:
+    const platform = hello["platform"] || {};
+    this.server_platform = platform["name"] || platform["platform"] || platform["system"] || "";
     this.server_remote_logging = Boolean((hello["remote-logging"] || {})["receive"]);
     if (this.server_remote_logging && this.remote_logging) {
       //hook remote logging:
