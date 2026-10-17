@@ -303,6 +303,7 @@ class XpraClient {
     this.clipboard_direction = default_settings["clipboard_direction"] || "both";
     this.clipboard_datatype = null;
     this.clipboard_buffer = "";
+    this.clipboard_origin = "";
     this.clipboard_server_buffers = {};
     this.clipboard_pending = false;
     this.clipboard_targets = [TEXT_HTML, UTF8_STRING, "TEXT", "STRING", TEXT_PLAIN];
@@ -2073,9 +2074,10 @@ class XpraClient {
         navigator.clipboard.readText().then(
           (text) => {
             this.cdebug("clipboard", "paste event, text=", text);
-            this.clipboard_buffer = text;
-            const data = Utilities.StringToUint8(text);
-            this.send_clipboard_token(data);
+            if (text !== this.clipboard_buffer) {
+              this.set_clipboard_buffer(text, "readText");
+            }
+            this.send_clipboard_token(text);
           },
           (error) => this.cdebug("clipboard", "paste event failed:", error)
         );
@@ -2084,9 +2086,10 @@ class XpraClient {
       let clipboard_buffer = clipboardData.getData(fmt);
       if (clipboard_buffer) {
         this.cdebug("clipboard", "paste event, ", fmt, "=", clipboard_buffer);
-        this.clipboard_buffer = clipboard_buffer;
-        const data = Utilities.StringToUint8(clipboard_buffer);
-        this.send_clipboard_token(data, [fmt]);
+        if (clipboard_buffer !== this.clipboard_buffer) {
+          this.set_clipboard_buffer(clipboard_buffer, "getData");
+        }
+        this.send_clipboard_token(clipboard_buffer, [fmt]);
       }
     });
     window.addEventListener("copy", (e) => {
@@ -2196,7 +2199,7 @@ class XpraClient {
       return false;
     }
     this.debug("clipboard", "clipboard contents have changed");
-    this.clipboard_buffer = clipboard_buffer;
+    this.set_clipboard_buffer(clipboard_buffer, "getData");
     this.send_clipboard_token(clipboard_buffer, [datatype]);
     this.clipboard_delayed_event_time = performance.now() + CLIPBOARD_EVENT_DELAY;
     return true;
@@ -2217,7 +2220,7 @@ class XpraClient {
         const clipboard_buffer = text;
         if (clipboard_buffer !== this.clipboard_buffer) {
           this.debug("clipboard", "clipboard contents have changed");
-          this.clipboard_buffer = clipboard_buffer;
+          this.set_clipboard_buffer(clipboard_buffer, "clipboardData.read");
           this.send_clipboard_token(clipboard_buffer, [TEXT_HTML]);
           this.clipboard_delayed_event_time = performance.now() + CLIPBOARD_EVENT_DELAY;
         }
@@ -2243,7 +2246,7 @@ class XpraClient {
         const clipboard_buffer = text;
         if (clipboard_buffer !== this.clipboard_buffer) {
           this.debug("clipboard", "clipboard contents have changed");
-          this.clipboard_buffer = clipboard_buffer;
+          this.set_clipboard_buffer(clipboard_buffer, "readText");
           this.send_clipboard_token(clipboard_buffer);
           this.clipboard_delayed_event_time = performance.now() + CLIPBOARD_EVENT_DELAY;
         }
@@ -4444,31 +4447,51 @@ class XpraClient {
     return this.clipboard_datatype;
   }
 
+  /**
+   * Records a new clipboard value and where it came from:
+   * either the browser API used to retrieve it (a new unique origin is generated),
+   * or the `origin` of the server's `clipboard-data` packet.
+   * The server uses the origin we send back to detect clipboard loops.
+   */
+  set_clipboard_buffer(value, source, origin) {
+    this.clipboard_buffer = value;
+    // the server ignores origins longer than 64 characters:
+    this.clipboard_origin = (origin || `${source}:${Utilities.getHexUUID(16)}`).substring(0, 64);
+    this.debug("clipboard", "clipboard origin=", this.clipboard_origin);
+  }
+
   send_clipboard_token(data, data_format) {
     if (!this.clipboard_enabled || !this.connected) {
       return;
     }
-    let actual_data_format = data_format;
-    if (!actual_data_format) {
-      actual_data_format = [TEXT_PLAIN, UTF8_STRING];
+    let targets = data_format || [];
+    if (!targets.length || targets.includes(TEXT_PLAIN) || targets.includes(UTF8_STRING)) {
+      // the browser APIs give us text as strings, which we always encode as UTF-8:
+      targets = [TEXT_PLAIN, UTF8_STRING];
       if (this.clipboard_preferred_format === UTF8_STRING) {
-        actual_data_format = [UTF8_STRING, TEXT_PLAIN];
+        targets = [UTF8_STRING, TEXT_PLAIN];
       }
     }
-
-    const targets = data && data.length ? actual_data_format : [];
+    const bytes = Utilities.u(data);
+    if (!bytes.length) {
+      targets = [];
+    }
     const items = {};
     for (const target of targets) {
-      items[target] = [target, 8, "bytes", data];
+      items[target] = [target, 8, "bytes", bytes];
     }
-    this.debug("clipboard", "sending clipboard data as", targets);
-    this.send([PACKET_TYPES.clipboard_data, "CLIPBOARD", {
+    this.debug("clipboard", "sending clipboard data as", targets, "origin=", this.clipboard_origin);
+    const options = {
       "targets": targets,
       "data": items,
       "claim": true,
       "greedy": true,
       "synchronous": true,
-    }]);
+    };
+    if (this.clipboard_origin) {
+      options["origin"] = this.clipboard_origin;
+    }
+    this.send([PACKET_TYPES.clipboard_data, "CLIPBOARD", options]);
   }
 
   _process_clipboard_token(packet) {
@@ -4510,7 +4533,7 @@ class XpraClient {
         } catch {}
         if (this.clipboard_buffer !== wire_data) {
           this.clipboard_datatype = dtype;
-          this.clipboard_buffer = wire_data;
+          this.set_clipboard_buffer(wire_data, PACKET_TYPES.clipboard_data, options["origin"]);
           this.clipboard_pending = true;
           if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(wire_data).then(
@@ -4677,7 +4700,8 @@ class XpraClient {
       this.send_clipboard_none(request_id, selection);
       return;
     }
-    const packet = [PACKET_TYPES.clipboard_contents, request_id, selection, datatype || UTF8_STRING, 8, "bytes", clipboard_buffer];
+    const packet = [PACKET_TYPES.clipboard_contents, request_id, selection, datatype || UTF8_STRING, 8, "bytes",
+      Utilities.u(clipboard_buffer)];
     this.debug("clipboard", "send_clipboard_string: packet=", packet);
     this.send(packet);
   }
