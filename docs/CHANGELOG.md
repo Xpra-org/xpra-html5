@@ -1,10 +1,20 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
-## [Unreleased]
-- require Xpra 7.0 or later and use modern packet names, payloads and capability namespaces
-- negotiate audio capabilities asynchronously and keep initial hello packets below 16 KiB
-- fix chunked downloads, floating-point server information, clipboard API detection and connection status updates
+
+## [22.0] 2026-10-17
+
+- [require Xpra 7.0 or later and advertise the modern protocol](https://github.com/Xpra-org/xpra-html5/commit/c452c7e236752442790182eac19caad50b7ec38f)
+- [use modern window, cursor and display packets and capabilities, including shadow session detection](https://github.com/Xpra-org/xpra-html5/commit/dc1bb1164374c565d6343b56e0be4f7a55f7513d)
+- [send modern keyboard and pointer events](https://github.com/Xpra-org/xpra-html5/commit/ca22c21a81727dfb7615b805070aeea89f653442)
+- [use modern clipboard data, file transfer and printer capabilities](https://github.com/Xpra-org/xpra-html5/commit/26710d03dc69564e4814ef6bd7fa4693a929c579)
+- [negotiate audio capabilities asynchronously and update notification, menu, logging and connection packets](https://github.com/Xpra-org/xpra-html5/commit/cc131b2e231095f77cd735462eac9dd0f066d855)
+- [advertise packet encoder and compressor lists and keep hello packets below 16 KiB](https://github.com/Xpra-org/xpra-html5/commit/7e98ce3e6edae24400549457e111967e1a75be16)
+- [decode floating-point values in server information packets](https://github.com/Xpra-org/xpra-html5/commit/a1182df1b471801209c36303b768953f244ca7f0)
+- [fix chunked download completion, optional transfer IDs and file metadata](https://github.com/Xpra-org/xpra-html5/commit/b96afd125c98eb0c7c73c5fbcc7914806b41ed2e)
+- [detect inherited clipboard and connection APIs for image clipboard support and connection status updates](https://github.com/Xpra-org/xpra-html5/commit/530cfbff958433cbe467d1ed1688901d116e7653)
+- [preserve PNG clipboard bytes and request IDs in clipboard replies](https://github.com/Xpra-org/xpra-html5/commit/432c91e4cc9268abeb1979f56454de458f822f3b)
+- [document Xpra 7+ compatibility and manual validation results](https://github.com/Xpra-org/xpra-html5/commit/98b2573d183f27bc761cce2446d8e6587d8c0ade)
 
 ## [21.0] 2026-05-11
 - support the window border provided by the server, which can be overriden from the connect dialog's advanced options

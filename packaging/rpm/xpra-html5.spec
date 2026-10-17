@@ -66,8 +66,18 @@ rm -rf $RPM_BUILD_ROOT
 %doc LICENSE
 
 %changelog
-* Tue May 12 2026 Antoine Martin <antoine@xpra.org> 22-0-1
-- TODO
+* Sat Oct 17 2026 Antoine Martin <antoine@xpra.org> 22-0-1
+- require Xpra 7.0 or later and advertise the modern protocol
+- use modern window, cursor and display packets and capabilities, including shadow session detection
+- send modern keyboard and pointer events
+- use modern clipboard data, file transfer and printer capabilities
+- negotiate audio capabilities asynchronously and update notification, menu, logging and connection packets
+- advertise packet encoder and compressor lists and keep hello packets below 16 KiB
+- decode floating-point values in server information packets
+- fix chunked download completion, optional transfer IDs and file metadata
+- detect inherited clipboard and connection APIs for image clipboard support and connection status updates
+- preserve PNG clipboard bytes and request IDs in clipboard replies
+- document Xpra 7+ compatibility and manual validation results
 
 * Mon May 11 2026 Antoine Martin <antoine@xpra.org> 20-0-1
 - new printer subsystem prefix
