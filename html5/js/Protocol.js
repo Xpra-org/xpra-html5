@@ -432,7 +432,7 @@ class XpraProtocol {
     } catch (error) {
       //FIXME: maybe we should error out and disconnect here?
       this.error("error decoding packet", error);
-      this.error(`packet=${packet_data}`);
+      this.error("packet data:", Utilities.obfuscate(packet_data));
       const proto_flags = header[1];
       this.error(`protocol flags=${proto_flags}`);
       this.error(` level=${level}`);
@@ -452,7 +452,7 @@ class XpraProtocol {
     } catch (error) {
       //FIXME: maybe we should error out and disconnect here?
       this.error(`error processing packet ${packet[0]}: ${error}`);
-      this.error(` packet data: ${packet_data}`)
+      this.error("packet data:", Utilities.obfuscate(packet_data));
     }
   }
 
@@ -466,7 +466,7 @@ class XpraProtocol {
       try {
         bdata = rencode(packet);
       } catch (error) {
-        this.error("Error: failed to encode packet:", packet);
+        this.error("Error: failed to encode packet:", Utilities.obfuscatePacket(packet));
         this.error(error);
         continue;
       }
@@ -630,12 +630,12 @@ class XpraProtocol {
       iv: Utilities.u8(iv),
     }
 
-    console.log("importing", "PBKDF2", "key", "'" + key + "'");
+    console.log("importing", "PBKDF2", "key", Utilities.obfuscate(key));
     crypto.subtle.importKey("raw", Utilities.u8(key), {
         name: "PBKDF2"
       }, false, ["deriveKey", "deriveBits"])
       .then(imported_key => {
-        console.log("imported key:", imported_key);
+        console.log("imported key:", Utilities.obfuscate(imported_key));
         console.log("deriving", key_size * 8, "bits", mode, "key with:", iterations, key_hash);
         console.log("salt=", salt);
         // now stretch it to get the real key:
@@ -651,7 +651,7 @@ class XpraProtocol {
             length: key_size * 8,
           }, false, [usage], )
           .then(crypto_key => {
-            console.log("derived key for", usage, "usage:", crypto_key);
+            console.log("derived key for", usage, "usage:", Utilities.obfuscate(crypto_key));
             setup_function(block_size, params, crypto_key);
           })
           .catch(err => {

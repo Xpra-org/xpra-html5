@@ -7,6 +7,9 @@
  *
  */
 
+// Source-only development switch: never read this from connection settings.
+const LOG_CREDENTIALS = false;
+
 const Utilities = {
   VERSION : "22",
   REVISION : 0,
@@ -25,6 +28,56 @@ const Utilities = {
   cwarn: console_warn_safe,
   clog: console_log_safe,
   cdebug: console_debug_safe,
+
+  obfuscate(value) {
+    return LOG_CREDENTIALS || value == null ? value : "********";
+  },
+
+  obfuscateParameter(prop, value) {
+    if (/^(passwords?\d*|tokens?\d*|key|encryption[-_]key|challenge[-_]response|authorization)$/i.test(prop)) {
+      return Utilities.obfuscate(value);
+    }
+    return typeof value === "string" ? Utilities.obfuscateURL(value) : value;
+  },
+
+  obfuscateURL(url) {
+    if (LOG_CREDENTIALS) {
+      return url;
+    }
+    // Hide the whole userinfo, including unescaped separators in native-client URIs.
+    return url.replace(/^([a-z][a-z\d+.-]*:\/\/)[\s\S]*@/i, "$1********@")
+      .replace(/([?&#])([^=&#]+)=([^&#]*)/g, (match, separator, prop, value) => {
+        let name;
+        try {
+          name = decodeURIComponent(prop.replace(/\+/g, " "));
+        } catch {
+          // Malformed parameter names must not expose their values in logs.
+          return `${separator}${prop}=********`;
+        }
+        const safe_value = Utilities.obfuscateParameter(name, value);
+        return `${separator}${prop}=${safe_value}`;
+      });
+  },
+
+  obfuscateSettings(settings) {
+    if (LOG_CREDENTIALS || !settings || typeof settings !== "object" ||
+        ArrayBuffer.isView(settings) || settings instanceof ArrayBuffer) {
+      return settings;
+    }
+    if (Array.isArray(settings)) {
+      return settings.map(value => Utilities.obfuscateSettings(value));
+    }
+    return Object.fromEntries(Object.entries(settings).map(([prop, value]) => [
+      prop, Utilities.obfuscateParameter(prop, Utilities.obfuscateSettings(value)),
+    ]));
+  },
+
+  obfuscatePacket(packet) {
+    if (packet[0] === "hello") {
+      return [packet[0], Utilities.obfuscateSettings(packet[1]), ...packet.slice(2)];
+    }
+    return packet;
+  },
 
   stristrue(v, default_value) {
     if (!v) {
@@ -90,8 +143,6 @@ const Utilities = {
   },
 
   gendigest(digest, password, salt) {
-    // Utilities.clog("gendigest(", digest, ", ", password, ", ", salt, ")");
-    // Utilities.clog("gendigest(", digest, ", ", Utilities.convertToHex(password), ", ", Utilities.convertToHex(salt), ")");
     if (digest === "xor") {
       const trimmed_salt = salt.slice(0, password.length);
       // Utilities.debug("xoring with trimmed salt:", Utilities.convertToHex(trimmed_salt));
@@ -137,12 +188,12 @@ const Utilities = {
         }, false, ["sign", "verify"])
         .then(
           (key) => {
-            Utilities.cdebug("imported hmac key: ", key);
+            Utilities.cdebug("imported hmac key: ", Utilities.obfuscate(key));
             const u8salt = Utilities.u8(salt);
             crypto.subtle.sign("HMAC", key, u8salt).then(
               (result) => {
                 const u8digest = new Uint8Array(result);
-                Utilities.clog("hmac result=", u8digest);
+                Utilities.clog("hmac result=", Utilities.obfuscate(u8digest));
                 resolve(Utilities.ArrayBufferToString(u8digest));
               },
               (error) => {
@@ -778,9 +829,10 @@ const Utilities = {
   },
 
   json_action(uri, success_function, error_function, username, password) {
+    const log_uri = Utilities.obfuscateURL(uri);
     Utilities.log(
       "json_action(",
-      uri,
+      log_uri,
       ", ",
       success_function,
       ", ",
@@ -800,25 +852,25 @@ const Utilities = {
     }
     xhr.responseType = "json";
     xhr.addEventListener("load", function() {
-      Utilities.log("loaded", url, "status", xhr.status);
+      Utilities.log("loaded", Utilities.obfuscateURL(url), "status", xhr.status);
       const status = xhr.status;
       if (status === 200) {
         success_function(xhr, xhr.response);
       } else {
-        Utilities.log(uri, "failed:", status + xhr.response);
+        Utilities.log(log_uri, "failed:", status + xhr.response);
         if (error_function) {
           error_function(`failed: ${status}${xhr.response}`);
         }
       }
     });
     xhr.addEventListener("error", function(e) {
-      Utilities.log(uri, "error:", e);
+      Utilities.log(log_uri, "error:", e);
       if (error_function) {
         error_function(e);
       }
     });
     xhr.addEventListener("abort", function(e) {
-      Utilities.log(uri, "abort:", e);
+      Utilities.log(log_uri, "abort:", e);
       if (error_function) {
         error_function(e);
       }

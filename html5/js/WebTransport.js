@@ -54,7 +54,7 @@ class XpraWebTransportProtocol {
 
     // connect the socket
     try {
-      console.log("opening WebTransport connection to " + uri);
+      console.log("opening WebTransport connection to " + Utilities.obfuscateURL(uri));
       this.webtransport = new WebTransport(uri);
     } catch (error) {
       handle(["error", `${error}`, 0]);
@@ -282,7 +282,7 @@ class XpraWebTransportProtocol {
       } catch (error) {
         //FIXME: maybe we should error out and disconnect here?
         console.error("error decoding packet", error);
-        console.error(`packet=${packet_data}`);
+        console.error("packet data:", Utilities.obfuscate(packet_data));
         console.error(`protocol flags=${proto_flags}`);
         this.raw_packets = [];
         return this.rQ.length > 0;
@@ -293,7 +293,7 @@ class XpraWebTransportProtocol {
       } catch (error) {
         //FIXME: maybe we should error out and disconnect here?
         console.error(`error processing packet ${packet[0]}: ${error}`);
-        console.error(` packet data: ${packet_data}`)
+        console.error("packet data:", Utilities.obfuscate(packet_data));
       }
     }
     return this.rQ.length > 0;
@@ -310,7 +310,7 @@ class XpraWebTransportProtocol {
       try {
         bdata = rencode(packet);
       } catch (error) {
-        console.error("Error: failed to encode packet:", packet);
+        console.error("Error: failed to encode packet:", Utilities.obfuscatePacket(packet));
         console.error(error);
         continue;
       }

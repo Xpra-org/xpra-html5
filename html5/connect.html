@@ -569,7 +569,7 @@
             i++;
           }
         }
-        console.log("opening client url=", url);
+        console.log("opening client url=", Utilities.obfuscateURL(url));
         window.location = url;
       }
 
@@ -1049,13 +1049,13 @@
         function load_icon(icon, src) {
           const url = get_host_address(true) + src;
           icon.onload = function() {
-            Utilities.log("loaded icon", url);
+            Utilities.log("loaded icon", Utilities.obfuscateURL(url));
           };
           icon.onerror = function(e) {
-            Utilities.error("error loading icon", url, ":", e);
+            Utilities.error("error loading icon", Utilities.obfuscateURL(url), ":", e);
           };
           icon.onabort = function(e) {
-            Utilities.error("aborted loading icon", url, ":", e);
+            Utilities.error("aborted loading icon", Utilities.obfuscateURL(url), ":", e);
           };
           icon.src = url;
         }
@@ -1393,7 +1393,7 @@
           const url = get_host_address();
           if (url != host_address) {
             host_address = url;
-            Utilities.debug("host address changed to", url);
+            Utilities.debug("host address changed to", Utilities.obfuscateURL(url));
             init_mode();
           }
         }

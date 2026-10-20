@@ -51,6 +51,12 @@ hash function (`SHA256` or better) which means that the actual password is never
 to the xpra server.\
 By default the HTML5 client will refuse to send passwords over remote unencrypted connections.
 
+Passwords, authentication tokens, encryption keys and challenge responses are obfuscated
+in diagnostic logs by default. For development, edit `const LOG_CREDENTIALS = false`
+to `true` in [Utilities.js](../html5/js/Utilities.js) to log their original values.
+This switch is only available in the source; URL parameters, session storage,
+`default-settings.txt` and debug flags cannot enable it.
+
 </details>
 
 <details>

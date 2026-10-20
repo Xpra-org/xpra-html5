@@ -382,7 +382,7 @@ class XpraClient {
   }
 
   send() {
-    this.debug("network", "sending a", arguments[0], "packet");
+    this.debug("network", "sending a", Utilities.obfuscatePacket(arguments[0]), "packet");
     if (this.protocol) {
       this.protocol.send.apply(this.protocol, arguments);
     }
@@ -1361,7 +1361,7 @@ class XpraClient {
         });
       }
     }
-    this.clog("sending hello capabilities", this.capabilities);
+    this.clog("sending hello capabilities", Utilities.obfuscateSettings(this.capabilities));
     // verify:
     for (const key in this.capabilities) {
       if (key === undefined || key === null) {
@@ -2642,7 +2642,7 @@ class XpraClient {
     this.cancel_open_timer();
     this.cancel_hello_timer();
     const hello = packet[1];
-    this.clog("received hello capabilities", hello);
+    this.clog("received hello capabilities", Utilities.obfuscateSettings(hello));
     const version = Utilities.s(hello["version"] || "");
     const version_match = /^(\d+)\.(\d+)(?:\D|$)/.exec(version);
     if (!version_match) {
@@ -3081,7 +3081,7 @@ class XpraClient {
     const client = this;
 
     function call_do_process_challenge(password) {
-      Utilities.clog("call_do_process_challenge(", password, ")");
+      Utilities.clog("call_do_process_challenge(", Utilities.obfuscate(password), ")");
       if (!client || !client.protocol) {
         return;
       }
@@ -5162,11 +5162,11 @@ class XpraClient {
   _process_open_url(packet) {
     const url = packet[1];
     if (!this.open_url) {
-      this.cwarn("Warning: received a request to open URL", url);
+      this.cwarn("Warning: received a request to open URL", Utilities.obfuscateURL(url));
       this.clog(" but opening of URLs is disabled");
       return;
     }
-    this.clog("opening url:", url);
+    this.clog("opening url:", Utilities.obfuscateURL(url));
     const new_window = window.open(url, "_blank");
     if (!new_window || new_window.closed || typeof new_window.closed == "undefined") {
       //Popup blocked, display link in notification
