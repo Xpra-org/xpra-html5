@@ -92,6 +92,30 @@ class XpraVideoDecoder {
     this.initialized = true;
   }
 
+  /*
+   * Safari reports the encoder's padded size (ie: 546x278 coded as 576x288)
+   * as the frame's display size and visible rectangle, so drawing the frame
+   * into its width x height box shrinks it and the content jumps whenever
+   * video and lossless updates alternate.
+   * Convert such frames to an ImageBitmap, which the bitmap paint path crops
+   * from the top-left corner like any other bitmap.
+   * Frames that already have the expected size are returned unchanged.
+   */
+  static async crop_padded_frame(frame, width, height) {
+    if (frame.displayWidth === width && frame.displayHeight === height) {
+      return frame;
+    }
+    let bitmap;
+    try {
+      bitmap = await createImageBitmap(frame);
+    } catch (error) {
+      console.warn("failed to convert the padded video frame to a bitmap:", error);
+      return frame;
+    }
+    frame.close();
+    return bitmap;
+  }
+
   resolveCodec(coding) {
     // high profile, level 4.0: matches the `h264` encoding options we send to the server,
     // and every hardware decoder handles it - a higher level would risk a software fallback

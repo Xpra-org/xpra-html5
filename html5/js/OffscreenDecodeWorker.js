@@ -131,6 +131,13 @@ class WindowDecoder {
       packet = await this.video_decoder.queue_frame(packet).catch((error) => {
         this.decode_error(packet, error);
       });
+      if (packet && packet[6].startsWith("frame:")) {
+        const image = await XpraVideoDecoder.crop_padded_frame(packet[7], packet[4], packet[5]);
+        if (image !== packet[7]) {
+          packet[6] = packet[6].replace("frame:", "bitmap:");
+          packet[7] = image;
+        }
+      }
     } else {
       this.decode_error(packet, `unsupported encoding: '${coding}'`);
     }
