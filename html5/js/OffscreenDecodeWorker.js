@@ -23,6 +23,9 @@ const window_decoders = new Map();
 // You can change this delay to test decode worker initialization timeouts:
 const ACK_DELAY = 0;
 
+// How long we wait for a video frame to be decoded before giving up on it:
+const VIDEO_DECODE_DEADLINE_MS = 2000;
+
 const image_coding = [
   "rgb",
   "rgb32",
@@ -49,6 +52,13 @@ const all_encodings = new Set([
   ...image_coding,
   ...video_coding,
 ]);
+
+function release_image(packet) {
+  const image = packet && packet[7];
+  if (image && typeof image.close === "function") {
+    image.close();
+  }
+}
 
 function send_decode_error(packet, error) {
   packet[7] = null;
@@ -128,15 +138,19 @@ class WindowDecoder {
       if (!this.video_decoder.initialized) {
         this.video_decoder.init(coding, packet[10]);
       }
-      packet = await this.video_decoder.queue_frame(packet).catch((error) => {
-        this.decode_error(packet, error);
+      const video_packet = packet;
+      packet = await XpraVideoDecoder.with_deadline(
+        this.decode_video_packet(video_packet), VIDEO_DECODE_DEADLINE_MS, release_image
+      ).catch((error) => {
+        // The decoder may have been suspended or reclaimed (ie: Safari in a background tab):
+        // close it so the next stream starts from a key frame,
+        // and report the error so the server resets its encoder and refreshes this area.
+        this.video_decoder._close();
+        this.decode_error(video_packet, error);
       });
-      if (packet && packet[6].startsWith("frame:")) {
-        const image = await XpraVideoDecoder.crop_padded_frame(packet[7], packet[4], packet[5]);
-        if (image !== packet[7]) {
-          packet[6] = packet[6].replace("frame:", "bitmap:");
-          packet[7] = image;
-        }
+      if (!packet) {
+        // the error has already been sent to the server
+        return;
       }
     } else {
       this.decode_error(packet, `unsupported encoding: '${coding}'`);
@@ -180,6 +194,18 @@ class WindowDecoder {
     // for 'scroll', the motion vectors are in the options:
     const image = coding === "scroll" ? (options["scroll"] || []) : packet[7];
     this.paint_packet(wid, coding, image, x, y, w, h);
+  }
+
+  async decode_video_packet(packet) {
+    packet = await this.video_decoder.queue_frame(packet);
+    if (packet && packet[6].startsWith("frame:")) {
+      const image = await XpraVideoDecoder.crop_padded_frame(packet[7], packet[4], packet[5]);
+      if (image !== packet[7]) {
+        packet[6] = packet[6].replace("frame:", "bitmap:");
+        packet[7] = image;
+      }
+    }
+    return packet;
   }
 
   paint_packet(wid, coding, image, x, y, width, height) {

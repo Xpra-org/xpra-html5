@@ -38,6 +38,8 @@ class XpraVideoDecoder {
     this.full_range = true;
     this.vp9_params = null;
     this.frameWaitTimeout = 1; // Interval for wait loop while frame is being decoded
+    // Incremented by _close(), so frames still waiting for the decoder that was closed give up:
+    this.generation = 0;
 
     this.frame_threshold = 250;
   }
@@ -101,6 +103,30 @@ class XpraVideoDecoder {
    * from the top-left corner like any other bitmap.
    * Frames that already have the expected size are returned unchanged.
    */
+  /*
+   * Resolve or reject like `promise`, but reject if it has not settled after `timeout_ms`.
+   * Some browsers (ie: Safari in a background tab) suspend or reclaim the decoder,
+   * so a frame may never come out: callers must not wait forever.
+   * If the promise resolves after the deadline, `release` is called with its value
+   * so that the late frame or bitmap can be closed.
+   */
+  static with_deadline(promise, timeout_ms, release) {
+    let timer = 0;
+    let expired = false;
+    const deadline = new Promise((resolve, reject) => {
+      timer = setTimeout(() => {
+        expired = true;
+        reject(new Error(`no decoded frame after ${timeout_ms}ms`));
+      }, timeout_ms);
+    });
+    promise.then((value) => {
+      if (expired && release) {
+        release(value);
+      }
+    }, () => {});
+    return Promise.race([promise, deadline]).finally(() => clearTimeout(timer));
+  }
+
   static async crop_padded_frame(frame, width, height) {
     if (frame.displayWidth === width && frame.displayHeight === height) {
       return frame;
@@ -242,7 +268,10 @@ class XpraVideoDecoder {
         reject(
             new Error("failed to decode chunk: " + error)
         );
+        return;
       }
+
+      const generation = this.generation;
 
       let frame_out = this.decoded_frames.filter(
         (p) => p[8] === packet_sequence
@@ -250,6 +279,11 @@ class XpraVideoDecoder {
       while (frame_out.length === 0) {
         // Await our frame
         await new Promise((r) => setTimeout(r, this.frameWaitTimeout));
+        if (this.generation !== generation) {
+          // The decoder was closed or reset whilst we were waiting for this frame
+          reject(new Error("video decoder was reset"));
+          return;
+        }
         if (this.erroneous_frame != null) {
           // The last frame was erroneous, break the wait loop
           break;
@@ -272,6 +306,7 @@ class XpraVideoDecoder {
   }
 
   _close() {
+    this.generation += 1;
     if (this.initialized) {
       if (this.videoDecoder.state !== "closed") {
         this.videoDecoder.close();
