@@ -127,6 +127,16 @@ class XpraVideoDecoder {
     return Promise.race([promise, deadline]).finally(() => clearTimeout(timer));
   }
 
+  // The size of the picture the server encoded:
+  // smaller than the area to paint when the server scaled the video down.
+  static source_size(packet) {
+    const scaled_size = (packet[10] || {})["scaled_size"];
+    if (scaled_size) {
+      return [scaled_size[0], scaled_size[1]];
+    }
+    return [packet[4], packet[5]];
+  }
+
   static async crop_padded_frame(frame, width, height) {
     if (frame.displayWidth === width && frame.displayHeight === height) {
       return frame;

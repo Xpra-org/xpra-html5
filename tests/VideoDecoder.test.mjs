@@ -108,6 +108,43 @@ test("the frame is kept when the conversion fails", async () => {
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+test("source_size is the packet size without scaling", () => {
+  const {
+    XpraVideoDecoder
+  } = load_video_decoder(async () => {});
+  const packet = [];
+  packet[4] = 2054;
+  packet[5] = 1113;
+  packet[10] = {};
+  assert.deepEqual([...XpraVideoDecoder.source_size(packet)], [2054, 1113]);
+});
+
+test("source_size is the scaled size the server encoded", () => {
+  const {
+    XpraVideoDecoder
+  } = load_video_decoder(async () => {});
+  const packet = [];
+  packet[4] = 2054;
+  packet[5] = 1113;
+  packet[10] = {
+    scaled_size: [1056, 576]
+  };
+  assert.deepEqual([...XpraVideoDecoder.source_size(packet)], [1056, 576]);
+});
+
+test("scaled frames of the encoded size are drawn as they are", async () => {
+  let converted = false;
+  const {
+    XpraVideoDecoder
+  } = load_video_decoder(async () => {
+    converted = true;
+  });
+  const frame = fake_frame(1056, 576);
+  assert.equal(await XpraVideoDecoder.crop_padded_frame(frame, 1056, 576), frame);
+  assert.equal(converted, false);
+  assert.equal(frame.closed, false);
+});
+
 test("with_deadline resolves with the value when it arrives in time", async () => {
   const {
     XpraVideoDecoder
