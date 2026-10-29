@@ -25,6 +25,9 @@ class XpraVideoDecoder {
   constructor() {
     this.initialized = false;
     this.had_first_key = false;
+    // Set once the server has been told that we need a key frame (by a decode error):
+    // until one arrives, delta frames cannot be decoded and are skipped without another error.
+    this.key_frame_requested = false;
     this.draining = false;
 
     this.decoder_queue = [];
@@ -245,6 +248,15 @@ class XpraVideoDecoder {
         !(options["type"] &&
         options["type"] == "IDR")
       ) {
+        if (this.key_frame_requested) {
+          // Frames the server sent before it got our decode error:
+          // acknowledge them without painting anything, its next key frame repaints everything.
+          packet[6] = "void";
+          packet[7] = null;
+          resolve(packet);
+          return;
+        }
+        this.key_frame_requested = true;
         reject(
           new Error(
             `first h264 frame must be a key frame but packet ${packet_sequence} is not: ${options}`
@@ -263,6 +275,7 @@ class XpraVideoDecoder {
       }
 
       this.had_first_key = true;
+      this.key_frame_requested = false;
       this.decoder_queue.push({
         p: packet
       });

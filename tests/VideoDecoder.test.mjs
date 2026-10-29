@@ -235,3 +235,68 @@ test("queue_frame stops waiting when the decoder is closed", async () => {
   decoder._close();
   await assert.rejects(waiting, /video decoder was reset/);
 });
+
+function h264_decoder() {
+  const {
+    XpraVideoDecoder
+  } = load_video_decoder(async () => {}, {
+    VideoDecoder: StuckVideoDecoder,
+    VideoColorSpace: class {},
+    EncodedVideoChunk: class {
+      constructor(init) {
+        Object.assign(this, init);
+      }
+    },
+  });
+  const decoder = new XpraVideoDecoder();
+  decoder.init("h264");
+  return decoder;
+}
+
+function h264_packet(sequence, type = "P") {
+  const packet = [];
+  packet[6] = "h264";
+  packet[7] = new Uint8Array(4);
+  packet[8] = sequence;
+  packet[10] = {
+    frame: sequence,
+    type
+  };
+  return packet;
+}
+
+test("only the first delta frame without a key frame is reported", async () => {
+  const decoder = h264_decoder();
+  await assert.rejects(decoder.queue_frame(h264_packet(1)), /must be a key frame/);
+  for (const sequence of [2, 3, 4]) {
+    const packet = await decoder.queue_frame(h264_packet(sequence));
+    assert.equal(packet[6], "void");
+    assert.equal(packet[7], null);
+  }
+  assert.equal(decoder.videoDecoder.decodeQueueSize, 0);
+});
+
+test("delta frames are skipped quietly after the decoder was reset by a decode error", async () => {
+  const decoder = h264_decoder();
+  decoder._close();
+  decoder.key_frame_requested = true;
+  decoder.init("h264");
+  const packet = await decoder.queue_frame(h264_packet(7));
+  assert.equal(packet[6], "void");
+  assert.equal(decoder.videoDecoder.decodeQueueSize, 0);
+});
+
+test("a key frame is decoded and ends the wait for one", async () => {
+  const decoder = h264_decoder();
+  await assert.rejects(decoder.queue_frame(h264_packet(1)), /must be a key frame/);
+  // the stuck decoder never outputs the frame: only check that it was submitted
+  decoder.queue_frame(h264_packet(2, "IDR")).catch(() => {});
+  try {
+    assert.equal(decoder.videoDecoder.decodeQueueSize, 1);
+    assert.equal(decoder.key_frame_requested, false);
+    assert.equal(decoder.had_first_key, true);
+  } finally {
+    // stop the frame wait loop
+    decoder._close();
+  }
+});

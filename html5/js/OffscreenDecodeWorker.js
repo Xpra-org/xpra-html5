@@ -149,6 +149,7 @@ class WindowDecoder {
         // close it so the next stream starts from a key frame,
         // and report the error so the server resets its encoder and refreshes this area.
         this.video_decoder._close();
+        this.video_decoder.key_frame_requested = true;
         this.decode_error(video_packet, error);
       });
       if (!packet) {
