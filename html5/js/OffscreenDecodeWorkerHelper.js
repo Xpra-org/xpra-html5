@@ -12,13 +12,14 @@
  */
 
 const XpraOffscreenWorker = {
-  // OffscreenCanvas supported since v.16.4
+  // OffscreenCanvas supported since v.16.4; offscreen painting was buggy
+  // there (#227), so only enable it from Safari 26 (WebCodecs H.264 +
+  // OffscreenCanvas verified on Safari 27 with NVENC-encoded streams)
   isSafariVersionSupported() {
     const match = navigator.userAgent.match(/version\/(\d+\.\d+)/i);
     if (match && match[1]) {
       const version = parseFloat(match[1]);
-      // Safari is buggy, see #227
-      return version >= 999.9;
+      return version >= 26.0;
     }
     return false;
   },
@@ -39,7 +40,7 @@ const XpraOffscreenWorker = {
       return false;
     }
 
-    if (Utilities.isWebkit() && !Utilities.isChrome()) {
+    if (Utilities.isWebkit() && !Utilities.isChrome() && !Utilities.isSafari()) {
       console.log("offscreen canvas is not supported with this webkit browser");
       return false;
     }
