@@ -38,3 +38,22 @@ jobs:
           sudo python3 setup.py install
       - name: List Root
         run: ls -lR /usr/share/xpra /etc/xpra
+
+  unit_tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Run unit tests
+        run: |
+          shopt -s nullglob
+          files=(tests/*.mjs tests/**/*.mjs)
+          if ((${#files[@]} == 0)); then
+            echo "No tests/*.mjs yet; skipping."
+            exit 0
+          fi
+          node --test tests/
