@@ -750,6 +750,16 @@ class XpraClient {
     // add an encoding to our hello.encodings list
     this.clog("encoding:", encoding);
     this.encoding = encoding;
+    // the hello sends encoding_options, built before any set_encoding() call
+    if (this.encoding_options) {
+      this.encoding_options[""] = encoding;
+    }
+  }
+
+  // The server reads auto_refresh_delay from the top level of the hello,
+  // not from the "encoding" options where set_encoding_option() puts it.
+  _get_auto_refresh_delay() {
+    return this.encoding_options?.["auto_refresh_delay"] ?? 500;
   }
 
   set_encoding_option(option, value) {
@@ -1428,7 +1438,7 @@ class XpraClient {
     this.key_layout = this._get_keyboard_layout();
 
     this._update_capabilities({
-      auto_refresh_delay: 500,
+      auto_refresh_delay: this._get_auto_refresh_delay(),
       "metadata.supported": METADATA_SUPPORTED,
       "encoding": this._get_encoding_caps(),
       "audio": {"async": true, "signal": this.audio_enabled},
