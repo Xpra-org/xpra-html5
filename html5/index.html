@@ -1272,8 +1272,7 @@
             client.close_audio();
           } else {
             client.on_audio_state_change("waiting", "user action");
-            client._audio_start_stream();
-            client._sound_start_receiving();
+            client.user_start_audio();
           }
         });
       }
