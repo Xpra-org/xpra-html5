@@ -25,6 +25,9 @@ class XpraVideoDecoder {
   constructor() {
     this.initialized = false;
     this.had_first_key = false;
+    // Set once the server has been told that we need a key frame (by a decode error):
+    // until one arrives, delta frames cannot be decoded and are skipped without another error.
+    this.key_frame_requested = false;
     this.draining = false;
 
     this.decoder_queue = [];
@@ -38,6 +41,8 @@ class XpraVideoDecoder {
     this.full_range = true;
     this.vp9_params = null;
     this.frameWaitTimeout = 1; // Interval for wait loop while frame is being decoded
+    // Incremented by _close(), so frames still waiting for the decoder that was closed give up:
+    this.generation = 0;
 
     this.frame_threshold = 250;
   }
@@ -90,6 +95,64 @@ class XpraVideoDecoder {
     });
     this.last_timestamp = 0;
     this.initialized = true;
+  }
+
+  /*
+   * Safari reports the encoder's padded size (ie: 546x278 coded as 576x288)
+   * as the frame's display size and visible rectangle, so drawing the frame
+   * into its width x height box shrinks it and the content jumps whenever
+   * video and lossless updates alternate.
+   * Convert such frames to an ImageBitmap, which the bitmap paint path crops
+   * from the top-left corner like any other bitmap.
+   * Frames that already have the expected size are returned unchanged.
+   */
+  /*
+   * Resolve or reject like `promise`, but reject if it has not settled after `timeout_ms`.
+   * Some browsers (ie: Safari in a background tab) suspend or reclaim the decoder,
+   * so a frame may never come out: callers must not wait forever.
+   * If the promise resolves after the deadline, `release` is called with its value
+   * so that the late frame or bitmap can be closed.
+   */
+  static with_deadline(promise, timeout_ms, release) {
+    let timer = 0;
+    let expired = false;
+    const deadline = new Promise((resolve, reject) => {
+      timer = setTimeout(() => {
+        expired = true;
+        reject(new Error(`no decoded frame after ${timeout_ms}ms`));
+      }, timeout_ms);
+    });
+    promise.then((value) => {
+      if (expired && release) {
+        release(value);
+      }
+    }, () => {});
+    return Promise.race([promise, deadline]).finally(() => clearTimeout(timer));
+  }
+
+  // The size of the picture the server encoded:
+  // smaller than the area to paint when the server scaled the video down.
+  static source_size(packet) {
+    const scaled_size = (packet[10] || {})["scaled_size"];
+    if (scaled_size) {
+      return [scaled_size[0], scaled_size[1]];
+    }
+    return [packet[4], packet[5]];
+  }
+
+  static async crop_padded_frame(frame, width, height) {
+    if (frame.displayWidth === width && frame.displayHeight === height) {
+      return frame;
+    }
+    let bitmap;
+    try {
+      bitmap = await createImageBitmap(frame);
+    } catch (error) {
+      console.warn("failed to convert the padded video frame to a bitmap:", error);
+      return frame;
+    }
+    frame.close();
+    return bitmap;
   }
 
   resolveCodec(coding) {
@@ -185,6 +248,15 @@ class XpraVideoDecoder {
         !(options["type"] &&
         options["type"] == "IDR")
       ) {
+        if (this.key_frame_requested) {
+          // Frames the server sent before it got our decode error:
+          // acknowledge them without painting anything, its next key frame repaints everything.
+          packet[6] = "void";
+          packet[7] = null;
+          resolve(packet);
+          return;
+        }
+        this.key_frame_requested = true;
         reject(
           new Error(
             `first h264 frame must be a key frame but packet ${packet_sequence} is not: ${options}`
@@ -203,6 +275,7 @@ class XpraVideoDecoder {
       }
 
       this.had_first_key = true;
+      this.key_frame_requested = false;
       this.decoder_queue.push({
         p: packet
       });
@@ -218,7 +291,10 @@ class XpraVideoDecoder {
         reject(
             new Error("failed to decode chunk: " + error)
         );
+        return;
       }
+
+      const generation = this.generation;
 
       let frame_out = this.decoded_frames.filter(
         (p) => p[8] === packet_sequence
@@ -226,6 +302,11 @@ class XpraVideoDecoder {
       while (frame_out.length === 0) {
         // Await our frame
         await new Promise((r) => setTimeout(r, this.frameWaitTimeout));
+        if (this.generation !== generation) {
+          // The decoder was closed or reset whilst we were waiting for this frame
+          reject(new Error("video decoder was reset"));
+          return;
+        }
         if (this.erroneous_frame != null) {
           // The last frame was erroneous, break the wait loop
           break;
@@ -248,6 +329,7 @@ class XpraVideoDecoder {
   }
 
   _close() {
+    this.generation += 1;
     if (this.initialized) {
       if (this.videoDecoder.state !== "closed") {
         this.videoDecoder.close();
