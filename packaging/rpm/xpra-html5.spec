@@ -78,6 +78,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Sat Oct 31 2026 Antoine Martin <antoine@xpra.org> 17.3-0-1
+- authentication regression with pam
+
 * Tue May 12 2026 Antoine Martin <antoine@xpra.org> 17.2-0-1
 - unicode characters mangled by clipboard
 - progress bar not moving

@@ -1,3 +1,8 @@
+xpra-html5 (17.3-r0-1) UNRELEASED; urgency=low
+  * authentication regression with pam
+
+ -- Antoine Martin <antoine@xpra.org>  Sat, 31 Oct 2026 16:59:26 +0700
+
 xpra-html5 (17.2-r0-1) UNRELEASED; urgency=low
   * unicode characters mangled by clipboard
   * progress bar not moving

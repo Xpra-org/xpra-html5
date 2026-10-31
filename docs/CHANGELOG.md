@@ -1,6 +1,9 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+## [17.3] 2026-10-31
+- [authentication regression with pam](https://github.com/Xpra-org/xpra-html5/commit/8916a3bf2d5b85676a702f924da9b21267fb75f0)
+
 ## [17.2] 2026-05-12
 - [unicode characters mangled by clipboard](https://github.com/Xpra-org/xpra-html5/commit/b0b902a9aec8a413db4be6affc54bbf0c6ba6768)
 - [progress bar not moving](https://github.com/Xpra-org/xpra-html5/commit/1655a23b1c3ad55c76756e3378233e656a7c0e9b)
