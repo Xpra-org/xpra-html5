@@ -56,4 +56,4 @@ jobs:
             echo "No tests/*.mjs yet; skipping."
             exit 0
           fi
-          node --test tests/
+          node --test "${files[@]}"
