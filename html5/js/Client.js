@@ -1431,7 +1431,7 @@ class XpraClient {
       auto_refresh_delay: 500,
       "metadata.supported": METADATA_SUPPORTED,
       "encoding": this._get_encoding_caps(),
-      "audio": {"async": true, "signal": this.audio_enabled},
+      "audio": {"async": true},
       "clipboard": this._get_clipboard_caps(),
       "pointer": this._get_pointer_caps(),
       "file": this._get_file_caps(),
@@ -1580,7 +1580,6 @@ class XpraClient {
 
   _get_audio_caps() {
     return {
-      "async": true,
       "receive": true,
       "send": false,
       "decoders": Object.keys(this.audio_codecs),
