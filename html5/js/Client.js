@@ -1412,6 +1412,9 @@ class XpraClient {
       "window.pre-map": true,
       //partial support:
       keyboard: true,
+      // Older servers read desktop dimensions outside the display namespace.
+      desktop_size: [this.desktop_width, this.desktop_height],
+      desktop_mode_size: [this.desktop_width, this.desktop_height],
       screen_sizes: this._get_screen_sizes(),
       dpi: {
         "x": this._get_DPI(),
