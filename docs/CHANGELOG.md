@@ -1,6 +1,12 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+## [17.4] 2026-11-12
+- [blank session information with 5.1.x servers](https://github.com/Xpra-org/xpra-html5/commit/5c6a415ab6e209253bf586ea009bc9bbc50515b7)
+- [missing server platform with 5.1.x servers](https://github.com/Xpra-org/xpra-html5/commit/cb09386d21760ea5d19b05b76d32725a0ecde390)
+- [older servers still need the top-level desktop size keys](https://github.com/Xpra-org/xpra-html5/commit/b09c7d4117d3a36967e26e57aa02768e290c9712)
+- [refresh of all windows with 6.3.x servers](https://github.com/Xpra-org/xpra-html5/commit/3f33c4f48a9e878e462bc44ec9d3622f24d0a8d3)
+
 ## [17.3] 2026-10-31
 - [authentication regression with pam](https://github.com/Xpra-org/xpra-html5/commit/8916a3bf2d5b85676a702f924da9b21267fb75f0)
 

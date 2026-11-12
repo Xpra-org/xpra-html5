@@ -3,7 +3,7 @@
 # Xpra is released under the terms of the GNU GPL v2, or, at your option, any
 # later version. See the file COPYING for details.
 
-%define version 17.3
+%define version 17.4
 %define release 1.r0%{?dist}
 %define minifier uglifyjs
 %define python python3
@@ -78,6 +78,12 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Thu Nov 12 2026 Antoine Martin <antoine@xpra.org> 17.4-0-1
+- blank session information with 5.1.x servers
+- missing server platform with 5.1.x servers
+- older servers still need the top-level desktop size keys
+- refresh of all windows with 6.3.x servers
+
 * Sun Nov 01 2026 Antoine Martin <antoine@xpra.org> 17.3-0-1
 - authentication regression with pam
 
