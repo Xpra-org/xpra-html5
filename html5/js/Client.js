@@ -2998,6 +2998,16 @@ class XpraClient {
     this.info_request_pending = false;
     this.server_last_info = packet[1];
     this.debug("network", "info-response:", this.server_last_info);
+    if (!this.server_platform) {
+      // older servers (ie: 5.1.x) don't include the platform in the hello,
+      // but the info-response has it in the legacy location:
+      const platform = (this.server_last_info["server"] || {})["platform"];
+      if (platform && typeof platform === "object") {
+        this.server_platform = platform["name"] || platform["platform"] || platform["system"] || "";
+      } else if (platform) {
+        this.server_platform = "" + platform;
+      }
+    }
     const event = document.createEvent("Event");
     event.initEvent("info-response", true, true);
     event.data = this.server_last_info;
