@@ -2896,14 +2896,6 @@ class XpraClient {
 
       const ul = document.createElement("ul");
 
-      //TODO need to figure out how to do this properly
-      a.addEventListener("mouseenter", function() {
-        this.parentElement.childNodes[1].className = "-visible";
-      });
-      a.addEventListener("mouseleave", function() {
-        this.parentElement.childNodes[1].className = "";
-      });
-
       const xdg_menu_cats = category.Entries;
       for (key in xdg_menu_cats) {
         const entry = xdg_menu_cats[key];
@@ -2933,13 +2925,13 @@ class XpraClient {
         a2.addEventListener("click", function() {
           const ignore = "False";
           me.start_command(this.innerText, this.title, ignore);
-          document.querySelector("#menu_list").className = "-hide";
-        });
-        a2.addEventListener("mouseenter", function() {
-          this.parentElement.parentElement.className = "-visible";
-        });
-        a2.addEventListener("mouseleave", function() {
-          this.parentElement.parentElement.className = "";
+          (function(_m) {
+            _m.classList.add("-hide");
+            _m.classList.remove("-visible");
+            if (_m.parentElement) {
+              _m.parentElement.classList.remove("-active");
+            }
+          })(document.querySelector("#menu_list"));
         });
 
         li2.append(a2);
@@ -2947,6 +2939,10 @@ class XpraClient {
       }
       li.append(ul);
       startmenu.append(li);
+    }
+
+    if (window.rebindMenuHandlers) {
+      window.rebindMenuHandlers();
     }
 
     if (this.xdg_menu.length === 0) {
@@ -3278,8 +3274,10 @@ class XpraClient {
       top = 0;
     } else if (this.toolbar_position === "top") {
       left = screen_width / 2 - toolbar_width / 2;
+      top = 0;
     } else if (this.toolbar_position === "top-right") {
       left = screen_width - toolbar_width - 100;
+      top = 0;
     } else if (this.toolbar_position === "novnc") {
       left = 0;
       top = screen_height / 2 - toolbar_height / 2 - 100;
