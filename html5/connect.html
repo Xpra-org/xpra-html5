@@ -1027,6 +1027,8 @@
           };
           icon.onerror = function(e) {
             Utilities.error("error loading icon", url, ":", e);
+            icon.onerror = null;
+            icon.src = "./icons/noicon.png";
           };
           icon.onabort = function(e) {
             Utilities.error("aborted loading icon", url, ":", e);
