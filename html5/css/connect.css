@@ -69,10 +69,12 @@ label {
 
 /* Start session text boxes */
 #action_connect_group,
-#action_start_group,
 #action_start_desktop_group,
 #action_shadow_group {
   max-height: 34px;
+}
+#action_start_group {
+  max-height: 68px;
 }
 
 #action_connect_group>.form-control,
