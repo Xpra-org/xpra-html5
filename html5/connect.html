@@ -103,11 +103,14 @@
                   <input title="command" type="text" class="form-control command" id="start_command" placeholder="Command" size="20" maxlength="256" />
                 </div>
                 <div style="display: inline-block">
-                  <select id="command_category" style="display: none"></select>
-                  <img class="command-icon" id="command_category_icon" alt="desktop command category icon" src="./icons/noicon.png" />
-                  <br />
-                  <select id="command_entry" style="display: none"></select>
-                  <img class="command-icon" id="command_entry_icon" alt="desktop command icon" src="./icons/noicon.png" />
+                  <div class="command-menu-row">
+                    <select id="command_category" style="display: none"></select>
+                    <img class="command-icon" id="command_category_icon" alt="desktop command category icon" src="./icons/noicon.png" />
+                  </div>
+                  <div class="command-menu-row">
+                    <select id="command_entry" style="display: none"></select>
+                    <img class="command-icon" id="command_entry_icon" alt="desktop command icon" src="./icons/noicon.png" />
+                  </div>
                 </div>
               </li>
               <li id="action_start_desktop_group">
