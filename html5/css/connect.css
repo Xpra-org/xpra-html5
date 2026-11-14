@@ -278,8 +278,13 @@ div.container {
 
 .form-signin img.command-icon {
   object-fit: scale-down;
-  max-width: 32px;
-  max-height: 32px;
+  max-width: 1.5em;
+  max-height: 1.5em;
+}
+
+.form-signin .command-menu-row {
+  display: flex;
+  align-items: center;
 }
 
 .form-signin span.warning {
