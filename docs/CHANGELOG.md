@@ -2,8 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [22.0] 2026-10-17
-
+## [22.0] 2026-11-16
 - [require Xpra 7.0 or later and advertise the modern protocol](https://github.com/Xpra-org/xpra-html5/commit/c452c7e236752442790182eac19caad50b7ec38f)
 - [use modern window, cursor and display packets and capabilities, including shadow session detection](https://github.com/Xpra-org/xpra-html5/commit/dc1bb1164374c565d6343b56e0be4f7a55f7513d)
 - [send modern keyboard and pointer events](https://github.com/Xpra-org/xpra-html5/commit/ca22c21a81727dfb7615b805070aeea89f653442)

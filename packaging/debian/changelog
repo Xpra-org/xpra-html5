@@ -12,7 +12,7 @@ xpra-html5 (22-r0-1) UNRELEASED; urgency=low
   * preserve PNG clipboard bytes and request IDs in clipboard replies
   * document Xpra 7+ compatibility and manual validation results
 
- -- Antoine Martin <antoine@xpra.org>  Sat, 17 Oct 2026 15:14:06 +0700
+ -- Antoine Martin <antoine@xpra.org>  Mon, 16 Nov 2026 22:38:06 +0700
 
 xpra-html5 (21-r0-1) UNRELEASED; urgency=low
   * new printer subsystem prefix

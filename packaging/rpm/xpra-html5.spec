@@ -66,7 +66,7 @@ rm -rf $RPM_BUILD_ROOT
 %doc LICENSE
 
 %changelog
-* Sat Oct 17 2026 Antoine Martin <antoine@xpra.org> 22-0-1
+* Mon Nov 16 2026 Antoine Martin <antoine@xpra.org> 22-0-1
 - require Xpra 7.0 or later and advertise the modern protocol
 - use modern window, cursor and display packets and capabilities, including shadow session detection
 - send modern keyboard and pointer events
