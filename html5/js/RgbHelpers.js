@@ -21,12 +21,43 @@ function decode_rgb(packet) {
     data = lz4.decode(data);
     delete options["lz4"];
   }
+  let rgb_format = options["rgb_format"] || "";
+  if (typeof rgb_format !== "string") {
+    rgb_format = String.fromCharCode(...rgb_format);
+  }
   if (coding === "rgb24") {
     packet[9] = width * 4;
     packet[6] = "rgb32";
-    return rgb24_to_rgb32(data, width, height, rowstride);
+    const rgb32 = rgb24_to_rgb32(data, width, height, rowstride);
+    if (rgb_format === "BGR") {
+      swap_red_blue(rgb32);
+    }
+    return rgb32;
   }
   //coding=rgb32
+  const uint = restride_rgb32(data, width, height, rowstride);
+  //the server tells us the actual pixel layout,
+  //"X" is padding, not alpha, and may contain anything:
+  if (rgb_format.startsWith("B")) {
+    swap_red_blue(uint);
+  }
+  if (rgb_format.endsWith("X")) {
+    for (let index = 3; index < uint.length; index += 4) {
+      uint[index] = 255;
+    }
+  }
+  return uint;
+}
+
+function swap_red_blue(uint) {
+  for (let index = 0; index < uint.length; index += 4) {
+    const red = uint[index];
+    uint[index] = uint[index + 2];
+    uint[index + 2] = red;
+  }
+}
+
+function restride_rgb32(data, width, height, rowstride) {
   if (rowstride === width * 4) {
     return new Uint8Array(data);
   }
