@@ -747,6 +747,6 @@ lz4.decode = function(data) {
 		throw "length too long: "+length;
 	}
 	const inflated = new Uint8Array(length);
-	lz4.decompressBlock(data, inflated, 4, length, 0);
+	lz4.decompressBlock(data, inflated, 4, data.length - 4, 0);
 	return inflated;
 }
